@@ -1,6 +1,3 @@
-### Server settings and tokens
-config/github_token.js
-
 ### VisualStudioCode ###
 .vscode/
 !.vscode/settings.json
