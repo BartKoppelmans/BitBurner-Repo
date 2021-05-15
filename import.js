@@ -1,4 +1,5 @@
-import config from 'import_config.js';
+import config from 'config/import_config.js';
+import token from 'config/github_token.js'
 
 const files = [
     'start_hacking.js',
@@ -25,7 +26,7 @@ async function importFiles(ns) {
     let filesImported = true;
     for (let file of files) {
         let remoteFileName = `${config.rootUrl}scripts/${file}`;
-        let result = await ns.wget(remoteFileName, `/${getFolder()}/${file}`);
+        let result = await ns.wget(remoteFileName, `/${getFolder()}/${file}?token=${token}`);
         filesImported = filesImported && result;
         ns.tprint(`File: ${file}: ${result ? '✔️' : '❌'}`);
     }
