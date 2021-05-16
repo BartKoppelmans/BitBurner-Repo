@@ -1,8 +1,11 @@
 {
     "include": [
-        "**.ts",
+        "./src/**.ts",
     ],
     "compilerOptions": {
+        "moduleResolution": "node",
+        "resolveJsonModule": true,
+        "esModuleInterop": true,
         "noImplicitReturns": true,
         "noImplicitThis": true,
         "module": "ES2015",

@@ -9,14 +9,14 @@ export async function main(ns, args) {
     await hackServer(ns, ns.args[0], ns.args[1]);
 }
 
-async function initHacking() {
+async function initHacking(ns) {
     ns.disableLog('getServerSecurityLevel');
 }
 
 async function hackServer(ns, server, threads) {
-    await initHacking();
+    await initHacking(ns);
 
-    let serverSecurityThreshold = Math.round(getServerBaseSecurityLevel(target) / 3) + 2;
+    let serverSecurityThreshold = Math.round(ns.getServerBaseSecurityLevel(server) / 3) + 2;
     let serverMoneyThreshold = ns.getServerMaxMoney(server) * 0.95;
 
     let opts = { threads: threads, stock: true };

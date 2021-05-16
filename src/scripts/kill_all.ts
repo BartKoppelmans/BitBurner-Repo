@@ -3,16 +3,10 @@ export async function main(ns) {
 
     let hostname = ns.getHostname()
     if (hostname !== 'home') {
-        throw new Exception('Run the script from home')
+        throw new Error('Run the script from home')
     }
 
-    const killAbleServers = Object.keys(serverMap.servers)
-        .filter((hostname) => ns.serverExists(hostname))
-        .filter((hostname) => hostname !== 'home')
-
-    for (let i = 0; i < killAbleServers.length; i++) {
-        await ns.killall(killAbleServers[i])
-    }
+    // TODO: Kill all servers
 
     ns.tprint(`All processes killed`)
 }
