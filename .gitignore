@@ -21,9 +21,6 @@ bower_components
 .DS_Store
 Thumbs.db
 
-# Ignore built ts files
-dist/**/*
-
 ### VisualStudioCode ###
 .vscode/
 !.vscode/settings.json
