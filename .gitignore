@@ -1,3 +1,29 @@
+lib-cov
+*.seed
+*.log
+*.csv
+*.dat
+*.out
+*.pid
+*.gz
+*.swp
+
+pids
+logs
+results
+tmp
+
+# Dependency directory
+node_modules
+bower_components
+
+# OS metadata
+.DS_Store
+Thumbs.db
+
+# Ignore built ts files
+dist/**/*
+
 ### VisualStudioCode ###
 .vscode/
 !.vscode/settings.json
