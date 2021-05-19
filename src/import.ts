@@ -1,6 +1,22 @@
 import config from './config/import_config';
 import type { BitBurner as NS } from "Bitburner"
-import glob from "glob";
+
+const files: string[] = [
+    "Bitburner.t.js",
+    "import.js",
+    "classes/ExternalServer.js",
+    "classes/HackableServer.js",
+    "classes/HomeServer.js",
+    "classes/PurchasedServer.js",
+    "classes/Server.js",
+    "config/import_config.js",
+    "config/server_config.js",
+    "managers/ServerManager.js",
+    "scripts/hack.js",
+    "scripts/spider.js",
+    "scripts/start_hacking.js",
+    "util/util.js"
+]
 
 /*
  * This will import all files listed in importFiles.
@@ -19,15 +35,13 @@ export async function main(ns: NS) {
 }
 
 async function importFiles(ns: NS) {
-
-    const files: string[] = glob.sync('./dist/**/*',);
     if (!files) {
         throw Error("No files found.")
     }
 
     let filesImported = true;
     for (let file of files) {
-        let remoteFileName = `${config.rootUrl}/${file}`;
+        let remoteFileName = `${config.rootUrl}/${getFolder()}/${file}`;
         let result = await ns.wget(remoteFileName, `./${getFolder()}/${file}`);
         filesImported = filesImported && result;
         ns.tprint(`File: ${file}: ${result ? '✔️' : '❌'}`);

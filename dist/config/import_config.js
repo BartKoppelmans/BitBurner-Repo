@@ -1,4 +1,4 @@
 export default {
-    "folder": "scripts",
+    "folder": "dist/",
     "rootUrl": "https://raw.githubusercontent.com/BartKoppelmans/BitBurner-Repo/master"
 };

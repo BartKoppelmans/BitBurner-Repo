@@ -6,7 +6,7 @@
         "node_modules"
     ],
     "compilerOptions": {
-        "moduleResolution": "node",
+        "moduleResolution": "classic",
         "esModuleInterop": true,
         "noImplicitReturns": true,
         "noImplicitThis": true,
