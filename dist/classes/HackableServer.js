@@ -1,9 +1,5 @@
-import type { BitBurner as NS } from "Bitburner"
 import ExternalServer from "./ExternalServer";
-import Server, { TreeStructure } from './Server'
-
 export default class HackableServer extends ExternalServer {
-
     // Dynamic values
     /*
     currentSecurityLevel: number
@@ -15,8 +11,7 @@ export default class HackableServer extends ExternalServer {
     growTime: number
     hackTime: number
     */
-
-    constructor(ns: NS, host: string, treeStructure?: TreeStructure) {
+    constructor(ns, host, treeStructure) {
         super(ns, host, treeStructure);
     }
 }

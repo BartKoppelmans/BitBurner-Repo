@@ -1,14 +1,11 @@
 import config from './config/import_config.json';
-
-const files = [
-    'start_hacking.js',
-    'hack.js'
-];
+import type { BitBurner as NS } from "Bitburner"
+import glob from "glob";
 
 /*
  * This will import all files listed in importFiles.
  */
-export async function main(ns: any) {
+export async function main(ns: NS) {
     let filesImported = await importFiles(ns);
     ns.tprint('='.repeat(20));
     if (filesImported) {
@@ -21,25 +18,24 @@ export async function main(ns: any) {
     }
 }
 
-async function importFiles(ns: any) {
+async function importFiles(ns: NS) {
+
+    const files: string[] = glob.sync('./dist/**/*',);
+    if (!files) {
+        throw Error("No files found.")
+    }
+
     let filesImported = true;
     for (let file of files) {
-        let remoteFileName = `${config.rootUrl}/scripts/${file}`;
-        let result = await ns.wget(remoteFileName, `/${getFolder()}/${file}`);
+        let remoteFileName = `${config.rootUrl}/${file}`;
+        let result = await ns.wget(remoteFileName, `./${getFolder()}/${file}`);
         filesImported = filesImported && result;
         ns.tprint(`File: ${file}: ${result ? '✔️' : '❌'}`);
     }
+
     return filesImported;
 }
 
 export function getFolder() {
     return config.folder;
-}
-
-export function getServerPrefix() {
-    return config.serverPrefix;
-}
-
-export function getHackScript() {
-    return `/${getFolder()}/hack.js`;
 }
