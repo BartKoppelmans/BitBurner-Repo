@@ -1,4 +1,4 @@
-import ExternalServer from "./ExternalServer";
+import ExternalServer from "./ExternalServer.js";
 export default class HackableServer extends ExternalServer {
     // Dynamic values
     /*

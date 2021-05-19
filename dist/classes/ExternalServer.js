@@ -1,4 +1,4 @@
-import Server from "./Server";
+import Server from "./Server.js";
 export default class ExternalServer extends Server {
     constructor(ns, host, treeStructure) {
         super(host, treeStructure);

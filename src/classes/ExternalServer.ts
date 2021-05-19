@@ -1,5 +1,5 @@
 import type { BitBurner as NS } from "Bitburner"
-import Server, { TreeStructure } from "./Server";
+import Server, { TreeStructure } from "./Server.js";
 
 export default class ExternalServer extends Server {
     // Static values

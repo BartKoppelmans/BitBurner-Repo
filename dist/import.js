@@ -1,4 +1,4 @@
-import config from './config/import_config';
+import config from './config/import_config.js';
 const files = [
     "Bitburner.t.js",
     "import.js",
@@ -36,7 +36,7 @@ async function importFiles(ns) {
     let filesImported = true;
     for (let file of files) {
         let remoteFileName = `${config.rootUrl}/${getFolder()}/${file}`;
-        let result = await ns.wget(remoteFileName, `./${getFolder()}/${file}`);
+        let result = await ns.wget(remoteFileName, `/${getFolder()}/${file}`);
         filesImported = filesImported && result;
         ns.tprint(`File: ${file}: ${result ? '✔️' : '❌'}`);
     }

@@ -1,5 +1,5 @@
 import { BasicHGWOptions, BitBurner as NS } from "Bitburner"
-import Server from "../classes/Server";
+import Server from "../classes/Server.js";
 
 /* A simple lightweight script that is deployed
  * to remote and local servers to repeatedly hack

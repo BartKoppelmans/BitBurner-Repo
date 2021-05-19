@@ -1,7 +1,7 @@
-import Server from '../classes/Server';
-import HackableServer from '../classes/HackableServer';
-import PurchasedServer from '../classes/PurchasedServer';
-import HomeServer from "../classes/HomeServer";
+import Server from '../classes/Server.js';
+import HackableServer from '../classes/HackableServer.js';
+import PurchasedServer from '../classes/PurchasedServer.js';
+import HomeServer from "../classes/HomeServer.js";
 export class ServerManager {
     constructor(ns) {
         this.serverMap = this.buildServerMap(ns);

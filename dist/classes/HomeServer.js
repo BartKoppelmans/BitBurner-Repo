@@ -1,4 +1,4 @@
-import Server from './Server';
+import Server from './Server.js';
 export default class HomeServer extends Server {
     constructor() {
         super('home');

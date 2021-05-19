@@ -1,7 +1,7 @@
 import type { BitBurner as NS } from "Bitburner"
-import ExternalServer from "./ExternalServer";
-import HomeServer from "./HomeServer";
-import Server, { TreeStructure } from './Server'
+import ExternalServer from "./ExternalServer.js";
+import HomeServer from "./HomeServer.js";
+import Server, { TreeStructure } from './Server.js'
 
 export default class PurchasedServer extends ExternalServer {
 

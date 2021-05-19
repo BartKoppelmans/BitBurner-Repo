@@ -1,5 +1,5 @@
 import type { BitBurner as NS } from "Bitburner"
-import Server from './Server'
+import Server from './Server.js'
 
 export default class HomeServer extends Server {
     private static instance: HomeServer;
