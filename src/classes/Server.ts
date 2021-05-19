@@ -1,5 +1,5 @@
 import type { BitBurner as NS } from "Bitburner"
-import serverConfig from '../config/server_config.json';
+import serverConfig from '../config/server_config';
 
 export interface TreeStructure {
     connections?: Server[];
