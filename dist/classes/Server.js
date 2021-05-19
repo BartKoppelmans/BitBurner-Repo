@@ -1,4 +1,4 @@
-import serverConfig from '../config/server_config.json';
+import serverConfig from '../config/server_config';
 export default class Server {
     constructor(host, treeStructure) {
         this.host = host;

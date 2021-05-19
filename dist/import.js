@@ -1,4 +1,4 @@
-import config from './config/import_config.json';
+import config from './config/import_config';
 import glob from "glob";
 /*
  * This will import all files listed in importFiles.

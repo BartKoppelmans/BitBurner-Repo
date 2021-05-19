@@ -1,4 +1,4 @@
-import config from './config/import_config.json';
+import config from './config/import_config';
 import type { BitBurner as NS } from "Bitburner"
 import glob from "glob";
 
