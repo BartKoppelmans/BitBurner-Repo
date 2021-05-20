@@ -27,7 +27,7 @@ export class ServerManager {
             // The current node is a leaf
             if (queue.length == 0) {
                 // If the node is a purchased server
-                if (parent?.isHome() && Server.isPurchasedServer(nodeName)) {
+                if (parent.isHome() && Server.isPurchasedServer(nodeName)) {
                     return [new PurchasedServer(ns, nodeName)];
                 }
                 else {
@@ -84,6 +84,7 @@ export class ServerManager {
     printServer(ns, server, level) {
         const text = "\t".repeat(level) + server.host;
         ns.tprint(text);
-        server.treeStructure?.children?.forEach(child => this.printServer(ns, child, level + 1));
+        if (server && server.treeStructure && server.treeStructure.children)
+            server.treeStructure.children.forEach(child => this.printServer(ns, child, level + 1));
     }
 }

@@ -40,7 +40,7 @@ export class ServerManager {
             if (queue.length == 0) {
 
                 // If the node is a purchased server
-                if (parent?.isHome() && Server.isPurchasedServer(nodeName)) {
+                if (parent.isHome() && Server.isPurchasedServer(nodeName)) {
                     return [new PurchasedServer(ns, nodeName)];
                 } else {
                     const treeStructure = {
@@ -104,6 +104,7 @@ export class ServerManager {
     private printServer(ns: NS, server: Server, level: number) {
         const text: string = "\t".repeat(level) + server.host;
         ns.tprint(text)
-        server.treeStructure?.children?.forEach(child => this.printServer(ns, child, level + 1))
+        if (server && server.treeStructure && server.treeStructure.children)
+            server.treeStructure.children.forEach(child => this.printServer(ns, child, level + 1))
     }
 }

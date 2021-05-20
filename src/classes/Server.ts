@@ -29,6 +29,19 @@ export default class Server {
     }
 
     public updateTree(treeStructure: TreeStructure) {
-        Object.assign(this.treeStructure, treeStructure);
+
+        if (!this.treeStructure && (treeStructure.connections || treeStructure.children || treeStructure.parent)) {
+            this.treeStructure = {}
+
+            if (treeStructure.connections)
+                this.treeStructure.connections
+
+            if (treeStructure.children)
+                this.treeStructure.children
+
+            if (treeStructure.parent)
+                this.treeStructure.parent
+        }
+
     }
 }
