@@ -12,14 +12,17 @@ export default class Server {
         return host.includes(serverConfig.purchasedServerPrefix);
     }
     updateTree(treeStructure) {
-        if (!this.treeStructure && (treeStructure.connections || treeStructure.children || treeStructure.parent)) {
-            this.treeStructure = {};
-            if (treeStructure.connections)
-                this.treeStructure.connections = treeStructure.connections;
-            if (treeStructure.children)
-                this.treeStructure.children = treeStructure.children;
-            if (treeStructure.parent)
-                this.treeStructure.parent = treeStructure.parent;
+        if (!treeStructure.connections && !treeStructure.children && !treeStructure.parent) {
+            return;
         }
+        if (!this.treeStructure) {
+            this.treeStructure = {};
+        }
+        if (treeStructure.connections)
+            this.treeStructure.connections = treeStructure.connections;
+        if (treeStructure.children)
+            this.treeStructure.children = treeStructure.children;
+        if (treeStructure.parent)
+            this.treeStructure.parent = treeStructure.parent;
     }
 }

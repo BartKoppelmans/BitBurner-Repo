@@ -34,10 +34,10 @@ export class ServerManager {
 
         if (parent) {
             const parentIndex: number = queue.indexOf(parent.host);
-            queue.splice(parentIndex);
+            queue.splice(parentIndex, 1);
 
             // The current node is a leaf
-            if (queue.length == 0) {
+            if (queue.length === 0) {
 
                 // If the node is a purchased server
                 if (parent.isHome() && Server.isPurchasedServer(nodeName)) {
@@ -102,9 +102,11 @@ export class ServerManager {
     }
 
     private printServer(ns: NS, server: Server, level: number) {
-        const text: string = "\t".repeat(level) + server.host;
+        const text: string = "  ".repeat(level) + server.host;
         ns.tprint(text)
         if (server && server.treeStructure && server.treeStructure.children)
             server.treeStructure.children.forEach(child => this.printServer(ns, child, level + 1))
+        else
+            ns.tprint(" ")
     }
 }
