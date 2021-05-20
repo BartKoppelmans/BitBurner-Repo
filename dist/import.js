@@ -1,4 +1,4 @@
-import config from './config/import_config.js';
+import config from '/src/config/import_config.js';
 const files = [
     "Bitburner.t.js",
     "import.js",
@@ -23,7 +23,7 @@ export async function main(ns) {
     ns.tprint('='.repeat(20));
     if (filesImported) {
         ns.tprint('You have succesfully downloaded the scripts.');
-        ns.tprint(`You have installed these in the ${config.folder} directory.`);
+        ns.tprint(`You have installed these in the ${getLocalFolder()} directory.`);
     }
     else {
         ns.tprint('You had some issues downloading files, please check your scripts and config.');
@@ -35,13 +35,18 @@ async function importFiles(ns) {
     }
     let filesImported = true;
     for (let file of files) {
-        let remoteFileName = `${config.rootUrl}/${getFolder()}/${file}`;
-        let result = await ns.wget(remoteFileName, `/${getFolder()}/${file}`);
+        let remoteFileName = `${config.rootUrl}/${getRemoteFolder()}/${file}`;
+        let result = await ns.wget(remoteFileName, `/${getLocalFolder()}/${file}`);
         filesImported = filesImported && result;
         ns.tprint(`File: ${file}: ${result ? '✔️' : '❌'}`);
     }
     return filesImported;
 }
-export function getFolder() {
-    return config.folder;
+// The folder where the file can be found on GitHub
+export function getLocalFolder() {
+    return config.local_folder;
+}
+// The folder where the file can be found on BitBurner
+export function getRemoteFolder() {
+    return config.remote_folder;
 }

@@ -1,5 +1,5 @@
-import ExternalServer from "./ExternalServer.js";
-import HomeServer from "./HomeServer.js";
+import ExternalServer from "/src/classes/ExternalServer.js";
+import HomeServer from "/src/classes/HomeServer.js";
 export default class PurchasedServer extends ExternalServer {
     constructor(ns, host) {
         super(ns, host);

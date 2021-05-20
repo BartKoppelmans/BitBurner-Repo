@@ -1,8 +1,8 @@
 import type { BitBurner as NS } from "Bitburner"
-import Server, { TreeStructure } from '../classes/Server.js'
-import HackableServer from '../classes/HackableServer.js'
-import PurchasedServer from '../classes/PurchasedServer.js'
-import HomeServer from "../classes/HomeServer.js";
+import Server, { TreeStructure } from '/src/classes/Server.js'
+import HackableServer from '/src/classes/HackableServer.js'
+import PurchasedServer from '/src/classes/PurchasedServer.js'
+import HomeServer from "/src/classes/HomeServer.js";
 
 export class ServerManager {
     serverMap: Server[];
