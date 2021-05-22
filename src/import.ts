@@ -1,5 +1,5 @@
 import type { BitBurner as NS } from "Bitburner";
-import { CONSTANT } from '/src/lib/constants';
+import { CONSTANT } from '/src/lib/constants.js';
 
 const files: string[] = [
     'Bitburner.t.js',
@@ -47,7 +47,7 @@ async function importFiles(ns: NS) {
     let filesImported = true;
     for (let file of files) {
         let remoteFileName = `${CONSTANT.ROOT_URL}/${CONSTANT.REMOTE_FOLDER}/${file}`;
-        let result = await ns.wget(remoteFileName, `/${CONSTANT.REMOTE_FOLDER}/${file}`);
+        let result = await ns.wget(remoteFileName, `/${CONSTANT.LOCAL_FOLDER}/${file}`);
         filesImported = filesImported && result;
         ns.tprint(`File: ${file}: ${result ? '✔️' : '❌'}`);
     }

@@ -1,5 +1,5 @@
 const excludedFiles = [
-    "src/config/constants.js",
+    "src/lib/constants.js",
     "import.js"
 ];
 const excludedExtensions = [
