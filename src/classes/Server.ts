@@ -28,6 +28,10 @@ export default class Server {
         return host.includes(CONSTANT.PURCHASED_SERVER_PREFIX);
     }
 
+    public static isDarkweb(host: string) {
+        return (host === CONSTANT.DARKWEB_HOST);
+    }
+
     public updateTree(treeStructure: TreeStructure) {
 
         if (!treeStructure.connections && !treeStructure.children && !treeStructure.parent) {

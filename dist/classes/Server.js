@@ -11,6 +11,9 @@ export default class Server {
     static isPurchasedServer(host) {
         return host.includes(CONSTANT.PURCHASED_SERVER_PREFIX);
     }
+    static isDarkweb(host) {
+        return (host === CONSTANT.DARKWEB_HOST);
+    }
     updateTree(treeStructure) {
         if (!treeStructure.connections && !treeStructure.children && !treeStructure.parent) {
             return;

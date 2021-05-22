@@ -3,6 +3,7 @@ import HackableServer from '/src/classes/HackableServer.js';
 import PurchasedServer from '/src/classes/PurchasedServer.js';
 import HomeServer from "/src/classes/HomeServer.js";
 import { CONSTANT } from "/src/lib/constants.js";
+import ExternalServer from "/src/classes/ExternalServer";
 export class ServerManager {
     constructor() {
         this.serverMap = [];
@@ -46,6 +47,9 @@ export class ServerManager {
                 // If the node is a purchased server
                 if (parent.isHome() && Server.isPurchasedServer(nodeName)) {
                     return [new PurchasedServer(ns, nodeName)];
+                }
+                else if (parent.isHome() && Server.isDarkweb(nodeName)) {
+                    return [new ExternalServer(ns, nodeName)];
                 }
                 else {
                     const treeStructure = {

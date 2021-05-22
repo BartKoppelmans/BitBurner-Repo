@@ -13,6 +13,8 @@ export const CONSTANT = {
      */
     // The prefix that is used when purchasing external servers
     PURCHASED_SERVER_PREFIX: "BartServer-",
+    // The name of the darkweb server
+    DARKWEB_HOST: "darkweb",
     /*
     * Server manager constants
     */
