@@ -1,5 +1,5 @@
 import type { BitBurner as NS } from "Bitburner";
-import { CONSTANT } from "../lib/constants";
+import { CONSTANT } from "/src/lib/constants.js";
 
 export interface TreeStructure {
     connections?: Server[];

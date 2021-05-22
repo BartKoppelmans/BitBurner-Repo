@@ -2,7 +2,7 @@ import Server from '/src/classes/Server.js';
 import HackableServer from '/src/classes/HackableServer.js';
 import PurchasedServer from '/src/classes/PurchasedServer.js';
 import HomeServer from "/src/classes/HomeServer.js";
-import { CONSTANT } from "../lib/constants";
+import { CONSTANT } from "/src/lib/constants.js";
 export class ServerManager {
     constructor() {
         this.serverMap = [];

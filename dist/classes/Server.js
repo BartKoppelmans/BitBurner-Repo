@@ -1,4 +1,4 @@
-import { CONSTANT } from "../lib/constants";
+import { CONSTANT } from "/src/lib/constants.js";
 export default class Server {
     constructor(host, treeStructure) {
         this.host = host;
