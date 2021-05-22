@@ -1,4 +1,4 @@
-import { ServerManager } from "/src/managers/ServerManager";
+import { ServerManager } from "/src/managers/ServerManager.js";
 export async function main(ns) {
     const hostName = ns.getHostname();
     if (hostName !== "home") {

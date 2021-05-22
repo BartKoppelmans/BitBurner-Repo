@@ -1,5 +1,5 @@
 import type { BitBurner as NS } from "Bitburner";
-import { Program, ProgramType } from "/src/classes/Program";
+import { Program, ProgramType } from "/src/classes/Program.js";
 
 export class ProgramManager {
     private static instance: ProgramManager;

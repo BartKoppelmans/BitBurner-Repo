@@ -1,4 +1,4 @@
-import { Program, ProgramType } from "/src/classes/Program";
+import { Program, ProgramType } from "/src/classes/Program.js";
 export class ProgramManager {
     constructor(ns) {
         this.programs = [
