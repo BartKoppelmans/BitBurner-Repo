@@ -1,22 +1,27 @@
 import type { BitBurner as NS } from "Bitburner";
-import config from '/src/config/import_config.js';
+import { CONSTANT } from '/src/lib/constants';
 
 const files: string[] = [
-    "Bitburner.t.js",
-    "import.js",
-    "classes/ExternalServer.js",
-    "classes/HackableServer.js",
-    "classes/HomeServer.js",
-    "classes/PurchasedServer.js",
-    "classes/Server.js",
-    "config/import_config.js",
-    "config/server_config.js",
-    "managers/ServerManager.js",
-    "scripts/hack.js",
-    "scripts/spider.js",
-    "scripts/start_hacking.js",
-    "util/util.js"
-]
+    'Bitburner.t.js',
+    'import.js',
+    'classes/ExternalServer.js',
+    'classes/HackableServer.js',
+    'classes/HomeServer.js',
+    'classes/Program.js',
+    'classes/PurchasedServer.js',
+    'classes/Server.js',
+    'lib/constants.js',
+    'managers/HackManager.js',
+    'managers/PlayerManager.js',
+    'managers/ProgramManager.js',
+    'managers/ServerManager.js',
+    'scripts/cleanHome.js',
+    'scripts/daemon.js',
+    'scripts/spider.js',
+    'subscripts/grow.js',
+    'subscripts/hack.js',
+    'subscripts/weaken.js',
+];
 
 /*
  * This will import all files listed in importFiles.
@@ -26,7 +31,7 @@ export async function main(ns: NS) {
     ns.tprint('='.repeat(20));
     if (filesImported) {
         ns.tprint('You have succesfully downloaded the scripts.');
-        ns.tprint(`You have installed these in the ${getLocalFolder()} directory.`);
+        ns.tprint(`You have installed these in the ${CONSTANT.LOCAL_FOLDER} directory.`);
     } else {
         ns.tprint(
             'You had some issues downloading files, please check your scripts and config.'
@@ -36,27 +41,16 @@ export async function main(ns: NS) {
 
 async function importFiles(ns: NS) {
     if (!files) {
-        throw Error("No files found.")
+        throw Error("No files found.");
     }
 
     let filesImported = true;
     for (let file of files) {
-        let remoteFileName = `${config.rootUrl}/${getRemoteFolder()}/${file}`;
-        let result = await ns.wget(remoteFileName, `/${getLocalFolder()}/${file}`);
+        let remoteFileName = `${CONSTANT.ROOT_URL}/${CONSTANT.REMOTE_FOLDER}/${file}`;
+        let result = await ns.wget(remoteFileName, `/${CONSTANT.REMOTE_FOLDER}/${file}`);
         filesImported = filesImported && result;
         ns.tprint(`File: ${file}: ${result ? '✔️' : '❌'}`);
     }
 
     return filesImported;
-}
-
-
-// The folder where the file can be found on GitHub
-export function getLocalFolder() {
-    return config.local_folder;
-}
-
-// The folder where the file can be found on BitBurner
-export function getRemoteFolder() {
-    return config.remote_folder;
 }

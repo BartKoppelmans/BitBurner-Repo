@@ -1,5 +1,5 @@
-import type { BitBurner as NS } from "Bitburner"
-import serverConfig from '/src/config/server_config.js';
+import type { BitBurner as NS } from "Bitburner";
+import { CONSTANT } from "../lib/constants";
 
 export interface TreeStructure {
     connections?: Server[];
@@ -10,14 +10,14 @@ export interface TreeStructure {
 export default class Server {
     // Static values
     host: string;
-    treeStructure?: TreeStructure
+    treeStructure?: TreeStructure;
 
 
     public constructor(host: string, treeStructure?: TreeStructure) {
         this.host = host;
 
         if (treeStructure)
-            this.updateTree(treeStructure)
+            this.updateTree(treeStructure);
     }
 
     public isHome() {
@@ -25,7 +25,7 @@ export default class Server {
     }
 
     public static isPurchasedServer(host: string) {
-        return host.includes(serverConfig.purchasedServerPrefix)
+        return host.includes(CONSTANT.PURCHASED_SERVER_PREFIX);
     }
 
     public updateTree(treeStructure: TreeStructure) {
@@ -35,7 +35,7 @@ export default class Server {
         }
 
         if (!this.treeStructure) {
-            this.treeStructure = {}
+            this.treeStructure = {};
         }
 
         if (treeStructure.connections)

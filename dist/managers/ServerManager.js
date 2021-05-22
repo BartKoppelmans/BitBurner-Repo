@@ -2,11 +2,25 @@ import Server from '/src/classes/Server.js';
 import HackableServer from '/src/classes/HackableServer.js';
 import PurchasedServer from '/src/classes/PurchasedServer.js';
 import HomeServer from "/src/classes/HomeServer.js";
+import { CONSTANT } from "../lib/constants";
 export class ServerManager {
-    constructor(ns) {
-        this.serverMap = this.buildServerMap(ns);
+    constructor() {
+        this.serverMap = [];
+        this.lastUpdated = CONSTANT.EPOCH_DATE;
     }
-    buildServerMap(ns) {
+    static getInstance(ns) {
+        if (!ServerManager.instance) {
+            ServerManager.instance = new ServerManager();
+        }
+        return ServerManager.instance;
+    }
+    async getServerMap(ns) {
+        if (this.needsUpdate(ns)) {
+            await this.rebuildServerMap(ns);
+        }
+        return this.serverMap;
+    }
+    async buildServerMap(ns) {
         const hostName = ns.getHostname();
         if (hostName !== 'home') {
             throw new Error('Run the script from home');
@@ -15,8 +29,11 @@ export class ServerManager {
         this.lastUpdated = new Date();
         return serverMap;
     }
-    rebuildServerMap(ns) {
-        this.serverMap = this.buildServerMap(ns);
+    async rebuildServerMap(ns) {
+        this.serverMap = await this.buildServerMap(ns);
+    }
+    needsUpdate(ns) {
+        return ((new Date()).getTime() - this.lastUpdated.getTime()) > CONSTANT.SERVER_MAP_REBUILD_TIME;
     }
     spider(ns, nodeName, parent) {
         let tempServerMap = [];
@@ -79,6 +96,9 @@ export class ServerManager {
         ];
     }
     printServerMap(ns) {
+        if (this.needsUpdate(ns)) {
+            this.rebuildServerMap(ns);
+        }
         this.printServer(ns, HomeServer.getInstance(), 0);
     }
     printServer(ns, server, level) {

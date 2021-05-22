@@ -1,4 +1,4 @@
-import serverConfig from '/src/config/server_config.js';
+import { CONSTANT } from "../lib/constants";
 export default class Server {
     constructor(host, treeStructure) {
         this.host = host;
@@ -9,7 +9,7 @@ export default class Server {
         return false;
     }
     static isPurchasedServer(host) {
-        return host.includes(serverConfig.purchasedServerPrefix);
+        return host.includes(CONSTANT.PURCHASED_SERVER_PREFIX);
     }
     updateTree(treeStructure) {
         if (!treeStructure.connections && !treeStructure.children && !treeStructure.parent) {
