@@ -13,11 +13,11 @@ export async function main(ns: NS) {
     }
 
     while (true) {
-        init_hack_loop(ns);
+        await hackLoop(ns);
     }
 }
 
-async function init_hack_loop(ns: NS) {
+async function hackLoop(ns: NS) {
 
     const serverManager: ServerManager = ServerManager.getInstance(ns);
     const hackManager: HackManager = HackManager.getInstance();

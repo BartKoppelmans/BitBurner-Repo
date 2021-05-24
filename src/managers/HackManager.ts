@@ -48,6 +48,7 @@ export class HackManager {
     public async hack(ns: NS, server: HackableServer): Promise<void> {
 
         // TODO: Make sure that all neccesary variables are set (remove the exclamation marks)
+        ns.tprint(`Currently at ${this.targetCounter} targets.`);
 
         // Can't have too many targets at the same time
         if (this.targetCounter >= CONSTANT.MAX_TARGET_COUNT) {
@@ -87,6 +88,8 @@ export class HackManager {
 
         // If the server is optimal, we are done I guess
         if (server.securityLevel! <= server.minSecurityLevel && server.money! >= server.maxMoney) return;
+
+        ns.tprint(`Prepping ${server.host}`);
 
         const playerManager: PlayerManager = PlayerManager.getInstance(ns);
 
@@ -135,7 +138,7 @@ export class HackManager {
     }
 
     private async attackServer(ns: NS, server: HackableServer): Promise<void> {
-
+        ns.tprint(`Attacking ${server.host}`);
     }
 
     private async executeTool(ns: NS, tool: Tools, threads: number = 1, target: HackableServer, args: any): Promise<Hack> {

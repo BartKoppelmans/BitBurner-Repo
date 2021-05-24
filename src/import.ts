@@ -30,8 +30,6 @@ const files: string[] = [
     'util/Heuristics.js',
 ];
 
-
-
 /*
  * This will import all files listed in importFiles.
  */

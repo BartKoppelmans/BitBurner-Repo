@@ -17,6 +17,7 @@ export class HackManager {
     // Return false when we have too many targets
     async hack(ns, server) {
         // TODO: Make sure that all neccesary variables are set (remove the exclamation marks)
+        ns.tprint(`Currently at ${this.targetCounter} targets.`);
         // Can't have too many targets at the same time
         if (this.targetCounter >= CONSTANT.MAX_TARGET_COUNT) {
             // Reset the counter, as we start checking them all out after this
@@ -49,6 +50,7 @@ export class HackManager {
         // If the server is optimal, we are done I guess
         if (server.securityLevel <= server.minSecurityLevel && server.money >= server.maxMoney)
             return;
+        ns.tprint(`Prepping ${server.host}`);
         const playerManager = PlayerManager.getInstance(ns);
         // TODO: Move constants to util
         let growThreads = 0;
@@ -81,6 +83,7 @@ export class HackManager {
         }
     }
     async attackServer(ns, server) {
+        ns.tprint(`Attacking ${server.host}`);
     }
     async executeTool(ns, tool, threads = 1, target, args) {
         let threadSpread = await HackUtils.computeThreadSpread(ns, tool, threads);

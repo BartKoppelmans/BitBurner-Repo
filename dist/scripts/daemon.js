@@ -8,10 +8,10 @@ export async function main(ns) {
         throw new Error("Execute daemon script from home.");
     }
     while (true) {
-        init_hack_loop(ns);
+        await hackLoop(ns);
     }
 }
-async function init_hack_loop(ns) {
+async function hackLoop(ns) {
     const serverManager = ServerManager.getInstance(ns);
     const hackManager = HackManager.getInstance();
     // TODO: initializeServers 
