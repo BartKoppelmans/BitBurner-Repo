@@ -11,7 +11,7 @@ const excludedExtensions = [
 export async function main(ns) {
     const host = ns.getHostname();
     if (host !== 'home') {
-        throw Error("Execute script from home.");
+        throw new Error("Execute script from home.");
     }
     let files = ns.ls(host)
         .filter(file => !excludedFiles.includes(file))

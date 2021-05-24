@@ -13,8 +13,7 @@ export class ServerManager {
     private serverMap: Server[] = [];
     private lastUpdated: Date = CONSTANT.EPOCH_DATE;
 
-    private constructor() {
-    }
+    private constructor() { }
 
     public static getInstance(ns: NS): ServerManager {
         if (!ServerManager.instance) {
@@ -24,8 +23,8 @@ export class ServerManager {
         return ServerManager.instance;
     }
 
-    public async getServerMap(ns: NS) {
-        if (this.needsUpdate(ns)) {
+    public async getServerMap(ns: NS, forceUpdate: boolean = false) {
+        if (this.needsUpdate(ns) || forceUpdate) {
             await this.rebuildServerMap(ns);
         }
         return this.serverMap;
@@ -124,9 +123,21 @@ export class ServerManager {
         ];
     }
 
-    public printServerMap(ns: NS) {
+    public async getTargetableServers(ns: NS): Promise<HackableServer[]> {
+        let servers: HackableServer[] = (await this.getServerMap(ns))
+            .filter(server => server instanceof HackableServer) as HackableServer[];
+
+        servers = servers
+            .filter(server => server.isHackable(ns))
+            .filter(server => server.canRoot(ns))
+            .filter(server => server.maxMoney > 0);
+
+        return servers;
+    }
+
+    public async printServerMap(ns: NS) {
         if (this.needsUpdate(ns)) {
-            this.rebuildServerMap(ns);
+            await this.rebuildServerMap(ns);
         }
 
         this.printServer(ns, HomeServer.getInstance(), 0);

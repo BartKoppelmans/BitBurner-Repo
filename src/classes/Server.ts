@@ -1,5 +1,7 @@
 import type { BitBurner as NS } from "Bitburner";
+import { Program } from "/src/classes/Program";
 import { CONSTANT } from "/src/lib/constants.js";
+import { ProgramManager } from "/src/managers/ProgramManager";
 
 export interface TreeStructure {
     connections?: Server[];
@@ -50,5 +52,14 @@ export default class Server {
 
         if (treeStructure.parent)
             this.treeStructure.parent = treeStructure.parent;
+    }
+
+    public getAvailableRam(ns: NS) {
+        let [total, used] = ns.getServerRam(this.host);
+        return total - used;
+    }
+
+    public isRooted(ns: NS) {
+        return ns.hasRootAccess(this.host);
     }
 }

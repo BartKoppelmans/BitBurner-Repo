@@ -2,6 +2,6 @@
 import type { BitBurner as NS } from "Bitburner";
 import HackableServer from "/src/classes/HackableServer.js";
 
-export async function main(ns: NS, target: HackableServer, threads: number) {
-    await ns.weaken(target.host, { threads: threads });
+export async function main(ns: NS) {
+    await ns.hack(ns.args[0]);
 }

@@ -24,7 +24,7 @@ export class ProgramManager {
     // Returns a sorted list of cracking scripts that can be used to root
     getCrackingScripts(ns, ports) {
         if (ports > this.getNumCrackScripts(ns)) {
-            throw Error("Not enough cracking scripts available.");
+            throw new Error("Not enough cracking scripts available.");
         }
         return this.programs
             .filter(program => program.type === ProgramType.Crack && program.hasProgram(ns))

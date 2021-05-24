@@ -36,7 +36,7 @@ export async function main(ns) {
 }
 async function importFiles(ns) {
     if (!files) {
-        throw Error("No files found.");
+        throw new Error("No files found.");
     }
     let filesImported = true;
     for (let file of files) {

@@ -16,7 +16,7 @@ export async function main(ns: NS) {
 
     const host: string = ns.getHostname();
     if (host !== 'home') {
-        throw Error("Execute script from home.");
+        throw new Error("Execute script from home.");
     }
 
     let files: string[] = ns.ls(host)

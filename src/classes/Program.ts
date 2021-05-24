@@ -38,7 +38,7 @@ export class Program {
             case "SQLInject.exe":
                 return ns.sqlinject;
             default:
-                throw Error(`Program "${this.name}" not found.`);
+                throw new Error(`Program "${this.name}" not found.`);
         }
     }
 }

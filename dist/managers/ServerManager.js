@@ -15,8 +15,8 @@ export class ServerManager {
         }
         return ServerManager.instance;
     }
-    async getServerMap(ns) {
-        if (this.needsUpdate(ns)) {
+    async getServerMap(ns, forceUpdate = false) {
+        if (this.needsUpdate(ns) || forceUpdate) {
             await this.rebuildServerMap(ns);
         }
         return this.serverMap;
@@ -99,9 +99,18 @@ export class ServerManager {
             subtreeNode
         ];
     }
-    printServerMap(ns) {
+    async getTargetableServers(ns) {
+        let servers = (await this.getServerMap(ns))
+            .filter(server => server instanceof HackableServer);
+        servers = servers
+            .filter(server => server.isHackable(ns))
+            .filter(server => server.canRoot(ns))
+            .filter(server => server.maxMoney > 0);
+        return servers;
+    }
+    async printServerMap(ns) {
         if (this.needsUpdate(ns)) {
-            this.rebuildServerMap(ns);
+            await this.rebuildServerMap(ns);
         }
         this.printServer(ns, HomeServer.getInstance(), 0);
     }

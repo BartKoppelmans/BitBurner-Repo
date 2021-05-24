@@ -193,112 +193,217 @@ declare module "Bitburner" {
         | "assassinate"
         | "heist";
     export type AugmentName =
-        | "Targeting1"
-        | "Targeting2"
-        | "Targeting3"
-        | "SyntheticHeart"
-        | "SynfibrilMuscle"
-        | "CombatRib1"
-        | "CombatRib2"
-        | "CombatRib3"
-        | "NanofiberWeave"
-        | "SubdermalArmor"
-        | "WiredReflexes"
-        | "GrapheneBoneLacings"
-        | "BionicSpine"
-        | "GrapheneBionicSpine"
-        | "BionicLegs"
-        | "GrapheneBionicLegs"
-        | "SpeechProcessor"
-        | "TITN41Injection"
-        | "EnhancedSocialInteractionImplant"
+        | "Augmented Targeting I"
+        | "Augmented Targeting II"
+        | "Augmented Targeting III"
+        | "Synthetic Heart"
+        | "Synfibril Muscle"
+        | "Combat Rib I"
+        | "Combat Rib II"
+        | "Combat Rib III"
+        | "Nanofiber Weave"
+        | "NEMEAN Subdermal Weave"
+        | "Wired Reflexes"
+        | "Graphene Bone Lacings"
+        | "Bionic Spine"
+        | "Graphene Bionic Spine Upgrade"
+        | "Bionic Legs"
+        | "Graphene Bionic Legs Upgrade"
+        | "Speech Processor Implant"
+        | "TITN-41 Gene-Modification Injection"
+        | "Enhanced Social Interaction Implant"
         | "BitWire"
-        | "ArtificialBioNeuralNetwork"
-        | "ArtificialSynapticPotentiation"
-        | "EnhancedMyelinSheathing"
-        | "SynapticEnhancement"
-        | "NeuralRetentionEnhancement"
+        | "Artificial Bio-neural Network Implant"
+        | "Artificial Synaptic Potentiation"
+        | "Enhanced Myelin Sheathing"
+        | "Synaptic Enhancement Implant"
+        | "Neural-Retention Enhancement"
         | "DataJack"
-        | "ENM"
-        | "ENMCore"
-        | "ENMCoreV2"
-        | "ENMCoreV3"
-        | "ENMAnalyzeEngine"
-        | "ENMDMA"
+        | "Embedded Netburner Module"
+        | "Embedded Netburner Module Core Implant"
+        | "Embedded Netburner Module Core V2 Upgrade"
+        | "Embedded Netburner Module Core V3 Upgrade"
+        | "Embedded Netburner Module Analyze Engine"
+        | "Embedded Netburner Module Direct Memory Access Upgrade"
         | "Neuralstimulator"
-        | "NeuralAccelerator"
-        | "CranialSignalProcessorsG1"
-        | "CranialSignalProcessorsG2"
-        | "CranialSignalProcessorsG3"
-        | "CranialSignalProcessorsG4"
-        | "CranialSignalProcessorsG5"
-        | "NeuronalDensification"
-        | "NuoptimalInjectorImplant"
-        | "SpeechEnhancement"
+        | "Neural Accelerator"
+        | "Cranial Signal Processors - Gen I"
+        | "Cranial Signal Processors - Gen II"
+        | "Cranial Signal Processors - Gen III"
+        | "Cranial Signal Processors - Gen IV"
+        | "Cranial Signal Processors - Gen V"
+        | "Neuronal Densification"
+        | "Nuoptimal Nootropic Injector Implant"
+        | "Speech Enhancement"
         | "FocusWire"
-        | "PCDNI"
-        | "PCDNIOptimizer"
-        | "PCDNINeuralNetwork"
-        | "ADRPheromone1"
-        | "ADRPheromone2"
-        | "ShadowsSimulacrum"
-        | "HacknetNodeCPUUpload"
-        | "HacknetNodeCacheUpload"
-        | "HacknetNodeNICUpload"
-        | "HacknetNodeKernelDNI"
-        | "HacknetNodeCoreDNI"
-        | "NeuroFluxGovernor"
-        | "Neurotrainer1"
-        | "Neurotrainer2"
-        | "Neurotrainer3"
-        | "Hypersight"
-        | "LuminCloaking1"
-        | "LuminCloaking2"
+        | "PC Direct-Neural Interface"
+        | "PC Direct-Neural Interface Optimization Submodule"
+        | "PC Direct-Neural Interface NeuroNet Injector"
+        | "ADR-V1 Pheromone Gene"
+        | "ADR-V2 Pheromone Gene"
+        | "The Shadow's Simulacrum"
+        | "Hacknet Node CPU Architecture Neural-Upload"
+        | "Hacknet Node Cache Architecture Neural-Upload"
+        | "Hacknet Node NIC Architecture Neural-Upload"
+        | "Hacknet Node Kernel Direct-Neural Interface"
+        | "Hacknet Node Core Direct-Neural Interface"
+        | "NeuroFlux Governor"
+        | "Neurotrainer I"
+        | "Neurotrainer II"
+        | "Neurotrainer III"
+        | "HyperSight Corneal Implant"
+        | "LuminCloaking-V1 Skin Implant"
+        | "LuminCloaking-V2 Skin Implant"
         | "HemoRecirculator"
-        | "SmartSonar"
-        | "PowerRecirculator"
+        | "SmartSonar Implant"
+        | "Power Recirculation Core"
         | "QLink"
-        | "TheRedPill"
-        | "SPTN97"
-        | "HiveMind"
-        | "CordiARCReactor"
+        | "The Red Pill"
+        | "SPTN-97 Gene Modification"
+        | "ECorp HVMind Implant"
+        | "CordiARC Fusion Reactor"
         | "SmartJaw"
         | "Neotra"
         | "Xanipher"
-        | "nextSENS"
-        | "OmniTekInfoLoad"
-        | "PhotosyntheticCells"
-        | "Neurolink"
-        | "TheBlackHand"
-        | "CRTX42AA"
-        | "Neuregen"
-        | "CashRoot"
-        | "NutriGen"
-        | "INFRARet"
-        | "DermaForce"
-        | "GrapheneBrachiBlades"
-        | "GrapheneBionicArms"
+        | "nextSENS Gene Modification"
+        | "OmniTek InfoLoad"
+        | "Photosynthetic Cells"
+        | "BitRunners Neurolink"
+        | "The Black Hand"
+        | "CRTX42-AA Gene Modification"
+        | "Neuregen Gene Modification"
+        | "CashRoot Starter Kit"
+        | "NutriGen Implant"
+        | "INFRARET Enhancement"
+        | "DermaForce Particle Barrier"
+        | "Graphene BranchiBlades Upgrade"
+        | "Graphene Bionic Arms Upgrade"
         | "BrachiBlades"
-        | "BionicArms"
-        | "SNA"
-        | "EsperEyewear"
-        | "EMS4Recombination"
-        | "OrionShoulder"
-        | "HyperionV1"
-        | "HyperionV2"
-        | "GolemSerum"
-        | "VangelisVirus"
-        | "VangelisVirus3"
-        | "INTERLINKED"
-        | "BladeRunner"
-        | "BladeArmor"
-        | "BladeArmorPowerCells"
-        | "BladeArmorEnergyShielding"
-        | "BladeArmorUnibeam"
-        | "BladeArmorOmnibeam"
-        | "BladeArmorIPU"
-        | "BladesSimulacrum";
+        | "Bionic Arms"
+        | "Social Negotiation Assistant (S.N.A)"
+        | "EsperTech Bladeburner Eyewear"
+        | "EMS-4 Recombination"
+        | "ORION-MKIV Shoulder"
+        | "Hyperion Plasma Cannon V1"
+        | "Hyperion Plasma Cannon V2"
+        | "GOLEM Serum"
+        | "Vangelis Virus"
+        | "Vangelis Virus 3.0"
+        | "I.N.T.E.R.L.I.N.K.E.D"
+        | "Blade's Runners"
+        | "BLADE-51b Tesla Armor"
+        | "BLADE-51b Tesla Armor: Power Cells Upgrade"
+        | "BLADE-51b Tesla Armor: Energy Shielding Upgrade"
+        | "BLADE-51b Tesla Armor: Unibeam Upgrade"
+        | "BLADE-51b Tesla Armor: Omnibeam Upgrade"
+        | "BLADE-51b Tesla Armor: IPU Upgrade"
+        | "The Blade's Simulacrum";
 
+    export interface CrimeStats {
+        /** Number representing the difficulty of the crime. Used for success chance calculations */
+        difficulty: number;
+        /** Amount of karma lost for SUCCESSFULLY committing this crime */
+        karma: number;
+        /** How many people die as a result of this crime */
+        kills: number;
+        /** How much money is given */
+        money: number;
+        /** Name of crime */
+        name: number;
+        /** Milliseconds it takes to attempt the crime */
+        time: number;
+        /** Description of the crime activity */
+        type: string;
+        /** hacking level impact on success change of the crime */
+        hacking_success_weight: number;
+        /** strength level impact on success change of the crime */
+        strength_success_weight: number;
+        /** defense level impact on success change of the crime */
+        defense_success_weight: number;
+        /** dexterity level impact on success change of the crime */
+        dexterity_success_weight: number;
+        /** agility level impact on success change of the crime */
+        agility_success_weight: number;
+        /** charisma level impact on success change of the crime */
+        charisma_success_weight: number;
+        /** hacking exp gained from crime */
+        hacking_exp: number;
+        /** strength exp gained from crime */
+        strength_exp: number;
+        /** defense exp gained from crime */
+        defense_exp: number;
+        /** dexterity exp gained from crime */
+        dexterity_exp: number;
+        /** agility exp gained from crime */
+        agility_exp: number;
+        /** charisma exp gained from crime */
+        charisma_exp: number;
+        /** intelligence exp gained from crime */
+        intelligence_exp: number;
+    }
+
+    export interface AugmentationStats {
+        /** Multipler to hacking skill */
+        hacking_mult?: number;
+        /** Multipler to strength skill */
+        strength_mult?: number;
+        /** Multipler to defense skill */
+        defense_mult?: number;
+        /** Multipler to dexterity skill */
+        dexterity_mult?: number;
+        /** Multipler to agility skill */
+        agility_mult?: number;
+        /** Multipler to charisma skill */
+        charisma_mult?: number;
+        /** Multipler to hacking experience gain rate */
+        hacking_exp_mult?: number;
+        /** Multipler to strength experience gain rate */
+        strength_exp_mult?: number;
+        /** Multipler to defense experience gain rate */
+        defense_exp_mult?: number;
+        /** Multipler to dexterity experience gain rate */
+        dexterity_exp_mult?: number;
+        /** Multipler to agility experience gain rate */
+        agility_exp_mult?: number;
+        /** Multipler to charisma experience gain rate */
+        charisma_exp_mult?: number;
+        /** Multipler to chance of successfully performing a hack */
+        hacking_chance_mult?: number;
+        /** Multipler to hacking speed */
+        hacking_speed_mult?: number;
+        /** Multipler to amount of money the player gains from hacking */
+        hacking_money_mult?: number;
+        /** Multipler to amount of money injected into servers using {@link grow()} */
+        hacking_grow_mult?: number;
+        /** Multipler to amount of reputation gained when working */
+        company_rep_mult?: number;
+        /** Multipler to amount of reputation gained when working */
+        faction_rep_mult?: number;
+        /** Multipler to amount of money gained from crimes */
+        crime_money_mult?: number;
+        /** Multipler to crime success rate */
+        crime_success_mult?: number;
+        /** Multipler to amount of money gained from working */
+        work_money_mult?: number;
+        /** Multipler to amount of money produced by Hacknet Nodes */
+        hacknet_node_money_mult?: number;
+        /** Multipler to cost of purchasing a Hacknet Node */
+        hacknet_node_purchase_cost_mult?: number;
+        /** Multipler to cost of ram for a Hacknet Node */
+        hacknet_node_ram_cost_mult?: number;
+        /** Multipler to cost of core for a Hacknet Node */
+        hacknet_node_core_cost_mult?: number;
+        /** Multipler to cost of leveling up a Hacknet Node */
+        hacknet_node_level_cost_mult?: number;
+        /** Multipler to Bladeburner max stamina */
+        bladeburner_max_stamina_mult?: number;
+        /** Multipler to Bladeburner stamina gain rate */
+        bladeburner_stamina_gain_mult?: number;
+        /** Multipler to effectiveness in Bladeburner Field Analysis */
+        bladeburner_analysis_mult?: number;
+        /** Multipler to success chance in Bladeburner contracts/operations */
+        bladeburner_success_chance_mult?: number;
+    }
     export interface BasicHGWOptions {
         /** Number of threads to use for this function. Must be less than or equal to the number of threads the script is running with. */
         threads: number;
@@ -748,6 +853,13 @@ declare module "Bitburner" {
         | "Hmap Node"
         | "Jack the Ripper";
 
+    export type GangEquipmentType =
+        | "Weapon"
+        | "Armor"
+        | "Vehicle"
+        | "Rootkit"
+        | "Augmentation";
+
     export type GangAugmentations =
         | "Bionic Arms"
         | "Bionic Legs"
@@ -786,6 +898,63 @@ declare module "Bitburner" {
         | "Train Hacking"
         | "Train Charisma"
         | "Territory Warfare";
+
+    export interface GangTasksStats {
+        /** Task name */
+        name: GangTasks;
+        /** Task Description */
+        desc: string;
+        /** Is a task of a hacking gang */
+        isHacking: boolean;
+        /** Is a task of a combat gang */
+        isCombat: boolean;
+        /** Base respect earned */
+        baseRespect: number;
+        /** Base wanted earned */
+        baseWanted: number;
+        /** Base money earned */
+        baseMoney: number;
+        /** Hacking skill impact on task scaling */
+        hackWeight: number;
+        /** Stength skill impact on task scaling */
+        strWeight: number;
+        /** Defense skill impact on task scaling */
+        defWeight: number;
+        /** Dexterity skill impact on task scaling */
+        dexWeight: number;
+        /** Agility skill impact on task scaling */
+        agiWeight: number;
+        /** Charisma skill impact on task scaling */
+        chaWeight: number;
+        /** Number representing the difficulty of the task */
+        difficulty: number;
+        /** Territory impact on task scaling */
+        territory: GangTasksTerritory;
+    }
+
+    export interface GangEquipmentStats {
+        /** Strength multiplier */
+        str: number;
+        /** Defense multiplier */
+        def: number;
+        /** Dexterity multiplier */
+        dex: number;
+        /** Agility multiplier */
+        agi: number;
+        /** Charisma multiplier */
+        cha: number;
+        /** Hacking multiplier */
+        hack: number;
+    }
+
+    export interface GangTasksTerritory {
+        /** Money gain impact on task scaling */
+        money: number;
+        /** Respect gain impact on task scaling */
+        respect: number;
+        /** Wanted gain impact on task scaling */
+        wanted: number;
+    }
 
     export interface GangMemberInfo {
         /** Agility stat */
@@ -936,7 +1105,8 @@ declare module "Bitburner" {
          *
          * @example
          * ```js
-         * getStockPrice("FISG");```
+         * getStockPrice("FISG");
+         * ```
          * @ramCost 2 GB
          * @param {string} sym Stock symbol.
          * @returns {number} The price of a stock.
@@ -982,7 +1152,8 @@ declare module "Bitburner" {
          * shares      = pos[0];
          * avgPx       = pos[1];
          * sharesShort = pos[2];
-         * avgPxShort  = pos[3];```
+         * avgPxShort  = pos[3];
+         * ```
          * @ramCost 2 GB
          * @param {string} sym Stock symbol.
          * @returns {[number,number,number,number]} Array of four elements that represents the player’s position in a stock.
@@ -1173,7 +1344,8 @@ declare module "Bitburner" {
          *      ...
          *  ],
          *  ...
-         * }```
+         * }
+         * ```
          * The “Order type” property can have one of the following four values:
          * * “Limit Buy Order”
          * * “Limit Sell Order”
@@ -1345,7 +1517,8 @@ declare module "Bitburner" {
          *
          * @example
          * ```js
-         * purchaseProgram("brutessh.exe");```
+         * purchaseProgram("brutessh.exe");
+         * ```
          * @ramCost 2 GB
          * @singularity Level 1
          * @param {string} programName Name of program to purchase.
@@ -1361,7 +1534,8 @@ declare module "Bitburner" {
          * @example
          * ```js
          * res = getStats();
-         * print('My charisma level is: ' + res.charisma);```
+         * print('My charisma level is: ' + res.charisma);
+         * ```
          * @ramCost 0.5 GB
          * @singularity Level 1
          * @returns {object} Object with the Player’s stats.
@@ -1454,12 +1628,13 @@ declare module "Bitburner" {
          *
          * @example
          * ```js
-         * "If you only want to work until you get 100,000 company reputation. One small hack to get around this is to continuously restart the action to receive your earnings:"
+         * //If you only want to work until you get 100,000 company reputation. One small hack to get around this is to continuously restart the action to receive your earnings:
          * while (getCompanyRep(COMPANY HERE) < VALUE) {
-         *  workForCompany();
-         *  sleep(60000);
+         *    workForCompany();
+         *    sleep(60000);
          * }
-         * "This way, your company reputation will be updated every minute."```
+         * //This way, your company reputation will be updated every minute.
+         * ```
          * @ramCost 3 GB
          * @singularity Level 2
          * @param {string} [companyName] Name of company to work for. Must be an exact match. Optional. If not specified, this argument defaults to the last job that you worked
@@ -1564,12 +1739,13 @@ declare module "Bitburner" {
          *
          * @example
          * ```js
-         * "If you only want to work until you get 100,000 faction reputation. One small hack to get around this is to continuously restart the action to receive your earnings:"
+         * //If you only want to work until you get 100,000 faction reputation. One small hack to get around this is to continuously restart the action to receive your earnings:
          * while (getFactionRep(FACTION NAME) < VALUE) {
-         *  workForFaction(FACNAME, WORKTYPE);
-         *  sleep(60000);
+         *    workForFaction(FACNAME, WORKTYPE);
+         *    sleep(60000);
          * }
-         * "This way, your faction reputation will be updated every minute."```
+         * //This way, your faction reputation will be updated every minute.
+         * ```
          * @ramCost 3 GB
          * @singularity Level 2
          * @param {string} faction Name of faction to work for.
@@ -1653,7 +1829,8 @@ declare module "Bitburner" {
          *
          * @example
          * ```js
-         * createProgram(“relaysmtp.exe”);```
+         * createProgram(“relaysmtp.exe”);
+         * ```
          * @ramCost 5 GB
          * @singularity Level 3
          * @param {string} program Name of program to create.
@@ -1699,6 +1876,18 @@ declare module "Bitburner" {
          * @returns {number} Chance of success at commiting the specified crime as a decimal.
          */
         getCrimeChance(crime: Crime): number;
+
+        /**
+         * If you are not in BitNode-4, then you must have Level 3 of Source-File 4 in order to use this function and the RAM cost is doubled.
+         *
+         * Returns the stats of the crime.
+         *
+         * @ramCost 5 GB
+         * @singularity Level 3
+         * @param {string} crime Name of crime. Not case-sensitive
+         * @returns {number} The stats of the crime.
+         */
+        getCrimeStats(crime: Crime): CrimeStats;
 
         /**
          * If you are not in BitNode-4, then you must have Level 3 of Source-File 4 in order to use this function and the RAM cost is doubled.
@@ -1785,6 +1974,18 @@ declare module "Bitburner" {
         /**
          * If you are not in BitNode-4, then you must have Level 3 of Source-File 4 in order to use this function and the RAM cost is doubled.
          *
+         * This function returns augmentation stats.
+         *
+         * @ramCost 5 GB
+         * @singularity Level 3
+         * @param {string} name Name of Augmentation. CASE-SENSITIVE.
+         * @returns {object} Augmentation stats.
+         */
+        getAugmentationStats(name: AugmentName): AugmentationStats;
+
+        /**
+         * If you are not in BitNode-4, then you must have Level 3 of Source-File 4 in order to use this function and the RAM cost is doubled.
+         *
          * This function will automatically install your Augmentations, resetting the game as usual.
          *
          * @ramCost 5 GB
@@ -1792,6 +1993,16 @@ declare module "Bitburner" {
          * @param {string} cbScript Optional callback script. This is a script that will automatically be run after Augmentations are installed (after the reset). This script will be run with no arguments and 1 thread. It must be located on your home computer.
          */
         installAugmentations(cbScript?: Script): void;
+
+        /**
+         * If you are not in BitNode-4, then you must have Level 3 of Source-File 4 in order to use this function and the RAM cost is doubled.
+         *
+         * This function will perform a reset even if you don’t have any augmentation installed.
+         *
+         * @ramCost 5 GB
+         * @singularity Level 3
+         */
+        softReset(): void;
     }
 
     export interface HackNet {
@@ -1974,8 +2185,9 @@ declare module "Bitburner" {
          * ```js
          * var upgradeName = "Sell for Corporation Funds";
          * if (hacknet.numHashes() > hacknet.hashCost(upgradeName)) {
-         *  hacknet.spendHashes(upgName);
-         * }```
+         *    hacknet.spendHashes(upgName);
+         * }
+         * ```
          * @ramCost 0 GB
          * @param {string} upgName Name of the upgrade of Hacknet Node.
          * @returns {number} Number of hashes required for the specified upgrade.
@@ -1995,7 +2207,8 @@ declare module "Bitburner" {
          * @example
          * ```js
          * hacknet.spendHashes("Sell for Corporation Funds");
-         * hacknet.spendHashes("Increase Maximum Money", "foodnstuff");```
+         * hacknet.spendHashes("Increase Maximum Money", "foodnstuff");
+         * ```
          * @ramCost 0 GB
          * @param {string} upgName Name of the upgrade of Hacknet Node.
          * @param {string} [upgTarget] Object to which upgrade applies. Required for certain upgrades.
@@ -2451,9 +2664,10 @@ declare module "Bitburner" {
          * @example
          * ```js
          * function getStaminaPercentage() {
-         *  let res = bladeburner.getStamina();
-         *  return res[0] / res[1];
-         * }```
+         *    let res = bladeburner.getStamina();
+         *    return res[0] / res[1];
+         * }
+         * ```
          * @ramCost 4 GB
          * @returns {[number, number]} Array containing current stamina and max stamina.
          */
@@ -2678,13 +2892,24 @@ declare module "Bitburner" {
         /**
          * If you are not in BitNode-2, then you must have Source-File 2 in order to use this function.
          *
+         * Get the stats of a gang task stats. This is typically used to evaluate which action should be executed next.
+         *
+         * @ramCost 1 GB
+         * @param {string} name  Name of the task.
+         * @returns {boolean} Detailed stats of a task.
+         */
+        getTaskStats(name: GangTasks): GangTasksStats;
+
+        /**
+         * If you are not in BitNode-2, then you must have Source-File 2 in order to use this function.
+         *
          * Get the name of all possible equipment/upgrades you can purchase for your Gang Members.
          * This includes Augmentations.
          *
          * @ramCost 1 GB
          * @returns {string[]} Names of all Equpiment/Augmentations.
          */
-        getEquipmentNames(): Array<GangEquipment | GangAugmentations>;
+        getEquipmentNames(): (GangEquipment | GangAugmentations)[];
 
         /**
          * If you are not in BitNode-2, then you must have Source-File 2 in order to use this function.
@@ -2709,7 +2934,20 @@ declare module "Bitburner" {
          */
         getEquipmentType(
             equipName: GangEquipment | GangAugmentations
-        ): "Weapon" | "Armor" | "Vehicle" | "Rootkit" | "Augmentation";
+        ): GangEquipmentType;
+
+        /**
+         * If you are not in BitNode-2, then you must have Source-File 2 in order to use this function.
+         *
+         * Get the specified equipment stats.
+         *
+         * @ramCost 2 GB
+         * @param {string} equipName Name of equipment.
+         * @returns {object} A dictionary containing the stats of the equipment.
+         */
+        getEquipmentStats(
+            equipName: GangEquipment | GangAugmentations
+        ): GangEquipmentStats;
 
         /**
          * If you are not in BitNode-2, then you must have Source-File 2 in order to use this function.
@@ -2983,7 +3221,8 @@ declare module "Bitburner" {
          *
          * It is also possible to get the number of arguments that was passed into a script using:
          * ```js
-         * args.length```
+         * args.length
+         * ```
          * WARNING: Do not try to modify the args array. This will break the game.
          *
          * @ramCost 0 GB
@@ -3006,7 +3245,8 @@ declare module "Bitburner" {
          * ```js
          * hack("foodnstuff");
          * hack("10.1.2.3");
-         * hack("foodnstuff", { threads: 5 }); // Only use 5 threads to hack```
+         * hack("foodnstuff", { threads: 5 }); // Only use 5 threads to hack
+         * ```
          * @ramCost 0.1 GB
          * @param {string} host IP or hostname of the target server to hack.
          * @param {object} [opts] Optional parameters for configuring function behavior.
@@ -3030,7 +3270,8 @@ declare module "Bitburner" {
          * @example
          * ```js
          * grow("foodnstuff");
-         * grow("foodnstuff", { threads: 5 }); // Only use 5 threads to grow```
+         * grow("foodnstuff", { threads: 5 }); // Only use 5 threads to grow
+         * ```
          * @ramCost 0.15 GB
          * @param {string} host IP or hostname of the target server to grow.
          * @param {object} [opts] Optional parameters for configuring function behavior.
@@ -3050,7 +3291,8 @@ declare module "Bitburner" {
          * @example
          * ```js
          * weaken("foodnstuff");
-         * weaken("foodnstuff", { threads: 5 }); // Only use 5 threads to weaken```
+         * weaken("foodnstuff", { threads: 5 }); // Only use 5 threads to weaken
+         * ```
          * @ramCost 0.15 GB
          * @param {string} host IP or hostname of the target server to weaken.
          * @param {object} [opts] Optional parameters for configuring function behavior.
@@ -3068,9 +3310,10 @@ declare module "Bitburner" {
          *
          * @example
          * ```js
-         * "For example, let’s say the foodnstuff server has $10m and you run:"
+         * //For example, let’s say the foodnstuff server has $10m and you run:
          * hackAnalyzeThreads("foodnstuff", 1e6);
-         * "If this function returns 50, this means that if your next" {@link hack} "call is run on a script with 50 threads, it will steal $1m from the foodnstuff server."```
+         * //If this function returns 50, this means that if your next {@link hack} call is run on a script with 50 threads, it will steal $1m from the foodnstuff server.
+         * ```
          * @ramCost 1 GB
          * @param {string} host IP or hostname of the target server to analyze.
          * @param {number} hackAmount Amount of money you want to hack from the server.
@@ -3085,9 +3328,10 @@ declare module "Bitburner" {
          *
          * @example
          * ```js
-         * "For example, assume the following returns 1:"
+         * //For example, assume the following returns 1:
          * hackAnalyzePercent("foodnstuff");
-         * "This means that if hack the foodnstuff server, then you will steal 1% of its total money. If you" {@link hack} "using N threads, then you will steal N% of its total money."```
+         * //This means that if hack the foodnstuff server, then you will steal 1% of its total money. If you {@link hack} using N threads, then you will steal N% of its total money.
+         * ```
          * @ramCost 1 GB
          * @param {string} host IP or hostname of the target server.
          * @returns {number} The percentage of money you will steal from the target server with a single hack.
@@ -3114,9 +3358,10 @@ declare module "Bitburner" {
          *
          * @example
          * ```js
-         * "For example, if you want to determine how many" {@link grow} "calls you need to double the amount of money on foodnstuff, you would use:"
+         * //For example, if you want to determine how many {@link grow} calls you need to double the amount of money on foodnstuff, you would use:
          * growthAnalyze("foodnstuff", 2);
-         * "If this returns 100, then this means you need to call" {@link grow} "100 times in order to double the money (or once with 100 threads)."```
+         * //If this returns 100, then this means you need to call {@link grow} 100 times in order to double the money (or once with 100 threads).
+         * ```
          * @ramCost 1 GB
          * @param {string} host IP or hostname of the target server.
          * @param {number} growthAmount Multiplicative factor by which the server is grown. Decimal form..
@@ -3201,16 +3446,19 @@ declare module "Bitburner" {
          *
          * @example
          * ```js
-         * "Get logs from foo.script on the current server that was run with no args"
-         * getScriptLogs("foo.script");```
+         * //Get logs from foo.script on the current server that was run with no args
+         * getScriptLogs("foo.script");
+         * ```
          * @example
          * ```js
-         * "Open logs from foo.script on the foodnstuff server that was run with no args"
-         * getScriptLogs("foo.script", "foodnstuff");```
+         * //Open logs from foo.script on the foodnstuff server that was run with no args
+         * getScriptLogs("foo.script", "foodnstuff");
+         * ```
          * @example
          * ```js
-         * "Open logs from foo.script on the foodnstuff server that was run with the arguments [1, "test"]"
-         * getScriptLogs("foo.script", "foodnstuff", 1, "test");```
+         * //Open logs from foo.script on the foodnstuff server that was run with the arguments [1, "test"]
+         * getScriptLogs("foo.script", "foodnstuff", 1, "test");
+         * ```
          * @ramCost 0 GB
          * @param {string} [fn] Optional. Filename of script to get logs from.
          * @param {string} [ip] Optional. IP or hostname of the server that the script is on.
@@ -3229,16 +3477,19 @@ declare module "Bitburner" {
          *
          * @example
          * ```js
-         * "Open logs from foo.script on the current server that was run with no args"
-         * tail("foo.script");```
+         * //Open logs from foo.script on the current server that was run with no args
+         * tail("foo.script");
+         * ```
          * @example
          * ```js
-         * "Get logs from foo.script on the foodnstuff server that was run with no args"
-         * tail("foo.script", "foodnstuff");```
+         * //Get logs from foo.script on the foodnstuff server that was run with no args
+         * tail("foo.script", "foodnstuff");
+         * ```
          * @example
          * ```js
-         * "Get logs from foo.script on the foodnstuff server that was run with the arguments [1, "test"]"
-         * tail("foo.script", "foodnstuff", 1, "test");```
+         * //Get logs from foo.script on the foodnstuff server that was run with the arguments [1, "test"]
+         * tail("foo.script", "foodnstuff", 1, "test");
+         * ```
          * @ramCost 0 GB
          * @param {string} host IP or hostname of the server to scan.
          * @param {boolean} hostnames Optional boolean specifying whether the function should output hostnames (if true) or IP addresses (if false).
@@ -3262,7 +3513,8 @@ declare module "Bitburner" {
          *
          * @example
          * ```js
-         * nuke("foodnstuff");```
+         * nuke("foodnstuff");
+         * ```
          * @ramCost 0.05 GB
          * @param {string} host IP or hostname of the target server.
          */
@@ -3273,7 +3525,8 @@ declare module "Bitburner" {
          *
          * @example
          * ```js
-         * brutessh("foodnstuff");```
+         * brutessh("foodnstuff");
+         * ```
          * @ramCost 0.05 GB
          * @param {string} host IP or hostname of the target server.
          */
@@ -3284,7 +3537,8 @@ declare module "Bitburner" {
          *
          * @example
          * ```js
-         * ftpcrack("foodnstuff");```
+         * ftpcrack("foodnstuff");
+         * ```
          * @ramCost 0.05 GB
          * @param {string} host IP or hostname of the target server.
          */
@@ -3295,7 +3549,8 @@ declare module "Bitburner" {
          *
          * @example
          * ```js
-         * relaysmtp("foodnstuff");```
+         * relaysmtp("foodnstuff");
+         * ```
          * @ramCost 0.05 GB
          * @param {string} host IP or hostname of the target server.
          */
@@ -3306,7 +3561,8 @@ declare module "Bitburner" {
          *
          * @example
          * ```js
-         * httpworm("foodnstuff");```
+         * httpworm("foodnstuff");
+         * ```
          * @ramCost 0.05 GB
          * @param {string} host IP or hostname of the target server.
          */
@@ -3317,7 +3573,8 @@ declare module "Bitburner" {
          *
          * @example
          * ```js
-         * sqlinject("foodnstuff");```
+         * sqlinject("foodnstuff");
+         * ```
          * @ramCost 0.05 GB
          * @param {string} host IP or hostname of the target server.
          */
@@ -3339,16 +3596,19 @@ declare module "Bitburner" {
          *
          * @example
          * ```js
-         * "The simplest way to use the run command is to call it with just the script name. The following example will run ‘foo.script’ single-threaded with no arguments:"
-         * run("foo.script");```
+         * //The simplest way to use the run command is to call it with just the script name. The following example will run ‘foo.script’ single-threaded with no arguments:
+         * run("foo.script");
+         * ```
          * @example
          * ```js
-         * "The following example will run ‘foo.script’ but with 5 threads instead of single-threaded:"
-         * run("foo.script", 5);```
+         * //The following example will run ‘foo.script’ but with 5 threads instead of single-threaded:
+         * run("foo.script", 5);
+         * ```
          * @example
          * ```js
-         * "This next example will run ‘foo.script’ single-threaded, and will pass the string ‘foodnstuff’ into the script as an argument:"
-         * run("foo.script", 1, 'foodnstuff');```
+         * //This next example will run ‘foo.script’ single-threaded, and will pass the string ‘foodnstuff’ into the script as an argument:
+         * run("foo.script", 1, 'foodnstuff');
+         * ```
          * @ramCost 1 GB
          * @param {string} script Filename of script to run.
          * @param {number} [numThreads] Optional thread count for new script. Set to 1 by default. Will be rounded to nearest integer.
@@ -3376,16 +3636,19 @@ declare module "Bitburner" {
          *
          * @example
          * ```js
-         * "The simplest way to use the exec command is to call it with just the script name and the target server. The following example will try to run generic-hack.script on the foodnstuff server:"
-         * exec("generic-hack.script", "foodnstuff");```
+         * //The simplest way to use the exec command is to call it with just the script name and the target server. The following example will try to run generic-hack.script on the foodnstuff server:
+         * exec("generic-hack.script", "foodnstuff");
+         * ```
          * @example
          * ```js
-         * "The following example will try to run the script generic-hack.script on the joesguns server with 10 threads:"
-         * exec("generic-hack.script", "joesguns", 10);```
+         * //The following example will try to run the script generic-hack.script on the joesguns server with 10 threads:
+         * exec("generic-hack.script", "joesguns", 10);
+         * ```
          * @example
          * ```js
-         * "This last example will try to run the script foo.script on the foodnstuff server with 5 threads. It will also pass the number 1 and the string “test” in as arguments to the script:"
-         * exec("foo.script", "foodnstuff", 5, 1, "test");```
+         * //This last example will try to run the script foo.script on the foodnstuff server with 5 threads. It will also pass the number 1 and the string “test” in as arguments to the script:
+         * exec("foo.script", "foodnstuff", 5, 1, "test");
+         * ```
          * @ramCost 1.3 GB
          * @param {string} script Filename of script to execute.
          * @param {string} host IP or hostname of the `target server` on which to execute the script.
@@ -3410,8 +3673,9 @@ declare module "Bitburner" {
          *
          * @example
          * ```js
-         * "The following example will execute the script ‘foo.script’ with 10 threads and the arguments ‘foodnstuff’ and 90:"
-         * spawn('foo.script', 10, 'foodnstuff', 90);```
+         * //The following example will execute the script ‘foo.script’ with 10 threads and the arguments ‘foodnstuff’ and 90:
+         * spawn('foo.script', 10, 'foodnstuff', 90);
+         * ```
          * @ramCost 2 GB
          * @param {string} script Filename of script to execute.
          * @param {string} numThreads Number of threads to spawn new script with. Will be rounded to nearest integer.
@@ -3427,16 +3691,19 @@ declare module "Bitburner" {
          *
          * @example
          * ```js
-         * "The following example will try to kill a script named foo.script on the foodnstuff server that was ran with no arguments:"
-         * kill("foo.script", "foodnstuff");```
+         * //The following example will try to kill a script named foo.script on the foodnstuff server that was ran with no arguments:
+         * kill("foo.script", "foodnstuff");
+         * ```
          * @example
          * ```js
-         * "The following will try to kill a script named foo.script on the current server that was ran with no arguments:"
-         * kill("foo.script", getHostname());```
+         * //The following will try to kill a script named foo.script on the current server that was ran with no arguments:
+         * kill("foo.script", getHostname());
+         * ```
          * @example
          * ```js
-         * "The following will try to kill a script named foo.script on the current server that was ran with the arguments 1 and “foodnstuff”:"
-         * kill("foo.script", getHostname(), 1, "foodnstuff");```
+         * //The following will try to kill a script named foo.script on the current server that was ran with the arguments 1 and “foodnstuff”:
+         * kill("foo.script", getHostname(), 1, "foodnstuff");
+         * ```
          * @ramCost 0.5 GB
          * @param {string} script Filename of the script to kill
          * @param {string} host IP or hostname of the server on which to kill the script.
@@ -3456,7 +3723,8 @@ declare module "Bitburner" {
          * ```js
          * if (kill(10)) {
          *     print("Killed script with PID 10!");
-         * }```
+         * }
+         * ```
          * @ramCost 0.5 GB
          * @param {number} scriptPid PID of the script to kill
          * @returns {boolean} True if the script is successfully killed, and false otherwise.
@@ -3487,8 +3755,9 @@ declare module "Bitburner" {
          *
          * @example
          * ```js
-         * "Copies hack-template.script from the current server to foodnstuff:"
-         * scp("hack-template.script", "foodnstuff");```
+         * //Copies hack-template.script from the current server to foodnstuff:
+         * scp("hack-template.script", "foodnstuff");
+         * ```
          * @ramCost 0.6 GB
          * @param {(string|string[])} files Filename or an array of filenames of script/literature files to copy.
          * @param {(string|number)} destination Host or IP of the destination server, which is the server to which the file will be copied.
@@ -3502,13 +3771,15 @@ declare module "Bitburner" {
          *
          * @example
          * ```js
-         * "Copies foo.lit from the helios server to the home computer:"
-         * scp("foo.lit", "helios", "home");```
+         * //Copies foo.lit from the helios server to the home computer:
+         * scp("foo.lit", "helios", "home");
+         * ```
          * @example
          * ```js
-         * "Tries to copy three files from rothman-uni to home computer:"
+         * //Tries to copy three files from rothman-uni to home computer:
          * files = ["foo1.lit", "foo2.script", "foo3.script"];
-         * scp(files, "rothman-uni", "home");```
+         * scp(files, "rothman-uni", "home");
+         * ```
          * @ramCost 0.6 GB
          * @param {(string|string[])} files Filename or an array of filenames of script/literature files to copy.
          * @param {(string|number)} source Host or IP of the source server, which is the server from which the file will be copied. This argument is optional and if it’s omitted the source will be the current server.
@@ -3538,14 +3809,15 @@ declare module "Bitburner" {
          *
          * @example
          * ```js
-         * "(using NetscriptJS (Netscript 2.0))"
+         * //(using NetscriptJS (Netscript 2.0))
          * export async function main(ns) {
-         *  const ps = ns.ps("home");
-         *  for (let i = 0; i < ps.length; ++i) {
-         *      ns.tprint(ps[i].filename + ' ' + ps[i].threads);
-         *      ns.tprint(ps[i].args);
-         *  }
-         * }```
+         *    const ps = ns.ps("home");
+         *    for (let i = 0; i < ps.length; ++i) {
+         *        ns.tprint(ps[i].filename + ' ' + ps[i].threads);
+         *        ns.tprint(ps[i].args);
+         *    }
+         * }
+         * ```
          * @ramCost 0.2 GB
          * @param {string} host Host or IP address of the target server. If not specified, it will be the current server’s IP by default.
          * @returns {object} Array with general information about all scripts running on the specified target server.
@@ -3558,8 +3830,9 @@ declare module "Bitburner" {
          * @example
          * ```js
          * if (hasRootAccess("foodnstuff") == false) {
-         *  nuke("foodnstuff");
-         * }```
+         *    nuke("foodnstuff");
+         * }
+         * ```
          * @ramCost 0.05 GB
          * @param {string} host Host or IP of the target server
          * @returns {boolean} True if player has root access to the specified target server, and false otherwise.
@@ -3589,10 +3862,11 @@ declare module "Bitburner" {
          *
          * @example
          * ```js
-         * "Example of how this can be used:"
+         * //Example of how this can be used:
          * mults = getHackingMultipliers();
          * print(mults.chance);
-         * print(mults.growth);```
+         * print(mults.growth);
+         * ```
          * @ramCost 4 GB
          * @returns {object} Object containing the Player’s hacking related multipliers.
          */
@@ -3605,10 +3879,11 @@ declare module "Bitburner" {
          *
          * @example
          * ```js
-         * "Example of how this can be used:"
+         * //Example of how this can be used:
          * mults = getHacknetMultipliers();
          * print(mults.production);
-         * print(mults.purchaseCost);```
+         * print(mults.purchaseCost);
+         * ```
          * @ramCost 4 GB
          * @returns {object} Object containing the Player’s hacknet related multipliers.
          */
@@ -3621,7 +3896,8 @@ declare module "Bitburner" {
          * @example
          * ```js
          * getServerMoneyAvailable("foodnstuff");
-         * getServerMoneyAvailable("home"); //Returns player's money```
+         * getServerMoneyAvailable("home"); //Returns player's money
+         * ```
          * @ramCost 0.1 GB
          * @param {string} host Host or IP of target server
          * @returns {number} Amount of money available on the server.
@@ -3714,7 +3990,8 @@ declare module "Bitburner" {
          * ```js
          * res = getServerRam("helios");
          * totalRam = res[0];
-         * ramUsed = res[1];```
+         * ramUsed = res[1];
+         * ```
          * @ramCost 0.1 GB
          * @param {string} host Host or IP of target server.
          * @returns {[number,number]} Array with total and used memory on the specified server.
@@ -3741,12 +4018,14 @@ declare module "Bitburner" {
          *
          * @example
          * ```js
-         * "The function call will return true if the script named foo.script exists on the foodnstuff server, and false otherwise."
-         * fileExists("foo.script", "foodnstuff");```
+         * //The function call will return true if the script named foo.script exists on the foodnstuff server, and false otherwise.
+         * fileExists("foo.script", "foodnstuff");
+         * ```
          * @example
          * ```js
-         * "The function call will return true if the current server contains the FTPCrack.exe program, and false otherwise."
-         * fileExists("ftpcrack.exe");```
+         * //The function call will return true if the current server contains the FTPCrack.exe program, and false otherwise.
+         * fileExists("ftpcrack.exe");
+         * ```
          * @ramCost 0.1 GB
          * @param {string} filename Filename of file to check.
          * @param {(string|number)} [host] Host or IP of target server. This is optional. If it is not specified then the function will use the current server as the target server.
@@ -3760,16 +4039,19 @@ declare module "Bitburner" {
          *
          * @example
          * ```js
-         * "The function call will return true if there is a script named foo.script with no arguments running on the foodnstuff server, and false otherwise:"
-         * isRunning("foo.script", "foodnstuff");```
+         * //The function call will return true if there is a script named foo.script with no arguments running on the foodnstuff server, and false otherwise:
+         * isRunning("foo.script", "foodnstuff");
+         * ```
          * @example
          * ```js
-         * "The function call will return true if there is a script named foo.script with no arguments running on the current server, and false otherwise:"
-         * isRunning("foo.script", getHostname());```
+         * //The function call will return true if there is a script named foo.script with no arguments running on the current server, and false otherwise:
+         * isRunning("foo.script", getHostname());
+         * ```
          * @example
          * ```js
-         * "The function call will return true if there is a script named foo.script running with the arguments 1, 5, and “test” (in that order) on the joesguns server, and false otherwise:"
-         * isRunning("foo.script", "joesguns", 1, 5, "test");```
+         * //The function call will return true if there is a script named foo.script running with the arguments 1, 5, and “test” (in that order) on the joesguns server, and false otherwise:
+         * isRunning("foo.script", "joesguns", 1, 5, "test");
+         * ```
          * @ramCost 0.1 GB
          * @param {string} script Filename of script to check. This is case-sensitive.
          * @param {string} host Host or IP of target server.
@@ -3784,8 +4066,9 @@ declare module "Bitburner" {
          * @example
          * ```js
          * for (i = 1; i <= 20; i++) {
-         * tprint(i + " -- " + getPurchasedServerCost(Math.pow(2, i)));
-         * }```
+         *     tprint(i + " -- " + getPurchasedServerCost(Math.pow(2, i)));
+         * }
+         * ```
          * @ramCost 0.25 GB
          * @param {number} ram Amount of RAM of a potential purchased server. Must be a power of 2 (2, 4, 8, 16, etc.). Maximum value of 1048576 (2^20).
          * @returns {number} The cost to purchase a server with the specified amount of ram.
@@ -3817,8 +4100,9 @@ declare module "Bitburner" {
          * ram = 64;
          * hn = "pserv-";
          * for (i = 0; i < 5; ++i) {
-         *  purchaseServer(hn + i, ram);
-         * }```
+         *    purchaseServer(hn + i, ram);
+         * }
+         * ```
          * @ramCost 2.25 GB
          * @param {string} hostname Host of the purchased server.
          * @param {number} ram Amount of RAM of the purchased server. Must be a power of 2 (2, 4, 8, 16, etc.). Maximum value of 1048576 (2^20).
@@ -3973,12 +4257,14 @@ declare module "Bitburner" {
          *
          * @example
          * ```js
-         * "The function call will return true if there is any script named foo.script running on the foodnstuff server, and false otherwise:"
-         * scriptRunning("foo.script", "foodnstuff");```
+         * //The function call will return true if there is any script named foo.script running on the foodnstuff server, and false otherwise:
+         * scriptRunning("foo.script", "foodnstuff");
+         * ```
          * @example
          * ```js
-         * "The function call will return true if there is any script named “foo.script” running on the current server, and false otherwise:"
-         * scriptRunning("foo.script", getHostname());```
+         * //The function call will return true if there is any script named “foo.script” running on the current server, and false otherwise:
+         * scriptRunning("foo.script", getHostname());
+         * ```
          * @ramCost 1 GB
          * @param {string} script Filename of script to check. This is case-sensitive.
          * @param {string} host Host or IP of target server.
@@ -4166,7 +4452,8 @@ declare module "Bitburner" {
          *
          * @example
          * ```js
-         * wget("https://raw.githubusercontent.com/danielyxie/bitburner/master/README.md", "game_readme.txt");```
+         * wget("https://raw.githubusercontent.com/danielyxie/bitburner/master/README.md", "game_readme.txt");
+         * ```
          * @ramCost 0 GB
          * @param {string} url URL to pull data from.
          * @param {string} target Filename to write data to. Must be script or text file.
@@ -4198,7 +4485,8 @@ declare module "Bitburner" {
          * ```js
          * mults = getBitNodeMultipliers();
          * print(mults.ServerMaxMoney);
-         * print(mults.HackExpGain);```
+         * print(mults.HackExpGain);
+         * ```
          * @ramCost 4 GB
          * @returns {object} Object containing the current BitNode multipliers.
          */

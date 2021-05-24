@@ -28,4 +28,11 @@ export default class Server {
         if (treeStructure.parent)
             this.treeStructure.parent = treeStructure.parent;
     }
+    getAvailableRam(ns) {
+        let [total, used] = ns.getServerRam(this.host);
+        return total - used;
+    }
+    isRooted(ns) {
+        return ns.hasRootAccess(this.host);
+    }
 }
