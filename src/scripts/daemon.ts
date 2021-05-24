@@ -1,9 +1,9 @@
 import type { BitBurner as NS } from "Bitburner";
-import HackableServer from "/src/classes/HackableServer";
-import { CONSTANT } from "/src/lib/constants";
-import { HackManager } from "/src/managers/HackManager";
+import HackableServer from "/src/classes/HackableServer.js";
+import { CONSTANT } from "/src/lib/constants.js";
+import { HackManager } from "/src/managers/HackManager.js";
 import { ServerManager } from "/src/managers/ServerManager.js";
-import { Heuristics } from "/src/util/Heuristics";
+import { Heuristics } from "/src/util/Heuristics.js";
 
 export async function main(ns: NS) {
 

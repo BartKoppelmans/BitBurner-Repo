@@ -12,6 +12,7 @@ const files = [
     'managers/HackManager.js',
     'managers/PlayerManager.js',
     'managers/ProgramManager.js',
+    'managers/PurchasedServerManager.js',
     'managers/ServerManager.js',
     'scripts/cleanHome.js',
     'scripts/daemon.js',
@@ -19,6 +20,12 @@ const files = [
     'subscripts/grow.js',
     'subscripts/hack.js',
     'subscripts/weaken.js',
+    'tools/grow.js',
+    'tools/hack.js',
+    'tools/Tools.js',
+    'tools/weaken.js',
+    'util/HackUtils.js',
+    'util/Heuristics.js',
 ];
 /*
  * This will import all files listed in importFiles.

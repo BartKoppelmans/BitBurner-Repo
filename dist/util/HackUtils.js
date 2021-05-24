@@ -1,7 +1,7 @@
-import { CONSTANT } from "/src/lib/constants";
-import { PlayerManager } from "/src/managers/PlayerManager";
-import { ServerManager } from "/src/managers/ServerManager";
-import { Tools } from "/src/tools/Tools";
+import { CONSTANT } from "/src/lib/constants.js";
+import { PlayerManager } from "/src/managers/PlayerManager.js";
+import { ServerManager } from "/src/managers/ServerManager.js";
+import { Tools } from "/src/tools/Tools.js";
 export default class HackUtils {
     // Here we allow thread spreading over multiple servers
     static async computeMaxThreads(ns, tool, allowSpread = true) {

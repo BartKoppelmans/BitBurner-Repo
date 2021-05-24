@@ -1,6 +1,6 @@
 import ExternalServer from "/src/classes/ExternalServer.js";
-import { PlayerManager } from "/src/managers/PlayerManager";
-import { ProgramManager } from "/src/managers/ProgramManager";
+import { PlayerManager } from "/src/managers/PlayerManager.js";
+import { ProgramManager } from "/src/managers/ProgramManager.js";
 export default class HackableServer extends ExternalServer {
     constructor(ns, host, treeStructure) {
         super(ns, host, treeStructure);

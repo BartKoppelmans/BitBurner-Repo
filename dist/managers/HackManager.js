@@ -1,8 +1,8 @@
-import HomeServer from "/src/classes/HomeServer";
-import { CONSTANT } from "/src/lib/constants";
-import { PlayerManager } from "/src/managers/PlayerManager";
-import { Tools } from "/src/tools/Tools";
-import HackUtils from "/src/util/HackUtils";
+import HomeServer from "/src/classes/HomeServer.js";
+import { CONSTANT } from "/src/lib/constants.js";
+import { PlayerManager } from "/src/managers/PlayerManager.js";
+import { Tools } from "/src/tools/Tools.js";
+import HackUtils from "/src/util/HackUtils.js";
 export class HackManager {
     constructor() {
         this.hackingMap = [];

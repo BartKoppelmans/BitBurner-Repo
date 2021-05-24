@@ -1,7 +1,7 @@
-import { CONSTANT } from "/src/lib/constants";
-import { HackManager } from "/src/managers/HackManager";
+import { CONSTANT } from "/src/lib/constants.js";
+import { HackManager } from "/src/managers/HackManager.js";
 import { ServerManager } from "/src/managers/ServerManager.js";
-import { Heuristics } from "/src/util/Heuristics";
+import { Heuristics } from "/src/util/Heuristics.js";
 export async function main(ns) {
     const hostName = ns.getHostname();
     if (hostName !== "home") {

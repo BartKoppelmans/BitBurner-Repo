@@ -1,4 +1,4 @@
-import { CONSTANT } from "/src/lib/constants";
+import { CONSTANT } from "/src/lib/constants.js";
 /*
  * The player manager contains the values of the hacking multipliers and the bitnode multipliers
  */

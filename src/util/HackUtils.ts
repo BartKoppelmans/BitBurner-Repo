@@ -1,11 +1,11 @@
 import type { BitBurner as NS } from "Bitburner";
 import HackableServer from "/src/classes/HackableServer.js";
-import HomeServer from "/src/classes/HomeServer";
+import HomeServer from "/src/classes/HomeServer.js";
 import Server from "/src/classes/Server.js";
-import { CONSTANT } from "/src/lib/constants";
-import { PlayerManager } from "/src/managers/PlayerManager";
-import { ServerManager } from "/src/managers/ServerManager";
-import { Tools } from "/src/tools/Tools";
+import { CONSTANT } from "/src/lib/constants.js";
+import { PlayerManager } from "/src/managers/PlayerManager.js";
+import { ServerManager } from "/src/managers/ServerManager.js";
+import { Tools } from "/src/tools/Tools.js";
 
 export default class HackUtils {
 

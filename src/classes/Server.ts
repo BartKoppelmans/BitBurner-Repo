@@ -1,7 +1,7 @@
 import type { BitBurner as NS } from "Bitburner";
-import { Program } from "/src/classes/Program";
+import { Program } from "/src/classes/Program.js";
 import { CONSTANT } from "/src/lib/constants.js";
-import { ProgramManager } from "/src/managers/ProgramManager";
+import { ProgramManager } from "/src/managers/ProgramManager.js";
 
 export interface TreeStructure {
     connections?: Server[];
