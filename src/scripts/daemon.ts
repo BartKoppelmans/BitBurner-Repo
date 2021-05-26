@@ -48,7 +48,11 @@ async function hackLoop(ns: NS) {
     try {
         potentialTargets.forEach(target => hackManager.hack(ns, target));
     } catch (e) {
-        // We had too many targets, so we had to stop unexpectedly
+        if (e instanceof TooManyTargetsError) {
+            // We had too many targets, but that is ok
+        } else {
+            throw e;
+        }
     }
 
     // Wait a second!

@@ -4,7 +4,6 @@ import HomeServer from "/src/classes/HomeServer.js";
 import Server from "/src/classes/Server.js";
 import { CONSTANT } from "/src/lib/constants.js";
 import { PlayerManager } from "/src/managers/PlayerManager.js";
-import { ServerManager } from "/src/managers/ServerManager.js";
 import { Tools } from "/src/tools/Tools.js";
 import HackUtils from "/src/util/HackUtils.js";
 
@@ -48,7 +47,6 @@ export class HackManager {
     public async hack(ns: NS, server: HackableServer): Promise<void> {
 
         // TODO: Make sure that all neccesary variables are set (remove the exclamation marks)
-        ns.tprint(`Currently at ${this.targetCounter} targets.`);
 
         // Can't have too many targets at the same time
         if (this.targetCounter >= CONSTANT.MAX_TARGET_COUNT) {
@@ -56,7 +54,7 @@ export class HackManager {
             // Reset the counter, as we start checking them all out after this
             this.targetCounter = 0;
 
-            throw new Error("Too many targets, abort!");
+            throw new TooManyTargetsError("Too many targets, abort!");
         }
 
         // If it is prepping, leave it

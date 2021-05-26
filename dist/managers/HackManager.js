@@ -17,12 +17,11 @@ export class HackManager {
     // Return false when we have too many targets
     async hack(ns, server) {
         // TODO: Make sure that all neccesary variables are set (remove the exclamation marks)
-        ns.tprint(`Currently at ${this.targetCounter} targets.`);
         // Can't have too many targets at the same time
         if (this.targetCounter >= CONSTANT.MAX_TARGET_COUNT) {
             // Reset the counter, as we start checking them all out after this
             this.targetCounter = 0;
-            throw new Error("Too many targets, abort!");
+            throw new TooManyTargetsError("Too many targets, abort!");
         }
         // If it is prepping, leave it
         if (this.isPrepping(ns, server))
