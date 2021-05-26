@@ -10,6 +10,7 @@ const files: string[] = [
     'classes/Program.js',
     'classes/PurchasedServer.js',
     'classes/Server.js',
+    'errors/TooManyTargetsError.js',
     'lib/constants.js',
     'managers/HackManager.js',
     'managers/PlayerManager.js',
