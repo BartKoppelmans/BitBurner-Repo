@@ -1,9 +1,7 @@
 import type { BitBurner as NS } from "Bitburner";
 import ExternalServer from "/src/classes/ExternalServer.js";
-import { Program } from "/src/classes/Program.js";
 import { TreeStructure } from '/src/classes/Server.js';
 import { PlayerManager } from "/src/managers/PlayerManager.js";
-import { ProgramManager } from "/src/managers/ProgramManager.js";
 import { Heuristics } from "/src/util/Heuristics.js";
 
 export default class HackableServer extends ExternalServer {

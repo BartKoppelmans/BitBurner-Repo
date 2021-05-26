@@ -1,7 +1,7 @@
 import type { BitBurner as NS } from "Bitburner";
-import { Program } from "/src/classes/Program";
+import { Program } from "/src/classes/Program.js";
 import Server, { TreeStructure } from "/src/classes/Server.js";
-import { ProgramManager } from "/src/managers/ProgramManager";
+import { ProgramManager } from "/src/managers/ProgramManager.js";
 
 export default class ExternalServer extends Server {
     // Static values

@@ -1,4 +1,4 @@
-import ExternalServer from "/src/classes/ExternalServer";
+import ExternalServer from "/src/classes/ExternalServer.js";
 import { CONSTANT } from "/src/lib/constants.js";
 import { HackManager } from "/src/managers/HackManager.js";
 import { ServerManager } from "/src/managers/ServerManager.js";

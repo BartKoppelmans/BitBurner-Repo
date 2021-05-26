@@ -1,5 +1,5 @@
 import Server from "/src/classes/Server.js";
-import { ProgramManager } from "/src/managers/ProgramManager";
+import { ProgramManager } from "/src/managers/ProgramManager.js";
 export default class ExternalServer extends Server {
     constructor(ns, host, treeStructure) {
         super(host, treeStructure);

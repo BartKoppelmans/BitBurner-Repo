@@ -1,7 +1,7 @@
 import type { BitBurner as NS } from "Bitburner";
-import ExternalServer from "/src/classes/ExternalServer";
+import ExternalServer from "/src/classes/ExternalServer.js";
 import HackableServer from "/src/classes/HackableServer.js";
-import Server from "/src/classes/Server";
+import Server from "/src/classes/Server.js";
 import { CONSTANT } from "/src/lib/constants.js";
 import { HackManager } from "/src/managers/HackManager.js";
 import { ServerManager } from "/src/managers/ServerManager.js";
