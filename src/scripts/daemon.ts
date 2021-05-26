@@ -57,20 +57,6 @@ async function hackLoop(ns: NS) {
         }
     }
 
-    /*
-    try {
-        potentialTargets.forEach(async target => await hackManager.hack(ns, target));
-    } catch (e) {
-        if (e instanceof TooManyTargetsError) {
-            // We had too many targets, but that is ok
-        } else {
-            throw e;
-        }
-    }
-
-    
-    */
-
     // Wait a second!
     await ns.sleep(CONSTANT.HACK_LOOP_DELAY);
 }

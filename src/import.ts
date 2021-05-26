@@ -19,6 +19,7 @@ const files: string[] = [
     'managers/ServerManager.js',
     'scripts/cleanHome.js',
     'scripts/daemon.js',
+    'scripts/killAll.js',
     'scripts/spider.js',
     'subscripts/grow.js',
     'subscripts/hack.js',

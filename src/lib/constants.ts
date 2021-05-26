@@ -18,6 +18,10 @@ export const CONSTANT = {
     // The URL on GitHub to import from
     ROOT_URL: "https://raw.githubusercontent.com/BartKoppelmans/BitBurner-Repo/master",
 
+    /*
+     * Kill all script constants
+     */
+    KILL_ALL_SLEEP_TIME: 50,
 
     /*
      * Server constants
