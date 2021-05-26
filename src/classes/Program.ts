@@ -23,21 +23,17 @@ export class Program {
     }
 
     public run(ns: NS, server: Server) {
-        this.getScriptFunction(ns)(server.host);
-    }
-
-    private getScriptFunction(ns: NS): Function {
         switch (this.name) {
             case "BruteSSH.exe":
-                return ns.brutessh;
+                return ns.brutessh(server.host);
             case "FTPCrack.exe":
-                return ns.ftpcrack;
+                return ns.ftpcrack(server.host);
             case "relaySMTP.exe":
-                return ns.relaysmtp;
+                return ns.relaysmtp(server.host);
             case "HTTPWorm.exe":
-                return ns.httpworm;
+                return ns.httpworm(server.host);
             case "SQLInject.exe":
-                return ns.sqlinject;
+                return ns.sqlinject(server.host);
             default:
                 throw new Error(`Program "${this.name}" not found.`);
         }
