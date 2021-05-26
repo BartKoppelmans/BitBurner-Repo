@@ -31,7 +31,6 @@ export class HackManager {
     private static instance: HackManager;
 
     private hackingMap: Hack[] = [];
-    private targetCounter: number = 0;
 
     private constructor() { }
 
@@ -43,41 +42,33 @@ export class HackManager {
         return HackManager.instance;
     }
 
-    // Return false when we have too many targets
-    public async hack(ns: NS, server: HackableServer): Promise<void> {
+    // Return true when we have found a new target
+    public async hack(ns: NS, server: HackableServer): Promise<boolean> {
 
         // TODO: Make sure that all neccesary variables are set (remove the exclamation marks)
 
-        // Can't have too many targets at the same time
-        if (this.targetCounter >= CONSTANT.MAX_TARGET_COUNT) {
-
-            // Reset the counter, as we start checking them all out after this
-            this.targetCounter = 0;
-
-            throw new TooManyTargetsError("Too many targets, abort!");
-        }
-
         // If it is prepping, leave it
-        if (this.isPrepping(ns, server)) return;
+        if (this.isPrepping(ns, server)) return false;
 
-        // We have found ourselves a viable target!
-        this.targetCounter++;
+        // From here on it is a target
 
         // It is a target, but is currently resting
-        if (this.isTargetting(ns, server)) return;
+        if (this.isTargetting(ns, server)) return true;
 
         // Prep the server
         await this.prepServer(ns, server);
 
         // The server is not optimal, other targets take up the RAM
-        if (server.securityLevel! > server.minSecurityLevel || server.money! < server.maxMoney) return;
+        if (server.securityLevel! > server.minSecurityLevel || server.money! < server.maxMoney) return true;
 
         // If it is prepping, leave it
-        if (this.isPrepping(ns, server)) return;
+        if (this.isPrepping(ns, server)) return true;
 
         // TODO: Optimize performance metrics
 
         await this.attackServer(ns, server);
+
+        return true;
     }
 
     private async prepServer(ns: NS, server: HackableServer): Promise<void> {

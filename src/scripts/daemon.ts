@@ -45,8 +45,21 @@ async function hackLoop(ns: NS) {
         throw new Error("No potential targets found.");
     }
 
+    let targetCounter: number = 0;
+    for (let target of potentialTargets) {
+        // Can't have too many targets at the same time
+        if (targetCounter >= CONSTANT.MAX_TARGET_COUNT) break;
+
+        const isNewTarget: boolean = await hackManager.hack(ns, target);
+
+        if (isNewTarget) {
+            targetCounter++;
+        }
+    }
+
+    /*
     try {
-        potentialTargets.forEach(target => hackManager.hack(ns, target));
+        potentialTargets.forEach(async target => await hackManager.hack(ns, target));
     } catch (e) {
         if (e instanceof TooManyTargetsError) {
             // We had too many targets, but that is ok
@@ -54,6 +67,9 @@ async function hackLoop(ns: NS) {
             throw e;
         }
     }
+
+    
+    */
 
     // Wait a second!
     await ns.sleep(CONSTANT.HACK_LOOP_DELAY);
