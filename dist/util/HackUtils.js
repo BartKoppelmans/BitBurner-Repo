@@ -24,6 +24,7 @@ export default class HackUtils {
                 const serverGrowthPercentage = ns.getServerGrowth(server.host) * playerManager.getGrowthMultiplier() / 100;
                 return Math.ceil(neededCycles / serverGrowthPercentage);
             case Tools.WEAKEN:
+                return Math.ceil((server.securityLevel - server.minSecurityLevel) / playerManager.getWeakenPotency());
             case Tools.HACK:
                 throw new Error("Not implemented yet");
             default:

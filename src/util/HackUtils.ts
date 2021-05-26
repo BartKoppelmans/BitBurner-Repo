@@ -42,6 +42,7 @@ export default class HackUtils {
                 return Math.ceil(neededCycles / serverGrowthPercentage);
 
             case Tools.WEAKEN:
+                return Math.ceil((server.securityLevel! - server.minSecurityLevel) / playerManager.getWeakenPotency());
             case Tools.HACK:
                 throw new Error("Not implemented yet");
             default:

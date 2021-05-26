@@ -87,7 +87,7 @@ export class HackManager {
         if (this.isTargetting(ns, server)) return;
 
         // If the server is optimal, we are done I guess
-        if (server.securityLevel! <= server.minSecurityLevel && server.money! >= server.maxMoney) return;
+        if (server.securityLevel! === server.minSecurityLevel && server.money! === server.maxMoney) return;
 
         ns.tprint(`Prepping ${server.host}`);
 
