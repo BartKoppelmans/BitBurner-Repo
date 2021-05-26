@@ -54,8 +54,9 @@ export default class HackUtils {
     static async computeThreadSpread(ns: NS, tool: Tools, threads: number): Promise<Map<Server, number>> {
 
         const serverMap: Server[] = await this.getHackingServers(ns);
+        const maxThreadsAvailable = await this.computeMaxThreads(ns, tool, true);
 
-        if (await (this.computeMaxThreads(ns, tool, true)) > threads) {
+        if (threads > maxThreadsAvailable) {
             throw new Error("We don't have that much threads available.");
         }
 
@@ -65,6 +66,9 @@ export default class HackUtils {
 
         for (let server of serverMap) {
             let serverThreads: number = Math.floor(server.getAvailableRam(ns) / cost);
+
+            // If we can't fit any more threads here, skip it
+            if (serverThreads === 0) continue;
 
             // We can fit all our threads in here!
             if (serverThreads >= threadsLeft) {

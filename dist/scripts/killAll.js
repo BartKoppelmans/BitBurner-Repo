@@ -1,4 +1,4 @@
-import HomeServer from "/src/classes/HomeServer";
+import HomeServer from "/src/classes/HomeServer.js";
 import { CONSTANT } from "/src/lib/constants.js";
 import { ServerManager } from "/src/managers/ServerManager.js";
 export async function main(ns) {

@@ -47,15 +47,16 @@ export class HackManager {
         // TODO: Move constants to util
         let growThreads = 0;
         let weakenThreads = 0;
-        let weakenThreadsNeeded = await HackUtils.computeThreadsNeeded(ns, Tools.WEAKEN, server);
+        let compensationWeakenThreads = 0;
         // First grow, so that the amount of money is optimal
         if (server.money < server.maxMoney) {
             let maxGrowThreads = await HackUtils.computeMaxThreads(ns, Tools.GROW, CONSTANT.ALLOW_THREAD_SPREADING);
             let neededGrowThreads = await HackUtils.computeThreadsNeeded(ns, Tools.GROW, server);
+            let weakenThreadsNeeded = await HackUtils.computeThreadsNeeded(ns, Tools.WEAKEN, server);
             // The grow threads that are available and needed
             growThreads = Math.min(maxGrowThreads, neededGrowThreads);
             // The number of weaken threads needed to compensate for growth
-            let compensationWeakenThreads = Math.ceil(growThreads * CONSTANT.GROW_HARDENING / playerManager.getWeakenPotency());
+            compensationWeakenThreads = Math.ceil(growThreads * CONSTANT.GROW_HARDENING / playerManager.getWeakenPotency());
             let growThreadThreshold = (maxGrowThreads - neededGrowThreads) * (HackUtils.getToolCost(ns, Tools.GROW) / HackUtils.getToolCost(ns, Tools.WEAKEN));
             let releasedGrowThreads = (HackUtils.getToolCost(ns, Tools.WEAKEN) / HackUtils.getToolCost(ns, Tools.GROW)) * (compensationWeakenThreads + weakenThreadsNeeded);
             if (growThreadThreshold >= releasedGrowThreads) {
@@ -65,9 +66,8 @@ export class HackManager {
             if (growThreads > 0) {
                 await this.executeTool(ns, Tools.GROW, growThreads, server, { isPrep: true });
             }
-            // Add the compensation weaken threads to the needed weaken threads
-            weakenThreadsNeeded += compensationWeakenThreads;
         }
+        let weakenThreadsNeeded = (await HackUtils.computeThreadsNeeded(ns, Tools.WEAKEN, server)) + compensationWeakenThreads;
         let maxWeakenThreads = await HackUtils.computeMaxThreads(ns, Tools.WEAKEN, CONSTANT.ALLOW_THREAD_SPREADING);
         weakenThreads = Math.min(weakenThreadsNeeded, maxWeakenThreads);
         if (weakenThreads > 0) {

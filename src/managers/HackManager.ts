@@ -86,19 +86,19 @@ export class HackManager {
 
         let growThreads: number = 0;
         let weakenThreads: number = 0;
-
-        let weakenThreadsNeeded: number = await HackUtils.computeThreadsNeeded(ns, Tools.WEAKEN, server);
+        let compensationWeakenThreads: number = 0;
 
         // First grow, so that the amount of money is optimal
         if (server.money! < server.maxMoney) {
             let maxGrowThreads: number = await HackUtils.computeMaxThreads(ns, Tools.GROW, CONSTANT.ALLOW_THREAD_SPREADING);
             let neededGrowThreads: number = await HackUtils.computeThreadsNeeded(ns, Tools.GROW, server);
+            let weakenThreadsNeeded: number = await HackUtils.computeThreadsNeeded(ns, Tools.WEAKEN, server);
 
             // The grow threads that are available and needed
             growThreads = Math.min(maxGrowThreads, neededGrowThreads);
 
             // The number of weaken threads needed to compensate for growth
-            let compensationWeakenThreads: number = Math.ceil(growThreads * CONSTANT.GROW_HARDENING / playerManager.getWeakenPotency());
+            compensationWeakenThreads = Math.ceil(growThreads * CONSTANT.GROW_HARDENING / playerManager.getWeakenPotency());
 
             let growThreadThreshold: number = (maxGrowThreads - neededGrowThreads) * (HackUtils.getToolCost(ns, Tools.GROW) / HackUtils.getToolCost(ns, Tools.WEAKEN));
 
@@ -112,11 +112,9 @@ export class HackManager {
             if (growThreads > 0) {
                 await this.executeTool(ns, Tools.GROW, growThreads, server, { isPrep: true });
             }
-
-            // Add the compensation weaken threads to the needed weaken threads
-            weakenThreadsNeeded += compensationWeakenThreads;
         }
 
+        let weakenThreadsNeeded: number = (await HackUtils.computeThreadsNeeded(ns, Tools.WEAKEN, server)) + compensationWeakenThreads;
         let maxWeakenThreads: number = await HackUtils.computeMaxThreads(ns, Tools.WEAKEN, CONSTANT.ALLOW_THREAD_SPREADING);
         weakenThreads = Math.min(weakenThreadsNeeded, maxWeakenThreads);
 

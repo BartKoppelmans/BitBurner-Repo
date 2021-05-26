@@ -34,7 +34,7 @@ async function hackLoop(ns: NS) {
     // Then evaluate them afterwards
     await Promise.all(potentialTargets.map(async (target) => {
         if (!target.isRooted) {
-            target.root(ns);
+            await target.root(ns);
         }
         target.evaluate(ns, Heuristics.MainHeuristic);
     }));
