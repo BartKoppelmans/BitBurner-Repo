@@ -1,5 +1,7 @@
 import type { BitBurner as NS } from "Bitburner";
+import ExternalServer from "/src/classes/ExternalServer";
 import HackableServer from "/src/classes/HackableServer.js";
+import Server from "/src/classes/Server";
 import { CONSTANT } from "/src/lib/constants.js";
 import { HackManager } from "/src/managers/HackManager.js";
 import { ServerManager } from "/src/managers/ServerManager.js";
@@ -22,20 +24,21 @@ async function hackLoop(ns: NS) {
     const serverManager: ServerManager = ServerManager.getInstance(ns);
     const hackManager: HackManager = HackManager.getInstance();
 
+    const serverMap: Server[] = await serverManager.getServerMap(ns);
+    let potentialTargets: HackableServer[] = await serverManager.getTargetableServers(ns);
+
     // TODO: initializeServers 
     // Purchase new servers and such to have some power later on
 
-    // TODO: Root all servers
-
-
-    let potentialTargets: HackableServer[] = await serverManager.getTargetableServers(ns);
-
-    // Root all potential targets in advance
-    // Then evaluate them afterwards
-    await Promise.all(potentialTargets.map(async (target) => {
-        if (!target.isRooted) {
-            await target.root(ns);
+    // Root all servers in advance
+    await Promise.all(serverMap.map(async (server) => {
+        if (server instanceof ExternalServer) {
+            await server.root(ns);
         }
+    }));
+
+    // Then evaluate the potential targets afterwards
+    await Promise.all(potentialTargets.map(async (target) => {
         target.evaluate(ns, Heuristics.MainHeuristic);
     }));
 

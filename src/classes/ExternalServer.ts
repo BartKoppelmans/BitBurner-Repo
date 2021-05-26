@@ -1,5 +1,7 @@
-import type { BitBurner as NS } from "Bitburner"
+import type { BitBurner as NS } from "Bitburner";
+import { Program } from "/src/classes/Program";
 import Server, { TreeStructure } from "/src/classes/Server.js";
+import { ProgramManager } from "/src/managers/ProgramManager";
 
 export default class ExternalServer extends Server {
     // Static values
@@ -23,5 +25,25 @@ export default class ExternalServer extends Server {
         this.baseSecurityLevel = ns.getServerBaseSecurityLevel(host);
         this.ram = ns.getServerRam(host)[0];
         this.files = ns.ls(host);
+    }
+
+    public canRoot(ns: NS) {
+        return ProgramManager.getInstance(ns).getNumCrackScripts(ns) >= this.ports;
+    }
+
+    public async root(ns: NS): Promise<void> {
+        if (this.isRooted(ns)) {
+            throw new Error("Server is already rooted.");
+        }
+
+        if (!this.canRoot(ns)) {
+            throw new Error("Cannot crack the server.");
+        }
+
+        const crackingScripts: Program[] = ProgramManager.getInstance(ns).getCrackingScripts(ns, this.ports);
+
+        crackingScripts.forEach(program => program.run(ns, this));
+
+        ns.nuke(this.host);
     }
 }

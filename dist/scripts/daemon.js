@@ -1,3 +1,4 @@
+import ExternalServer from "/src/classes/ExternalServer";
 import { CONSTANT } from "/src/lib/constants.js";
 import { HackManager } from "/src/managers/HackManager.js";
 import { ServerManager } from "/src/managers/ServerManager.js";
@@ -14,16 +15,18 @@ export async function main(ns) {
 async function hackLoop(ns) {
     const serverManager = ServerManager.getInstance(ns);
     const hackManager = HackManager.getInstance();
+    const serverMap = await serverManager.getServerMap(ns);
+    let potentialTargets = await serverManager.getTargetableServers(ns);
     // TODO: initializeServers 
     // Purchase new servers and such to have some power later on
-    // TODO: Root all servers
-    let potentialTargets = await serverManager.getTargetableServers(ns);
-    // Root all potential targets in advance
-    // Then evaluate them afterwards
-    await Promise.all(potentialTargets.map(async (target) => {
-        if (!target.isRooted) {
-            await target.root(ns);
+    // Root all servers in advance
+    await Promise.all(serverMap.map(async (server) => {
+        if (server instanceof ExternalServer) {
+            await server.root(ns);
         }
+    }));
+    // Then evaluate the potential targets afterwards
+    await Promise.all(potentialTargets.map(async (target) => {
         target.evaluate(ns, Heuristics.MainHeuristic);
     }));
     potentialTargets = potentialTargets.sort((a, b) => a.serverValue - b.serverValue);

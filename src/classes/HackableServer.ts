@@ -41,24 +41,4 @@ export default class HackableServer extends ExternalServer {
     public isHackable(ns: NS) {
         return ns.getServerRequiredHackingLevel(this.host) <= PlayerManager.getInstance(ns).hackingLevel;
     }
-
-    public canRoot(ns: NS) {
-        return ProgramManager.getInstance(ns).getNumCrackScripts(ns) >= this.ports;
-    }
-
-    public async root(ns: NS): Promise<void> {
-        if (this.isRooted(ns)) {
-            throw new Error("Server is already rooted.");
-        }
-
-        if (!this.canRoot(ns)) {
-            throw new Error("Cannot crack the server.");
-        }
-
-        const crackingScripts: Program[] = ProgramManager.getInstance(ns).getCrackingScripts(ns, this.ports);
-
-        crackingScripts.forEach(program => program.run(ns, this));
-
-        ns.nuke(this.host);
-    }
 }
