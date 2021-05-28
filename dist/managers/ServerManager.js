@@ -15,12 +15,6 @@ export class ServerManager {
         }
         return ServerManager.instance;
     }
-    async getServerMap(ns, forceUpdate = false) {
-        if (this.needsUpdate(ns) || forceUpdate) {
-            await this.rebuildServerMap(ns);
-        }
-        return this.serverMap;
-    }
     async buildServerMap(ns) {
         const hostName = ns.getHostname();
         if (hostName !== 'home') {
@@ -29,6 +23,12 @@ export class ServerManager {
         let serverMap = this.spider(ns, hostName);
         this.lastUpdated = new Date();
         return serverMap;
+    }
+    async getServerMap(ns, forceUpdate = false) {
+        if (this.needsUpdate(ns) || forceUpdate) {
+            await this.rebuildServerMap(ns);
+        }
+        return this.serverMap;
     }
     async rebuildServerMap(ns) {
         this.serverMap = await this.buildServerMap(ns);
@@ -46,9 +46,11 @@ export class ServerManager {
             if (queue.length === 0) {
                 // If the node is a purchased server
                 if (ServerUtils.isHome(parent.host) && ServerUtils.isPurchased(nodeName)) {
+                    // A purchased server
                     return [new PurchasedServer(ns, nodeName)];
                 }
                 else if (ServerUtils.isHome(parent.host) && ServerUtils.isDarkweb(nodeName)) {
+                    // The darkweb server
                     return [new Server(ns, nodeName)];
                 }
                 else {
@@ -78,7 +80,7 @@ export class ServerManager {
             ];
         });
         let children = tempServerMap.filter(node => queue.includes(node.host));
-        // Create the subtree node
+        // Create the subtree structure
         let treeStructure;
         if (parent) {
             treeStructure = {
@@ -104,7 +106,8 @@ export class ServerManager {
             .filter(server => ServerUtils.isHackableServer(server));
         servers = servers
             .filter(server => server.isHackable(ns))
-            .filter(server => server.canRoot(ns))
+            // We can remove this line because we do not need to root a server to hack it
+            // .filter(server => server.canRoot(ns)) 
             .filter(server => server.staticHackingProperties.maxMoney > 0);
         return servers;
     }

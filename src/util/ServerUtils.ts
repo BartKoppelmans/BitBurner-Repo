@@ -28,6 +28,6 @@ export default class ServerUtils {
     }
 
     static isHackableServer(server: Server): boolean {
-        return server instanceof HackableServer;
+        return (server.constructor.name === "HackableServer");
     }
 }

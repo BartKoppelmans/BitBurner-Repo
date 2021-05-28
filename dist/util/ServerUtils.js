@@ -1,4 +1,3 @@
-import HackableServer from "/src/classes/HackableServer.js";
 import { CONSTANT } from "/src/lib/constants.js";
 export default class ServerUtils {
     static isHomeServer(server) {
@@ -20,6 +19,6 @@ export default class ServerUtils {
         return host.includes(CONSTANT.PURCHASED_SERVER_PREFIX);
     }
     static isHackableServer(server) {
-        return server instanceof HackableServer;
+        return (server.constructor.name === "HackableServer");
     }
 }

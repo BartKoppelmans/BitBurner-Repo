@@ -32,7 +32,6 @@ export default class HackableServer extends Server {
     staticHackingProperties: StaticHackingProperties;
     dynamicHackingProperties: DynamicHackingProperties;
 
-
     serverValue?: Heuristics.HeuristicValue;
 
     constructor(ns: NS, host: string, treeStructure?: TreeStructure) {
@@ -61,7 +60,6 @@ export default class HackableServer extends Server {
     }
 
     private getDynamicHackingProperties(ns: NS): DynamicHackingProperties {
-
         return {
             lastUpdated: new Date(),
             securityLevel: ns.getServerSecurityLevel(this.host),
