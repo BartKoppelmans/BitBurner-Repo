@@ -120,7 +120,7 @@ export class HackManager {
         weakenThreads = Math.min(weakenThreadsNeeded, maxWeakenThreads);
 
         if (weakenThreads > 0) {
-            await this.executeTool(ns, Tools.WEAKEN, growThreads, server, { isPrep: true });
+            await this.executeTool(ns, Tools.WEAKEN, weakenThreads, server, { isPrep: true });
         }
 
     }

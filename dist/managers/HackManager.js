@@ -72,7 +72,7 @@ export class HackManager {
         let maxWeakenThreads = await HackUtils.computeMaxThreads(ns, Tools.WEAKEN, CONSTANT.ALLOW_THREAD_SPREADING);
         weakenThreads = Math.min(weakenThreadsNeeded, maxWeakenThreads);
         if (weakenThreads > 0) {
-            await this.executeTool(ns, Tools.WEAKEN, growThreads, server, { isPrep: true });
+            await this.executeTool(ns, Tools.WEAKEN, weakenThreads, server, { isPrep: true });
         }
     }
     async attackServer(ns, server) {
