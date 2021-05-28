@@ -1,7 +1,4 @@
 import type { BitBurner as NS } from "Bitburner";
-import { Program } from "/src/classes/Program.js";
-import { CONSTANT } from "/src/lib/constants.js";
-import { ProgramManager } from "/src/managers/ProgramManager.js";
 
 export interface TreeStructure {
     connections?: Server[];
@@ -14,28 +11,21 @@ export default class Server {
     host: string;
     treeStructure?: TreeStructure;
 
+    ram: number;
+    files: string[];
 
-    public constructor(host: string, treeStructure?: TreeStructure) {
+
+    public constructor(ns: NS, host: string, treeStructure?: TreeStructure) {
         this.host = host;
+
+        this.ram = ns.getServerRam(host)[0];
+        this.files = ns.ls(host);
 
         if (treeStructure)
             this.updateTree(treeStructure);
     }
 
-    public isHome() {
-        return false;
-    }
-
-    public static isPurchasedServer(host: string) {
-        return host.includes(CONSTANT.PURCHASED_SERVER_PREFIX);
-    }
-
-    public static isDarkweb(host: string) {
-        return (host === CONSTANT.DARKWEB_HOST);
-    }
-
-    public updateTree(treeStructure: TreeStructure) {
-
+    public updateTree(treeStructure: TreeStructure): void {
         if (!treeStructure.connections && !treeStructure.children && !treeStructure.parent) {
             return;
         }
@@ -54,12 +44,20 @@ export default class Server {
             this.treeStructure.parent = treeStructure.parent;
     }
 
-    public getAvailableRam(ns: NS) {
+    public getAvailableRam(ns: NS): number {
         let [total, used] = ns.getServerRam(this.host);
         return total - used;
     }
 
-    public isRooted(ns: NS) {
+    public isRooted(ns: NS): boolean {
         return ns.hasRootAccess(this.host);
+    }
+
+    public canRoot(ns: NS): boolean {
+        return false;
+    }
+
+    public async root(ns: NS): Promise<void> {
+        return;
     }
 }

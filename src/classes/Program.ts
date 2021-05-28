@@ -1,5 +1,4 @@
 import type { BitBurner as NS } from "Bitburner";
-import HackableServer from "/src/classes/HackableServer.js";
 import Server from "/src/classes/Server.js";
 
 export enum ProgramType {

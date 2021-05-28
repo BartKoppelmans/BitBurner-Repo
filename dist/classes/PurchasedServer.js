@@ -1,12 +1,11 @@
-import ExternalServer from "/src/classes/ExternalServer.js";
 import HomeServer from "/src/classes/HomeServer.js";
-export default class PurchasedServer extends ExternalServer {
+import Server from '/src/classes/Server.js';
+export default class PurchasedServer extends Server {
     constructor(ns, host) {
-        super(ns, host);
-        this.treeStructure = {
-            connections: [HomeServer.getInstance()],
+        super(ns, host, {
+            connections: [HomeServer.getInstance(ns)],
             children: [],
-            parent: HomeServer.getInstance()
-        };
+            parent: HomeServer.getInstance(ns)
+        });
     }
 }

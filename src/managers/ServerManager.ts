@@ -4,7 +4,7 @@ import HackableServer from '/src/classes/HackableServer.js';
 import PurchasedServer from '/src/classes/PurchasedServer.js';
 import HomeServer from "/src/classes/HomeServer.js";
 import { CONSTANT } from "/src/lib/constants.js";
-import ExternalServer from "/src/classes/ExternalServer.js";
+import ServerUtils from "/src/util/ServerUtils.js";
 
 export class ServerManager {
     private static instance: ServerManager;
@@ -62,11 +62,11 @@ export class ServerManager {
             if (queue.length === 0) {
 
                 // If the node is a purchased server
-                if (parent.isHome() && Server.isPurchasedServer(nodeName)) {
+                if (ServerUtils.isHome(parent.host) && ServerUtils.isPurchased(nodeName)) {
                     return [new PurchasedServer(ns, nodeName)];
                 }
-                else if (parent.isHome() && Server.isDarkweb(nodeName)) {
-                    return [new ExternalServer(ns, nodeName)];
+                else if (ServerUtils.isHome(parent.host) && ServerUtils.isDarkweb(nodeName)) {
+                    return [new Server(ns, nodeName)];
                 }
                 else {
                     const treeStructure = {
@@ -87,7 +87,7 @@ export class ServerManager {
         if (parent) {
             subtreeNode = new HackableServer(ns, nodeName, { parent: parent });
         } else {
-            subtreeNode = HomeServer.getInstance();
+            subtreeNode = HomeServer.getInstance(ns);
         }
 
         // Loop through the current level
@@ -125,12 +125,12 @@ export class ServerManager {
 
     public async getTargetableServers(ns: NS): Promise<HackableServer[]> {
         let servers: HackableServer[] = (await this.getServerMap(ns))
-            .filter(server => server instanceof HackableServer) as HackableServer[];
+            .filter(server => ServerUtils.isHackableServer(server)) as HackableServer[];
 
         servers = servers
             .filter(server => server.isHackable(ns))
             .filter(server => server.canRoot(ns))
-            .filter(server => server.maxMoney > 0);
+            .filter(server => server.staticHackingProperties.maxMoney > 0);
 
         return servers;
     }
@@ -140,7 +140,7 @@ export class ServerManager {
             await this.rebuildServerMap(ns);
         }
 
-        this.printServer(ns, HomeServer.getInstance(), 0);
+        this.printServer(ns, HomeServer.getInstance(ns), 0);
     }
 
     private printServer(ns: NS, server: Server, level: number) {

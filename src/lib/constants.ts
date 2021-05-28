@@ -33,6 +33,8 @@ export const CONSTANT = {
     // The name of the darkweb server
     DARKWEB_HOST: "darkweb",
 
+    HOME_SERVER_HOST: "home",
+
     DESIRED_MONEY_RATIO: 0.9,
     MIN_SECURITY_LEVEL_OFFSET: 1,
     DESIRED_FREE_RAM_RATIO: 0.05,

@@ -1,6 +1,5 @@
 import type { BitBurner as NS } from "Bitburner";
 import HackableServer from "/src/classes/HackableServer.js";
-import HomeServer from "/src/classes/HomeServer.js";
 import Server from "/src/classes/Server.js";
 import { CONSTANT } from "/src/lib/constants.js";
 import { PlayerManager } from "/src/managers/PlayerManager.js";
@@ -31,10 +30,10 @@ export default class HackUtils {
 
         switch (tool) {
             case Tools.GROW:
-                const targetGrowthCoefficient: number = server.maxMoney / (Math.max(server.money!, 1));
+                const targetGrowthCoefficient: number = server.staticHackingProperties.maxMoney / (Math.max(server.dynamicHackingProperties.money, 1));
                 const adjustedGrowthRate: number = Math.min(
                     CONSTANT.MAX_GROWTH_RATE,
-                    1 + ((CONSTANT.UNADJUSTED_GROWTH_RATE - 1) / server.minSecurityLevel)
+                    1 + ((CONSTANT.UNADJUSTED_GROWTH_RATE - 1) / server.staticHackingProperties.minSecurityLevel)
                 );
                 const neededCycles: number = Math.log(targetGrowthCoefficient) / Math.log(adjustedGrowthRate);
                 const serverGrowthPercentage: number = ns.getServerGrowth(server.host) * playerManager.getGrowthMultiplier() / 100;
@@ -42,7 +41,7 @@ export default class HackUtils {
                 return Math.ceil(neededCycles / serverGrowthPercentage);
 
             case Tools.WEAKEN:
-                return Math.ceil((server.securityLevel! - server.minSecurityLevel) / playerManager.getWeakenPotency());
+                return Math.ceil((server.dynamicHackingProperties.securityLevel - server.staticHackingProperties.minSecurityLevel) / playerManager.getWeakenPotency());
             case Tools.HACK:
                 throw new Error("Not implemented yet");
             default:

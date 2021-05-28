@@ -1,5 +1,4 @@
 import type { BitBurner as NS } from "Bitburner";
-import ExternalServer from "/src/classes/ExternalServer.js";
 import HackableServer from "/src/classes/HackableServer.js";
 import Server from "/src/classes/Server.js";
 import { CONSTANT } from "/src/lib/constants.js";
@@ -32,7 +31,7 @@ async function hackLoop(ns: NS) {
 
     // Root all servers in advance
     await Promise.all(serverMap.map(async (server) => {
-        if (server instanceof ExternalServer) {
+        if (!server.isRooted(ns) && server.canRoot(ns)) {
             await server.root(ns);
         }
     }));

@@ -18,13 +18,13 @@ export default class HackUtils {
         const playerManager = PlayerManager.getInstance(ns);
         switch (tool) {
             case Tools.GROW:
-                const targetGrowthCoefficient = server.maxMoney / (Math.max(server.money, 1));
-                const adjustedGrowthRate = Math.min(CONSTANT.MAX_GROWTH_RATE, 1 + ((CONSTANT.UNADJUSTED_GROWTH_RATE - 1) / server.minSecurityLevel));
+                const targetGrowthCoefficient = server.staticHackingProperties.maxMoney / (Math.max(server.dynamicHackingProperties.money, 1));
+                const adjustedGrowthRate = Math.min(CONSTANT.MAX_GROWTH_RATE, 1 + ((CONSTANT.UNADJUSTED_GROWTH_RATE - 1) / server.staticHackingProperties.minSecurityLevel));
                 const neededCycles = Math.log(targetGrowthCoefficient) / Math.log(adjustedGrowthRate);
                 const serverGrowthPercentage = ns.getServerGrowth(server.host) * playerManager.getGrowthMultiplier() / 100;
                 return Math.ceil(neededCycles / serverGrowthPercentage);
             case Tools.WEAKEN:
-                return Math.ceil((server.securityLevel - server.minSecurityLevel) / playerManager.getWeakenPotency());
+                return Math.ceil((server.dynamicHackingProperties.securityLevel - server.staticHackingProperties.minSecurityLevel) / playerManager.getWeakenPotency());
             case Tools.HACK:
                 throw new Error("Not implemented yet");
             default:

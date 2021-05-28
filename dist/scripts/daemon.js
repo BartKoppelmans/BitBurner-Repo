@@ -1,4 +1,3 @@
-import ExternalServer from "/src/classes/ExternalServer.js";
 import { CONSTANT } from "/src/lib/constants.js";
 import { HackManager } from "/src/managers/HackManager.js";
 import { ServerManager } from "/src/managers/ServerManager.js";
@@ -21,7 +20,7 @@ async function hackLoop(ns) {
     // Purchase new servers and such to have some power later on
     // Root all servers in advance
     await Promise.all(serverMap.map(async (server) => {
-        if (server instanceof ExternalServer) {
+        if (!server.isRooted(ns) && server.canRoot(ns)) {
             await server.root(ns);
         }
     }));

@@ -4,7 +4,6 @@ import { CONSTANT } from '/src/lib/constants.js';
 const files: string[] = [
     'Bitburner.t.js',
     'import.js',
-    'classes/ExternalServer.js',
     'classes/HackableServer.js',
     'classes/HomeServer.js',
     'classes/Program.js',
@@ -26,6 +25,7 @@ const files: string[] = [
     'tools/weaken.js',
     'util/HackUtils.js',
     'util/Heuristics.js',
+    'util/ServerUtils.js',
 ];
 
 /*

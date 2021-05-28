@@ -1,18 +1,10 @@
-import { CONSTANT } from "/src/lib/constants.js";
 export default class Server {
-    constructor(host, treeStructure) {
+    constructor(ns, host, treeStructure) {
         this.host = host;
+        this.ram = ns.getServerRam(host)[0];
+        this.files = ns.ls(host);
         if (treeStructure)
             this.updateTree(treeStructure);
-    }
-    isHome() {
-        return false;
-    }
-    static isPurchasedServer(host) {
-        return host.includes(CONSTANT.PURCHASED_SERVER_PREFIX);
-    }
-    static isDarkweb(host) {
-        return (host === CONSTANT.DARKWEB_HOST);
     }
     updateTree(treeStructure) {
         if (!treeStructure.connections && !treeStructure.children && !treeStructure.parent) {
@@ -34,5 +26,11 @@ export default class Server {
     }
     isRooted(ns) {
         return ns.hasRootAccess(this.host);
+    }
+    canRoot(ns) {
+        return false;
+    }
+    async root(ns) {
+        return;
     }
 }

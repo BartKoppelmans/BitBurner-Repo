@@ -1,5 +1,3 @@
-
-
 import type { BitBurner as NS } from "Bitburner";
 import HackableServer from "/src/classes/HackableServer.js";
 
@@ -16,13 +14,13 @@ export namespace Heuristics {
     };
 
     export function evaluate(ns: NS, server: HackableServer): HeuristicValue {
-        if (!server.securityLevel) {
+        if (!server.dynamicHackingProperties.securityLevel) {
             throw new Error(`Unable to evaluate ${server.host}`);
         }
 
         // TODO: Get rid of magic numbers
 
-        return server.maxMoney * (100 / (server.minSecurityLevel + server.securityLevel));
+        return server.staticHackingProperties.maxMoney * (100 / (server.staticHackingProperties.minSecurityLevel + server.dynamicHackingProperties.securityLevel));
     }
 }
 

@@ -3,6 +3,7 @@ import { CONSTANT } from "/src/lib/constants.js";
 import { PlayerManager } from "/src/managers/PlayerManager.js";
 import { Tools } from "/src/tools/Tools.js";
 import HackUtils from "/src/util/HackUtils.js";
+import ServerUtils from "/src/util/ServerUtils.js";
 export class HackManager {
     constructor() {
         this.hackingMap = [];
@@ -26,7 +27,7 @@ export class HackManager {
         // Prep the server
         await this.prepServer(ns, server);
         // The server is not optimal, other targets take up the RAM
-        if (server.securityLevel > server.minSecurityLevel || server.money < server.maxMoney)
+        if (server.dynamicHackingProperties.securityLevel > server.staticHackingProperties.minSecurityLevel || server.dynamicHackingProperties.money < server.staticHackingProperties.maxMoney)
             return true;
         // If it is prepping, leave it
         if (this.isPrepping(ns, server))
@@ -40,7 +41,7 @@ export class HackManager {
         if (this.isTargetting(ns, server))
             return;
         // If the server is optimal, we are done I guess
-        if (server.securityLevel === server.minSecurityLevel && server.money === server.maxMoney)
+        if (server.dynamicHackingProperties.securityLevel === server.staticHackingProperties.minSecurityLevel && server.dynamicHackingProperties.money === server.staticHackingProperties.maxMoney)
             return;
         ns.tprint(`Prepping ${server.host}`);
         const playerManager = PlayerManager.getInstance(ns);
@@ -49,7 +50,7 @@ export class HackManager {
         let weakenThreads = 0;
         let compensationWeakenThreads = 0;
         // First grow, so that the amount of money is optimal
-        if (server.money < server.maxMoney) {
+        if (server.dynamicHackingProperties.money < server.staticHackingProperties.maxMoney) {
             let maxGrowThreads = await HackUtils.computeMaxThreads(ns, Tools.GROW, CONSTANT.ALLOW_THREAD_SPREADING);
             let neededGrowThreads = await HackUtils.computeThreadsNeeded(ns, Tools.GROW, server);
             let weakenThreadsNeeded = await HackUtils.computeThreadsNeeded(ns, Tools.WEAKEN, server);
@@ -81,8 +82,8 @@ export class HackManager {
         let threadSpread = await HackUtils.computeThreadSpread(ns, tool, threads);
         threadSpread.forEach((threads, server) => {
             // We have to copy the tool to the server if it is not available yet
-            if (!server.isHome()) {
-                ns.scp(tool, HomeServer.getInstance().host, server.host);
+            if (!ServerUtils.isHomeServer(server)) {
+                ns.scp(tool, HomeServer.getInstance(ns).host, server.host);
             }
             ns.exec(tool, server.host, threads, target.host);
         });

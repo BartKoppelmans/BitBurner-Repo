@@ -1,15 +1,13 @@
 import Server from '/src/classes/Server.js';
+import { CONSTANT } from "/src/lib/constants.js";
 export default class HomeServer extends Server {
-    constructor() {
-        super('home');
+    constructor(ns) {
+        super(ns, CONSTANT.HOME_SERVER_HOST);
     }
-    static getInstance() {
+    static getInstance(ns) {
         if (!HomeServer.instance) {
-            HomeServer.instance = new HomeServer();
+            HomeServer.instance = new HomeServer(ns);
         }
         return HomeServer.instance;
-    }
-    isHome() {
-        return true;
     }
 }

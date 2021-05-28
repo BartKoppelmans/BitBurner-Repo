@@ -2,7 +2,6 @@ import { CONSTANT } from '/src/lib/constants.js';
 const files = [
     'Bitburner.t.js',
     'import.js',
-    'classes/ExternalServer.js',
     'classes/HackableServer.js',
     'classes/HomeServer.js',
     'classes/Program.js',
@@ -24,6 +23,7 @@ const files = [
     'tools/weaken.js',
     'util/HackUtils.js',
     'util/Heuristics.js',
+    'util/ServerUtils.js',
 ];
 /*
  * This will import all files listed in importFiles.

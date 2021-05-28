@@ -1,17 +1,14 @@
-import type { BitBurner as NS } from "Bitburner"
-import ExternalServer from "/src/classes/ExternalServer.js";
+import type { BitBurner as NS } from "Bitburner";
 import HomeServer from "/src/classes/HomeServer.js";
-import Server, { TreeStructure } from '/src/classes/Server.js'
+import Server from '/src/classes/Server.js';
 
-export default class PurchasedServer extends ExternalServer {
-
-    treeStructure: TreeStructure = {
-        connections: [HomeServer.getInstance()],
-        children: [],
-        parent: HomeServer.getInstance()
-    }
+export default class PurchasedServer extends Server {
 
     constructor(ns: NS, host: string) {
-        super(ns, host);
+        super(ns, host, {
+            connections: [HomeServer.getInstance(ns)],
+            children: [],
+            parent: HomeServer.getInstance(ns)
+        });
     }
 }
