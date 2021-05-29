@@ -119,7 +119,7 @@ export class HackManager {
 
         const optimalBatchCost: number = this.getOptimalBatchCost(ns, target);
         const optimalCycles: number = ServerHackUtils.computeOptimalCycles(ns, target);
-        const maxCycles: number = await ServerHackUtils.computeMaxCompleteCycles(ns, optimalBatchCost);
+        const maxCycles: number = await HackUtils.computeMaxCycles(ns, optimalBatchCost, true);
 
         const numCycles: number = Math.min(optimalCycles, maxCycles);
 

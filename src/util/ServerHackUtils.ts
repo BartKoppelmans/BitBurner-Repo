@@ -91,10 +91,6 @@ export default class ServerHackUtils {
         return (this.weakenThreadsNeededAfterTheft(ns, target) + this.weakenThreadsNeededAfterGrowth(ns, target));
     }
 
-    static async computeMaxCompleteCycles(ns: NS, optimalBatchCost: number) {
-        return await HackUtils.computeMaxCycles(ns, optimalBatchCost, true);
-    }
-
     static computeOptimalCycles(ns: NS, target: HackableServer) {
         const fullWeakenTime: number = ns.getWeakenTime(target.host) * CONSTANT.MILLISECONDS_IN_SECOND - CONSTANT.QUEUE_DELAY;
         return Math.min(CONSTANT.MAX_CYCLE_NUMBER, Math.max(1, Math.floor(fullWeakenTime / CONSTANT.QUEUE_DELAY)));
