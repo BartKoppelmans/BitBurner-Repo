@@ -31,6 +31,10 @@ export class HackManager {
     // Return true when we have found a new target
     public async hack(ns: NS, server: HackableServer): Promise<boolean> {
 
+        // Print the hacking map for debugging
+        // const hackIdMap: number[] = this.hackingMap.map(hack => hack.hackId);
+        // ns.tprint(hackIdMap);
+
         // TODO: Make sure that all neccesary variables are set (remove the exclamation marks)
 
         // If it is prepping, leave it
@@ -153,8 +157,6 @@ export class HackManager {
         for (const cycle of cycles) {
             for (const hack of cycle.hacks) {
 
-                // NOTE: Execution here might fail because there are not enough threads available
-
                 // TODO: Wait until there are enough threads available
 
                 await this.executeScheduledHack(ns, hack);
@@ -266,6 +268,7 @@ export class HackManager {
         let threads: number = scheduledHack.threads;
 
         // If we are not prepping, we are allowed to lower the number of threads (i think...?)
+        // TODO: Refactor this so that we wait with hacking until enough threads are available or smth
         if (!args.isPrep) {
             const maxThreadsAvailable: number = await HackUtils.computeMaxThreads(ns, scheduledHack.tool, true);
             threads = Math.min(threads, maxThreadsAvailable);
@@ -314,7 +317,13 @@ export class HackManager {
 
         setTimeout(() => {
             // NOTE: This is heavily effected by how trustworthy the hackId counter is...
-            this.hackingMap.find(hack => hack.hackId === scheduledHack.hackId);
+            const index: number = this.hackingMap.findIndex(hack => hack.hackId === scheduledHack.hackId);
+
+            if (index === -1) {
+                throw new Error("Could not find the hack");
+            }
+
+            this.hackingMap.splice(index, 1);
 
             if (args.isPrep) {
                 ns.tprint(`[${Utils.formatDate()}] [Hack ${scheduledHack.hackId}] Finished prepping ${scheduledHack.target.host} - ${Utils.getToolName(scheduledHack.tool)}`);
