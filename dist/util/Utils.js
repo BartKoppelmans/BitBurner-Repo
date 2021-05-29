@@ -1,7 +1,24 @@
 import { Tools } from "/src/tools/Tools.js";
 export default class Utils {
-    static formatDate(date = new Date()) {
-        return `[${date.toLocaleString()}]`;
+    static tprintColored(text, color = "var(--my-font-color)", printDate = false) {
+        let terminalInput = document.getElementById("terminal-input");
+        let rowElement = document.createElement("tr");
+        let cellElement = document.createElement("td");
+        if (!terminalInput) {
+            throw new Error("Could not find the terminal input.");
+        }
+        if (printDate) {
+            text = Utils.formatTime() + text;
+        }
+        rowElement.classList.add("posted");
+        cellElement.classList.add("terminal-line");
+        cellElement.style.color = color;
+        cellElement.innerText = text;
+        rowElement.appendChild(cellElement);
+        terminalInput.before(rowElement);
+    }
+    static formatTime(date = new Date()) {
+        return `[${date.toLocaleTimeString()}]`;
     }
     static formatHackId(ns, id) {
         return `[Hack ${ns.nFormat(id, "000000")}]`;

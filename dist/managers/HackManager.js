@@ -221,10 +221,12 @@ export class HackManager {
         // NOTE: We might want to move this to the threadspread loop to show the source servers
         // For now, meh
         if (args.isPrep) {
-            ns.tprint(`${Utils.formatDate()} ${Utils.formatHackId(ns, scheduledHack.hackId)} Prepping ${scheduledHack.target.host} - ${Utils.getToolName(scheduledHack.tool)}`);
+            Utils.tprintColored(`${Utils.formatHackId(ns, scheduledHack.hackId)} Prepping ${scheduledHack.target.host} - ${Utils.getToolName(scheduledHack.tool)}`);
+            // ns.tprint(`${Utils.formatTime()} ${Utils.formatHackId(ns, scheduledHack.hackId)} Prepping ${scheduledHack.target.host} - ${Utils.getToolName(scheduledHack.tool)}`);
         }
         else {
-            ns.tprint(`${Utils.formatDate()} ${Utils.formatHackId(ns, scheduledHack.hackId)} Attacking ${scheduledHack.target.host} - ${Utils.getToolName(scheduledHack.tool)}`);
+            Utils.tprintColored(`${Utils.formatHackId(ns, scheduledHack.hackId)} Attacking ${scheduledHack.target.host} - ${Utils.getToolName(scheduledHack.tool)}`, "red");
+            //ns.tprint(`${Utils.formatTime()} ${Utils.formatHackId(ns, scheduledHack.hackId)} Attacking ${scheduledHack.target.host} - ${Utils.getToolName(scheduledHack.tool)}`);
         }
         this.hackingMap.push(hack);
         for (let [server, threads] of threadSpread) {
@@ -244,10 +246,10 @@ export class HackManager {
             }
             this.hackingMap.splice(index, 1);
             if (args.isPrep) {
-                ns.tprint(`${Utils.formatDate()} ${Utils.formatHackId(ns, scheduledHack.hackId)} Finished prepping ${scheduledHack.target.host} - ${Utils.getToolName(scheduledHack.tool)}`);
+                ns.tprint(`${Utils.formatTime()} ${Utils.formatHackId(ns, scheduledHack.hackId)} Finished prepping ${scheduledHack.target.host} - ${Utils.getToolName(scheduledHack.tool)}`);
             }
             else {
-                ns.tprint(`${Utils.formatDate()} ${Utils.formatHackId(ns, scheduledHack.hackId)} Finished attacking ${scheduledHack.target.host} - ${Utils.getToolName(scheduledHack.tool)}`);
+                ns.tprint(`${Utils.formatTime()} ${Utils.formatHackId(ns, scheduledHack.hackId)} Finished attacking ${scheduledHack.target.host} - ${Utils.getToolName(scheduledHack.tool)}`);
             }
         }, executionTime - lag);
         return hack;
