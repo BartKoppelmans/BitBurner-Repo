@@ -7,6 +7,7 @@ const files = [
     'classes/Program.js',
     'classes/PurchasedServer.js',
     'classes/Server.js',
+    'interfaces/HackManagerInterfaces.js',
     'lib/constants.js',
     'managers/HackManager.js',
     'managers/PlayerManager.js',
@@ -23,7 +24,9 @@ const files = [
     'tools/weaken.js',
     'util/HackUtils.js',
     'util/Heuristics.js',
+    'util/ServerHackUtils.js',
     'util/ServerUtils.js',
+    'util/Utils.js',
 ];
 /*
  * This will import all files listed in importFiles.

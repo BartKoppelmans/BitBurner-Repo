@@ -1,10 +1,9 @@
 import type { BitBurner as NS } from "Bitburner";
 import HackableServer from "/src/classes/HackableServer.js";
 import Server from "/src/classes/Server.js";
-import { CONSTANT } from "/src/lib/constants.js";
-import { PlayerManager } from "/src/managers/PlayerManager.js";
 import { ServerManager } from "/src/managers/ServerManager.js";
 import { Tools } from "/src/tools/Tools.js";
+import ServerHackUtils from "/src/util/ServerHackUtils.js";
 
 export default class HackUtils {
 
@@ -25,25 +24,13 @@ export default class HackUtils {
     }
 
     static async computeThreadsNeeded(ns: NS, tool: Tools, server: HackableServer): Promise<number> {
-
-        const playerManager: PlayerManager = PlayerManager.getInstance(ns);
-
         switch (tool) {
             case Tools.GROW:
-                const targetGrowthCoefficient: number = server.staticHackingProperties.maxMoney / (Math.max(server.dynamicHackingProperties.money, 1));
-                const adjustedGrowthRate: number = Math.min(
-                    CONSTANT.MAX_GROWTH_RATE,
-                    1 + ((CONSTANT.UNADJUSTED_GROWTH_RATE - 1) / server.staticHackingProperties.minSecurityLevel)
-                );
-                const neededCycles: number = Math.log(targetGrowthCoefficient) / Math.log(adjustedGrowthRate);
-                const serverGrowthPercentage: number = ns.getServerGrowth(server.host) * playerManager.getGrowthMultiplier() / 100;
-
-                return Math.ceil(neededCycles / serverGrowthPercentage);
-
+                return ServerHackUtils.growThreadsNeeded(ns, server);
             case Tools.WEAKEN:
-                return Math.ceil((server.dynamicHackingProperties.securityLevel - server.staticHackingProperties.minSecurityLevel) / playerManager.getWeakenPotency());
+                return ServerHackUtils.weakenThreadsNeeded(ns, server);
             case Tools.HACK:
-                throw new Error("Not implemented yet");
+                return ServerHackUtils.hackThreadsNeeded(ns, server);
             default:
                 throw new Error("Tool not recognized");
         }
@@ -107,4 +94,5 @@ export default class HackUtils {
                 throw new Error("Tool not recognized");
         }
     }
+
 }

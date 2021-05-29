@@ -3,6 +3,7 @@ export const CONSTANT = {
      * General constants
      */
     MILLISECONDS_IN_SECOND: 1000,
+    SMALL_DELAY: 50,
     /*
      * Import script constants
      */
@@ -12,10 +13,6 @@ export const CONSTANT = {
     REMOTE_FOLDER: "dist",
     // The URL on GitHub to import from
     ROOT_URL: "https://raw.githubusercontent.com/BartKoppelmans/BitBurner-Repo/master",
-    /*
-     * Kill all script constants
-     */
-    KILL_ALL_SLEEP_TIME: 50,
     /*
      * Server constants
      */
@@ -40,12 +37,15 @@ export const CONSTANT = {
     MAX_TARGET_COUNT: 5,
     HACK_LOOP_DELAY: 1 * 1000,
     ALLOW_THREAD_SPREADING: true,
+    MAX_CYCLE_NUMBER: 10,
     // Max server growth rate, higher than this will be throttled
     MAX_GROWTH_RATE: 1.0035,
     // Unadjusted server growth rate, this is higher than actually possible
     UNADJUSTED_GROWTH_RATE: 1.03,
+    HACK_PERCENTAGE: 0.5,
     // Currently set to 12 seconds
     QUEUE_DELAY: 12000,
+    CYCLE_DELAY: 3000,
     // THe amount that each operation changes the security level of the server
     WEAKEN_POTENCY: 0.05,
     HACK_HARDENING: 0.002,

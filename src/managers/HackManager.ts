@@ -2,36 +2,22 @@ import type { BitBurner as NS } from "Bitburner";
 import HackableServer from "/src/classes/HackableServer.js";
 import HomeServer from "/src/classes/HomeServer.js";
 import Server from "/src/classes/Server.js";
+import { Batch, Cycle, Hack, HackArguments, ScheduledHack } from "/src/interfaces/HackManagerInterfaces.js";
 import { CONSTANT } from "/src/lib/constants.js";
 import { PlayerManager } from "/src/managers/PlayerManager.js";
 import { Tools } from "/src/tools/Tools.js";
 import HackUtils from "/src/util/HackUtils.js";
+import ServerHackUtils from "/src/util/ServerHackUtils.js";
 import ServerUtils from "/src/util/ServerUtils.js";
-
-interface Hack {
-    // The target of the hack
-    target: HackableServer;
-
-    // The servers where we are hacking from, and the number of threads
-    threadSpread: Map<Server, number>;
-
-    // The type of the hack
-    tool: Tools;
-
-    // Whether the hack is intended to prep the server
-    isPrep: boolean;
-
-    // The start of the hack
-    start: Date;
-
-    // The intended end of the hack
-    end: Date;
-}
+import Utils from "/src/util/Utils.js";
 
 export class HackManager {
     private static instance: HackManager;
 
     private hackingMap: Hack[] = [];
+    private batchMap: Batch[] = [];
+
+    private hackIdCounter: number = 0;
 
     private constructor() { }
 
@@ -83,8 +69,6 @@ export class HackManager {
 
         const playerManager: PlayerManager = PlayerManager.getInstance(ns);
 
-        // TODO: Move constants to util
-
         let growThreads: number = 0;
         let weakenThreads: number = 0;
         let compensationWeakenThreads: number = 0;
@@ -125,34 +109,196 @@ export class HackManager {
 
     }
 
-    private async attackServer(ns: NS, server: HackableServer): Promise<void> {
-        ns.tprint(`Attacking ${server.host}`);
-    }
+    private async attackServer(ns: NS, target: HackableServer): Promise<void> {
 
-    private async executeTool(ns: NS, tool: Tools, threads: number = 1, target: HackableServer, args: any): Promise<Hack> {
-        let threadSpread: Map<Server, number> = await HackUtils.computeThreadSpread(ns, tool, threads);
+        let cycles: Cycle[] = [];
 
-        threadSpread.forEach((threads: number, server: Server) => {
-            // We have to copy the tool to the server if it is not available yet
-            if (!ServerUtils.isHomeServer(server)) {
-                ns.scp(tool, HomeServer.getInstance(ns).host, server.host);
+        let batchStart: Date = new Date();
+        batchStart.setTime(batchStart.getTime() + CONSTANT.CYCLE_DELAY);
+
+        // TODO: Measure how many cycles would be optimal and take the minimum with the max_cycle_number
+        // For now just always run 10 cycles
+        const numCycles: number = CONSTANT.MAX_CYCLE_NUMBER;
+
+        for (let i = 0; i < numCycles; i++) {
+
+            let cycleStart: Date;
+
+            // Set the start time of the cycle
+            if (cycles.length > 0) {
+                const lastCycle: Cycle = cycles[cycles.length - 1];
+
+                cycleStart = new Date(lastCycle.end);
+                cycleStart.setTime(lastCycle.end.getTime() + CONSTANT.CYCLE_DELAY);
+            } else {
+                cycleStart = new Date(batchStart);
             }
 
-            ns.exec(tool, server.host, threads, target.host);
-        });
+            let cycle: Cycle = await this.scheduleCycle(ns, target, i, cycleStart);
+            cycles.push(cycle);
+
+            await ns.sleep(CONSTANT.SMALL_DELAY);
+        }
+
+        if (cycles.length === 0) {
+            throw new Error("No cycles created");
+        }
+
+        // Create the batch object
+        const batch: Batch = {
+            target,
+            cycles,
+            start: batchStart,
+            end: cycles[cycles.length - 1].end
+        };
+        this.batchMap.push(batch);
+
+        // Execute the batch object
+        for (const cycle of cycles) {
+            for (const hack of cycle.hacks) {
+                await this.executeScheduledHack(ns, hack);
+            }
+        }
+    }
+
+    private async scheduleCycle(ns: NS, target: HackableServer, cycleNumber: number, batchStart: Date): Promise<Cycle> {
+        const schedHack1: ScheduledHack = await this.createCycleHack(ns, target, Tools.HACK, batchStart);
+
+        let schedHack2Start: Date = new Date(schedHack1.end);
+        schedHack2Start.setTime(schedHack2Start.getTime() + CONSTANT.CYCLE_DELAY);
+        const schedHack2: ScheduledHack = await this.createCycleHack(ns, target, Tools.WEAKEN, schedHack2Start, true);
+
+        let schedHack3Start: Date = new Date(schedHack2.end);
+        schedHack3Start.setTime(schedHack3Start.getTime() + CONSTANT.CYCLE_DELAY);
+        const schedHack3: ScheduledHack = await this.createCycleHack(ns, target, Tools.GROW, schedHack3Start);
+
+        let schedHack4Start: Date = new Date(schedHack3.end);
+        schedHack4Start.setTime(schedHack4Start.getTime() + CONSTANT.CYCLE_DELAY);
+        const schedHack4: ScheduledHack = await this.createCycleHack(ns, target, Tools.WEAKEN, schedHack4Start, false);
+
+        return {
+            cycleNumber,
+            target,
+            hacks: [schedHack1, schedHack2, schedHack3, schedHack4],
+            start: batchStart,
+            end: new Date(schedHack4.end)
+        };
+    }
+
+
+    private async createCycleHack(ns: NS, target: HackableServer, tool: Tools, start: Date, isFirstWeaken: boolean = false): Promise<ScheduledHack> {
+
+        let threads: number;
+        let end: Date = new Date(start);
+
+        if (tool === Tools.HACK) {
+            const hackTime: number = ns.getHackTime(target.host) * CONSTANT.MILLISECONDS_IN_SECOND;
+            end.setTime(start.getTime() + hackTime);
+
+            threads = ServerHackUtils.hackThreadsNeeded(ns, target);
+        }
+        else if (tool === Tools.WEAKEN) {
+
+            const weakenTime: number = ns.getWeakenTime(target.host) * CONSTANT.MILLISECONDS_IN_SECOND;
+            end.setTime(start.getTime() + weakenTime);
+
+            threads = (isFirstWeaken) ? ServerHackUtils.weakenThreadsNeededAfterTheft(ns, target) : ServerHackUtils.weakenThreadsNeededAfterGrowth(ns, target);
+
+        }
+        else if (tool === Tools.GROW) {
+            const growTime: number = ns.getGrowTime(target.host) * CONSTANT.MILLISECONDS_IN_SECOND;
+            end.setTime(start.getTime() + growTime);
+
+            threads = ServerHackUtils.growThreadsNeededAfterTheft(ns, target);
+        }
+        else {
+            throw new Error("Tool not recognized");
+        }
+
+        return {
+            target,
+            tool,
+            threads,
+            start,
+            end,
+            hackId: this.hackIdCounter++
+        };
+    }
+
+    // Returns the number of threads
+    private getOptimalBatchCost(ns: NS, target: HackableServer): number {
+        // TODO: Refactor this shitshow
+
+        const weakenCost: number = ServerHackUtils.weakenThreadTotalPerCycle(ns, target);
+        const growCost: number = ServerHackUtils.growThreadsNeededAfterTheft(ns, target);
+        const hackCost: number = ServerHackUtils.hackThreadsNeeded(ns, target);
+
+        return weakenCost + growCost + hackCost;
+    }
+
+    private async executeTool(ns: NS, tool: Tools, threads: number = 1, target: HackableServer, args: HackArguments = {}): Promise<Hack> {
+
+        const scheduledHack: ScheduledHack = await this.scheduleHack(ns, tool, threads, target, args);
+        const hack: Hack = await this.executeScheduledHack(ns, scheduledHack, args);
+
+        return hack;
+    }
+
+    private async scheduleHack(ns: NS, tool: Tools, threads: number = 1, target: HackableServer, args: HackArguments = {}): Promise<ScheduledHack> {
 
         const executionTime: number = HackUtils.getToolTime(ns, tool, target) * CONSTANT.MILLISECONDS_IN_SECOND + CONSTANT.QUEUE_DELAY;
         const start: Date = new Date();
         const end: Date = new Date(start.getTime() + executionTime);
 
-        const hack: Hack = {
+        return {
             target,
-            threadSpread,
             tool,
-            isPrep: (args.isPrep ? args.isPrep : false),
+            threads,
             start,
             end,
+            hackId: (args.hackId) ? args.hackId : this.hackIdCounter++
         };
+    }
+
+    private async executeScheduledHack(ns: NS, scheduledHack: ScheduledHack, args: HackArguments = {}): Promise<Hack> {
+
+        let threadSpread: Map<Server, number> = await HackUtils.computeThreadSpread(ns, scheduledHack.tool, scheduledHack.threads);
+
+        // Create the hack
+        const hack: Hack = {
+            target: scheduledHack.target,
+            threadSpread,
+            tool: scheduledHack.tool,
+            isPrep: (args.isPrep ? args.isPrep : false),
+            start: scheduledHack.start,
+            end: scheduledHack.end,
+            hackId: scheduledHack.hackId
+        };
+
+        const now: Date = new Date();
+        if (scheduledHack.start > now) {
+
+            const waitTime: number = now.getTime() - scheduledHack.start.getTime();
+
+            await ns.sleep(waitTime);
+        }
+
+
+        // TODO: Check what this does
+        if (args.isPrep) {
+            ns.tprint(`[${Utils.formatDate()}] Prepping ${scheduledHack.target} - ${Utils.getToolName(scheduledHack.tool)}`);
+        } else {
+            ns.tprint(`[${Utils.formatDate()}] Attacking ${scheduledHack.target} - ${Utils.getToolName(scheduledHack.tool)}`);
+        }
+
+        threadSpread.forEach((threads: number, server: Server) => {
+            // We have to copy the tool to the server if it is not available yet
+            if (!ServerUtils.isHomeServer(server)) {
+                ns.scp(scheduledHack.tool, HomeServer.getInstance(ns).host, server.host);
+            }
+
+            ns.exec(scheduledHack.tool, server.host, threads, scheduledHack.target.host);
+        });
 
         this.hackingMap.push(hack);
 

@@ -1,7 +1,6 @@
-import { CONSTANT } from "/src/lib/constants.js";
-import { PlayerManager } from "/src/managers/PlayerManager.js";
 import { ServerManager } from "/src/managers/ServerManager.js";
 import { Tools } from "/src/tools/Tools.js";
+import ServerHackUtils from "/src/util/ServerHackUtils.js";
 export default class HackUtils {
     // Here we allow thread spreading over multiple servers
     static async computeMaxThreads(ns, tool, allowSpread = true) {
@@ -15,18 +14,13 @@ export default class HackUtils {
         return serverMap.reduce((threads, server) => threads + Math.floor(server.getAvailableRam(ns) / cost), 0);
     }
     static async computeThreadsNeeded(ns, tool, server) {
-        const playerManager = PlayerManager.getInstance(ns);
         switch (tool) {
             case Tools.GROW:
-                const targetGrowthCoefficient = server.staticHackingProperties.maxMoney / (Math.max(server.dynamicHackingProperties.money, 1));
-                const adjustedGrowthRate = Math.min(CONSTANT.MAX_GROWTH_RATE, 1 + ((CONSTANT.UNADJUSTED_GROWTH_RATE - 1) / server.staticHackingProperties.minSecurityLevel));
-                const neededCycles = Math.log(targetGrowthCoefficient) / Math.log(adjustedGrowthRate);
-                const serverGrowthPercentage = ns.getServerGrowth(server.host) * playerManager.getGrowthMultiplier() / 100;
-                return Math.ceil(neededCycles / serverGrowthPercentage);
+                return ServerHackUtils.growThreadsNeeded(ns, server);
             case Tools.WEAKEN:
-                return Math.ceil((server.dynamicHackingProperties.securityLevel - server.staticHackingProperties.minSecurityLevel) / playerManager.getWeakenPotency());
+                return ServerHackUtils.weakenThreadsNeeded(ns, server);
             case Tools.HACK:
-                throw new Error("Not implemented yet");
+                return ServerHackUtils.hackThreadsNeeded(ns, server);
             default:
                 throw new Error("Tool not recognized");
         }

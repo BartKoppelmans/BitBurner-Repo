@@ -29,6 +29,12 @@ export class PlayerManager {
         return this.hackingMultipliers.growth;
     }
 
+    public getHackMultiplier() {
+        // TODO: Include the bitnode multiplier
+
+        return this.hackingMultipliers.money;
+    }
+
     public getWeakenPotency() {
         // TODO: Include the bitnode multiplier
         return CONSTANT.WEAKEN_POTENCY;

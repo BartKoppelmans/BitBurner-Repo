@@ -9,6 +9,7 @@ const files: string[] = [
     'classes/Program.js',
     'classes/PurchasedServer.js',
     'classes/Server.js',
+    'interfaces/HackManagerInterfaces.js',
     'lib/constants.js',
     'managers/HackManager.js',
     'managers/PlayerManager.js',
@@ -25,7 +26,9 @@ const files: string[] = [
     'tools/weaken.js',
     'util/HackUtils.js',
     'util/Heuristics.js',
+    'util/ServerHackUtils.js',
     'util/ServerUtils.js',
+    'util/Utils.js',
 ];
 
 /*

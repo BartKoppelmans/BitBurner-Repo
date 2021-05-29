@@ -20,7 +20,7 @@ async function killServer(ns, server) {
     ns.killall(server.host);
     do {
         isRunningAnything = (ns.ps(server.host).length > 0);
-        ns.sleep(CONSTANT.KILL_ALL_SLEEP_TIME);
+        ns.sleep(CONSTANT.SMALL_DELAY);
     } while (isRunningAnything);
     return;
 }
