@@ -86,7 +86,13 @@ export class HackManager {
         const optimalBatchCost = this.getOptimalBatchCost(ns, target);
         const optimalCycles = ServerHackUtils.computeOptimalCycles(ns, target);
         const maxCycles = await HackUtils.computeMaxCycles(ns, optimalBatchCost, true);
-        const numCycles = Math.min(optimalCycles, maxCycles);
+        let numCycles = Math.min(optimalCycles, maxCycles);
+        if (numCycles === 0) {
+            // TODO: HOW THE FUCK DOES THIS HAPPEN
+            // Don't throw the error, that would be logical
+            // throw new Error("No cycles possible.");
+            numCycles = 1;
+        }
         for (let i = 0; i < numCycles; i++) {
             let cycleStart;
             // Set the start time of the cycle
