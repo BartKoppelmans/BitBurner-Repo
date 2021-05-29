@@ -24,7 +24,6 @@ async function hackLoop(ns: NS) {
     const hackManager: HackManager = HackManager.getInstance();
 
     const serverMap: Server[] = await serverManager.getServerMap(ns);
-    let potentialTargets: HackableServer[] = await serverManager.getTargetableServers(ns);
 
     // TODO: initializeServers 
     // Purchase new servers and such to have some power later on
@@ -35,6 +34,8 @@ async function hackLoop(ns: NS) {
             await server.root(ns);
         }
     }));
+
+    let potentialTargets: HackableServer[] = await serverManager.getTargetableServers(ns);
 
     // Then evaluate the potential targets afterwards
     await Promise.all(potentialTargets.map(async (target) => {

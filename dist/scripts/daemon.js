@@ -15,7 +15,6 @@ async function hackLoop(ns) {
     const serverManager = ServerManager.getInstance(ns);
     const hackManager = HackManager.getInstance();
     const serverMap = await serverManager.getServerMap(ns);
-    let potentialTargets = await serverManager.getTargetableServers(ns);
     // TODO: initializeServers 
     // Purchase new servers and such to have some power later on
     // Root all servers in advance
@@ -24,6 +23,7 @@ async function hackLoop(ns) {
             await server.root(ns);
         }
     }));
+    let potentialTargets = await serverManager.getTargetableServers(ns);
     // Then evaluate the potential targets afterwards
     await Promise.all(potentialTargets.map(async (target) => {
         target.evaluate(ns, Heuristics.MainHeuristic);

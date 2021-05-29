@@ -131,8 +131,7 @@ export class ServerManager {
 
         servers = servers
             .filter(server => server.isHackable(ns))
-            // We can remove this line because we do not need to root a server to hack it
-            // .filter(server => server.canRoot(ns)) 
+            .filter(server => server.isRooted(ns) || server.canRoot(ns))
             .filter(server => server.staticHackingProperties.maxMoney > 0);
 
         return servers;
