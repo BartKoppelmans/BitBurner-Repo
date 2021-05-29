@@ -193,7 +193,13 @@ export class HackManager {
         };
     }
     async executeScheduledHack(ns, scheduledHack, args = {}) {
-        let threadSpread = await HackUtils.computeThreadSpread(ns, scheduledHack.tool, scheduledHack.threads);
+        let threads = scheduledHack.threads;
+        // If we are not prepping, we are allowed to lower the number of threads (i think...?)
+        if (!args.isPrep) {
+            const maxThreadsAvailable = await HackUtils.computeMaxThreads(ns, scheduledHack.tool, true);
+            threads = Math.min(threads, maxThreadsAvailable);
+        }
+        let threadSpread = await HackUtils.computeThreadSpread(ns, scheduledHack.tool, threads);
         // Create the hack
         const hack = {
             target: scheduledHack.target,
