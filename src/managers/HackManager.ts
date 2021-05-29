@@ -65,8 +65,6 @@ export class HackManager {
         // If the server is optimal, we are done I guess
         if (server.dynamicHackingProperties.securityLevel === server.staticHackingProperties.minSecurityLevel && server.dynamicHackingProperties.money === server.staticHackingProperties.maxMoney) return;
 
-        ns.tprint(`Prepping ${server.host}`);
-
         const playerManager: PlayerManager = PlayerManager.getInstance(ns);
 
         let growThreads: number = 0;
@@ -286,9 +284,9 @@ export class HackManager {
 
         // TODO: Check what this does
         if (args.isPrep) {
-            ns.tprint(`[${Utils.formatDate()}] Prepping ${scheduledHack.target} - ${Utils.getToolName(scheduledHack.tool)}`);
+            ns.tprint(`[${Utils.formatDate()}] Prepping ${scheduledHack.target.host} - ${Utils.getToolName(scheduledHack.tool)}`);
         } else {
-            ns.tprint(`[${Utils.formatDate()}] Attacking ${scheduledHack.target} - ${Utils.getToolName(scheduledHack.tool)}`);
+            ns.tprint(`[${Utils.formatDate()}] Attacking ${scheduledHack.target.host} - ${Utils.getToolName(scheduledHack.tool)}`);
         }
 
         threadSpread.forEach((threads: number, server: Server) => {
