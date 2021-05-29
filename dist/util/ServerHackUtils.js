@@ -1,5 +1,6 @@
 import { CONSTANT } from "/src/lib/constants.js";
 import { PlayerManager } from "/src/managers/PlayerManager.js";
+import HackUtils from "/src/util/HackUtils";
 export default class ServerHackUtils {
     static serverGrowthPercentage(ns, target) {
         const playerManager = PlayerManager.getInstance(ns);
@@ -62,5 +63,12 @@ export default class ServerHackUtils {
     }
     static weakenThreadTotalPerCycle(ns, target) {
         return (this.weakenThreadsNeededAfterTheft(ns, target) + this.weakenThreadsNeededAfterGrowth(ns, target));
+    }
+    static async computeMaxCompleteCycles(ns, optimalBatchCost) {
+        return await HackUtils.computeMaxCycles(ns, optimalBatchCost, true);
+    }
+    static computeOptimalCycles(ns, target) {
+        const fullWeakenTime = ns.getWeakenTime(target.host) * CONSTANT.MILLISECONDS_IN_SECOND - CONSTANT.QUEUE_DELAY;
+        return Math.min(CONSTANT.MAX_CYCLE_NUMBER, Math.max(1, Math.floor(fullWeakenTime / CONSTANT.QUEUE_DELAY)));
     }
 }

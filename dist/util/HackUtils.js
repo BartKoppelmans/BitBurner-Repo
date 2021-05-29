@@ -13,6 +13,15 @@ export default class HackUtils {
         }
         return serverMap.reduce((threads, server) => threads + Math.floor(server.getAvailableRam(ns) / cost), 0);
     }
+    static async computeMaxCycles(ns, cycleCost, allowSpread = true) {
+        const serverMap = await this.getHackingServers(ns);
+        // NOTE: We always expect AT LEAST 1 rooted server to be available
+        if (!allowSpread) {
+            const server = serverMap.shift();
+            return Math.floor(server.getAvailableRam(ns) / cycleCost);
+        }
+        return serverMap.reduce((threads, server) => threads + Math.floor(server.getAvailableRam(ns) / cycleCost), 0);
+    }
     static async computeThreadsNeeded(ns, tool, server) {
         switch (tool) {
             case Tools.GROW:

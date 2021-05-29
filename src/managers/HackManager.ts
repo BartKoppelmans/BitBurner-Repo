@@ -117,9 +117,11 @@ export class HackManager {
         let batchStart: Date = new Date();
         batchStart.setTime(batchStart.getTime() + CONSTANT.CYCLE_DELAY);
 
-        // TODO: Measure how many cycles would be optimal and take the minimum with the max_cycle_number
-        // For now just always run 10 cycles
-        const numCycles: number = CONSTANT.MAX_CYCLE_NUMBER;
+        const optimalBatchCost: number = this.getOptimalBatchCost(ns, target);
+        const optimalCycles: number = ServerHackUtils.computeOptimalCycles(ns, target);
+        const maxCycles: number = await ServerHackUtils.computeMaxCompleteCycles(ns, optimalBatchCost);
+
+        const numCycles: number = Math.min(optimalCycles, maxCycles);
 
         for (let i = 0; i < numCycles; i++) {
 
