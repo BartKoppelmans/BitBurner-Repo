@@ -8,7 +8,7 @@ export default class Utils {
             throw new Error("Could not find the terminal input.");
         }
         if (printDate) {
-            text = Utils.formatTime() + text;
+            text = Utils.formatTime() + " " + text;
         }
         rowElement.classList.add("posted");
         cellElement.classList.add("terminal-line");

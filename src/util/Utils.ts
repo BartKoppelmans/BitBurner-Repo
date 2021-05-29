@@ -13,7 +13,7 @@ export default class Utils {
         }
 
         if (printDate) {
-            text = Utils.formatTime() + text;
+            text = Utils.formatTime() + " " + text;
         }
 
         rowElement.classList.add("posted");
