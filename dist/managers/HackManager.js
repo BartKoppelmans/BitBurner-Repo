@@ -221,12 +221,10 @@ export class HackManager {
         // NOTE: We might want to move this to the threadspread loop to show the source servers
         // For now, meh
         if (args.isPrep) {
-            Utils.tprintColored(`${Utils.formatHackId(ns, scheduledHack.hackId)} Prepping ${scheduledHack.target.host} - ${Utils.getToolName(scheduledHack.tool)}`);
-            // ns.tprint(`${Utils.formatTime()} ${Utils.formatHackId(ns, scheduledHack.hackId)} Prepping ${scheduledHack.target.host} - ${Utils.getToolName(scheduledHack.tool)}`);
+            Utils.tprintColored(`${Utils.formatHackId(ns, scheduledHack.hackId)} Prepping ${scheduledHack.target.host} - ${Utils.getToolName(scheduledHack.tool)}`, true);
         }
         else {
-            Utils.tprintColored(`${Utils.formatHackId(ns, scheduledHack.hackId)} Attacking ${scheduledHack.target.host} - ${Utils.getToolName(scheduledHack.tool)}`, "red");
-            //ns.tprint(`${Utils.formatTime()} ${Utils.formatHackId(ns, scheduledHack.hackId)} Attacking ${scheduledHack.target.host} - ${Utils.getToolName(scheduledHack.tool)}`);
+            Utils.tprintColored(`${Utils.formatHackId(ns, scheduledHack.hackId)} Attacking ${scheduledHack.target.host} - ${Utils.getToolName(scheduledHack.tool)}`, true);
         }
         this.hackingMap.push(hack);
         for (let [server, threads] of threadSpread) {
@@ -246,10 +244,10 @@ export class HackManager {
             }
             this.hackingMap.splice(index, 1);
             if (args.isPrep) {
-                ns.tprint(`${Utils.formatTime()} ${Utils.formatHackId(ns, scheduledHack.hackId)} Finished prepping ${scheduledHack.target.host} - ${Utils.getToolName(scheduledHack.tool)}`);
+                Utils.tprintColored(`${Utils.formatHackId(ns, scheduledHack.hackId)} Finished prepping ${scheduledHack.target.host} - ${Utils.getToolName(scheduledHack.tool)}`, true);
             }
             else {
-                ns.tprint(`${Utils.formatTime()} ${Utils.formatHackId(ns, scheduledHack.hackId)} Finished attacking ${scheduledHack.target.host} - ${Utils.getToolName(scheduledHack.tool)}`);
+                Utils.tprintColored(`${Utils.formatHackId(ns, scheduledHack.hackId)} Finished attacking ${scheduledHack.target.host} - ${Utils.getToolName(scheduledHack.tool)}`, true);
             }
         }, executionTime - lag);
         return hack;

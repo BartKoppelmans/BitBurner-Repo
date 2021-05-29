@@ -3,7 +3,7 @@ import { Tools } from "/src/tools/Tools.js";
 
 export default class Utils {
 
-    static tprintColored(text: string, color: string = "var(--my-font-color)", printDate: boolean = false) {
+    static tprintColored(text: string, printDate: boolean = false, color: string = "var(--my-font-color)") {
         let terminalInput = document.getElementById("terminal-input");
         let rowElement = document.createElement("tr");
         let cellElement = document.createElement("td");
@@ -23,6 +23,8 @@ export default class Utils {
 
         rowElement.appendChild(cellElement);
         terminalInput.before(rowElement);
+
+        terminalInput.scrollIntoView(false);
     }
 
     static formatTime(date: Date = new Date()): string {

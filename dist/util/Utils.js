@@ -1,6 +1,6 @@
 import { Tools } from "/src/tools/Tools.js";
 export default class Utils {
-    static tprintColored(text, color = "var(--my-font-color)", printDate = false) {
+    static tprintColored(text, printDate = false, color = "var(--my-font-color)") {
         let terminalInput = document.getElementById("terminal-input");
         let rowElement = document.createElement("tr");
         let cellElement = document.createElement("td");
@@ -16,6 +16,7 @@ export default class Utils {
         cellElement.innerText = text;
         rowElement.appendChild(cellElement);
         terminalInput.before(rowElement);
+        terminalInput.scrollIntoView(false);
     }
     static formatTime(date = new Date()) {
         return `[${date.toLocaleTimeString()}]`;
