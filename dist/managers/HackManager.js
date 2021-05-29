@@ -9,7 +9,7 @@ import Utils from "/src/util/Utils.js";
 export class HackManager {
     constructor() {
         this.hackingMap = [];
-        this.hackIdCounter = 0;
+        this.hackIdCounter = 1;
     }
     static getInstance() {
         if (!HackManager.instance) {
@@ -221,10 +221,10 @@ export class HackManager {
         // NOTE: We might want to move this to the threadspread loop to show the source servers
         // For now, meh
         if (args.isPrep) {
-            ns.tprint(`[${Utils.formatDate()}] [Hack ${scheduledHack.hackId}] Prepping ${scheduledHack.target.host} - ${Utils.getToolName(scheduledHack.tool)}`);
+            ns.tprint(`[${Utils.formatDate()}] [Hack ${ns.nFormat(scheduledHack.hackId, "0000")}] Prepping ${scheduledHack.target.host} - ${Utils.getToolName(scheduledHack.tool)}`);
         }
         else {
-            ns.tprint(`[${Utils.formatDate()}] [Hack ${scheduledHack.hackId}] Attacking ${scheduledHack.target.host} - ${Utils.getToolName(scheduledHack.tool)}`);
+            ns.tprint(`[${Utils.formatDate()}] [Hack ${ns.nFormat(scheduledHack.hackId, "0000")}] Attacking ${scheduledHack.target.host} - ${Utils.getToolName(scheduledHack.tool)}`);
         }
         this.hackingMap.push(hack);
         for (let [server, threads] of threadSpread) {
@@ -244,10 +244,10 @@ export class HackManager {
             }
             this.hackingMap.splice(index, 1);
             if (args.isPrep) {
-                ns.tprint(`[${Utils.formatDate()}] [Hack ${scheduledHack.hackId}] Finished prepping ${scheduledHack.target.host} - ${Utils.getToolName(scheduledHack.tool)}`);
+                ns.tprint(`[${Utils.formatDate()}] [Hack ${ns.nFormat(scheduledHack.hackId, "0000")}] Finished prepping ${scheduledHack.target.host} - ${Utils.getToolName(scheduledHack.tool)}`);
             }
             else {
-                ns.tprint(`[${Utils.formatDate()}] [Hack ${scheduledHack.hackId}] Finished attacking ${scheduledHack.target.host} - ${Utils.getToolName(scheduledHack.tool)}`);
+                ns.tprint(`[${Utils.formatDate()}] [Hack ${ns.nFormat(scheduledHack.hackId, "0000")}] Finished attacking ${scheduledHack.target.host} - ${Utils.getToolName(scheduledHack.tool)}`);
             }
         }, executionTime - lag);
         return hack;
