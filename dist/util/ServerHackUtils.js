@@ -1,6 +1,6 @@
 import { CONSTANT } from "/src/lib/constants.js";
 import { PlayerManager } from "/src/managers/PlayerManager.js";
-import HackUtils from "/src/util/HackUtils";
+import HackUtils from "/src/util/HackUtils.js";
 export default class ServerHackUtils {
     static serverGrowthPercentage(ns, target) {
         const playerManager = PlayerManager.getInstance(ns);
