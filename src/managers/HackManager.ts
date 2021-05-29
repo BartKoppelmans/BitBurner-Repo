@@ -15,7 +15,6 @@ export class HackManager {
     private static instance: HackManager;
 
     private hackingMap: Hack[] = [];
-    private batchMap: Batch[] = [];
 
     private hackIdCounter: number = 0;
 
@@ -149,7 +148,6 @@ export class HackManager {
             start: batchStart,
             end: cycles[cycles.length - 1].end
         };
-        this.batchMap.push(batch);
 
         // Execute the batch object
         for (const cycle of cycles) {
@@ -278,31 +276,44 @@ export class HackManager {
             hackId: scheduledHack.hackId
         };
 
-        const now: Date = new Date();
-        if (scheduledHack.start > now) {
-
-            const waitTime: number = now.getTime() - scheduledHack.start.getTime();
-
+        // Wait until we have to execute
+        if (scheduledHack.start > (new Date())) {
+            const waitTime: number = (new Date()).getTime() - scheduledHack.start.getTime();
             await ns.sleep(waitTime);
         }
 
-        threadSpread.forEach((threads: number, server: Server) => {
+
+        // NOTE: We might want to move this to the threadspread loop to show the source servers
+        // For now, meh
+        if (args.isPrep) {
+            ns.tprint(`[${Utils.formatDate()}] [Hack ${scheduledHack.hackId}] Prepping ${scheduledHack.target.host} - ${Utils.getToolName(scheduledHack.tool)}`);
+        } else {
+            ns.tprint(`[${Utils.formatDate()}] [Hack ${scheduledHack.hackId}] Attacking ${scheduledHack.target.host} - ${Utils.getToolName(scheduledHack.tool)}`);
+        }
+
+        this.hackingMap.push(hack);
+        for (let [server, threads] of threadSpread) {
             // We have to copy the tool to the server if it is not available yet
             if (!ServerUtils.isHomeServer(server)) {
                 ns.scp(scheduledHack.tool, HomeServer.getInstance(ns).host, server.host);
             }
 
-            // TODO: Check what this does
-            if (args.isPrep) {
-                ns.tprint(`[${Utils.formatDate()}] Prepping ${scheduledHack.target.host} from ${server.host} - ${Utils.getToolName(scheduledHack.tool)}`);
-            } else {
-                ns.tprint(`[${Utils.formatDate()}] Attacking ${scheduledHack.target.host} from ${server.host} - ${Utils.getToolName(scheduledHack.tool)}`);
-            }
-
             ns.exec(scheduledHack.tool, server.host, threads, scheduledHack.target.host);
-        });
+        }
 
-        this.hackingMap.push(hack);
+        const executionTime: number = scheduledHack.end.getTime() - (new Date()).getTime();
+        const lag: number = Math.min(scheduledHack.start.getTime() - (new Date()).getTime(), 0);
+
+        setTimeout(() => {
+            // NOTE: This is heavily effected by how trustworthy the hackId counter is...
+            this.hackingMap.find(hack => hack.hackId === scheduledHack.hackId);
+
+            if (args.isPrep) {
+                ns.tprint(`[${Utils.formatDate()}] [Hack ${scheduledHack.hackId}] Finished prepping ${scheduledHack.target.host} - ${Utils.getToolName(scheduledHack.tool)}`);
+            } else {
+                ns.tprint(`[${Utils.formatDate()}] [Hack ${scheduledHack.hackId}] Finished attacking ${scheduledHack.target.host} - ${Utils.getToolName(scheduledHack.tool)}`);
+            }
+        }, executionTime - lag);
 
         return hack;
     }
