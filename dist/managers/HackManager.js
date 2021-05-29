@@ -113,6 +113,8 @@ export class HackManager {
         // Execute the batch object
         for (const cycle of cycles) {
             for (const hack of cycle.hacks) {
+                // NOTE: Execution here might fail because there are not enough threads available
+                // TODO: Wait until there are enough threads available
                 await this.executeScheduledHack(ns, hack);
             }
         }
@@ -209,17 +211,17 @@ export class HackManager {
             const waitTime = now.getTime() - scheduledHack.start.getTime();
             await ns.sleep(waitTime);
         }
-        // TODO: Check what this does
-        if (args.isPrep) {
-            ns.tprint(`[${Utils.formatDate()}] Prepping ${scheduledHack.target.host} - ${Utils.getToolName(scheduledHack.tool)}`);
-        }
-        else {
-            ns.tprint(`[${Utils.formatDate()}] Attacking ${scheduledHack.target.host} - ${Utils.getToolName(scheduledHack.tool)}`);
-        }
         threadSpread.forEach((threads, server) => {
             // We have to copy the tool to the server if it is not available yet
             if (!ServerUtils.isHomeServer(server)) {
                 ns.scp(scheduledHack.tool, HomeServer.getInstance(ns).host, server.host);
+            }
+            // TODO: Check what this does
+            if (args.isPrep) {
+                ns.tprint(`[${Utils.formatDate()}] Prepping ${scheduledHack.target.host} from ${server.host} - ${Utils.getToolName(scheduledHack.tool)}`);
+            }
+            else {
+                ns.tprint(`[${Utils.formatDate()}] Attacking ${scheduledHack.target.host} from ${server.host} - ${Utils.getToolName(scheduledHack.tool)}`);
             }
             ns.exec(scheduledHack.tool, server.host, threads, scheduledHack.target.host);
         });
@@ -237,3 +239,4 @@ export class HackManager {
         });
     }
 }
+;
