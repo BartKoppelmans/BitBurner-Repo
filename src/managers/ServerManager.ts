@@ -137,6 +137,15 @@ export class ServerManager {
         return servers;
     }
 
+    public async getHackingServers(ns: NS): Promise<Server[]> {
+
+        // TODO: Do we want to filter out home?
+
+        return (await this.getServerMap(ns, true))
+            .filter((server: Server) => server.isRooted(ns))
+            .sort((a, b) => a.getAvailableRam(ns) - b.getAvailableRam(ns));
+    }
+
     public async printServerMap(ns: NS) {
         if (this.needsUpdate(ns)) {
             await this.rebuildServerMap(ns);

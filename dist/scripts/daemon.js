@@ -1,7 +1,7 @@
 import { CONSTANT } from "/src/lib/constants.js";
-import { HackManager } from "/src/managers/HackManager.js";
 import { ServerManager } from "/src/managers/ServerManager.js";
 import { Heuristics } from "/src/util/Heuristics.js";
+import HackUtils from "/src/util/HackUtils.js";
 export async function main(ns) {
     const hostName = ns.getHostname();
     if (hostName !== "home") {
@@ -13,7 +13,6 @@ export async function main(ns) {
 }
 async function hackLoop(ns) {
     const serverManager = ServerManager.getInstance(ns);
-    const hackManager = HackManager.getInstance();
     const serverMap = await serverManager.getServerMap(ns);
     // TODO: initializeServers 
     // Purchase new servers and such to have some power later on
@@ -37,7 +36,7 @@ async function hackLoop(ns) {
         // Can't have too many targets at the same time
         if (targetCounter >= CONSTANT.MAX_TARGET_COUNT)
             break;
-        const isNewTarget = await hackManager.hack(ns, target);
+        const isNewTarget = await HackUtils.hack(ns, target);
         if (isNewTarget) {
             targetCounter++;
         }

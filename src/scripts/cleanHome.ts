@@ -2,6 +2,7 @@ import type { BitBurner as NS } from "Bitburner";
 
 const excludedFiles: string[] = [
     "src/lib/constants.js",
+    "/src/lib/constants.js",
     "import.js"
 ];
 

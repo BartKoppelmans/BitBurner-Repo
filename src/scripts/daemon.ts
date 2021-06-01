@@ -2,9 +2,9 @@ import type { BitBurner as NS } from "Bitburner";
 import HackableServer from "/src/classes/HackableServer.js";
 import Server from "/src/classes/Server.js";
 import { CONSTANT } from "/src/lib/constants.js";
-import { HackManager } from "/src/managers/HackManager.js";
 import { ServerManager } from "/src/managers/ServerManager.js";
 import { Heuristics } from "/src/util/Heuristics.js";
+import HackUtils from "/src/util/HackUtils.js";
 
 export async function main(ns: NS) {
 
@@ -21,8 +21,6 @@ export async function main(ns: NS) {
 async function hackLoop(ns: NS) {
 
     const serverManager: ServerManager = ServerManager.getInstance(ns);
-    const hackManager: HackManager = HackManager.getInstance();
-
     const serverMap: Server[] = await serverManager.getServerMap(ns);
 
     // TODO: initializeServers 
@@ -53,7 +51,7 @@ async function hackLoop(ns: NS) {
         // Can't have too many targets at the same time
         if (targetCounter >= CONSTANT.MAX_TARGET_COUNT) break;
 
-        const isNewTarget: boolean = await hackManager.hack(ns, target);
+        const isNewTarget: boolean = await HackUtils.hack(ns, target);
 
         if (isNewTarget) {
             targetCounter++;

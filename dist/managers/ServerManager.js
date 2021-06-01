@@ -110,6 +110,12 @@ export class ServerManager {
             .filter(server => server.staticHackingProperties.maxMoney > 0);
         return servers;
     }
+    async getHackingServers(ns) {
+        // TODO: Do we want to filter out home?
+        return (await this.getServerMap(ns, true))
+            .filter((server) => server.isRooted(ns))
+            .sort((a, b) => a.getAvailableRam(ns) - b.getAvailableRam(ns));
+    }
     async printServerMap(ns) {
         if (this.needsUpdate(ns)) {
             await this.rebuildServerMap(ns);
