@@ -143,7 +143,7 @@ export class ServerManager {
 
         return (await this.getServerMap(ns, true))
             .filter((server: Server) => server.isRooted(ns))
-            .sort((a, b) => a.getAvailableRam(ns) - b.getAvailableRam(ns));
+            .sort((a, b) => b.getAvailableRam(ns) - a.getAvailableRam(ns));
     }
 
     public async printServerMap(ns: NS) {

@@ -114,7 +114,7 @@ export class ServerManager {
         // TODO: Do we want to filter out home?
         return (await this.getServerMap(ns, true))
             .filter((server) => server.isRooted(ns))
-            .sort((a, b) => a.getAvailableRam(ns) - b.getAvailableRam(ns));
+            .sort((a, b) => b.getAvailableRam(ns) - a.getAvailableRam(ns));
     }
     async printServerMap(ns) {
         if (this.needsUpdate(ns)) {
