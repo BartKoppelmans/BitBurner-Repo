@@ -12,6 +12,7 @@ export class JobManager {
     startJob(ns, job) {
         this.jobs.push(job);
         job.onStart(ns);
+        setTimeout(this.finishJob, job.end.getTime() - Date.now(), ns, job.id);
     }
     finishJob(ns, id) {
         const index = this.jobs.findIndex(job => job.id === id);

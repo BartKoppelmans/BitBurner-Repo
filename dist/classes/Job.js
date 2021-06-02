@@ -36,7 +36,6 @@ export default class Job {
             script: this.tool,
             target: this.target,
             start: this.start,
-            id: this.id
         };
         for (let [server, threads] of this.threadSpread) {
             // We have to copy the tool to the server if it is not available yet
@@ -60,8 +59,7 @@ export default class Job {
             args.server.host,
             args.threads,
             args.target.host,
-            args.start.getTime().toString(),
-            args.id.toString()
+            args.start.getTime().toString()
         ];
     }
     print(ns, isFinished) {

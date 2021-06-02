@@ -21,6 +21,8 @@ export class JobManager {
     public startJob(ns: NS, job: Job): void {
         this.jobs.push(job);
         job.onStart(ns);
+
+        setTimeout(this.finishJob, job.end.getTime() - Date.now(), ns, job.id);
     }
 
     public finishJob(ns: NS, id: number): void {

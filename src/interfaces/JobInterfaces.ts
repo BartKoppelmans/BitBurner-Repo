@@ -12,7 +12,6 @@ export interface ToolArguments {
 
     target: HackableServer; // ns.args[0]
     start: Date; // ns.args[1]
-    id: number; // ns.args[2]
 }
 
 export interface IJOb {
