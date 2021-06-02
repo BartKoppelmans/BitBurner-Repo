@@ -1,7 +1,7 @@
 import { ServerManager } from "/src/managers/ServerManager.js";
 import { Tools } from "/src/tools/Tools.js";
 import ServerHackUtils from "/src/util/ServerHackUtils.js";
-import ToolUtils from "/src/util/ToolUtils";
+import ToolUtils from "/src/util/ToolUtils.js";
 export default class JobUtils {
     static async computeThreadsNeeded(ns, tool, server) {
         switch (tool) {
