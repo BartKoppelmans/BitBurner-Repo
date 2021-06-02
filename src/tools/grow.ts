@@ -1,6 +1,6 @@
 // the purpose of hack-target is to wait until an appointed time and then execute a hack.
 import type { BitBurner as NS } from "Bitburner";
-import { JobManager } from "src/managers/JobManager.js";
+import { JobManager } from "/src/managers/JobManager.js";
 
 export async function main(ns: NS) {
 

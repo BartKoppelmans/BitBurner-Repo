@@ -64,11 +64,6 @@ export default class BatchJobUtils {
             throw new Error("Tool not recognized");
         }
 
-
-        // TODO: Remove
-        Utils.tprintColored(`Current threads for ${tool}: ${threads}`, false, "blue");
-
-
         const end: Date = new Date(start.getTime() + executionTime);
 
         return new Job(ns, {

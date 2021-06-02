@@ -1,4 +1,4 @@
-import { JobManager } from "src/managers/JobManager.js";
+import { JobManager } from "/src/managers/JobManager.js";
 export async function main(ns) {
     const hackManager = JobManager.getInstance();
     const target = ns.args[0];
