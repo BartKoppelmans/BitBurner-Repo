@@ -50,6 +50,10 @@ export default class Job {
 
         const maxThreadsAvailable: number = await JobUtils.computeMaxThreads(ns, this.tool, true);
 
+        // TODO: Remove
+        Utils.tprintColored(`Max threads: ${maxThreadsAvailable}`, false, "red");
+        Utils.tprintColored(`Threads: ${this.threads}`, false, "red");
+
         if (this.threads > maxThreadsAvailable) {
             // TODO: How do we handle this
             // For now just use he minimum of the two

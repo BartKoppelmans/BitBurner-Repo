@@ -6,6 +6,7 @@ import { CONSTANT } from "/src/lib/constants.js";
 import { ServerManager } from "/src/managers/ServerManager.js";
 import { Tools } from "/src/tools/Tools.js";
 import ServerHackUtils from "/src/util/ServerHackUtils.js";
+import Utils from "/src/util/Utils.js";
 
 export default class BatchJobUtils {
 
@@ -62,6 +63,10 @@ export default class BatchJobUtils {
         else {
             throw new Error("Tool not recognized");
         }
+
+
+        // TODO: Remove
+        Utils.tprintColored(`Current threads for ${tool}: ${threads}`, false, "blue");
 
 
         const end: Date = new Date(start.getTime() + executionTime);
