@@ -14,6 +14,6 @@ export default class HomeServer extends Server {
     // We want to make sure that we always have some RAM left.
     getAvailableRam(ns) {
         const ram = super.getAvailableRam(ns);
-        return Math.min(0, ram - CONSTANT.DESIRED_HOME_FREE_RAM);
+        return Math.max(0, ram - CONSTANT.DESIRED_HOME_FREE_RAM);
     }
 }
