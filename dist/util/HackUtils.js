@@ -60,24 +60,24 @@ export default class HackUtils {
             }
             growThreads -= releasedGrowThreads;
             if (growThreads > 0) {
-                await new Job(ns, {
+                await (new Job(ns, {
                     target,
                     threads: growThreads,
                     tool: Tools.GROW,
                     isPrep: true,
-                }).execute(ns);
+                })).execute(ns);
             }
         }
         let weakenThreadsNeeded = (await JobUtils.computeThreadsNeeded(ns, Tools.WEAKEN, target)) + compensationWeakenThreads;
         let maxWeakenThreads = await JobUtils.computeMaxThreads(ns, Tools.WEAKEN, CONSTANT.ALLOW_THREAD_SPREADING);
         weakenThreads = Math.min(weakenThreadsNeeded, maxWeakenThreads);
         if (weakenThreads > 0) {
-            await new Job(ns, {
+            await (new Job(ns, {
                 target,
                 threads: weakenThreads,
                 tool: Tools.WEAKEN,
                 isPrep: true,
-            }).execute(ns);
+            })).execute(ns);
         }
     }
     static async attackServer(ns, target) {
@@ -112,10 +112,10 @@ export default class HackUtils {
             throw new Error("No cycles created");
         }
         // Create the batch object
-        await new BatchJob(ns, {
+        await (new BatchJob(ns, {
             target,
             jobs,
             start: batchStart
-        }).execute(ns);
+        })).execute(ns);
     }
 }

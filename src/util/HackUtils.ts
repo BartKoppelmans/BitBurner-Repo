@@ -83,12 +83,12 @@ export default class HackUtils {
 
             if (growThreads > 0) {
 
-                await new Job(ns, {
+                await (new Job(ns, {
                     target,
                     threads: growThreads,
                     tool: Tools.GROW,
                     isPrep: true,
-                }).execute(ns);
+                })).execute(ns);
 
             }
         }
@@ -99,12 +99,12 @@ export default class HackUtils {
 
         if (weakenThreads > 0) {
 
-            await new Job(ns, {
+            await (new Job(ns, {
                 target,
                 threads: weakenThreads,
                 tool: Tools.WEAKEN,
                 isPrep: true,
-            }).execute(ns);
+            })).execute(ns);
         }
 
     }
@@ -155,10 +155,10 @@ export default class HackUtils {
         }
 
         // Create the batch object
-        await new BatchJob(ns, {
+        await (new BatchJob(ns, {
             target,
             jobs,
             start: batchStart
-        }).execute(ns);
+        })).execute(ns);
     }
 }

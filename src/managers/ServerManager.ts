@@ -129,7 +129,7 @@ export class ServerManager {
         let servers: HackableServer[] = (await this.getServerMap(ns))
             .filter(server => ServerUtils.isHackableServer(server)) as HackableServer[];
 
-        servers
+        servers = servers
             .filter(server => server.isHackable(ns))
             .filter(server => server.isRooted(ns) || server.canRoot(ns))
             .filter(server => server.staticHackingProperties.maxMoney > 0);

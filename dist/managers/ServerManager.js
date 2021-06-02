@@ -104,7 +104,7 @@ export class ServerManager {
     async getTargetableServers(ns) {
         let servers = (await this.getServerMap(ns))
             .filter(server => ServerUtils.isHackableServer(server));
-        servers
+        servers = servers
             .filter(server => server.isHackable(ns))
             .filter(server => server.isRooted(ns) || server.canRoot(ns))
             .filter(server => server.staticHackingProperties.maxMoney > 0);
