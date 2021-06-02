@@ -3,6 +3,7 @@ import { CONSTANT } from "/src/lib/constants.js";
 export default class HomeServer extends Server {
     constructor(ns) {
         super(ns, CONSTANT.HOME_SERVER_HOST);
+        this.ram = ns.getServerRam(this.host)[0] - CONSTANT.DESIRED_HOME_FREE_RAM;
     }
     static getInstance(ns) {
         if (!HomeServer.instance) {

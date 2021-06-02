@@ -1,8 +1,8 @@
 export default class Server {
     constructor(ns, host, treeStructure) {
         this.host = host;
-        this.ram = ns.getServerRam(host)[0];
-        this.files = ns.ls(host);
+        this.ram = ns.getServerRam(this.host)[0];
+        this.files = ns.ls(this.host);
         if (treeStructure)
             this.updateTree(treeStructure);
     }

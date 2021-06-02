@@ -7,6 +7,7 @@ export default class HomeServer extends Server {
 
     private constructor(ns: NS) {
         super(ns, CONSTANT.HOME_SERVER_HOST);
+        this.ram = ns.getServerRam(this.host)[0] - CONSTANT.DESIRED_HOME_FREE_RAM;
     }
 
     public static getInstance(ns: NS): HomeServer {
