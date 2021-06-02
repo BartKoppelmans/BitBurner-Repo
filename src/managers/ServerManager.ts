@@ -34,6 +34,10 @@ export class ServerManager {
         return serverMap;
     }
 
+    public async rebuildServerMap(ns: NS) {
+        this.serverMap = await this.buildServerMap(ns);
+    }
+
     public async getServerMap(ns: NS, forceUpdate: boolean = false) {
         if (this.needsUpdate(ns) || forceUpdate) {
             await this.rebuildServerMap(ns);
@@ -41,12 +45,8 @@ export class ServerManager {
         return this.serverMap;
     }
 
-    public async rebuildServerMap(ns: NS) {
-        this.serverMap = await this.buildServerMap(ns);
-    }
-
     private needsUpdate(ns: NS): boolean {
-        return ((new Date()).getTime() - this.lastUpdated.getTime()) > CONSTANT.SERVER_MAP_REBUILD_TIME;
+        return (Date.now() - this.lastUpdated.getTime()) > CONSTANT.SERVER_MAP_REBUILD_TIME;
     }
 
     private spider(ns: NS, nodeName: string, parent?: Server): Server[] {
@@ -129,7 +129,7 @@ export class ServerManager {
         let servers: HackableServer[] = (await this.getServerMap(ns))
             .filter(server => ServerUtils.isHackableServer(server)) as HackableServer[];
 
-        servers = servers
+        servers
             .filter(server => server.isHackable(ns))
             .filter(server => server.isRooted(ns) || server.canRoot(ns))
             .filter(server => server.staticHackingProperties.maxMoney > 0);
@@ -137,13 +137,18 @@ export class ServerManager {
         return servers;
     }
 
+    // We sort this descending
     public async getHackingServers(ns: NS): Promise<Server[]> {
-
-        // TODO: Do we want to filter out home?
-
-        return (await this.getServerMap(ns, true))
+        return (await this.getServerMap(ns))
             .filter((server: Server) => server.isRooted(ns))
             .sort((a, b) => b.getAvailableRam(ns) - a.getAvailableRam(ns));
+    }
+
+    // We sort this ascending
+    public async getPurchasedServers(ns: NS): Promise<PurchasedServer[]> {
+        return (await this.getServerMap(ns))
+            .filter((server: Server) => ServerUtils.isPurchasedServer(server))
+            .sort((a, b) => a.getAvailableRam(ns) - b.getAvailableRam(ns));
     }
 
     public async printServerMap(ns: NS) {

@@ -1,3 +1,4 @@
+import HomeServer from "/src/classes/HomeServer.js";
 import { CONSTANT } from "/src/lib/constants.js";
 /*
  * The player manager contains the values of the hacking multipliers and the bitnode multipliers
@@ -12,6 +13,10 @@ export class PlayerManager {
             PlayerManager.instance = new PlayerManager(ns);
         }
         return PlayerManager.instance;
+    }
+    getMoney(ns) {
+        const homeserver = HomeServer.getInstance(ns);
+        return ns.getServerMoneyAvailable(homeserver.host);
     }
     getGrowthMultiplier() {
         // TODO: Include the bitnode multiplier

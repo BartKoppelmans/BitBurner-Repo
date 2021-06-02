@@ -24,17 +24,17 @@ export class ServerManager {
         this.lastUpdated = new Date();
         return serverMap;
     }
+    async rebuildServerMap(ns) {
+        this.serverMap = await this.buildServerMap(ns);
+    }
     async getServerMap(ns, forceUpdate = false) {
         if (this.needsUpdate(ns) || forceUpdate) {
             await this.rebuildServerMap(ns);
         }
         return this.serverMap;
     }
-    async rebuildServerMap(ns) {
-        this.serverMap = await this.buildServerMap(ns);
-    }
     needsUpdate(ns) {
-        return ((new Date()).getTime() - this.lastUpdated.getTime()) > CONSTANT.SERVER_MAP_REBUILD_TIME;
+        return (Date.now() - this.lastUpdated.getTime()) > CONSTANT.SERVER_MAP_REBUILD_TIME;
     }
     spider(ns, nodeName, parent) {
         let tempServerMap = [];
@@ -104,17 +104,23 @@ export class ServerManager {
     async getTargetableServers(ns) {
         let servers = (await this.getServerMap(ns))
             .filter(server => ServerUtils.isHackableServer(server));
-        servers = servers
+        servers
             .filter(server => server.isHackable(ns))
             .filter(server => server.isRooted(ns) || server.canRoot(ns))
             .filter(server => server.staticHackingProperties.maxMoney > 0);
         return servers;
     }
+    // We sort this descending
     async getHackingServers(ns) {
-        // TODO: Do we want to filter out home?
-        return (await this.getServerMap(ns, true))
+        return (await this.getServerMap(ns))
             .filter((server) => server.isRooted(ns))
             .sort((a, b) => b.getAvailableRam(ns) - a.getAvailableRam(ns));
+    }
+    // We sort this ascending
+    async getPurchasedServers(ns) {
+        return (await this.getServerMap(ns))
+            .filter((server) => ServerUtils.isPurchasedServer(server))
+            .sort((a, b) => a.getAvailableRam(ns) - b.getAvailableRam(ns));
     }
     async printServerMap(ns) {
         if (this.needsUpdate(ns)) {

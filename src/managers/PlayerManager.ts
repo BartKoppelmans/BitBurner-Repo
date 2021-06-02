@@ -1,4 +1,5 @@
 import type { BitBurner as NS, HackingMultipliers } from "Bitburner";
+import HomeServer from "/src/classes/HomeServer.js";
 import { CONSTANT } from "/src/lib/constants.js";
 
 /* 
@@ -21,6 +22,11 @@ export class PlayerManager {
         }
 
         return PlayerManager.instance;
+    }
+
+    public getMoney(ns: NS) {
+        const homeserver: HomeServer = HomeServer.getInstance(ns);
+        return ns.getServerMoneyAvailable(homeserver.host);
     }
 
     public getGrowthMultiplier() {
