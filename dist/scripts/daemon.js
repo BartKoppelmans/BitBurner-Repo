@@ -13,7 +13,7 @@ export async function main(ns) {
 }
 async function hackLoop(ns) {
     const serverManager = ServerManager.getInstance(ns);
-    const serverMap = await serverManager.getServerMap(ns);
+    const serverMap = await serverManager.getServerMap(ns, true); // TODO: Now we just always update and that might be a lot of work?
     // TODO: initializeServers 
     // Purchase new servers and such to have some power later on
     // Root all servers in advance

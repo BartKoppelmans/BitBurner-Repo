@@ -36,7 +36,7 @@ export default class HackableServer extends Server {
     }
     // Setter for server Value
     async evaluate(ns, heuristic) {
-        this.getDynamicHackingProperties(ns);
+        this.updateDynamicHackingProperties(ns, true);
         return this.serverValue = heuristic(ns, this);
     }
     isHackable(ns) {
