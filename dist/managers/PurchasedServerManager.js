@@ -19,7 +19,7 @@ export default class PurchasedServerManager {
     }
     // Main entry point
     async start(ns) {
-        Utils.tprintColored(`Starting the PurchasedServerManager.`, true, CONSTANT.COLOR_INFORMATION);
+        Utils.tprintColored(`Starting the PurchasedServerManager`, true, CONSTANT.COLOR_INFORMATION);
         await this.updateServerMap(ns);
         if (this.purchasedServers.length < CONSTANT.MAX_PURCHASED_SERVERS) {
             this.startPurchaseServerLoop(ns);

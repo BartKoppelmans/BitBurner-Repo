@@ -1,4 +1,4 @@
-import { CONSTANT } from "/src/lib/constants";
+import { CONSTANT } from "/src/lib/constants.js";
 import PlayerManager from "/src/managers/PlayerManager.js";
 import Utils from "/src/util/Utils.js";
 export var ProgramType;

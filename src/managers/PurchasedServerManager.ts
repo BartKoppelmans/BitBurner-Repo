@@ -34,7 +34,7 @@ export default class PurchasedServerManager {
     // Main entry point
     public async start(ns: NS) {
 
-        Utils.tprintColored(`Starting the PurchasedServerManager.`, true, CONSTANT.COLOR_INFORMATION);
+        Utils.tprintColored(`Starting the PurchasedServerManager`, true, CONSTANT.COLOR_INFORMATION);
 
         await this.updateServerMap(ns);
 
