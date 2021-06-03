@@ -2,7 +2,7 @@ import type { BitBurner as NS } from "Bitburner";
 import { Program } from "/src/classes/Program.js";
 import Server, { TreeStructure } from '/src/classes/Server.js';
 import PlayerManager from "/src/managers/PlayerManager.js";
-import { ProgramManager } from "/src/managers/ProgramManager.js";
+import ProgramManager from "/src/managers/ProgramManager.js";
 import { Heuristics } from "/src/util/Heuristics.js";
 
 export interface StaticHackingProperties {

@@ -6,7 +6,7 @@ import { CONSTANT } from "/src/lib/constants.js";
 import ServerManager from "/src/managers/ServerManager.js";
 import ServerUtils from "/src/util/ServerUtils.js";
 
-export class ProgramManager {
+export default class ProgramManager {
     private static instance: ProgramManager;
 
     private programs: Program[];

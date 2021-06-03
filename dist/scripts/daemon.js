@@ -1,9 +1,9 @@
-import { CONSTANT } from "/src/lib/constants.js";
-import ServerManager from "/src/managers/ServerManager.js";
-import { Heuristics } from "/src/util/Heuristics.js";
-import HackUtils from "/src/util/HackUtils.js";
+import ProgramManager from "/src/managers/ProgramManager.js";
 import PurchasedServerManager from "/src/managers/PurchasedServerManager.js";
-import { ProgramManager } from "/src/managers/ProgramManager.js";
+import ServerManager from "/src/managers/ServerManager.js";
+import { CONSTANT } from "/src/lib/constants.js";
+import HackUtils from "/src/util/HackUtils.js";
+import { Heuristics } from "/src/util/Heuristics.js";
 export async function main(ns) {
     const hostName = ns.getHostname();
     if (hostName !== "home") {
