@@ -6,6 +6,7 @@ import ServerManager from "/src/managers/ServerManager.js";
 import { Heuristics } from "/src/util/Heuristics.js";
 import HackUtils from "/src/util/HackUtils.js";
 import PurchasedServerManager from "/src/managers/PurchasedServerManager.js";
+import { ProgramManager } from "/src/managers/ProgramManager.js";
 
 export async function main(ns: NS) {
 
@@ -29,21 +30,13 @@ async function initialize(ns: NS) {
     const purchasedServerManager: PurchasedServerManager = PurchasedServerManager.getInstance(ns);
     await purchasedServerManager.start(ns);
 
+    const programManager: ProgramManager = ProgramManager.getInstance(ns);
+    await programManager.startCheckingLoop(ns);
 }
 
 async function hackLoop(ns: NS) {
 
     const serverManager: ServerManager = ServerManager.getInstance(ns);
-
-    // NOTE: Now we just always update and that might be a lot of work?
-    const serverMap: Server[] = await serverManager.getServerMap(ns, true);
-
-    // Root all servers in advance
-    await Promise.all(serverMap.map(async (server) => {
-        if (!server.isRooted(ns) && server.canRoot(ns)) {
-            await server.root(ns);
-        }
-    }));
 
     let potentialTargets: HackableServer[] = await serverManager.getTargetableServers(ns);
 

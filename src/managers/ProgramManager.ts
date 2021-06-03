@@ -1,14 +1,19 @@
 import type { BitBurner as NS } from "Bitburner";
 import HomeServer from "/src/classes/HomeServer.js";
 import { Program, ProgramType } from "/src/classes/Program.js";
+import Server from "/src/classes/Server.js";
 import { CONSTANT } from "/src/lib/constants.js";
+import ServerManager from "/src/managers/ServerManager.js";
 import ServerUtils from "/src/util/ServerUtils.js";
 
 export class ProgramManager {
     private static instance: ProgramManager;
 
     private programs: Program[];
-    private programInterval?: number;
+    private obtainedPrograms: Program[] = [];
+
+    private programPurchaseInterval?: number;
+    private programCheckInterval?: number;
 
     private constructor(ns: NS) {
         this.programs = [
@@ -31,27 +36,48 @@ export class ProgramManager {
         return ProgramManager.instance;
     }
 
-    public async startpurchaseLoop(ns: NS): Promise<void> {
-        this.programInterval = setInterval(this.purchaseLoop, CONSTANT.PURCHASE_PROGRAM_LOOP_INTERVAL);
-        this.purchaseLoop(ns);
+    public async startCheckingLoop(ns: NS): Promise<void> {
+        this.programCheckInterval = setInterval(this.checkingLoop, CONSTANT.PURCHASE_PROGRAM_LOOP_INTERVAL);
+        await this.checkingLoop(ns);
     }
 
-    public async purchaseLoop(ns: NS): Promise<void> {
+    public async startpurchaseLoop(ns: NS): Promise<void> {
+        this.programPurchaseInterval = setInterval(this.purchaseLoop, CONSTANT.PURCHASE_PROGRAM_LOOP_INTERVAL);
+        await this.purchaseLoop(ns);
+    }
+
+    private async checkingLoop(ns: NS): Promise<void> {
+        const obtainedPrograms: Program[] = this.programs.filter((program) => program.hasProgram(ns));
+
+        const isUpToDate: boolean = obtainedPrograms.every((program: Program) => {
+            return this.obtainedPrograms.includes(program);
+        });
+
+        if (!isUpToDate) {
+            this.obtainedPrograms = obtainedPrograms;
+            await this.onProgramsUpdated(ns);
+        }
+    }
+
+    private async purchaseLoop(ns: NS): Promise<void> {
 
         const programsToPurchase: Program[] = this.programs.filter((program) => !program.hasProgram(ns));
 
         // We have bought all programs
         if (programsToPurchase.length === 0) {
-            clearInterval(this.programInterval);
+            clearInterval(this.programPurchaseInterval);
             return;
         }
 
         const hasTor: boolean = await this.hasTor(ns);
         if (!hasTor) return;
 
+        let hasUpdated: boolean = false;
         programsToPurchase.forEach((program) => {
-            program.attemptPurchase(ns);
+            hasUpdated = hasUpdated || program.attemptPurchase(ns);
         });
+
+        if (hasUpdated) this.onProgramsUpdated(ns);
     }
 
     public getNumCrackScripts(ns: NS): number {
@@ -76,5 +102,17 @@ export class ProgramManager {
         if (homeServer.treeStructure && homeServer.treeStructure.children) {
             return homeServer.treeStructure.children.some((server) => ServerUtils.isDarkwebServer(server));
         } else throw new Error("The server map has not been initialized yet.");
+    }
+
+    private async onProgramsUpdated(ns: NS): Promise<void> {
+        const serverManager: ServerManager = ServerManager.getInstance(ns);
+        const serverMap: Server[] = await serverManager.getServerMap(ns, true);
+
+        // Root all servers in advance
+        await Promise.all(serverMap.map(async (server) => {
+            if (!server.isRooted(ns) && server.canRoot(ns)) {
+                await server.root(ns);
+            }
+        }));
     }
 }
