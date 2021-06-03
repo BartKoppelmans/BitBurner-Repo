@@ -1,7 +1,6 @@
-import HomeServer from "/src/classes/HomeServer.js";
 import { Program, ProgramType } from "/src/classes/Program.js";
 import { CONSTANT } from "/src/lib/constants.js";
-import * as ServerUtils from "/src/util/ServerUtils.js";
+import * as ProgramUtils from "/src/util/ProgramUtils.js";
 export default class ProgramManager {
     constructor(ns) {
         this.obtainedPrograms = [];
@@ -47,7 +46,7 @@ export default class ProgramManager {
             clearInterval(this.programPurchaseInterval);
             return;
         }
-        const hasTor = await this.hasTor(ns);
+        const hasTor = await ProgramUtils.hasTor(ns);
         if (!hasTor)
             return;
         let hasUpdated = false;
@@ -70,16 +69,7 @@ export default class ProgramManager {
             .sort((a, b) => a.price - b.price)
             .slice(0, ports);
     }
-    async hasTor(ns) {
-        const homeServer = HomeServer.getInstance(ns);
-        if (homeServer.treeStructure && homeServer.treeStructure.children) {
-            return homeServer.treeStructure.children.some((server) => ServerUtils.isDarkwebServer(server));
-        }
-        else
-            throw new Error("The server map has not been initialized yet.");
-    }
     async onProgramsUpdated(ns) {
-        const ProgramUtils = await import('/src/util/ProgramUtils.js');
         await ProgramUtils.rootAllServers(ns);
     }
 }

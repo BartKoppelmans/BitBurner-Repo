@@ -1,5 +1,4 @@
 import { CONSTANT } from "/src/lib/constants.js";
-import ProgramManager from '/src/managers/ProgramManager.js';
 export function isHomeServer(server) {
     return isHome(server.host);
 }
@@ -28,6 +27,7 @@ export function canRoot(ns, server) {
     if (!isHackableServer(server)) {
         return false;
     }
+    const ProgramManager = import('/src/managers/ProgramManager.js');
     const hackableServer = server;
     return ProgramManager.getInstance(ns).getNumCrackScripts(ns) >= hackableServer.staticHackingProperties.ports;
 }
@@ -40,6 +40,7 @@ export async function root(ns, server) {
         throw new Error("Cannot crack the server.");
     }
     const hackableServer = server;
+    const ProgramManager = import('/src/managers/ProgramManager.js');
     const crackingScripts = ProgramManager.getInstance(ns).getCrackingScripts(ns, hackableServer.staticHackingProperties.ports);
     crackingScripts.forEach(program => program.run(ns, server));
     ns.nuke(server.host);

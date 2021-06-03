@@ -1,8 +1,7 @@
 import type { BitBurner as NS } from "Bitburner";
-import HomeServer from "/src/classes/HomeServer.js";
 import { Program, ProgramType } from "/src/classes/Program.js";
 import { CONSTANT } from "/src/lib/constants.js";
-import * as ServerUtils from "/src/util/ServerUtils.js";
+import * as ProgramUtils from "/src/util/ProgramUtils.js";
 
 export default class ProgramManager {
     private static instance: ProgramManager;
@@ -67,7 +66,7 @@ export default class ProgramManager {
             return;
         }
 
-        const hasTor: boolean = await this.hasTor(ns);
+        const hasTor: boolean = await ProgramUtils.hasTor(ns);
         if (!hasTor) return;
 
         let hasUpdated: boolean = false;
@@ -94,17 +93,7 @@ export default class ProgramManager {
             .slice(0, ports);
     }
 
-    private async hasTor(ns: NS): Promise<boolean> {
-        const homeServer: HomeServer = HomeServer.getInstance(ns);
-
-        if (homeServer.treeStructure && homeServer.treeStructure.children) {
-            return homeServer.treeStructure.children.some((server) => ServerUtils.isDarkwebServer(server));
-        } else throw new Error("The server map has not been initialized yet.");
-    }
-
     private async onProgramsUpdated(ns: NS): Promise<void> {
-
-        const ProgramUtils = await import('/src/util/ProgramUtils.js');
         await ProgramUtils.rootAllServers(ns);
     }
 }
