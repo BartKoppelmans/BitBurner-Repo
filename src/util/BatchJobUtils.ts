@@ -6,6 +6,7 @@ import { CONSTANT } from "/src/lib/constants.js";
 import ServerManager from "/src/managers/ServerManager.js";
 import { Tools } from "/src/tools/Tools.js";
 import * as JobUtils from "/src/util/JobUtils.js";
+import * as ToolUtils from "/src/util/ToolUtils.js";
 import * as ServerHackUtils from "/src/util/ServerHackUtils.js";
 
 export async function computeMaxCycles(ns: NS, cycleCost: number, allowSpread: boolean = true): Promise<number> {
@@ -78,11 +79,9 @@ export async function createCycleJob(ns: NS, target: HackableServer, tool: Tools
 
 // Returns the number of threads
 export function getOptimalBatchCost(ns: NS, target: HackableServer): number {
-    // TODO: Refactor this shitshow
-
-    const weakenCost: number = ServerHackUtils.weakenThreadTotalPerCycle(ns, target);
-    const growCost: number = ServerHackUtils.growThreadsNeededAfterTheft(ns, target);
-    const hackCost: number = ServerHackUtils.hackThreadsNeeded(ns, target);
+    const weakenCost: number = ServerHackUtils.weakenThreadTotalPerCycle(ns, target) * ToolUtils.getToolCost(ns, Tools.WEAKEN);
+    const growCost: number = ServerHackUtils.growThreadsNeededAfterTheft(ns, target) * ToolUtils.getToolCost(ns, Tools.GROW);
+    const hackCost: number = ServerHackUtils.hackThreadsNeeded(ns, target) * ToolUtils.getToolCost(ns, Tools.HACK);
 
     return weakenCost + growCost + hackCost;
 }
