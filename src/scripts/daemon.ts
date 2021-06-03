@@ -24,7 +24,7 @@ export async function main(ns: NS) {
 async function initialize(ns: NS) {
 
     const serverManager: ServerManager = ServerManager.getInstance(ns);
-    await serverManager.rebuildServerMap(ns);
+    serverManager.rebuildServerMap(ns);
 
     const purchasedServerManager: PurchasedServerManager = PurchasedServerManager.getInstance(ns);
     await purchasedServerManager.start(ns);
@@ -51,7 +51,7 @@ async function hackLoop(ns: NS) {
     }
 
     let targetCounter: number = 0;
-    for (let target of potentialTargets) {
+    for await (let target of potentialTargets) {
         // Can't have too many targets at the same time
         if (targetCounter >= CONSTANT.MAX_TARGET_COUNT) break;
 

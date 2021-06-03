@@ -66,7 +66,7 @@ export default class ProgramManager {
             return;
         }
 
-        const hasTor: boolean = await ProgramUtils.hasTor(ns);
+        const hasTor: boolean = ProgramUtils.hasTor(ns);
         if (!hasTor) return;
 
         let hasUpdated: boolean = false;

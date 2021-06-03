@@ -41,8 +41,6 @@ export async function computeThreadSpread(ns: NS, tool: Tools, threads: number):
 
     const serverManager: ServerManager = ServerManager.getInstance(ns);
 
-    const serverMap: Server[] = await serverManager.getHackingServers(ns);
-
     // TODO: Remove this because we should already check it?
     const maxThreadsAvailable = await computeMaxThreads(ns, tool, true);
 
@@ -54,6 +52,7 @@ export async function computeThreadSpread(ns: NS, tool: Tools, threads: number):
 
     let threadsLeft: number = threads;
     let spreadMap: Map<Server, number> = new Map<Server, number>();
+    const serverMap: Server[] = await serverManager.getHackingServers(ns);
 
     for (let server of serverMap) {
         let serverThreads: number = Math.floor(server.getAvailableRam(ns) / cost);

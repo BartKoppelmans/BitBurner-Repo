@@ -23,7 +23,7 @@ export default class ServerManager {
         return ServerManager.instance;
     }
 
-    private async buildServerMap(ns: NS): Promise<Server[]> {
+    private buildServerMap(ns: NS): Server[] {
         const hostName = ns.getHostname();
         if (hostName !== 'home') {
             throw new Error('Run the script from home');
@@ -34,13 +34,13 @@ export default class ServerManager {
         return serverMap;
     }
 
-    public async rebuildServerMap(ns: NS) {
-        this.serverMap = await this.buildServerMap(ns);
+    public rebuildServerMap(ns: NS) {
+        this.serverMap = this.buildServerMap(ns);
     }
 
-    public async getServerMap(ns: NS, forceUpdate: boolean = false) {
+    public getServerMap(ns: NS, forceUpdate: boolean = false) {
         if (this.needsUpdate(ns) || forceUpdate) {
-            await this.rebuildServerMap(ns);
+            this.rebuildServerMap(ns);
         }
         return this.serverMap;
     }

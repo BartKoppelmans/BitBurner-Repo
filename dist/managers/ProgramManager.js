@@ -46,7 +46,7 @@ export default class ProgramManager {
             clearInterval(this.programPurchaseInterval);
             return;
         }
-        const hasTor = await ProgramUtils.hasTor(ns);
+        const hasTor = ProgramUtils.hasTor(ns);
         if (!hasTor)
             return;
         let hasUpdated = false;

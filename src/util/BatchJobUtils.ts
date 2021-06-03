@@ -44,8 +44,6 @@ export async function createCycleJob(ns: NS, target: HackableServer, tool: Tools
     let threads: number;
     let executionTime: number;
 
-    const maxThreadsAvailable: number = await JobUtils.computeMaxThreads(ns, tool, true);
-
     if (tool === Tools.HACK) {
         executionTime = ns.getHackTime(target.host) * CONSTANT.MILLISECONDS_IN_SECOND;
 

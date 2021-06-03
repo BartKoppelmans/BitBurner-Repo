@@ -16,7 +16,7 @@ export async function main(ns) {
 }
 async function initialize(ns) {
     const serverManager = ServerManager.getInstance(ns);
-    await serverManager.rebuildServerMap(ns);
+    serverManager.rebuildServerMap(ns);
     const purchasedServerManager = PurchasedServerManager.getInstance(ns);
     await purchasedServerManager.start(ns);
     const programManager = ProgramManager.getInstance(ns);
@@ -34,7 +34,7 @@ async function hackLoop(ns) {
         throw new Error("No potential targets found.");
     }
     let targetCounter = 0;
-    for (let target of potentialTargets) {
+    for await (let target of potentialTargets) {
         // Can't have too many targets at the same time
         if (targetCounter >= CONSTANT.MAX_TARGET_COUNT)
             break;

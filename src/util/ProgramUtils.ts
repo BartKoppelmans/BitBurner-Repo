@@ -6,7 +6,7 @@ import * as ServerUtils from "/src/util/ServerUtils.js";
 
 
 
-export async function hasTor(ns: NS): Promise<boolean> {
+export function hasTor(ns: NS): boolean {
     const homeServer: HomeServer = HomeServer.getInstance(ns);
 
     if (homeServer.treeStructure && homeServer.treeStructure.children) {

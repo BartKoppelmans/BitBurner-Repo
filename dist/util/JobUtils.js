@@ -28,7 +28,6 @@ export async function computeMaxThreads(ns, tool, allowSpread = true) {
 }
 export async function computeThreadSpread(ns, tool, threads) {
     const serverManager = ServerManager.getInstance(ns);
-    const serverMap = await serverManager.getHackingServers(ns);
     // TODO: Remove this because we should already check it?
     const maxThreadsAvailable = await computeMaxThreads(ns, tool, true);
     if (threads > maxThreadsAvailable) {
@@ -37,6 +36,7 @@ export async function computeThreadSpread(ns, tool, threads) {
     const cost = ToolUtils.getToolCost(ns, tool);
     let threadsLeft = threads;
     let spreadMap = new Map();
+    const serverMap = await serverManager.getHackingServers(ns);
     for (let server of serverMap) {
         let serverThreads = Math.floor(server.getAvailableRam(ns) / cost);
         // If we can't fit any more threads here, skip it
