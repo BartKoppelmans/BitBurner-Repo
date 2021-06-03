@@ -5,87 +5,84 @@ import Server from "/src/classes/Server.js";
 import { CONSTANT } from "/src/lib/constants.js";
 import ServerManager from "/src/managers/ServerManager.js";
 import { Tools } from "/src/tools/Tools.js";
-import JobUtils from "/src/util/JobUtils.js";
-import ServerHackUtils from "/src/util/ServerHackUtils.js";
+import * as JobUtils from "/src/util/JobUtils.js";
+import * as ServerHackUtils from "/src/util/ServerHackUtils.js";
 
-export default class BatchJobUtils {
+export async function computeMaxCycles(ns: NS, cycleCost: number, allowSpread: boolean = true): Promise<number> {
 
-    static async computeMaxCycles(ns: NS, cycleCost: number, allowSpread: boolean = true): Promise<number> {
+    const serverManager: ServerManager = ServerManager.getInstance(ns);
 
-        const serverManager: ServerManager = ServerManager.getInstance(ns);
+    const serverMap: Server[] = await serverManager.getHackingServers(ns);
 
-        const serverMap: Server[] = await serverManager.getHackingServers(ns);
-
-        // NOTE: We always expect AT LEAST 1 rooted server to be available
-        if (!allowSpread) {
-            const server: Server = serverMap.shift() as Server;
-            return Math.floor(server.getAvailableRam(ns) / cycleCost);
-        }
-
-        return serverMap.reduce((threads, server) => threads + Math.floor(server.getAvailableRam(ns) / cycleCost), 0);
+    // NOTE: We always expect AT LEAST 1 rooted server to be available
+    if (!allowSpread) {
+        const server: Server = serverMap.shift() as Server;
+        return Math.floor(server.getAvailableRam(ns) / cycleCost);
     }
 
-    public static async scheduleCycle(ns: NS, target: HackableServer, batchStart: Date): Promise<Job[]> {
-        const scheduledJob1: Job = await this.createCycleJob(ns, target, Tools.HACK, batchStart);
+    return serverMap.reduce((threads, server) => threads + Math.floor(server.getAvailableRam(ns) / cycleCost), 0);
+}
 
-        let scheduledJobStart2: Date = new Date(scheduledJob1.end.getTime() + CONSTANT.CYCLE_DELAY);
-        const scheduledJob2: Job = await this.createCycleJob(ns, target, Tools.WEAKEN, scheduledJobStart2, true);
+export async function scheduleCycle(ns: NS, target: HackableServer, batchStart: Date): Promise<Job[]> {
+    const scheduledJob1: Job = await createCycleJob(ns, target, Tools.HACK, batchStart);
 
-        let scheduledJobStart3: Date = new Date(scheduledJob2.end.getTime() + CONSTANT.CYCLE_DELAY);
-        const scheduledJob3: Job = await this.createCycleJob(ns, target, Tools.GROW, scheduledJobStart3);
+    let scheduledJobStart2: Date = new Date(scheduledJob1.end.getTime() + CONSTANT.CYCLE_DELAY);
+    const scheduledJob2: Job = await createCycleJob(ns, target, Tools.WEAKEN, scheduledJobStart2, true);
 
-        let scheduledJobStart4: Date = new Date(scheduledJob3.end.getTime() + CONSTANT.CYCLE_DELAY);
-        const scheduledJob4: Job = await this.createCycleJob(ns, target, Tools.WEAKEN, scheduledJobStart4, false);
+    let scheduledJobStart3: Date = new Date(scheduledJob2.end.getTime() + CONSTANT.CYCLE_DELAY);
+    const scheduledJob3: Job = await createCycleJob(ns, target, Tools.GROW, scheduledJobStart3);
 
-        return [scheduledJob1, scheduledJob2, scheduledJob3, scheduledJob4];
+    let scheduledJobStart4: Date = new Date(scheduledJob3.end.getTime() + CONSTANT.CYCLE_DELAY);
+    const scheduledJob4: Job = await createCycleJob(ns, target, Tools.WEAKEN, scheduledJobStart4, false);
+
+    return [scheduledJob1, scheduledJob2, scheduledJob3, scheduledJob4];
+}
+
+
+export async function createCycleJob(ns: NS, target: HackableServer, tool: Tools, start: Date, isFirstWeaken: boolean = false): Promise<Job> {
+    let threads: number;
+    let executionTime: number;
+
+    const maxThreadsAvailable: number = await JobUtils.computeMaxThreads(ns, tool, true);
+
+    if (tool === Tools.HACK) {
+        executionTime = ns.getHackTime(target.host) * CONSTANT.MILLISECONDS_IN_SECOND;
+
+        threads = ServerHackUtils.hackThreadsNeeded(ns, target);
+    }
+    else if (tool === Tools.WEAKEN) {
+        executionTime = ns.getWeakenTime(target.host) * CONSTANT.MILLISECONDS_IN_SECOND;
+
+        threads = (isFirstWeaken) ? ServerHackUtils.weakenThreadsNeededAfterTheft(ns, target) : ServerHackUtils.weakenThreadsNeededAfterGrowth(ns, target);
+    }
+    else if (tool === Tools.GROW) {
+        executionTime = ns.getGrowTime(target.host) * CONSTANT.MILLISECONDS_IN_SECOND;
+
+        threads = ServerHackUtils.growThreadsNeededAfterTheft(ns, target);
+    }
+    else {
+        throw new Error("Tool not recognized");
     }
 
+    const end: Date = new Date(start.getTime() + executionTime);
 
-    public static async createCycleJob(ns: NS, target: HackableServer, tool: Tools, start: Date, isFirstWeaken: boolean = false): Promise<Job> {
-        let threads: number;
-        let executionTime: number;
+    return new Job(ns, {
+        target,
+        tool,
+        threads,
+        start,
+        end,
+        isPrep: false
+    });
+}
 
-        const maxThreadsAvailable: number = await JobUtils.computeMaxThreads(ns, tool, true);
+// Returns the number of threads
+export function getOptimalBatchCost(ns: NS, target: HackableServer): number {
+    // TODO: Refactor this shitshow
 
-        if (tool === Tools.HACK) {
-            executionTime = ns.getHackTime(target.host) * CONSTANT.MILLISECONDS_IN_SECOND;
+    const weakenCost: number = ServerHackUtils.weakenThreadTotalPerCycle(ns, target);
+    const growCost: number = ServerHackUtils.growThreadsNeededAfterTheft(ns, target);
+    const hackCost: number = ServerHackUtils.hackThreadsNeeded(ns, target);
 
-            threads = ServerHackUtils.hackThreadsNeeded(ns, target);
-        }
-        else if (tool === Tools.WEAKEN) {
-            executionTime = ns.getWeakenTime(target.host) * CONSTANT.MILLISECONDS_IN_SECOND;
-
-            threads = (isFirstWeaken) ? ServerHackUtils.weakenThreadsNeededAfterTheft(ns, target) : ServerHackUtils.weakenThreadsNeededAfterGrowth(ns, target);
-        }
-        else if (tool === Tools.GROW) {
-            executionTime = ns.getGrowTime(target.host) * CONSTANT.MILLISECONDS_IN_SECOND;
-
-            threads = ServerHackUtils.growThreadsNeededAfterTheft(ns, target);
-        }
-        else {
-            throw new Error("Tool not recognized");
-        }
-
-        const end: Date = new Date(start.getTime() + executionTime);
-
-        return new Job(ns, {
-            target,
-            tool,
-            threads,
-            start,
-            end,
-            isPrep: false
-        });
-    }
-
-    // Returns the number of threads
-    public static getOptimalBatchCost(ns: NS, target: HackableServer): number {
-        // TODO: Refactor this shitshow
-
-        const weakenCost: number = ServerHackUtils.weakenThreadTotalPerCycle(ns, target);
-        const growCost: number = ServerHackUtils.growThreadsNeededAfterTheft(ns, target);
-        const hackCost: number = ServerHackUtils.hackThreadsNeeded(ns, target);
-
-        return weakenCost + growCost + hackCost;
-    }
+    return weakenCost + growCost + hackCost;
 }

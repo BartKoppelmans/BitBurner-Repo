@@ -1,6 +1,6 @@
 import { CONSTANT } from "/src/lib/constants.js";
 import PlayerManager from "/src/managers/PlayerManager.js";
-import Utils from "/src/util/Utils.js";
+import * as Utils from "/src/util/Utils.js";
 export var ProgramType;
 (function (ProgramType) {
     ProgramType[ProgramType["Crack"] = 0] = "Crack";

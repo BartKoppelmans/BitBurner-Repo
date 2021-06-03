@@ -4,7 +4,7 @@ import { Program, ProgramType } from "/src/classes/Program.js";
 import Server from "/src/classes/Server.js";
 import { CONSTANT } from "/src/lib/constants.js";
 import ServerManager from "/src/managers/ServerManager.js";
-import ServerUtils from "/src/util/ServerUtils.js";
+import * as ServerUtils from "/src/util/ServerUtils.js";
 
 export default class ProgramManager {
     private static instance: ProgramManager;

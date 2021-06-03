@@ -1,8 +1,8 @@
 import { CONSTANT } from "/src/lib/constants.js";
-import JobUtils from "/src/util/JobUtils.js";
-import ToolUtils from "/src/util/ToolUtils.js";
-import Utils from "/src/util/Utils.js";
-import ServerUtils from "/src/util/ServerUtils.js";
+import * as JobUtils from "/src/util/JobUtils.js";
+import * as ToolUtils from "/src/util/ToolUtils.js";
+import * as Utils from "/src/util/Utils.js";
+import * as ServerUtils from "/src/util/ServerUtils.js";
 import HomeServer from "/src/classes/HomeServer.js";
 import JobManager from "/src/managers/JobManager.js";
 export default class Job {

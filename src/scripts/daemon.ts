@@ -4,7 +4,7 @@ import PurchasedServerManager from "/src/managers/PurchasedServerManager.js";
 import ServerManager from "/src/managers/ServerManager.js";
 import HackableServer from "/src/classes/HackableServer.js";
 import { CONSTANT } from "/src/lib/constants.js";
-import HackUtils from "/src/util/HackUtils.js";
+import * as HackUtils from "/src/util/HackUtils.js";
 import { Heuristics } from "/src/util/Heuristics.js";
 
 export async function main(ns: NS) {

@@ -4,7 +4,7 @@ import HackableServer from '/src/classes/HackableServer.js';
 import PurchasedServer from '/src/classes/PurchasedServer.js';
 import HomeServer from "/src/classes/HomeServer.js";
 import { CONSTANT } from "/src/lib/constants.js";
-import ServerUtils from "/src/util/ServerUtils.js";
+import * as ServerUtils from "/src/util/ServerUtils.js";
 
 export default class ServerManager {
     private static instance: ServerManager;
