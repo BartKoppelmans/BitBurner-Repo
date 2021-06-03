@@ -2,6 +2,7 @@ import Job from "/src/classes/Job.js";
 import { CONSTANT } from "/src/lib/constants.js";
 import { ServerManager } from "/src/managers/ServerManager.js";
 import { Tools } from "/src/tools/Tools.js";
+import JobUtils from "/src/util/JobUtils";
 import ServerHackUtils from "/src/util/ServerHackUtils.js";
 export default class BatchJobUtils {
     static async computeMaxCycles(ns, cycleCost, allowSpread = true) {
@@ -27,6 +28,7 @@ export default class BatchJobUtils {
     static async createCycleJob(ns, target, tool, start, isFirstWeaken = false) {
         let threads;
         let executionTime;
+        const maxThreadsAvailable = await JobUtils.computeMaxThreads(ns, tool, true);
         if (tool === Tools.HACK) {
             executionTime = ns.getHackTime(target.host) * CONSTANT.MILLISECONDS_IN_SECOND;
             threads = ServerHackUtils.hackThreadsNeeded(ns, target);

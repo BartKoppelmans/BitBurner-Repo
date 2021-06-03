@@ -123,14 +123,8 @@ export default class HackUtils {
 
         let numCycles: number = Math.min(optimalCycles, maxCycles);
 
-        if (numCycles === 0) {
-            // NOTE: HOW THE FUCK DOES THIS HAPPEN
-
-            // Don't throw the error, that would be logical
-            // throw new Error("No cycles possible.");
-
-            numCycles = 1;
-        }
+        // NOTE: This could cause us to never attack
+        if (numCycles === 0) return;
 
         for (let i = 0; i < numCycles; i++) {
 

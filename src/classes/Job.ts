@@ -50,6 +50,11 @@ export default class Job {
 
         const maxThreadsAvailable: number = await JobUtils.computeMaxThreads(ns, this.tool, true);
 
+        if (maxThreadsAvailable === 0) {
+            // Cancel the batch
+            throw new Error("No threads available");
+        }
+
         if (this.threads > maxThreadsAvailable) {
             // TODO: How do we handle this
             // For now just use he minimum of the two

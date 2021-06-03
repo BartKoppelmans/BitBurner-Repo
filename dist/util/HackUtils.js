@@ -88,12 +88,9 @@ export default class HackUtils {
         const optimalCycles = ServerHackUtils.computeOptimalCycles(ns, target);
         const maxCycles = await BatchJobUtils.computeMaxCycles(ns, optimalBatchCost, true);
         let numCycles = Math.min(optimalCycles, maxCycles);
-        if (numCycles === 0) {
-            // NOTE: HOW THE FUCK DOES THIS HAPPEN
-            // Don't throw the error, that would be logical
-            // throw new Error("No cycles possible.");
-            numCycles = 1;
-        }
+        // NOTE: This could cause us to never attack
+        if (numCycles === 0)
+            return;
         for (let i = 0; i < numCycles; i++) {
             let cycleStart;
             // Set the start time of the cycle
