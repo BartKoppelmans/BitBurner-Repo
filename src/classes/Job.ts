@@ -1,7 +1,7 @@
 import type { BitBurner as NS } from "Bitburner";
 import HackableServer from "/src/classes/HackableServer.js";
 import Server from "/src/classes/Server.js";
-import { ExecArguments, IBatchJob, IJOb, ToolArguments } from "/src/interfaces/JobInterfaces.js";
+import { ExecArguments, IJOb, ToolArguments } from "/src/interfaces/JobInterfaces.js";
 import { CONSTANT } from "/src/lib/constants.js";
 import { Tools } from "/src/tools/Tools.js";
 import JobUtils from "/src/util/JobUtils.js";
@@ -9,7 +9,7 @@ import ToolUtils from "/src/util/ToolUtils.js";
 import Utils from "/src/util/Utils.js";
 import ServerUtils from "/src/util/ServerUtils.js";
 import HomeServer from "/src/classes/HomeServer.js";
-import { JobManager } from "/src/managers/JobManager.js";
+import JobManager from "/src/managers/JobManager.js";
 
 export default class Job {
     id: number;

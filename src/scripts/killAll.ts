@@ -2,7 +2,7 @@ import type { BitBurner as NS } from "Bitburner";
 import HomeServer from "/src/classes/HomeServer.js";
 import Server from "/src/classes/Server.js";
 import { CONSTANT } from "/src/lib/constants.js";
-import { ServerManager } from "/src/managers/ServerManager.js";
+import ServerManager from "/src/managers/ServerManager.js";
 import ServerUtils from "/src/util/ServerUtils.js";
 
 export async function main(ns: NS) {

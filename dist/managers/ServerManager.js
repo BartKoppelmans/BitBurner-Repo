@@ -4,7 +4,7 @@ import PurchasedServer from '/src/classes/PurchasedServer.js';
 import HomeServer from "/src/classes/HomeServer.js";
 import { CONSTANT } from "/src/lib/constants.js";
 import ServerUtils from "/src/util/ServerUtils.js";
-export class ServerManager {
+export default class ServerManager {
     constructor() {
         this.serverMap = [];
         this.lastUpdated = CONSTANT.EPOCH_DATE;

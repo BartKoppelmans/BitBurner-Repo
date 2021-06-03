@@ -1,8 +1,8 @@
 import type { BitBurner as NS } from "Bitburner";
 import PurchasedServer from "/src/classes/PurchasedServer.js";
 import { CONSTANT } from "/src/lib/constants.js";
-import { PlayerManager } from "/src/managers/PlayerManager.js";
-import { ServerManager } from "/src/managers/ServerManager.js";
+import PlayerManager from "/src/managers/PlayerManager.js";
+import ServerManager from "/src/managers/ServerManager.js";
 import Utils from "/src/util/Utils.js";
 
 export default class PurchasedServerManager {

@@ -4,7 +4,7 @@ import ToolUtils from "/src/util/ToolUtils.js";
 import Utils from "/src/util/Utils.js";
 import ServerUtils from "/src/util/ServerUtils.js";
 import HomeServer from "/src/classes/HomeServer.js";
-import { JobManager } from "/src/managers/JobManager.js";
+import JobManager from "/src/managers/JobManager.js";
 export default class Job {
     constructor(ns, job) {
         const jobManager = JobManager.getInstance();

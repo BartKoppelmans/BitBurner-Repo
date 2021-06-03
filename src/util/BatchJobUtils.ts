@@ -3,12 +3,10 @@ import HackableServer from "/src/classes/HackableServer.js";
 import Job from "/src/classes/Job.js";
 import Server from "/src/classes/Server.js";
 import { CONSTANT } from "/src/lib/constants.js";
-import { ServerManager } from "/src/managers/ServerManager.js";
+import ServerManager from "/src/managers/ServerManager.js";
 import { Tools } from "/src/tools/Tools.js";
-import HackUtils from "/src/util/HackUtils.js";
 import JobUtils from "/src/util/JobUtils.js";
 import ServerHackUtils from "/src/util/ServerHackUtils.js";
-import Utils from "/src/util/Utils.js";
 
 export default class BatchJobUtils {
 

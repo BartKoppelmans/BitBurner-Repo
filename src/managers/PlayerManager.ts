@@ -5,7 +5,7 @@ import { CONSTANT } from "/src/lib/constants.js";
 /* 
  * The player manager contains the values of the hacking multipliers and the bitnode multipliers
  */
-export class PlayerManager {
+export default class PlayerManager {
     private static instance: PlayerManager;
 
     hackingLevel: number;

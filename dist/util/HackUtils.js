@@ -1,8 +1,8 @@
 import BatchJob from "/src/classes/BatchJob.js";
 import Job from "/src/classes/Job.js";
 import { CONSTANT } from "/src/lib/constants.js";
-import { JobManager } from "/src/managers/JobManager.js";
-import { PlayerManager } from "/src/managers/PlayerManager.js";
+import JobManager from "/src/managers/JobManager.js";
+import PlayerManager from "/src/managers/PlayerManager.js";
 import { Tools } from "/src/tools/Tools.js";
 import BatchJobUtils from "/src/util/BatchJobUtils.js";
 import JobUtils from "/src/util/JobUtils.js";

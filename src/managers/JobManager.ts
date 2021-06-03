@@ -2,7 +2,7 @@ import type { BitBurner as NS } from "Bitburner";
 import Job from "/src/classes/Job.js";
 import Server from "/src/classes/Server.js";
 
-export class JobManager {
+export default class JobManager {
     private static instance: JobManager;
 
     private jobs: Job[] = [];

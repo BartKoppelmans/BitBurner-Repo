@@ -1,5 +1,5 @@
 import { CONSTANT } from "/src/lib/constants.js";
-import { PlayerManager } from "/src/managers/PlayerManager.js";
+import PlayerManager from "/src/managers/PlayerManager.js";
 export default class ServerHackUtils {
     static serverGrowthPercentage(ns, target) {
         const playerManager = PlayerManager.getInstance(ns);

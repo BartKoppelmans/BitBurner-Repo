@@ -1,5 +1,5 @@
 import Server from '/src/classes/Server.js';
-import { PlayerManager } from "/src/managers/PlayerManager.js";
+import PlayerManager from "/src/managers/PlayerManager.js";
 import { ProgramManager } from "/src/managers/ProgramManager.js";
 export default class HackableServer extends Server {
     constructor(ns, host, treeStructure) {

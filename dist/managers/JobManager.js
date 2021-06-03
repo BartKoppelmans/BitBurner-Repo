@@ -1,4 +1,4 @@
-export class JobManager {
+export default class JobManager {
     constructor() {
         this.jobs = [];
         this.jobIdCounter = 0;
