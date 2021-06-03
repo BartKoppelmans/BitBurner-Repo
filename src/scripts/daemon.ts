@@ -14,7 +14,7 @@ export async function main(ns: NS) {
         throw new Error("Execute daemon script from home.");
     }
 
-    initialize(ns);
+    await initialize(ns);
 
     while (true) {
         await hackLoop(ns);
@@ -23,11 +23,12 @@ export async function main(ns: NS) {
 
 async function initialize(ns: NS) {
 
-    const purchasedServerManager: PurchasedServerManager = PurchasedServerManager.getInstance(ns);
-    purchasedServerManager.start(ns);
+    const serverManager: ServerManager = ServerManager.getInstance(ns);
+    await serverManager.rebuildServerMap(ns);
 
-    // TODO: initializeServers 
-    // Purchase new servers and such to have some power later on
+    const purchasedServerManager: PurchasedServerManager = PurchasedServerManager.getInstance(ns);
+    await purchasedServerManager.start(ns);
+
 }
 
 async function hackLoop(ns: NS) {

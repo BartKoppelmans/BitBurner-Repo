@@ -10,7 +10,6 @@ export default class PurchasedServerManager {
 
     private purchasedServers: PurchasedServer[] = [];
 
-
     private purchaseLoopInterval?: ReturnType<typeof setInterval>;
     private upgradeLoopInterval?: ReturnType<typeof setInterval>;
 
@@ -37,7 +36,7 @@ export default class PurchasedServerManager {
 
         Utils.tprintColored(`Starting the PurchasedServerManager.`, true, "blue");
 
-        this.updateServerMap(ns);
+        await this.updateServerMap(ns);
 
         if (this.purchasedServers.length < CONSTANT.MAX_PURCHASED_SERVERS) {
             this.startPurchaseServerLoop(ns);
@@ -49,8 +48,8 @@ export default class PurchasedServerManager {
     // Purchasing new servers -------------------------------------------------------------------
 
     private async startPurchaseServerLoop(ns: NS) {
-        this.purchaseServerLoop(ns);
         this.purchaseLoopInterval = setInterval(this.purchaseServerLoop, CONSTANT.PURCHASE_PURCHASED_SERVER_LOOP_INTERVAL);
+        this.purchaseServerLoop(ns);
     }
 
 
@@ -58,7 +57,6 @@ export default class PurchasedServerManager {
     // so that we can fill our servers up as quickly as possible
     private async purchaseServerLoop(ns: NS) {
         let updateNeeded: boolean = false;
-
 
         this.updateServerMap(ns);
         if (this.purchasedServers.length === CONSTANT.MAX_PURCHASED_SERVERS) {
@@ -102,8 +100,8 @@ export default class PurchasedServerManager {
 
     private async startUpgradeLoop(ns: NS) {
         clearInterval(this.purchaseLoopInterval);
-        this.upgradeLoop(ns);
         this.upgradeLoopInterval = setInterval(this.upgradeLoop, CONSTANT.UPGRADE_PURCHASED_SERVER_LOOP_INTERVAL);
+        this.upgradeLoop(ns);
     }
 
     private async upgradeLoop(ns: NS) {
