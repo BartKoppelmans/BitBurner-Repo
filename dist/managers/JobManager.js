@@ -1,7 +1,8 @@
-let jobs = [];
-let jobIdCounter = 0;
 class JobManager {
-    constructor() { }
+    constructor() {
+        this.jobs = [];
+        this.jobIdCounter = 0;
+    }
     static getInstance() {
         if (!JobManager.instance) {
             JobManager.instance = new JobManager();
@@ -9,33 +10,33 @@ class JobManager {
         return JobManager.instance;
     }
     startJob(ns, job) {
-        jobs.push(job);
+        this.jobs.push(job);
         job.onStart(ns);
         setTimeout(this.finishJob, job.end.getTime() - Date.now(), ns, job.id);
     }
     finishJob(ns, id) {
-        const index = jobs.findIndex(job => job.id === id);
+        const index = this.jobs.findIndex(job => job.id === id);
         if (index === -1) {
             throw new Error("Could not find the job");
         }
-        const job = jobs.splice(index, 1)[0];
+        const job = this.jobs.splice(index, 1)[0];
         job.onFinish(ns);
     }
     isPrepping(ns, server) {
-        return jobs.some((job) => {
+        return this.jobs.some((job) => {
             return job.target === server && job.isPrep;
         });
     }
     isTargetting(ns, server) {
-        return jobs.some((job) => {
+        return this.jobs.some((job) => {
             return job.target === server && !job.isPrep;
         });
     }
     getNextJobId() {
-        return ++jobIdCounter;
+        return ++this.jobIdCounter;
     }
     getCurrentTargets() {
-        return [...new Set(jobs.map(job => job.target))];
+        return [...new Set(this.jobs.map(job => job.target))];
     }
 }
 export let jobManager = JobManager.getInstance();

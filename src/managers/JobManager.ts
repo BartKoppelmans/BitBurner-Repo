@@ -3,11 +3,11 @@ import HackableServer from "/src/classes/HackableServer.js";
 import Job from "/src/classes/Job.js";
 import Server from "/src/classes/Server.js";
 
-let jobs: Job[] = [];
-let jobIdCounter: number = 0;
-
 class JobManager {
     private static instance: JobManager;
+
+    private jobs: Job[] = [];
+    private jobIdCounter: number = 0;
 
     private constructor() { }
 
@@ -20,7 +20,7 @@ class JobManager {
     }
 
     public startJob(ns: NS, job: Job): void {
-        jobs.push(job);
+        this.jobs.push(job);
 
         job.onStart(ns);
 
@@ -28,35 +28,35 @@ class JobManager {
     }
 
     public finishJob(ns: NS, id: number): void {
-        const index: number = jobs.findIndex(job => job.id === id);
+        const index: number = this.jobs.findIndex(job => job.id === id);
 
         if (index === -1) {
             throw new Error("Could not find the job");
         }
 
-        const job: Job = jobs.splice(index, 1)[0];
+        const job: Job = this.jobs.splice(index, 1)[0];
 
         job.onFinish(ns);
     }
 
     public isPrepping(ns: NS, server: Server): boolean {
-        return jobs.some((job: Job) => {
+        return this.jobs.some((job: Job) => {
             return job.target === server && job.isPrep;
         });
     }
 
     public isTargetting(ns: NS, server: Server): boolean {
-        return jobs.some((job: Job) => {
+        return this.jobs.some((job: Job) => {
             return job.target === server && !job.isPrep;
         });
     }
 
     public getNextJobId(): number {
-        return ++jobIdCounter;
+        return ++this.jobIdCounter;
     }
 
     public getCurrentTargets(): HackableServer[] {
-        return [...new Set(jobs.map(job => job.target))];
+        return [...new Set(this.jobs.map(job => job.target))];
     }
 
 }

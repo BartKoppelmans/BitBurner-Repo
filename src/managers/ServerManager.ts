@@ -6,11 +6,11 @@ import HomeServer from "/src/classes/HomeServer.js";
 import { CONSTANT } from "/src/lib/constants.js";
 import * as ServerUtils from "/src/util/ServerUtils.js";
 
-let serverMap: Server[] = [];
-let lastUpdated: Date = CONSTANT.EPOCH_DATE;
-
 class ServerManager {
     private static instance: ServerManager;
+
+    private serverMap: Server[] = [];
+    private lastUpdated: Date = CONSTANT.EPOCH_DATE;
 
     private constructor() { }
 
@@ -28,24 +28,24 @@ class ServerManager {
             throw new Error('Run the script from home');
         }
 
-        serverMap = this.spider(ns, hostName);
-        lastUpdated = new Date();
-        return serverMap;
+        this.serverMap = this.spider(ns, hostName);
+        this.lastUpdated = new Date();
+        return this.serverMap;
     }
 
     public rebuildServerMap(ns: NS) {
-        serverMap = this.buildServerMap(ns);
+        this.serverMap = this.buildServerMap(ns);
     }
 
     public getServerMap(ns: NS, forceUpdate: boolean = false) {
         if (this.needsUpdate(ns) || forceUpdate) {
             this.rebuildServerMap(ns);
         }
-        return serverMap;
+        return this.serverMap;
     }
 
     private needsUpdate(ns: NS): boolean {
-        return (Date.now() - lastUpdated.getTime()) > CONSTANT.SERVER_MAP_REBUILD_TIME;
+        return (Date.now() - this.lastUpdated.getTime()) > CONSTANT.SERVER_MAP_REBUILD_TIME;
     }
 
     private spider(ns: NS, nodeName: string, parent?: Server): Server[] {

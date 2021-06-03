@@ -4,10 +4,11 @@ import PurchasedServer from '/src/classes/PurchasedServer.js';
 import HomeServer from "/src/classes/HomeServer.js";
 import { CONSTANT } from "/src/lib/constants.js";
 import * as ServerUtils from "/src/util/ServerUtils.js";
-let serverMap = [];
-let lastUpdated = CONSTANT.EPOCH_DATE;
 class ServerManager {
-    constructor() { }
+    constructor() {
+        this.serverMap = [];
+        this.lastUpdated = CONSTANT.EPOCH_DATE;
+    }
     static getInstance() {
         if (!ServerManager.instance) {
             ServerManager.instance = new ServerManager();
@@ -19,21 +20,21 @@ class ServerManager {
         if (hostName !== 'home') {
             throw new Error('Run the script from home');
         }
-        serverMap = this.spider(ns, hostName);
-        lastUpdated = new Date();
-        return serverMap;
+        this.serverMap = this.spider(ns, hostName);
+        this.lastUpdated = new Date();
+        return this.serverMap;
     }
     rebuildServerMap(ns) {
-        serverMap = this.buildServerMap(ns);
+        this.serverMap = this.buildServerMap(ns);
     }
     getServerMap(ns, forceUpdate = false) {
         if (this.needsUpdate(ns) || forceUpdate) {
             this.rebuildServerMap(ns);
         }
-        return serverMap;
+        return this.serverMap;
     }
     needsUpdate(ns) {
-        return (Date.now() - lastUpdated.getTime()) > CONSTANT.SERVER_MAP_REBUILD_TIME;
+        return (Date.now() - this.lastUpdated.getTime()) > CONSTANT.SERVER_MAP_REBUILD_TIME;
     }
     spider(ns, nodeName, parent) {
         let tempServerMap = [];
