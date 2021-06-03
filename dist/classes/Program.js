@@ -1,3 +1,5 @@
+import { PlayerManager } from "/src/managers/PlayerManager.js";
+import Utils from "/src/util/Utils.js";
 export var ProgramType;
 (function (ProgramType) {
     ProgramType[ProgramType["Crack"] = 0] = "Crack";
@@ -11,6 +13,21 @@ export class Program {
     }
     hasProgram(ns) {
         return ns.fileExists(this.name, "home");
+    }
+    // Returns whether it was successful
+    attemptPurchase(ns) {
+        const playerManager = PlayerManager.getInstance(ns);
+        const money = playerManager.getMoney(ns);
+        if (this.price > money)
+            return false;
+        const isSuccessful = ns.purchaseProgram(this.toValidString(ns, this.name));
+        if (isSuccessful) {
+            Utils.tprintColored(`Purchased ${this.name}`, true, "blue");
+        }
+        return isSuccessful;
+    }
+    toValidString(ns, name) {
+        return name.toLowerCase();
     }
     run(ns, server) {
         switch (this.name) {

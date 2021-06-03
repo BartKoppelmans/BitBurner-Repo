@@ -1,4 +1,8 @@
+import HomeServer from "/src/classes/HomeServer.js";
 import { Program, ProgramType } from "/src/classes/Program.js";
+import { CONSTANT } from "/src/lib/constants.js";
+import { ServerManager } from "/src/managers/ServerManager.js";
+import ServerUtils from "/src/util/ServerUtils.js";
 export class ProgramManager {
     constructor(ns) {
         this.programs = [
@@ -18,6 +22,24 @@ export class ProgramManager {
         }
         return ProgramManager.instance;
     }
+    async startpurchaseLoop(ns) {
+        this.programInterval = setInterval(this.purchaseLoop, CONSTANT.PURCHASE_PROGRAM_LOOP_INTERVAL);
+        this.purchaseLoop(ns);
+    }
+    async purchaseLoop(ns) {
+        const programsToPurchase = this.programs.filter((program) => !program.hasProgram(ns));
+        // We have bought all programs
+        if (programsToPurchase.length === 0) {
+            clearInterval(this.programInterval);
+            return;
+        }
+        const hasTor = await this.hasTor(ns);
+        if (!hasTor)
+            return;
+        programsToPurchase.forEach((program) => {
+            program.attemptPurchase(ns);
+        });
+    }
     getNumCrackScripts(ns) {
         return this.programs.filter(program => program.type === ProgramType.Crack && program.hasProgram(ns)).length;
     }
@@ -30,5 +52,13 @@ export class ProgramManager {
             .filter(program => program.type === ProgramType.Crack && program.hasProgram(ns))
             .sort((a, b) => a.price - b.price)
             .slice(0, ports);
+    }
+    async hasTor(ns) {
+        const homeServer = HomeServer.getInstance(ns);
+        if (!homeServer.treeStructure?.children) {
+            await ServerManager.getInstance(ns).rebuildServerMap(ns);
+            return this.hasTor(ns);
+        }
+        return homeServer.treeStructure?.children?.some((server) => ServerUtils.isDarkwebServer(server));
     }
 }

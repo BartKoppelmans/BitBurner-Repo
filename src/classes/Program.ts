@@ -1,5 +1,7 @@
-import type { BitBurner as NS } from "Bitburner";
+import type { BitBurner as NS, PurchaseableProgram } from "Bitburner";
 import Server from "/src/classes/Server.js";
+import { PlayerManager } from "/src/managers/PlayerManager.js";
+import Utils from "/src/util/Utils.js";
 
 export enum ProgramType {
     Crack,
@@ -19,6 +21,26 @@ export class Program {
 
     public hasProgram(ns: NS) {
         return ns.fileExists(this.name, "home");
+    }
+
+    // Returns whether it was successful
+    public attemptPurchase(ns: NS): boolean {
+        const playerManager: PlayerManager = PlayerManager.getInstance(ns);
+        const money: number = playerManager.getMoney(ns);
+
+        if (this.price > money) return false;
+
+        const isSuccessful: boolean = ns.purchaseProgram(this.toValidString(ns, this.name));
+
+        if (isSuccessful) {
+            Utils.tprintColored(`Purchased ${this.name}`, true, "blue");
+        }
+
+        return isSuccessful;
+    }
+
+    private toValidString(ns: NS, name: string): PurchaseableProgram {
+        return (name.toLowerCase() as PurchaseableProgram);
     }
 
     public run(ns: NS, server: Server) {
