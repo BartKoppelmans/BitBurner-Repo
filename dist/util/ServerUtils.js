@@ -1,5 +1,5 @@
 import { CONSTANT } from "/src/lib/constants.js";
-import ProgramManager from "/src/managers/ProgramManager.js";
+import ProgramManager from '/src/managers/ProgramManager.js';
 export function isHomeServer(server) {
     return isHome(server.host);
 }

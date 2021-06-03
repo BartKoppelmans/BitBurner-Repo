@@ -106,14 +106,14 @@ export default class ServerManager {
             .filter(server => ServerUtils.isHackableServer(server));
         servers = servers
             .filter(server => server.isHackable(ns))
-            .filter(server => server.isRooted(ns) || server.canRoot(ns))
+            .filter(server => ServerUtils.isRooted(ns, server) || ServerUtils.canRoot(ns, server))
             .filter(server => server.staticHackingProperties.maxMoney > 0);
         return servers;
     }
     // We sort this descending
     async getHackingServers(ns) {
         return (await this.getServerMap(ns))
-            .filter((server) => server.isRooted(ns))
+            .filter((server) => ServerUtils.isRooted(ns, server))
             .sort((a, b) => b.getAvailableRam(ns) - a.getAvailableRam(ns));
     }
     // We sort this ascending

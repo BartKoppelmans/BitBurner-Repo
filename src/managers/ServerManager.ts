@@ -131,7 +131,7 @@ export default class ServerManager {
 
         servers = servers
             .filter(server => server.isHackable(ns))
-            .filter(server => server.isRooted(ns) || server.canRoot(ns))
+            .filter(server => ServerUtils.isRooted(ns, server) || ServerUtils.canRoot(ns, server))
             .filter(server => server.staticHackingProperties.maxMoney > 0);
 
         return servers;
@@ -140,7 +140,7 @@ export default class ServerManager {
     // We sort this descending
     public async getHackingServers(ns: NS): Promise<Server[]> {
         return (await this.getServerMap(ns))
-            .filter((server: Server) => server.isRooted(ns))
+            .filter((server: Server) => ServerUtils.isRooted(ns, server))
             .sort((a, b) => b.getAvailableRam(ns) - a.getAvailableRam(ns));
     }
 

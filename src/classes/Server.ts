@@ -48,16 +48,4 @@ export default class Server {
         let [total, used] = ns.getServerRam(this.host);
         return total - used;
     }
-
-    public isRooted(ns: NS): boolean {
-        return ns.hasRootAccess(this.host);
-    }
-
-    public canRoot(ns: NS): boolean {
-        return false;
-    }
-
-    public async root(ns: NS): Promise<void> {
-        return;
-    }
 }

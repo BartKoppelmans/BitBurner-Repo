@@ -3,7 +3,7 @@ import HackableServer from "/src/classes/HackableServer.js";
 import { Program } from "/src/classes/Program.js";
 import Server from "/src/classes/Server.js";
 import { CONSTANT } from "/src/lib/constants.js";
-import ProgramManager from "/src/managers/ProgramManager.js";
+import ProgramManager from '/src/managers/ProgramManager.js';
 
 export function isHomeServer(server: Server): boolean {
     return isHome(server.host);

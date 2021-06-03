@@ -1,8 +1,8 @@
 import HomeServer from "/src/classes/HomeServer.js";
 import { Program, ProgramType } from "/src/classes/Program.js";
 import { CONSTANT } from "/src/lib/constants.js";
-import ServerManager from "/src/managers/ServerManager.js";
 import * as ServerUtils from "/src/util/ServerUtils.js";
+import * as ProgramUtils from "/src/util/ProgramUtils.js";
 export default class ProgramManager {
     constructor(ns) {
         this.obtainedPrograms = [];
@@ -80,13 +80,6 @@ export default class ProgramManager {
             throw new Error("The server map has not been initialized yet.");
     }
     async onProgramsUpdated(ns) {
-        const serverManager = ServerManager.getInstance(ns);
-        const serverMap = await serverManager.getServerMap(ns, true);
-        // Root all servers in advance
-        await Promise.all(serverMap.map(async (server) => {
-            if (!server.isRooted(ns) && server.canRoot(ns)) {
-                await server.root(ns);
-            }
-        }));
+        await ProgramUtils.rootAllServers(ns);
     }
 }

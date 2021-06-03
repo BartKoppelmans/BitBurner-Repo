@@ -1,10 +1,9 @@
 import type { BitBurner as NS } from "Bitburner";
 import HomeServer from "/src/classes/HomeServer.js";
 import { Program, ProgramType } from "/src/classes/Program.js";
-import Server from "/src/classes/Server.js";
 import { CONSTANT } from "/src/lib/constants.js";
-import ServerManager from "/src/managers/ServerManager.js";
 import * as ServerUtils from "/src/util/ServerUtils.js";
+import * as ProgramUtils from "/src/util/ProgramUtils.js";
 
 export default class ProgramManager {
     private static instance: ProgramManager;
@@ -105,14 +104,6 @@ export default class ProgramManager {
     }
 
     private async onProgramsUpdated(ns: NS): Promise<void> {
-        const serverManager: ServerManager = ServerManager.getInstance(ns);
-        const serverMap: Server[] = await serverManager.getServerMap(ns, true);
-
-        // Root all servers in advance
-        await Promise.all(serverMap.map(async (server) => {
-            if (!server.isRooted(ns) && server.canRoot(ns)) {
-                await server.root(ns);
-            }
-        }));
+        await ProgramUtils.rootAllServers(ns);
     }
 }

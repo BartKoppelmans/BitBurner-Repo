@@ -1,8 +1,6 @@
 import type { BitBurner as NS } from "Bitburner";
-import { Program } from "/src/classes/Program.js";
 import Server, { TreeStructure } from '/src/classes/Server.js';
 import PlayerManager from "/src/managers/PlayerManager.js";
-import ProgramManager from "/src/managers/ProgramManager.js";
 import { Heuristics } from "/src/util/Heuristics.js";
 
 export interface StaticHackingProperties {
@@ -79,25 +77,5 @@ export default class HackableServer extends Server {
 
     public isHackable(ns: NS) {
         return ns.getServerRequiredHackingLevel(this.host) <= PlayerManager.getInstance(ns).hackingLevel;
-    }
-
-    public canRoot(ns: NS) {
-        return ProgramManager.getInstance(ns).getNumCrackScripts(ns) >= this.staticHackingProperties.ports;
-    }
-
-    public async root(ns: NS): Promise<void> {
-        if (this.isRooted(ns)) {
-            throw new Error("Server is already rooted.");
-        }
-
-        if (!this.canRoot(ns)) {
-            throw new Error("Cannot crack the server.");
-        }
-
-        const crackingScripts: Program[] = ProgramManager.getInstance(ns).getCrackingScripts(ns, this.staticHackingProperties.ports);
-
-        crackingScripts.forEach(program => program.run(ns, this));
-
-        ns.nuke(this.host);
     }
 }

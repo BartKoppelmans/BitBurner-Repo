@@ -24,13 +24,4 @@ export default class Server {
         let [total, used] = ns.getServerRam(this.host);
         return total - used;
     }
-    isRooted(ns) {
-        return ns.hasRootAccess(this.host);
-    }
-    canRoot(ns) {
-        return false;
-    }
-    async root(ns) {
-        return;
-    }
 }
