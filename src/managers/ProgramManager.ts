@@ -3,7 +3,6 @@ import HomeServer from "/src/classes/HomeServer.js";
 import { Program, ProgramType } from "/src/classes/Program.js";
 import { CONSTANT } from "/src/lib/constants.js";
 import * as ServerUtils from "/src/util/ServerUtils.js";
-import * as ProgramUtils from "/src/util/ProgramUtils.js";
 
 export default class ProgramManager {
     private static instance: ProgramManager;
@@ -104,6 +103,8 @@ export default class ProgramManager {
     }
 
     private async onProgramsUpdated(ns: NS): Promise<void> {
+
+        const ProgramUtils = await import('/src/util/ProgramUtils.js');
         await ProgramUtils.rootAllServers(ns);
     }
 }
