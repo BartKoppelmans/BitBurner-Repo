@@ -35,5 +35,9 @@ export default class JobManager {
     getNextJobId() {
         return ++this.jobIdCounter;
     }
+    getCurrentTargets() {
+        const targets = [...new Set(this.jobs.map(job => job.target))];
+        return targets;
+    }
 }
 ;

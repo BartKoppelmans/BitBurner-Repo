@@ -6,6 +6,7 @@ import HackableServer from "/src/classes/HackableServer.js";
 import { CONSTANT } from "/src/lib/constants.js";
 import * as HackUtils from "/src/util/HackUtils.js";
 import { Heuristics } from "/src/util/Heuristics.js";
+import JobManager from "/src/managers/JobManager";
 
 export async function main(ns: NS) {
 
@@ -36,6 +37,7 @@ async function initialize(ns: NS) {
 async function hackLoop(ns: NS) {
 
     const serverManager: ServerManager = ServerManager.getInstance(ns);
+    const jobManager: JobManager = JobManager.getInstance();
 
     let potentialTargets: HackableServer[] = await serverManager.getTargetableServers(ns);
 
@@ -50,16 +52,14 @@ async function hackLoop(ns: NS) {
         throw new Error("No potential targets found.");
     }
 
-    let targetCounter: number = 0;
     for await (let target of potentialTargets) {
+
+        let currentTargets: HackableServer[] = jobManager.getCurrentTargets();
+
         // Can't have too many targets at the same time
-        if (targetCounter >= CONSTANT.MAX_TARGET_COUNT) break;
+        if (currentTargets.length >= CONSTANT.MAX_TARGET_COUNT) break;
 
-        const isNewTarget: boolean = await HackUtils.hack(ns, target);
-
-        if (isNewTarget) {
-            targetCounter++;
-        }
+        await HackUtils.hack(ns, target);
     }
 
     // Wait a second!

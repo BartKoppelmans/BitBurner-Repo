@@ -1,4 +1,5 @@
 import type { BitBurner as NS } from "Bitburner";
+import HackableServer from "/src/classes/HackableServer";
 import Job from "/src/classes/Job.js";
 import Server from "/src/classes/Server.js";
 
@@ -51,6 +52,11 @@ export default class JobManager {
 
     public getNextJobId(): number {
         return ++this.jobIdCounter;
+    }
+
+    public getCurrentTargets(): HackableServer[] {
+        const targets: HackableServer[] = [...new Set(this.jobs.map(job => job.target))];
+        return targets;
     }
 
 
