@@ -19,7 +19,7 @@ export default class PurchasedServerManager {
     }
     // Main entry point
     async start(ns) {
-        Utils.tprintColored(`Starting the PurchasedServerManager.`, true, "blue");
+        Utils.tprintColored(`Starting the PurchasedServerManager.`, true, CONSTANT.COLOR_INFORMATION);
         await this.updateServerMap(ns);
         if (this.purchasedServers.length < CONSTANT.MAX_PURCHASED_SERVERS) {
             this.startPurchaseServerLoop(ns);
@@ -64,7 +64,7 @@ export default class PurchasedServerManager {
         const name = CONSTANT.PURCHASED_SERVER_PREFIX + id.toString();
         const boughtServer = ns.purchaseServer(name, ram);
         if (boughtServer) {
-            Utils.tprintColored(`Purchased server ${boughtServer} with ${ram}GB ram.`, true, "blue");
+            Utils.tprintColored(`Purchased server ${boughtServer} with ${ram}GB ram.`, true, CONSTANT.COLOR_INFORMATION);
         }
         return !!boughtServer;
     }
@@ -101,12 +101,12 @@ export default class PurchasedServerManager {
         await ns.sleep(CONSTANT.SMALL_DELAY);
         const deletedServer = ns.deleteServer(hostName);
         if (!deletedServer) {
-            Utils.tprintColored(`Could not delete server ${hostName}`, true, "red");
+            Utils.tprintColored(`Could not delete server ${hostName}`, true, CONSTANT.COLOR_WARNING);
             return false;
         }
         const boughtServer = ns.purchaseServer(hostName, ram);
         if (boughtServer) {
-            Utils.tprintColored(`Upgraded server ${boughtServer} with ${ram}GB ram.`, true, "blue");
+            Utils.tprintColored(`Upgraded server ${boughtServer} with ${ram}GB ram.`, true, CONSTANT.COLOR_INFORMATION);
         }
         return !!boughtServer;
     }

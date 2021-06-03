@@ -4,6 +4,10 @@ export const CONSTANT = {
      */
     MILLISECONDS_IN_SECOND: 1000,
     SMALL_DELAY: 50,
+    DEBUG_HACKING: false,
+    COLOR_WARNING: "red",
+    COLOR_HACKING: "white",
+    COLOR_INFORMATION: "blue",
     /*
      * Import script constants
      */

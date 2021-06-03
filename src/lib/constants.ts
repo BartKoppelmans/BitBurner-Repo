@@ -7,6 +7,12 @@ export const CONSTANT = {
 
     SMALL_DELAY: 50,
 
+    DEBUG_HACKING: false,
+
+    COLOR_WARNING: "red",
+    COLOR_HACKING: "white",
+    COLOR_INFORMATION: "blue",
+
     /*
      * Import script constants
      */

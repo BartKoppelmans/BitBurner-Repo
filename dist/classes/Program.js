@@ -1,3 +1,4 @@
+import { CONSTANT } from "/src/lib/constants";
 import PlayerManager from "/src/managers/PlayerManager.js";
 import Utils from "/src/util/Utils.js";
 export var ProgramType;
@@ -22,7 +23,7 @@ export class Program {
             return false;
         const isSuccessful = ns.purchaseProgram(this.toValidString(ns, this.name));
         if (isSuccessful) {
-            Utils.tprintColored(`Purchased ${this.name}`, true, "blue");
+            Utils.tprintColored(`Purchased ${this.name}`, true, CONSTANT.COLOR_INFORMATION);
         }
         return isSuccessful;
     }

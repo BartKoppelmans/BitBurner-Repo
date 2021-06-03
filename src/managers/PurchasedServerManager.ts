@@ -34,7 +34,7 @@ export default class PurchasedServerManager {
     // Main entry point
     public async start(ns: NS) {
 
-        Utils.tprintColored(`Starting the PurchasedServerManager.`, true, "blue");
+        Utils.tprintColored(`Starting the PurchasedServerManager.`, true, CONSTANT.COLOR_INFORMATION);
 
         await this.updateServerMap(ns);
 
@@ -90,7 +90,7 @@ export default class PurchasedServerManager {
         const boughtServer: string = ns.purchaseServer(name, ram);
 
         if (boughtServer) {
-            Utils.tprintColored(`Purchased server ${boughtServer} with ${ram}GB ram.`, true, "blue");
+            Utils.tprintColored(`Purchased server ${boughtServer} with ${ram}GB ram.`, true, CONSTANT.COLOR_INFORMATION);
         }
 
         return !!boughtServer;
@@ -142,14 +142,14 @@ export default class PurchasedServerManager {
         const deletedServer: boolean = ns.deleteServer(hostName);
 
         if (!deletedServer) {
-            Utils.tprintColored(`Could not delete server ${hostName}`, true, "red");
+            Utils.tprintColored(`Could not delete server ${hostName}`, true, CONSTANT.COLOR_WARNING);
             return false;
         }
 
         const boughtServer: string = ns.purchaseServer(hostName, ram);
 
         if (boughtServer) {
-            Utils.tprintColored(`Upgraded server ${boughtServer} with ${ram}GB ram.`, true, "blue");
+            Utils.tprintColored(`Upgraded server ${boughtServer} with ${ram}GB ram.`, true, CONSTANT.COLOR_INFORMATION);
         }
 
         return !!boughtServer;

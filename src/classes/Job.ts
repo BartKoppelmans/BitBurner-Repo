@@ -110,6 +110,8 @@ export default class Job {
         else if (!this.isPrep && isFinished) verb = "Finished attacking";
         else throw new Error("This should logically never happen.");
 
-        Utils.tprintColored(`${ns.nFormat(this.id, "000000")} ${verb} ${this.target.host} - ${ToolUtils.getToolName(this.tool)}`);
+        if (CONSTANT.DEBUG_HACKING) {
+            Utils.tprintColored(`${ns.nFormat(this.id, "000000")} ${verb} ${this.target.host} - ${ToolUtils.getToolName(this.tool)}`, true, CONSTANT.COLOR_HACKING);
+        }
     }
 }
