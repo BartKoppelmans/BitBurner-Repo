@@ -1,6 +1,6 @@
 import { CONSTANT } from "/src/lib/constants.js";
 import PlayerManager from "/src/managers/PlayerManager.js";
-import ServerManager from "/src/managers/ServerManager.js";
+import { serverManager } from "/src/managers/ServerManager.js";
 import * as Utils from "/src/util/Utils.js";
 export default class PurchasedServerManager {
     constructor(ns) {
@@ -14,7 +14,6 @@ export default class PurchasedServerManager {
         return PurchasedServerManager.instance;
     }
     async updateServerMap(ns) {
-        const serverManager = ServerManager.getInstance(ns);
         this.purchasedServers = await serverManager.getPurchasedServers(ns);
     }
     // Main entry point
@@ -76,7 +75,6 @@ export default class PurchasedServerManager {
     }
     async upgradeLoop(ns) {
         this.updateServerMap(ns);
-        const serverManager = ServerManager.getInstance(ns);
         let updateNeeded = false;
         // TODO: We should decide if we want to update all servers at once
         // If so, make clusters of the same ram and upgrade each of them to the same ram

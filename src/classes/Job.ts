@@ -9,7 +9,7 @@ import * as ToolUtils from "/src/util/ToolUtils.js";
 import * as Utils from "/src/util/Utils.js";
 import * as ServerUtils from "/src/util/ServerUtils.js";
 import HomeServer from "/src/classes/HomeServer.js";
-import JobManager from "/src/managers/JobManager.js";
+import { jobManager } from "/src/managers/JobManager.js";
 
 export default class Job {
     id: number;
@@ -25,7 +25,6 @@ export default class Job {
     allowSpreading: boolean;
 
     public constructor(ns: NS, job: IJOb) {
-        const jobManager: JobManager = JobManager.getInstance();
 
         this.target = job.target;
         this.threads = job.threads;
@@ -45,8 +44,6 @@ export default class Job {
     }
 
     public async execute(ns: NS) {
-
-        const jobManager: JobManager = JobManager.getInstance();
 
         const maxThreadsAvailable: number = await JobUtils.computeMaxThreads(ns, this.tool, true);
 

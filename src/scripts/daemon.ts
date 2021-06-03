@@ -1,12 +1,12 @@
 import type { BitBurner as NS } from "Bitburner";
 import ProgramManager from "/src/managers/ProgramManager.js";
 import PurchasedServerManager from "/src/managers/PurchasedServerManager.js";
-import ServerManager from "/src/managers/ServerManager.js";
+import { serverManager } from "/src/managers/ServerManager.js";
 import HackableServer from "/src/classes/HackableServer.js";
 import { CONSTANT } from "/src/lib/constants.js";
 import * as HackUtils from "/src/util/HackUtils.js";
 import { Heuristics } from "/src/util/Heuristics.js";
-import JobManager from "/src/managers/JobManager.js";
+import { jobManager } from "/src/managers/JobManager.js";
 
 export async function main(ns: NS) {
 
@@ -24,7 +24,6 @@ export async function main(ns: NS) {
 
 async function initialize(ns: NS) {
 
-    const serverManager: ServerManager = ServerManager.getInstance(ns);
     serverManager.rebuildServerMap(ns);
 
     const purchasedServerManager: PurchasedServerManager = PurchasedServerManager.getInstance(ns);
@@ -36,8 +35,6 @@ async function initialize(ns: NS) {
 }
 
 async function hackLoop(ns: NS) {
-
-    const serverManager: ServerManager = ServerManager.getInstance(ns);
 
     let potentialTargets: HackableServer[] = await serverManager.getTargetableServers(ns);
 
@@ -54,8 +51,11 @@ async function hackLoop(ns: NS) {
 
     let targetCounter: number = 0;
     for await (let target of potentialTargets) {
+
+        const currentTargets: HackableServer[] = jobManager.getCurrentTargets();
+
         // Can't have too many targets at the same time
-        if (targetCounter >= CONSTANT.MAX_TARGET_COUNT) break;
+        if (currentTargets.length >= CONSTANT.MAX_TARGET_COUNT) break;
 
         const isNewTarget: boolean = await HackUtils.hack(ns, target);
 

@@ -9,12 +9,12 @@ import * as ServerUtils from "/src/util/ServerUtils.js";
 let serverMap: Server[] = [];
 let lastUpdated: Date = CONSTANT.EPOCH_DATE;
 
-export default class ServerManager {
+class ServerManager {
     private static instance: ServerManager;
 
     private constructor() { }
 
-    public static getInstance(ns: NS): ServerManager {
+    public static getInstance(): ServerManager {
         if (!ServerManager.instance) {
             ServerManager.instance = new ServerManager();
         }
@@ -167,3 +167,5 @@ export default class ServerManager {
             ns.tprint(" ");
     }
 }
+
+export let serverManager = ServerManager.getInstance();

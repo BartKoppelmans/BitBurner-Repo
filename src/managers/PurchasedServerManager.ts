@@ -2,7 +2,7 @@ import type { BitBurner as NS } from "Bitburner";
 import PurchasedServer from "/src/classes/PurchasedServer.js";
 import { CONSTANT } from "/src/lib/constants.js";
 import PlayerManager from "/src/managers/PlayerManager.js";
-import ServerManager from "/src/managers/ServerManager.js";
+import { serverManager } from "/src/managers/ServerManager.js";
 import * as Utils from "/src/util/Utils.js";
 
 export default class PurchasedServerManager {
@@ -27,7 +27,6 @@ export default class PurchasedServerManager {
     }
 
     public async updateServerMap(ns: NS) {
-        const serverManager: ServerManager = ServerManager.getInstance(ns);
         this.purchasedServers = await serverManager.getPurchasedServers(ns);
     }
 
@@ -108,7 +107,6 @@ export default class PurchasedServerManager {
 
         this.updateServerMap(ns);
 
-        const serverManager: ServerManager = ServerManager.getInstance(ns);
         let updateNeeded: boolean = false;
 
         // TODO: We should decide if we want to update all servers at once

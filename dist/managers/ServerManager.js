@@ -6,9 +6,9 @@ import { CONSTANT } from "/src/lib/constants.js";
 import * as ServerUtils from "/src/util/ServerUtils.js";
 let serverMap = [];
 let lastUpdated = CONSTANT.EPOCH_DATE;
-export default class ServerManager {
+class ServerManager {
     constructor() { }
-    static getInstance(ns) {
+    static getInstance() {
         if (!ServerManager.instance) {
             ServerManager.instance = new ServerManager();
         }
@@ -136,3 +136,4 @@ export default class ServerManager {
             ns.tprint(" ");
     }
 }
+export let serverManager = ServerManager.getInstance();

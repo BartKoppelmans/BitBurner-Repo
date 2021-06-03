@@ -3,7 +3,7 @@ import BatchJob from "/src/classes/BatchJob.js";
 import HackableServer from "/src/classes/HackableServer.js";
 import Job from "/src/classes/Job.js";
 import { CONSTANT } from "/src/lib/constants.js";
-import JobManager from "/src/managers/JobManager.js";
+import { jobManager } from "/src/managers/JobManager.js";
 import PlayerManager from "/src/managers/PlayerManager.js";
 import { Tools } from "/src/tools/Tools.js";
 import * as BatchJobUtils from "/src/util/BatchJobUtils.js";
@@ -13,8 +13,6 @@ import * as ToolUtils from "/src/util/ToolUtils.js";
 
 // Return true when we have found a new target
 export async function hack(ns: NS, server: HackableServer): Promise<boolean> {
-
-    const jobManager: JobManager = JobManager.getInstance();
 
     // TODO: Make sure that all neccesary variables are set (remove the exclamation marks)
 
@@ -43,8 +41,6 @@ export async function hack(ns: NS, server: HackableServer): Promise<boolean> {
 }
 
 export async function prepServer(ns: NS, target: HackableServer): Promise<void> {
-
-    const jobManager: JobManager = JobManager.getInstance();
 
     // We should not prep anymore once we are targetting
     if (jobManager.isTargetting(ns, target)) return;

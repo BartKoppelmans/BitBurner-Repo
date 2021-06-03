@@ -1,11 +1,10 @@
 import Job from "/src/classes/Job.js";
 import { CONSTANT } from "/src/lib/constants.js";
-import ServerManager from "/src/managers/ServerManager.js";
+import { serverManager } from "/src/managers/ServerManager.js";
 import { Tools } from "/src/tools/Tools.js";
 import * as ToolUtils from "/src/util/ToolUtils.js";
 import * as ServerHackUtils from "/src/util/ServerHackUtils.js";
 export async function computeMaxCycles(ns, cycleCost, allowSpread = true) {
-    const serverManager = ServerManager.getInstance(ns);
     const serverMap = await serverManager.getHackingServers(ns);
     // NOTE: We always expect AT LEAST 1 rooted server to be available
     if (!allowSpread) {

@@ -1,6 +1,6 @@
 let jobs = [];
 let jobIdCounter = 0;
-export default class JobManager {
+class JobManager {
     constructor() { }
     static getInstance() {
         if (!JobManager.instance) {
@@ -36,7 +36,6 @@ export default class JobManager {
     }
     getCurrentTargets() {
         return [...new Set(jobs.map(job => job.target))];
-        ;
     }
 }
-;
+export let jobManager = JobManager.getInstance();

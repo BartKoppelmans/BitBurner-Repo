@@ -1,7 +1,7 @@
 import type { BitBurner as NS } from "Bitburner";
 import HackableServer from "/src/classes/HackableServer.js";
 import Server from "/src/classes/Server.js";
-import ServerManager from "/src/managers/ServerManager.js";
+import { serverManager } from "/src/managers/ServerManager.js";
 import { Tools } from "/src/tools/Tools.js";
 import * as ServerHackUtils from "/src/util/ServerHackUtils.js";
 import * as ToolUtils from "/src/util/ToolUtils.js";
@@ -23,8 +23,6 @@ export async function computeThreadsNeeded(ns: NS, tool: Tools, server: Hackable
 // Here we allow thread spreading over multiple servers
 export async function computeMaxThreads(ns: NS, tool: Tools, allowSpread: boolean = true): Promise<number> {
 
-    const serverManager: ServerManager = ServerManager.getInstance(ns);
-
     const serverMap: Server[] = await serverManager.getHackingServers(ns);
     const cost: number = ToolUtils.getToolCost(ns, tool);
 
@@ -38,8 +36,6 @@ export async function computeMaxThreads(ns: NS, tool: Tools, allowSpread: boolea
 }
 
 export async function computeThreadSpread(ns: NS, tool: Tools, threads: number): Promise<Map<Server, number>> {
-
-    const serverManager: ServerManager = ServerManager.getInstance(ns);
 
     // TODO: Remove this because we should already check it?
     const maxThreadsAvailable = await computeMaxThreads(ns, tool, true);

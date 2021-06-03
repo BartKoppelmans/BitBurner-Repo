@@ -6,7 +6,7 @@ import Server from "/src/classes/Server.js";
 let jobs: Job[] = [];
 let jobIdCounter: number = 0;
 
-export default class JobManager {
+class JobManager {
     private static instance: JobManager;
 
     private constructor() { }
@@ -21,6 +21,7 @@ export default class JobManager {
 
     public startJob(ns: NS, job: Job): void {
         jobs.push(job);
+
         job.onStart(ns);
 
         setTimeout(this.finishJob, job.end.getTime() - Date.now(), ns, job.id);
@@ -55,7 +56,9 @@ export default class JobManager {
     }
 
     public getCurrentTargets(): HackableServer[] {
-        return [...new Set(jobs.map(job => job.target))];;
+        return [...new Set(jobs.map(job => job.target))];
     }
 
-};
+}
+
+export let jobManager = JobManager.getInstance();
