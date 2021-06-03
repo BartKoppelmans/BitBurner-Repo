@@ -128,6 +128,5 @@ export default class PurchasedServerManager {
         const playerManager = PlayerManager.getInstance(ns);
         const money = playerManager.getMoney(ns) * CONSTANT.PURCHASED_SERVER_ALLOWANCE_PERCENTAGE;
         return cost <= money;
-        ;
     }
 }

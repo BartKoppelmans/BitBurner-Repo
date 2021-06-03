@@ -55,10 +55,10 @@ export class ProgramManager {
     }
     async hasTor(ns) {
         const homeServer = HomeServer.getInstance(ns);
-        if (!homeServer.treeStructure?.children) {
+        if (!(homeServer.treeStructure && homeServer.treeStructure.children)) {
             await ServerManager.getInstance(ns).rebuildServerMap(ns);
             return this.hasTor(ns);
         }
-        return homeServer.treeStructure?.children?.some((server) => ServerUtils.isDarkwebServer(server));
+        return homeServer.treeStructure.children.some((server) => ServerUtils.isDarkwebServer(server));
     }
 }

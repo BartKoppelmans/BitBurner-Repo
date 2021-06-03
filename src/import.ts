@@ -30,6 +30,8 @@ const files: string[] = [
     'util/HackUtils.js',
     'util/Heuristics.js',
     'util/JobUtils.js',
+    'util/ProgramUtils.js',
+    'util/PurchasedServerUtils.js',
     'util/ServerHackUtils.js',
     'util/ServerUtils.js',
     'util/ToolUtils.js',
