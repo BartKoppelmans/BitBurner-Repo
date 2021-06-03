@@ -2,7 +2,7 @@ import { CONSTANT } from "/src/lib/constants.js";
 import { PlayerManager } from "/src/managers/PlayerManager.js";
 import { ServerManager } from "/src/managers/ServerManager.js";
 import Utils from "/src/util/Utils.js";
-export class PurchasedServerManager {
+export default class PurchasedServerManager {
     constructor(ns) {
         this.purchasedServers = [];
         this.updateServerMap(ns);
@@ -19,6 +19,7 @@ export class PurchasedServerManager {
     }
     // Main entry point
     async start(ns) {
+        Utils.tprintColored(`Starting the PurchasedServerManager.`, true, "blue");
         this.updateServerMap(ns);
         if (this.purchasedServers.length < CONSTANT.MAX_PURCHASED_SERVERS) {
             this.startPurchaseServerLoop(ns);
@@ -63,7 +64,7 @@ export class PurchasedServerManager {
         const name = CONSTANT.PURCHASED_SERVER_PREFIX + id.toString();
         const boughtServer = ns.purchaseServer(name, ram);
         if (boughtServer) {
-            Utils.tprintColored(`Purchased server ${boughtServer} with ${ram}GB ram.`);
+            Utils.tprintColored(`Purchased server ${boughtServer} with ${ram}GB ram.`, true, "blue");
         }
         return !!boughtServer;
     }
@@ -74,15 +75,40 @@ export class PurchasedServerManager {
         this.upgradeLoopInterval = setInterval(this.upgradeLoop, CONSTANT.UPGRADE_PURCHASED_SERVER_LOOP_INTERVAL);
     }
     async upgradeLoop(ns) {
-        return;
         this.updateServerMap(ns);
         const serverManager = ServerManager.getInstance(ns);
         let updateNeeded = false;
+        // TODO: We should decide if we want to update all servers at once
+        // If so, make clusters of the same ram and upgrade each of them to the same ram
         for (const server of this.purchasedServers) {
+            const maxRam = this.computeMaxRamPossible(ns, 1);
+            if (maxRam > server.ram) {
+                const updateNeeded = await this.upgradeServer(ns, server, maxRam);
+            }
+            else
+                break;
         }
-        serverManager.rebuildServerMap(ns);
+        if (updateNeeded) {
+            serverManager.rebuildServerMap(ns);
+        }
     }
-    async upgradeServer(ns, server) {
+    async upgradeServer(ns, server, ram) {
+        const hostName = server.host;
+        // TODO: We should make sure that the server finishes scripts first
+        // and is put into quarantine, so that no new scripts are started
+        // For now we just kill everything and hope for the best
+        ns.killall(hostName);
+        await ns.sleep(CONSTANT.SMALL_DELAY);
+        const deletedServer = ns.deleteServer(hostName);
+        if (!deletedServer) {
+            Utils.tprintColored(`Could not delete server ${hostName}`, true, "red");
+            return false;
+        }
+        const boughtServer = ns.purchaseServer(hostName, ram);
+        if (boughtServer) {
+            Utils.tprintColored(`Upgraded server ${boughtServer} with ${ram}GB ram.`, true, "blue");
+        }
+        return !!boughtServer;
     }
     // Util thingies -----------------------------------------------
     computeMaxRamPossible(ns, numServers) {

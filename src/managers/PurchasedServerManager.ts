@@ -5,7 +5,7 @@ import { PlayerManager } from "/src/managers/PlayerManager.js";
 import { ServerManager } from "/src/managers/ServerManager.js";
 import Utils from "/src/util/Utils.js";
 
-export class PurchasedServerManager {
+export default class PurchasedServerManager {
     private static instance: PurchasedServerManager;
 
     private purchasedServers: PurchasedServer[] = [];
@@ -34,6 +34,8 @@ export class PurchasedServerManager {
 
     // Main entry point
     public async start(ns: NS) {
+
+        Utils.tprintColored(`Starting the PurchasedServerManager.`, true, "blue");
 
         this.updateServerMap(ns);
 
@@ -90,7 +92,7 @@ export class PurchasedServerManager {
         const boughtServer: string = ns.purchaseServer(name, ram);
 
         if (boughtServer) {
-            Utils.tprintColored(`Purchased server ${boughtServer} with ${ram}GB ram.`);
+            Utils.tprintColored(`Purchased server ${boughtServer} with ${ram}GB ram.`, true, "blue");
         }
 
         return !!boughtServer;
@@ -106,22 +108,53 @@ export class PurchasedServerManager {
 
     private async upgradeLoop(ns: NS) {
 
-        return;
-
         this.updateServerMap(ns);
 
         const serverManager: ServerManager = ServerManager.getInstance(ns);
         let updateNeeded: boolean = false;
 
-        for (const server of this.purchasedServers) {
+        // TODO: We should decide if we want to update all servers at once
+        // If so, make clusters of the same ram and upgrade each of them to the same ram
 
+        for (const server of this.purchasedServers) {
+            const maxRam = this.computeMaxRamPossible(ns, 1);
+
+            if (maxRam > server.ram) {
+                const updateNeeded = await this.upgradeServer(ns, server, maxRam);
+            } else break;
         }
 
-        serverManager.rebuildServerMap(ns);
+        if (updateNeeded) {
+            serverManager.rebuildServerMap(ns);
+        }
     }
 
-    private async upgradeServer(ns: NS, server: PurchasedServer) {
+    private async upgradeServer(ns: NS, server: PurchasedServer, ram: number): Promise<boolean> {
+        const hostName: string = server.host;
 
+        // TODO: We should make sure that the server finishes scripts first
+        // and is put into quarantine, so that no new scripts are started
+
+        // For now we just kill everything and hope for the best
+
+        ns.killall(hostName);
+
+        await ns.sleep(CONSTANT.SMALL_DELAY);
+
+        const deletedServer: boolean = ns.deleteServer(hostName);
+
+        if (!deletedServer) {
+            Utils.tprintColored(`Could not delete server ${hostName}`, true, "red");
+            return false;
+        }
+
+        const boughtServer: string = ns.purchaseServer(hostName, ram);
+
+        if (boughtServer) {
+            Utils.tprintColored(`Upgraded server ${boughtServer} with ${ram}GB ram.`, true, "blue");
+        }
+
+        return !!boughtServer;
     }
 
 

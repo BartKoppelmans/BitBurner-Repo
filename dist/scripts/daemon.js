@@ -2,20 +2,27 @@ import { CONSTANT } from "/src/lib/constants.js";
 import { ServerManager } from "/src/managers/ServerManager.js";
 import { Heuristics } from "/src/util/Heuristics.js";
 import HackUtils from "/src/util/HackUtils.js";
+import PurchasedServerManager from "/src/managers/PurchasedServerManager.js";
 export async function main(ns) {
     const hostName = ns.getHostname();
     if (hostName !== "home") {
         throw new Error("Execute daemon script from home.");
     }
+    initialize(ns);
     while (true) {
         await hackLoop(ns);
     }
 }
-async function hackLoop(ns) {
-    const serverManager = ServerManager.getInstance(ns);
-    const serverMap = await serverManager.getServerMap(ns, true); // TODO: Now we just always update and that might be a lot of work?
+async function initialize(ns) {
+    const purchasedServerManager = PurchasedServerManager.getInstance(ns);
+    purchasedServerManager.start(ns);
     // TODO: initializeServers 
     // Purchase new servers and such to have some power later on
+}
+async function hackLoop(ns) {
+    const serverManager = ServerManager.getInstance(ns);
+    // NOTE: Now we just always update and that might be a lot of work?
+    const serverMap = await serverManager.getServerMap(ns, true);
     // Root all servers in advance
     await Promise.all(serverMap.map(async (server) => {
         if (!server.isRooted(ns) && server.canRoot(ns)) {
