@@ -1,7 +1,6 @@
 import HomeServer from "/src/classes/HomeServer.js";
 import { Program, ProgramType } from "/src/classes/Program.js";
 import { CONSTANT } from "/src/lib/constants.js";
-import ServerManager from "/src/managers/ServerManager.js";
 import ServerUtils from "/src/util/ServerUtils.js";
 export class ProgramManager {
     constructor(ns) {
@@ -55,10 +54,10 @@ export class ProgramManager {
     }
     async hasTor(ns) {
         const homeServer = HomeServer.getInstance(ns);
-        if (!(homeServer.treeStructure && homeServer.treeStructure.children)) {
-            await ServerManager.getInstance(ns).rebuildServerMap(ns);
-            return this.hasTor(ns);
+        if (homeServer.treeStructure && homeServer.treeStructure.children) {
+            return homeServer.treeStructure.children.some((server) => ServerUtils.isDarkwebServer(server));
         }
-        return homeServer.treeStructure.children.some((server) => ServerUtils.isDarkwebServer(server));
+        else
+            throw new Error("The server map has not been initialized yet.");
     }
 }

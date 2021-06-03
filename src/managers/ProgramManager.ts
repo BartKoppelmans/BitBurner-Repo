@@ -2,7 +2,6 @@ import type { BitBurner as NS } from "Bitburner";
 import HomeServer from "/src/classes/HomeServer.js";
 import { Program, ProgramType } from "/src/classes/Program.js";
 import { CONSTANT } from "/src/lib/constants.js";
-import ServerManager from "/src/managers/ServerManager.js";
 import ServerUtils from "/src/util/ServerUtils.js";
 
 export class ProgramManager {
@@ -74,11 +73,8 @@ export class ProgramManager {
     private async hasTor(ns: NS): Promise<boolean> {
         const homeServer: HomeServer = HomeServer.getInstance(ns);
 
-        if (!(homeServer.treeStructure && homeServer.treeStructure.children)) {
-            await ServerManager.getInstance(ns).rebuildServerMap(ns);
-            return this.hasTor(ns);
-        }
-
-        return homeServer.treeStructure.children.some((server) => ServerUtils.isDarkwebServer(server));
+        if (homeServer.treeStructure && homeServer.treeStructure.children) {
+            return homeServer.treeStructure.children.some((server) => ServerUtils.isDarkwebServer(server));
+        } else throw new Error("The server map has not been initialized yet.");
     }
 }
