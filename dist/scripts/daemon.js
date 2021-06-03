@@ -4,7 +4,7 @@ import ServerManager from "/src/managers/ServerManager.js";
 import { CONSTANT } from "/src/lib/constants.js";
 import * as HackUtils from "/src/util/HackUtils.js";
 import { Heuristics } from "/src/util/Heuristics.js";
-import JobManager from "/src/managers/JobManager";
+import JobManager from "/src/managers/JobManager.js";
 export async function main(ns) {
     const hostName = ns.getHostname();
     if (hostName !== "home") {

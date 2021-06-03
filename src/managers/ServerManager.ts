@@ -6,12 +6,11 @@ import HomeServer from "/src/classes/HomeServer.js";
 import { CONSTANT } from "/src/lib/constants.js";
 import * as ServerUtils from "/src/util/ServerUtils.js";
 
+let serverMap: Server[] = [];
+let lastUpdated: Date = CONSTANT.EPOCH_DATE;
+
 export default class ServerManager {
     private static instance: ServerManager;
-
-
-    private serverMap: Server[] = [];
-    private lastUpdated: Date = CONSTANT.EPOCH_DATE;
 
     private constructor() { }
 
@@ -29,24 +28,24 @@ export default class ServerManager {
             throw new Error('Run the script from home');
         }
 
-        let serverMap: Server[] = this.spider(ns, hostName);
-        this.lastUpdated = new Date();
+        serverMap = this.spider(ns, hostName);
+        lastUpdated = new Date();
         return serverMap;
     }
 
     public rebuildServerMap(ns: NS) {
-        this.serverMap = this.buildServerMap(ns);
+        serverMap = this.buildServerMap(ns);
     }
 
     public getServerMap(ns: NS, forceUpdate: boolean = false) {
         if (this.needsUpdate(ns) || forceUpdate) {
             this.rebuildServerMap(ns);
         }
-        return this.serverMap;
+        return serverMap;
     }
 
     private needsUpdate(ns: NS): boolean {
-        return (Date.now() - this.lastUpdated.getTime()) > CONSTANT.SERVER_MAP_REBUILD_TIME;
+        return (Date.now() - lastUpdated.getTime()) > CONSTANT.SERVER_MAP_REBUILD_TIME;
     }
 
     private spider(ns: NS, nodeName: string, parent?: Server): Server[] {
@@ -126,7 +125,7 @@ export default class ServerManager {
     }
 
     public async getTargetableServers(ns: NS): Promise<HackableServer[]> {
-        let servers: HackableServer[] = (await this.getServerMap(ns))
+        let servers: HackableServer[] = (this.getServerMap(ns))
             .filter(server => ServerUtils.isHackableServer(server)) as HackableServer[];
 
         servers = servers
@@ -139,21 +138,21 @@ export default class ServerManager {
 
     // We sort this descending
     public async getHackingServers(ns: NS): Promise<Server[]> {
-        return (await this.getServerMap(ns))
+        return (this.getServerMap(ns))
             .filter((server: Server) => ServerUtils.isRooted(ns, server))
             .sort((a, b) => b.getAvailableRam(ns) - a.getAvailableRam(ns));
     }
 
     // We sort this ascending
     public async getPurchasedServers(ns: NS): Promise<PurchasedServer[]> {
-        return (await this.getServerMap(ns))
+        return (this.getServerMap(ns))
             .filter((server: Server) => ServerUtils.isPurchasedServer(server))
             .sort((a, b) => a.getAvailableRam(ns) - b.getAvailableRam(ns));
     }
 
     public async printServerMap(ns: NS) {
         if (this.needsUpdate(ns)) {
-            await this.rebuildServerMap(ns);
+            this.rebuildServerMap(ns);
         }
 
         this.printServer(ns, HomeServer.getInstance(ns), 0);

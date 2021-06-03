@@ -4,11 +4,10 @@ import PurchasedServer from '/src/classes/PurchasedServer.js';
 import HomeServer from "/src/classes/HomeServer.js";
 import { CONSTANT } from "/src/lib/constants.js";
 import * as ServerUtils from "/src/util/ServerUtils.js";
+let serverMap = [];
+let lastUpdated = CONSTANT.EPOCH_DATE;
 export default class ServerManager {
-    constructor() {
-        this.serverMap = [];
-        this.lastUpdated = CONSTANT.EPOCH_DATE;
-    }
+    constructor() { }
     static getInstance(ns) {
         if (!ServerManager.instance) {
             ServerManager.instance = new ServerManager();
@@ -20,21 +19,21 @@ export default class ServerManager {
         if (hostName !== 'home') {
             throw new Error('Run the script from home');
         }
-        let serverMap = this.spider(ns, hostName);
-        this.lastUpdated = new Date();
+        serverMap = this.spider(ns, hostName);
+        lastUpdated = new Date();
         return serverMap;
     }
     rebuildServerMap(ns) {
-        this.serverMap = this.buildServerMap(ns);
+        serverMap = this.buildServerMap(ns);
     }
     getServerMap(ns, forceUpdate = false) {
         if (this.needsUpdate(ns) || forceUpdate) {
             this.rebuildServerMap(ns);
         }
-        return this.serverMap;
+        return serverMap;
     }
     needsUpdate(ns) {
-        return (Date.now() - this.lastUpdated.getTime()) > CONSTANT.SERVER_MAP_REBUILD_TIME;
+        return (Date.now() - lastUpdated.getTime()) > CONSTANT.SERVER_MAP_REBUILD_TIME;
     }
     spider(ns, nodeName, parent) {
         let tempServerMap = [];
@@ -102,7 +101,7 @@ export default class ServerManager {
         ];
     }
     async getTargetableServers(ns) {
-        let servers = (await this.getServerMap(ns))
+        let servers = (this.getServerMap(ns))
             .filter(server => ServerUtils.isHackableServer(server));
         servers = servers
             .filter(server => server.isHackable(ns))
@@ -112,19 +111,19 @@ export default class ServerManager {
     }
     // We sort this descending
     async getHackingServers(ns) {
-        return (await this.getServerMap(ns))
+        return (this.getServerMap(ns))
             .filter((server) => ServerUtils.isRooted(ns, server))
             .sort((a, b) => b.getAvailableRam(ns) - a.getAvailableRam(ns));
     }
     // We sort this ascending
     async getPurchasedServers(ns) {
-        return (await this.getServerMap(ns))
+        return (this.getServerMap(ns))
             .filter((server) => ServerUtils.isPurchasedServer(server))
             .sort((a, b) => a.getAvailableRam(ns) - b.getAvailableRam(ns));
     }
     async printServerMap(ns) {
         if (this.needsUpdate(ns)) {
-            await this.rebuildServerMap(ns);
+            this.rebuildServerMap(ns);
         }
         this.printServer(ns, HomeServer.getInstance(ns), 0);
     }

@@ -1,13 +1,13 @@
 import type { BitBurner as NS } from "Bitburner";
-import HackableServer from "/src/classes/HackableServer";
+import HackableServer from "/src/classes/HackableServer.js";
 import Job from "/src/classes/Job.js";
 import Server from "/src/classes/Server.js";
 
+let jobs: Job[] = [];
+let jobIdCounter: number = 0;
+
 export default class JobManager {
     private static instance: JobManager;
-
-    private jobs: Job[] = [];
-    private jobIdCounter: number = 0;
 
     private constructor() { }
 
@@ -20,43 +20,42 @@ export default class JobManager {
     }
 
     public startJob(ns: NS, job: Job): void {
-        this.jobs.push(job);
+        jobs.push(job);
         job.onStart(ns);
 
         setTimeout(this.finishJob, job.end.getTime() - Date.now(), ns, job.id);
     }
 
     public finishJob(ns: NS, id: number): void {
-        const index: number = this.jobs.findIndex(job => job.id === id);
+        const index: number = jobs.findIndex(job => job.id === id);
 
         if (index === -1) {
             throw new Error("Could not find the job");
         }
 
-        const job: Job = this.jobs.splice(index, 1)[0];
+        const job: Job = jobs.splice(index, 1)[0];
 
         job.onFinish(ns);
     }
 
     public isPrepping(ns: NS, server: Server): boolean {
-        return this.jobs.some((job: Job) => {
+        return jobs.some((job: Job) => {
             return job.target === server && job.isPrep;
         });
     }
 
     public isTargetting(ns: NS, server: Server): boolean {
-        return this.jobs.some((job: Job) => {
+        return jobs.some((job: Job) => {
             return job.target === server && !job.isPrep;
         });
     }
 
     public getNextJobId(): number {
-        return ++this.jobIdCounter;
+        return ++jobIdCounter;
     }
 
     public getCurrentTargets(): HackableServer[] {
-        const targets: HackableServer[] = [...new Set(this.jobs.map(job => job.target))];
-        return targets;
+        return [...new Set(jobs.map(job => job.target))];;
     }
 
 
