@@ -103,8 +103,6 @@ export default class ProgramManager {
     }
 
     private async onProgramsUpdated(ns: NS): Promise<void> {
-
-        const ProgramUtils = await import('/src/util/ProgramUtils.js');
-        await ProgramUtils.rootAllServers(ns);
+        // await ProgramUtils.rootAllServers(ns);
     }
 }
