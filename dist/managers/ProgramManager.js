@@ -79,6 +79,7 @@ export default class ProgramManager {
             throw new Error("The server map has not been initialized yet.");
     }
     async onProgramsUpdated(ns) {
-        // await ProgramUtils.rootAllServers(ns);
+        const ProgramUtils = await import('/src/util/ProgramUtils.js');
+        await ProgramUtils.rootAllServers(ns);
     }
 }
