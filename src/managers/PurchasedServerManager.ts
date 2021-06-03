@@ -10,8 +10,8 @@ export default class PurchasedServerManager {
 
     private purchasedServers: PurchasedServer[] = [];
 
-    private purchaseLoopInterval?: ReturnType<typeof setInterval>;
-    private upgradeLoopInterval?: ReturnType<typeof setInterval>;
+    private purchaseLoopInterval?: number;
+    private upgradeLoopInterval?: number;
 
 
     private constructor(ns: NS) {

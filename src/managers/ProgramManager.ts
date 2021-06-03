@@ -9,7 +9,7 @@ export class ProgramManager {
     private static instance: ProgramManager;
 
     private programs: Program[];
-    private programInterval?: ReturnType<typeof setInterval>;
+    private programInterval?: number;
 
     private constructor(ns: NS) {
         this.programs = [
