@@ -9,12 +9,6 @@ class ServerManager {
         this.serverMap = [];
         this.lastUpdated = CONSTANT.EPOCH_DATE;
     }
-    static getInstance() {
-        if (!ServerManager.instance) {
-            ServerManager.instance = new ServerManager();
-        }
-        return ServerManager.instance;
-    }
     buildServerMap(ns) {
         const hostName = ns.getHostname();
         if (hostName !== 'home') {
@@ -137,4 +131,4 @@ class ServerManager {
             ns.tprint(" ");
     }
 }
-export let serverManager = ServerManager.getInstance();
+export const serverManager = new ServerManager();

@@ -3,12 +3,6 @@ class JobManager {
         this.jobs = [];
         this.jobIdCounter = 0;
     }
-    static getInstance() {
-        if (!JobManager.instance) {
-            JobManager.instance = new JobManager();
-        }
-        return JobManager.instance;
-    }
     startJob(ns, job) {
         this.jobs.push(job);
         job.onStart(ns);
@@ -39,4 +33,4 @@ class JobManager {
         return [...new Set(this.jobs.map(job => job.target))];
     }
 }
-export let jobManager = JobManager.getInstance();
+export const jobManager = new JobManager();

@@ -12,15 +12,7 @@ class ServerManager {
     private serverMap: Server[] = [];
     private lastUpdated: Date = CONSTANT.EPOCH_DATE;
 
-    private constructor() { }
-
-    public static getInstance(): ServerManager {
-        if (!ServerManager.instance) {
-            ServerManager.instance = new ServerManager();
-        }
-
-        return ServerManager.instance;
-    }
+    public constructor() { }
 
     private buildServerMap(ns: NS): Server[] {
         const hostName = ns.getHostname();
@@ -168,4 +160,4 @@ class ServerManager {
     }
 }
 
-export let serverManager = ServerManager.getInstance();
+export const serverManager = new ServerManager();

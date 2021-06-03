@@ -9,15 +9,7 @@ class JobManager {
     private jobs: Job[] = [];
     private jobIdCounter: number = 0;
 
-    private constructor() { }
-
-    public static getInstance(): JobManager {
-        if (!JobManager.instance) {
-            JobManager.instance = new JobManager();
-        }
-
-        return JobManager.instance;
-    }
+    public constructor() { }
 
     public startJob(ns: NS, job: Job): void {
         this.jobs.push(job);
@@ -61,4 +53,4 @@ class JobManager {
 
 }
 
-export let jobManager = JobManager.getInstance();
+export const jobManager = new JobManager();
