@@ -1,7 +1,7 @@
 import type { BitBurner as NS } from "Bitburner";
 import HomeServer from "/src/classes/HomeServer.js";
 import Server from "/src/classes/Server.js";
-import { serverManager } from "/src/managers/ServerManager.js";
+import ServerManager from "/src/managers/ServerManager.js";
 import * as ServerUtils from "/src/util/ServerUtils.js";
 
 
@@ -15,6 +15,7 @@ export function hasTor(ns: NS): boolean {
 }
 
 export async function rootAllServers(ns: NS): Promise<void> {
+    const serverManager: ServerManager = ServerManager.getInstance(ns);
     const serverMap: Server[] = await serverManager.getServerMap(ns, true);
 
     // Root all servers 

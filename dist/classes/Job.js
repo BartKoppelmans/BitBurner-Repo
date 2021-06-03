@@ -4,9 +4,10 @@ import * as ToolUtils from "/src/util/ToolUtils.js";
 import * as Utils from "/src/util/Utils.js";
 import * as ServerUtils from "/src/util/ServerUtils.js";
 import HomeServer from "/src/classes/HomeServer.js";
-import { jobManager } from "/src/managers/JobManager.js";
+import JobManager from "/src/managers/JobManager.js";
 export default class Job {
     constructor(ns, job) {
+        const jobManager = JobManager.getInstance();
         this.target = job.target;
         this.threads = job.threads;
         this.tool = job.tool;
@@ -23,6 +24,7 @@ export default class Job {
         }
     }
     async execute(ns) {
+        const jobManager = JobManager.getInstance();
         const maxThreadsAvailable = await JobUtils.computeMaxThreads(ns, this.tool, true);
         if (maxThreadsAvailable === 0) {
             // Cancel the batch

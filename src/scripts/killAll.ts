@@ -2,10 +2,11 @@ import type { BitBurner as NS } from "Bitburner";
 import HomeServer from "/src/classes/HomeServer.js";
 import Server from "/src/classes/Server.js";
 import { CONSTANT } from "/src/lib/constants.js";
-import { serverManager } from "/src/managers/ServerManager.js";
+import ServerManager from "/src/managers/ServerManager.js";
 import * as ServerUtils from "/src/util/ServerUtils.js";
 
 export async function main(ns: NS) {
+    const serverManager: ServerManager = ServerManager.getInstance(ns);
     const home: HomeServer = HomeServer.getInstance(ns);
 
     let serverMap: Server[] = await serverManager.getServerMap(ns);

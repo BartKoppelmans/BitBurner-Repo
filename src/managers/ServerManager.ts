@@ -6,13 +6,22 @@ import HomeServer from "/src/classes/HomeServer.js";
 import { CONSTANT } from "/src/lib/constants.js";
 import * as ServerUtils from "/src/util/ServerUtils.js";
 
-class ServerManager {
+export default class ServerManager {
     private static instance: ServerManager;
+
 
     private serverMap: Server[] = [];
     private lastUpdated: Date = CONSTANT.EPOCH_DATE;
 
-    public constructor() { }
+    private constructor() { }
+
+    public static getInstance(ns: NS): ServerManager {
+        if (!ServerManager.instance) {
+            ServerManager.instance = new ServerManager();
+        }
+
+        return ServerManager.instance;
+    }
 
     private buildServerMap(ns: NS): Server[] {
         const hostName = ns.getHostname();
@@ -20,9 +29,9 @@ class ServerManager {
             throw new Error('Run the script from home');
         }
 
-        this.serverMap = this.spider(ns, hostName);
+        let serverMap: Server[] = this.spider(ns, hostName);
         this.lastUpdated = new Date();
-        return this.serverMap;
+        return serverMap;
     }
 
     public rebuildServerMap(ns: NS) {
@@ -117,7 +126,7 @@ class ServerManager {
     }
 
     public async getTargetableServers(ns: NS): Promise<HackableServer[]> {
-        let servers: HackableServer[] = (this.getServerMap(ns))
+        let servers: HackableServer[] = (await this.getServerMap(ns))
             .filter(server => ServerUtils.isHackableServer(server)) as HackableServer[];
 
         servers = servers
@@ -130,21 +139,21 @@ class ServerManager {
 
     // We sort this descending
     public async getHackingServers(ns: NS): Promise<Server[]> {
-        return (this.getServerMap(ns))
+        return (await this.getServerMap(ns))
             .filter((server: Server) => ServerUtils.isRooted(ns, server))
             .sort((a, b) => b.getAvailableRam(ns) - a.getAvailableRam(ns));
     }
 
     // We sort this ascending
     public async getPurchasedServers(ns: NS): Promise<PurchasedServer[]> {
-        return (this.getServerMap(ns))
+        return (await this.getServerMap(ns))
             .filter((server: Server) => ServerUtils.isPurchasedServer(server))
             .sort((a, b) => a.getAvailableRam(ns) - b.getAvailableRam(ns));
     }
 
     public async printServerMap(ns: NS) {
         if (this.needsUpdate(ns)) {
-            this.rebuildServerMap(ns);
+            await this.rebuildServerMap(ns);
         }
 
         this.printServer(ns, HomeServer.getInstance(ns), 0);
@@ -159,5 +168,3 @@ class ServerManager {
             ns.tprint(" ");
     }
 }
-
-export const serverManager = new ServerManager();

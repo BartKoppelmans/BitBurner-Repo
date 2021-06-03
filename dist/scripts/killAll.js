@@ -1,8 +1,9 @@
 import HomeServer from "/src/classes/HomeServer.js";
 import { CONSTANT } from "/src/lib/constants.js";
-import { serverManager } from "/src/managers/ServerManager.js";
+import ServerManager from "/src/managers/ServerManager.js";
 import * as ServerUtils from "/src/util/ServerUtils.js";
 export async function main(ns) {
+    const serverManager = ServerManager.getInstance(ns);
     const home = HomeServer.getInstance(ns);
     let serverMap = await serverManager.getServerMap(ns);
     await Promise.all(serverMap.map(async (server) => {

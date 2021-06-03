@@ -1,7 +1,13 @@
-class JobManager {
+export default class JobManager {
     constructor() {
         this.jobs = [];
         this.jobIdCounter = 0;
+    }
+    static getInstance() {
+        if (!JobManager.instance) {
+            JobManager.instance = new JobManager();
+        }
+        return JobManager.instance;
     }
     startJob(ns, job) {
         this.jobs.push(job);
@@ -30,7 +36,8 @@ class JobManager {
         return ++this.jobIdCounter;
     }
     getCurrentTargets() {
-        return [...new Set(this.jobs.map(job => job.target))];
+        const targets = [...new Set(this.jobs.map(job => job.target))];
+        return targets;
     }
 }
-export const jobManager = new JobManager();
+;

@@ -1,19 +1,26 @@
 import type { BitBurner as NS } from "Bitburner";
-import HackableServer from "/src/classes/HackableServer.js";
+import HackableServer from "/src/classes/HackableServer";
 import Job from "/src/classes/Job.js";
 import Server from "/src/classes/Server.js";
 
-class JobManager {
+export default class JobManager {
     private static instance: JobManager;
 
     private jobs: Job[] = [];
     private jobIdCounter: number = 0;
 
-    public constructor() { }
+    private constructor() { }
+
+    public static getInstance(): JobManager {
+        if (!JobManager.instance) {
+            JobManager.instance = new JobManager();
+        }
+
+        return JobManager.instance;
+    }
 
     public startJob(ns: NS, job: Job): void {
         this.jobs.push(job);
-
         job.onStart(ns);
 
         setTimeout(this.finishJob, job.end.getTime() - Date.now(), ns, job.id);
@@ -48,9 +55,9 @@ class JobManager {
     }
 
     public getCurrentTargets(): HackableServer[] {
-        return [...new Set(this.jobs.map(job => job.target))];
+        const targets: HackableServer[] = [...new Set(this.jobs.map(job => job.target))];
+        return targets;
     }
 
-}
 
-export const jobManager = new JobManager();
+};
