@@ -58,5 +58,4 @@ export default class JobManager {
         return [...new Set(jobs.map(job => job.target))];;
     }
 
-
 };

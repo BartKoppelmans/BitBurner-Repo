@@ -75,13 +75,13 @@ export const CONSTANT = {
     /* 
      * Hacking manager constants
      */
-    MAX_TARGET_COUNT: 10,
+    MAX_TARGET_COUNT: 5,
 
     HACK_LOOP_DELAY: 1 * 1000,
 
     ALLOW_THREAD_SPREADING: true,
 
-    MAX_CYCLE_NUMBER: 100,
+    MAX_CYCLE_NUMBER: 50,
 
     // Max server growth rate, higher than this will be throttled
     MAX_GROWTH_RATE: 1.0035,

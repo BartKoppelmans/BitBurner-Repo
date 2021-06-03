@@ -25,7 +25,6 @@ async function initialize(ns) {
 }
 async function hackLoop(ns) {
     const serverManager = ServerManager.getInstance(ns);
-    const jobManager = JobManager.getInstance();
     let potentialTargets = await serverManager.getTargetableServers(ns);
     // Then evaluate the potential targets afterwards
     await Promise.all(potentialTargets.map(async (target) => {
@@ -35,12 +34,15 @@ async function hackLoop(ns) {
     if (potentialTargets.length === 0) {
         throw new Error("No potential targets found.");
     }
+    let targetCounter = 0;
     for await (let target of potentialTargets) {
-        let currentTargets = jobManager.getCurrentTargets();
         // Can't have too many targets at the same time
-        if (currentTargets.length >= CONSTANT.MAX_TARGET_COUNT)
+        if (targetCounter >= CONSTANT.MAX_TARGET_COUNT)
             break;
-        await HackUtils.hack(ns, target);
+        const isNewTarget = await HackUtils.hack(ns, target);
+        if (isNewTarget) {
+            targetCounter++;
+        }
     }
     // Wait a second!
     await ns.sleep(CONSTANT.HACK_LOOP_DELAY);

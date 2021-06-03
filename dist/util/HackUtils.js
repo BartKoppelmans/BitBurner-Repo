@@ -11,24 +11,25 @@ import * as ToolUtils from "/src/util/ToolUtils.js";
 // Return true when we have found a new target
 export async function hack(ns, server) {
     const jobManager = JobManager.getInstance();
+    // TODO: Make sure that all neccesary variables are set (remove the exclamation marks)
     // If it is prepping, leave it
     if (jobManager.isPrepping(ns, server))
-        return;
+        return false;
     // From here on it is a target
     // It is a target, but is currently resting
     if (jobManager.isTargetting(ns, server))
-        return;
+        return true;
     // Prep the server
     await prepServer(ns, server);
     // The server is not optimal, other targets take up the RAM
     if (server.dynamicHackingProperties.securityLevel > server.staticHackingProperties.minSecurityLevel || server.dynamicHackingProperties.money < server.staticHackingProperties.maxMoney)
-        return;
+        return true;
     // If it is prepping, leave it
     if (jobManager.isPrepping(ns, server))
-        return;
+        return true;
     // TODO: Optimize performance metrics
     await attackServer(ns, server);
-    return;
+    return true;
 }
 export async function prepServer(ns, target) {
     const jobManager = JobManager.getInstance();
