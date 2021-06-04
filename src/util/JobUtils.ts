@@ -1,6 +1,6 @@
 import type { BitBurner as NS, Port, PortHandle } from "Bitburner";
 import HackableServer from "/src/classes/HackableServer.js";
-import Job from "/src/classes/Job";
+import Job from "/src/classes/Job.js";
 import Server from "/src/classes/Server.js";
 import { CONSTANT } from "/src/lib/constants.js";
 import ServerManager from "/src/managers/ServerManager.js";

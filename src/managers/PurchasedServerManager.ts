@@ -10,8 +10,8 @@ export default class PurchasedServerManager {
 
     private purchasedServers: PurchasedServer[] = [];
 
-    private purchaseLoopInterval?: number;
-    private upgradeLoopInterval?: number;
+    private purchaseLoopInterval?: ReturnType<typeof setInterval>;
+    private upgradeLoopInterval?: ReturnType<typeof setInterval>;
 
 
     private constructor(ns: NS) {
@@ -48,7 +48,7 @@ export default class PurchasedServerManager {
     // Purchasing new servers -------------------------------------------------------------------
 
     private async startPurchaseServerLoop(ns: NS) {
-        this.purchaseLoopInterval = setInterval(this.purchaseServerLoop, CONSTANT.PURCHASE_PURCHASED_SERVER_LOOP_INTERVAL);
+        this.purchaseLoopInterval = setInterval(this.purchaseServerLoop.bind(this, ns), CONSTANT.PURCHASE_PURCHASED_SERVER_LOOP_INTERVAL);
         this.purchaseServerLoop(ns);
     }
 
@@ -99,8 +99,11 @@ export default class PurchasedServerManager {
     // Upgrading existing servers ---------------------------------------------------------------
 
     private async startUpgradeLoop(ns: NS) {
-        clearInterval(this.purchaseLoopInterval);
-        this.upgradeLoopInterval = setInterval(this.upgradeLoop, CONSTANT.UPGRADE_PURCHASED_SERVER_LOOP_INTERVAL);
+
+        if (this.purchaseLoopInterval) {
+            clearInterval(this.purchaseLoopInterval);
+        }
+        this.upgradeLoopInterval = setInterval(this.upgradeLoop.bind(this, ns), CONSTANT.UPGRADE_PURCHASED_SERVER_LOOP_INTERVAL);
         this.upgradeLoop(ns);
     }
 

@@ -47,7 +47,7 @@ export const CONSTANT = {
     CHECK_PROGRAM_LOOP_INTERVAL: 30 * 60 * 1000,
 
 
-    JOB_MANAGING_LOOP_INTERVAL: 1 * 1000,
+    JOB_MANAGING_LOOP_INTERVAL: 100,
 
     JOB_PORT_NUMBERS: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
 
@@ -86,7 +86,7 @@ export const CONSTANT = {
 
     ALLOW_THREAD_SPREADING: true,
 
-    MAX_CYCLE_NUMBER: 100,
+    MAX_CYCLE_NUMBER: 50,
 
     // Max server growth rate, higher than this will be throttled
     MAX_GROWTH_RATE: 1.0035,

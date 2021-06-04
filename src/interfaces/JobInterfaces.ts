@@ -36,6 +36,8 @@ export interface IJOb {
     isPrep: boolean;
 
     allowSpreading?: boolean;
+
+    threadSpread?: Map<Server, number>;
 }
 
 // A Batch object contains a list of cycles that should be executed on a specific server

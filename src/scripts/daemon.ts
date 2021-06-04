@@ -7,8 +7,6 @@ import { CONSTANT } from "/src/lib/constants.js";
 import * as HackUtils from "/src/util/HackUtils.js";
 import { Heuristics } from "/src/util/Heuristics.js";
 import JobManager from "/src/managers/JobManager.js";
-import BatchJob from "/src/classes/BatchJob.js";
-import Job from "/src/classes/Job.js";
 
 export async function main(ns: NS) {
 
@@ -59,7 +57,7 @@ async function hackLoop(ns: NS) {
 
     for await (let target of potentialTargets) {
 
-        let currentTargets: HackableServer[] = jobManager.getCurrentTargets();
+        let currentTargets: string[] = jobManager.getCurrentTargets();
 
         // Can't have too many targets at the same time
         if (currentTargets.length >= CONSTANT.MAX_TARGET_COUNT) break;

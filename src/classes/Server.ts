@@ -48,4 +48,9 @@ export default class Server {
         let [total, used] = ns.getServerRam(this.host);
         return total - used;
     }
+
+
+    public toJSON() {
+        return this.host;
+    }
 }

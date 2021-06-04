@@ -30,7 +30,7 @@ export default class PurchasedServerManager {
     }
     // Purchasing new servers -------------------------------------------------------------------
     async startPurchaseServerLoop(ns) {
-        this.purchaseLoopInterval = setInterval(this.purchaseServerLoop, CONSTANT.PURCHASE_PURCHASED_SERVER_LOOP_INTERVAL);
+        this.purchaseLoopInterval = setInterval(this.purchaseServerLoop.bind(this, ns), CONSTANT.PURCHASE_PURCHASED_SERVER_LOOP_INTERVAL);
         this.purchaseServerLoop(ns);
     }
     // This tries to buy the highest number of servers at the same time, 
@@ -70,8 +70,10 @@ export default class PurchasedServerManager {
     }
     // Upgrading existing servers ---------------------------------------------------------------
     async startUpgradeLoop(ns) {
-        clearInterval(this.purchaseLoopInterval);
-        this.upgradeLoopInterval = setInterval(this.upgradeLoop, CONSTANT.UPGRADE_PURCHASED_SERVER_LOOP_INTERVAL);
+        if (this.purchaseLoopInterval) {
+            clearInterval(this.purchaseLoopInterval);
+        }
+        this.upgradeLoopInterval = setInterval(this.upgradeLoop.bind(this, ns), CONSTANT.UPGRADE_PURCHASED_SERVER_LOOP_INTERVAL);
         this.upgradeLoop(ns);
     }
     async upgradeLoop(ns) {

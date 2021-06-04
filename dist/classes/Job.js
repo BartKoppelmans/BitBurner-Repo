@@ -1,14 +1,15 @@
+import HackableServer from "/src/classes/HackableServer.js";
+import Server from "/src/classes/Server.js";
 import { CONSTANT } from "/src/lib/constants.js";
 import * as JobUtils from "/src/util/JobUtils.js";
 import * as ToolUtils from "/src/util/ToolUtils.js";
 import * as Utils from "/src/util/Utils.js";
 import * as ServerUtils from "/src/util/ServerUtils.js";
 import HomeServer from "/src/classes/HomeServer.js";
-import JobManager from "/src/managers/JobManager.js";
+import PurchasedServer from "/src/classes/PurchasedServer.js";
 let jobIdCounter = 0;
 export default class Job {
     constructor(ns, job) {
-        const jobManager = JobManager.getInstance();
         this.target = job.target;
         this.threads = job.threads;
         this.tool = job.tool;
@@ -17,6 +18,8 @@ export default class Job {
         this.allowSpreading = (job.allowSpreading) ? job.allowSpreading : true;
         this.id = (job.id) ? job.id : ++jobIdCounter;
         this.start = (job.start) ? job.start : new Date();
+        if (job.threadSpread)
+            this.threadSpread = job.threadSpread;
         if (job.end)
             this.end = job.end;
         else {
@@ -25,7 +28,6 @@ export default class Job {
         }
     }
     async execute(ns) {
-        const jobManager = JobManager.getInstance();
         const maxThreadsAvailable = await JobUtils.computeMaxThreads(ns, this.tool, true);
         if (maxThreadsAvailable === 0) {
             // Cancel the batch
@@ -52,7 +54,6 @@ export default class Job {
         }
         // TODO: Communicate the job
         await JobUtils.communicateJob(ns, this);
-        jobManager.startJob(ns, this);
     }
     async onStart(ns) {
         this.print(ns, false);
@@ -70,9 +71,55 @@ export default class Job {
         ];
     }
     toJSON() {
-        return {
-            id: this.id
+        const object = {
+            id: this.id,
+            target: this.target,
+            threads: this.threads,
+            tool: this.tool,
+            isPrep: this.isPrep,
+            start: this.start.getTime(),
+            end: this.end.getTime(),
         };
+        if (this.threadSpread) {
+            object.threadSpread = Array.from(this.threadSpread.entries());
+        }
+        return object;
+    }
+    /*
+        {"id":302,"target":"defcomm","threadSpread":{},"tool":"/src/tools/weaken.js","isPrep":false,"start":1623030787309,"end":1623031719451}
+    */
+    static parseJobString(ns, jobString) {
+        const object = JSON.parse(jobString);
+        let spreadMap = new Map();
+        object.threadSpread.forEach((pair) => {
+            const host = pair[0];
+            const threads = pair[1];
+            let server;
+            if (ServerUtils.isPurchased(host)) {
+                server = new PurchasedServer(ns, host);
+            }
+            else if (ServerUtils.isHome(host)) {
+                server = HomeServer.getInstance(ns);
+            }
+            else if (ServerUtils.isDarkweb(host)) {
+                server = new Server(ns, host);
+            }
+            else {
+                server = new HackableServer(ns, host);
+            }
+            spreadMap.set(server, threads);
+        });
+        const target = new HackableServer(ns, object.target);
+        return new Job(ns, {
+            id: object.id,
+            target: target,
+            threads: object.threads,
+            threadSpread: spreadMap,
+            tool: object.tool,
+            start: new Date(object.start),
+            end: new Date(object.end),
+            isPrep: object.isPrep,
+        });
     }
     print(ns, isFinished) {
         let verb;
