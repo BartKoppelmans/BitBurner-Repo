@@ -1,13 +1,38 @@
+import { CONSTANT } from "/src/lib/constants.js";
 export default class JobManager {
     constructor() {
         this.jobs = [];
         this.jobIdCounter = 0;
+        this.managingLoopIntervals = [];
     }
     static getInstance() {
         if (!JobManager.instance) {
             JobManager.instance = new JobManager();
         }
         return JobManager.instance;
+    }
+    async startManagingLoop(ns) {
+        if (this.managingLoopIntervals.length > 0) {
+            for (const interval of this.managingLoopIntervals) {
+                clearInterval(interval);
+            }
+            this.managingLoopIntervals = [];
+        }
+        const ports = [...CONSTANT.JOB_PORT_NUMBERS];
+        for (const port of ports) {
+            this.managingLoopIntervals.push(setInterval(this.managingLoop, CONSTANT.JOB_MANAGING_LOOP_INTERVAL, ns, port));
+            this.managingLoop(ns, port);
+        }
+    }
+    async managingLoop(ns, port) {
+        const portHandle = ns.getPortHandle(port);
+        if (portHandle.empty())
+            return;
+        do {
+            const jobString = portHandle.read().toString();
+            // TODO: Parse the job from the job string
+            ns.tprint(jobString);
+        } while (!portHandle.empty());
     }
     startJob(ns, job) {
         this.jobs.push(job);

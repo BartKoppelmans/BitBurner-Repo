@@ -561,6 +561,19 @@ declare module "Bitburner" {
     export type Port = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 | 17 | 18 | 19 | 20;
     export type Handle = string | Port;
 
+    export interface PortHandle {
+        data: (string | number)[];
+
+        write(data: (string | number)): (string | number | null);
+        tryWrite(data: (string | number)): boolean;
+        full(): boolean;
+        empty(): boolean;
+        clear(): void;
+        read(): (string | number);
+        peek(): (string | number);
+    }
+
+
     export interface NodeStats {
         /** Node's name ("hacknet-node-5") */
         name: string;
@@ -4235,7 +4248,7 @@ declare module "Bitburner" {
          * @param {number} port Port number. Must be an integer between 1 and 20.
          * @returns {Array} Data in the specified port.
          */
-        getPortHandle(port: Port): any[];
+        getPortHandle(port: Port): PortHandle;
 
         /**
          * Removes the specified file from the current server. This function works for every file

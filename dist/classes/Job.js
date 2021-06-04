@@ -49,6 +49,8 @@ export default class Job {
             const args = { ...commonArgs, threads, server };
             ns.exec.apply(null, this.createArgumentArray(ns, args));
         }
+        // TODO: Communicate the job
+        await JobUtils.communicateJob(ns, this);
         jobManager.startJob(ns, this);
     }
     async onStart(ns) {
@@ -65,6 +67,11 @@ export default class Job {
             args.target.host,
             args.start.getTime().toString()
         ];
+    }
+    toJSON() {
+        return {
+            id: this.id
+        };
     }
     print(ns, isFinished) {
         let verb;

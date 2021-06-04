@@ -22,6 +22,8 @@ async function initialize(ns) {
     await purchasedServerManager.start(ns);
     const programManager = ProgramManager.getInstance(ns);
     await programManager.startCheckingLoop(ns);
+    const jobManager = JobManager.getInstance();
+    await jobManager.startManagingLoop(ns);
 }
 async function hackLoop(ns) {
     const serverManager = ServerManager.getInstance(ns);

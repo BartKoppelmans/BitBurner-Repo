@@ -1,4 +1,4 @@
-import type { BitBurner as NS } from "Bitburner";
+import type { BitBurner as NS, PortHandle } from "Bitburner";
 import HackableServer from "/src/classes/HackableServer.js";
 import Server from "/src/classes/Server.js";
 import { ExecArguments, IJOb, ToolArguments } from "/src/interfaces/JobInterfaces.js";
@@ -80,6 +80,9 @@ export default class Job {
             ns.exec.apply(null, this.createArgumentArray(ns, args));
         }
 
+        // TODO: Communicate the job
+        await JobUtils.communicateJob(ns, this);
+
         jobManager.startJob(ns, this);
     }
 
@@ -99,6 +102,12 @@ export default class Job {
             args.target.host,
             args.start.getTime().toString()
         ];
+    }
+
+    public toJSON() {
+        return {
+            id: this.id
+        };
     }
 
     private print(ns: NS, isFinished: boolean): void {

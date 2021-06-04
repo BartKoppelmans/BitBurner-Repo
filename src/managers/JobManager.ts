@@ -1,13 +1,16 @@
-import type { BitBurner as NS } from "Bitburner";
+import type { BitBurner as NS, Handle, Port } from "Bitburner";
 import HackableServer from "/src/classes/HackableServer";
 import Job from "/src/classes/Job.js";
 import Server from "/src/classes/Server.js";
+import { CONSTANT } from "/src/lib/constants.js";
 
 export default class JobManager {
     private static instance: JobManager;
 
     private jobs: Job[] = [];
     private jobIdCounter: number = 0;
+
+    private managingLoopIntervals: number[] = [];
 
     private constructor() { }
 
@@ -17,6 +20,35 @@ export default class JobManager {
         }
 
         return JobManager.instance;
+    }
+
+    public async startManagingLoop(ns: NS): Promise<void> {
+        if (this.managingLoopIntervals.length > 0) {
+            for (const interval of this.managingLoopIntervals) {
+                clearInterval(interval);
+            }
+            this.managingLoopIntervals = [];
+        }
+
+        const ports: Port[] = [...CONSTANT.JOB_PORT_NUMBERS];
+
+        for (const port of ports) {
+            this.managingLoopIntervals.push(setInterval(this.managingLoop, CONSTANT.JOB_MANAGING_LOOP_INTERVAL, ns, port));
+            this.managingLoop(ns, port);
+        }
+    }
+
+    private async managingLoop(ns: NS, port: Port): Promise<void> {
+        const portHandle = ns.getPortHandle(port);
+
+        if (portHandle.empty()) return;
+
+        do {
+            const jobString: string = portHandle.read().toString();
+            // TODO: Parse the job from the job string
+            ns.tprint(jobString);
+
+        } while (!portHandle.empty());
     }
 
     public startJob(ns: NS, job: Job): void {

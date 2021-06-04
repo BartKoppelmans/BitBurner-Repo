@@ -46,6 +46,11 @@ export const CONSTANT = {
     PURCHASE_PROGRAM_LOOP_INTERVAL: 5 * 60 * 1000,
     CHECK_PROGRAM_LOOP_INTERVAL: 30 * 60 * 1000,
 
+
+    JOB_MANAGING_LOOP_INTERVAL: 1 * 1000,
+
+    JOB_PORT_NUMBERS: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+
     PURCHASE_PURCHASED_SERVER_LOOP_INTERVAL: 5 * 60 * 1000,
 
     // Check if we can upgrade servers every 10 minutes
