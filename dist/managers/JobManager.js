@@ -2,7 +2,6 @@ import { CONSTANT } from "/src/lib/constants.js";
 export default class JobManager {
     constructor() {
         this.jobs = [];
-        this.jobIdCounter = 0;
         this.managingLoopIntervals = [];
     }
     static getInstance() {
@@ -56,9 +55,6 @@ export default class JobManager {
         return this.jobs.some((job) => {
             return job.target === server && !job.isPrep;
         });
-    }
-    getNextJobId() {
-        return ++this.jobIdCounter;
     }
     getCurrentTargets() {
         const targets = [...new Set(this.jobs.map(job => job.target))];

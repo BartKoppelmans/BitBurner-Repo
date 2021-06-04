@@ -5,6 +5,7 @@ import * as Utils from "/src/util/Utils.js";
 import * as ServerUtils from "/src/util/ServerUtils.js";
 import HomeServer from "/src/classes/HomeServer.js";
 import JobManager from "/src/managers/JobManager.js";
+let jobIdCounter = 0;
 export default class Job {
     constructor(ns, job) {
         const jobManager = JobManager.getInstance();
@@ -14,7 +15,7 @@ export default class Job {
         this.isPrep = job.isPrep;
         // Setting some default values in case they were not provided
         this.allowSpreading = (job.allowSpreading) ? job.allowSpreading : true;
-        this.id = (job.id) ? job.id : jobManager.getNextJobId();
+        this.id = (job.id) ? job.id : ++jobIdCounter;
         this.start = (job.start) ? job.start : new Date();
         if (job.end)
             this.end = job.end;

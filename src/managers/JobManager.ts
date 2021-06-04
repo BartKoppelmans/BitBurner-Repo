@@ -8,7 +8,6 @@ export default class JobManager {
     private static instance: JobManager;
 
     private jobs: Job[] = [];
-    private jobIdCounter: number = 0;
 
     private managingLoopIntervals: number[] = [];
 
@@ -80,10 +79,6 @@ export default class JobManager {
         return this.jobs.some((job: Job) => {
             return job.target === server && !job.isPrep;
         });
-    }
-
-    public getNextJobId(): number {
-        return ++this.jobIdCounter;
     }
 
     public getCurrentTargets(): HackableServer[] {

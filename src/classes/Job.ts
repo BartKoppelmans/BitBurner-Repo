@@ -11,6 +11,8 @@ import * as ServerUtils from "/src/util/ServerUtils.js";
 import HomeServer from "/src/classes/HomeServer.js";
 import JobManager from "/src/managers/JobManager.js";
 
+let jobIdCounter: number = 0;
+
 export default class Job {
     id: number;
     target: HackableServer;
@@ -34,7 +36,7 @@ export default class Job {
 
         // Setting some default values in case they were not provided
         this.allowSpreading = (job.allowSpreading) ? job.allowSpreading : true;
-        this.id = (job.id) ? job.id : jobManager.getNextJobId();
+        this.id = (job.id) ? job.id : ++jobIdCounter;
         this.start = (job.start) ? job.start : new Date();
 
         if (job.end) this.end = job.end;
