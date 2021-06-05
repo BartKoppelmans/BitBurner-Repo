@@ -42,6 +42,8 @@ export default class PurchasedServerManager {
             this.startUpgradeLoop(ns);
             return;
         }
+        if (!this.shouldUpgrade(ns))
+            return;
         const numServersLeft = CONSTANT.MAX_PURCHASED_SERVERS - this.purchasedServers.length;
         const ram = this.computeMaxRamPossible(ns, numServersLeft);
         for (let i = 0; i < numServersLeft; i++) {
@@ -78,10 +80,9 @@ export default class PurchasedServerManager {
     }
     async upgradeLoop(ns) {
         this.updateServerMap(ns);
-        const serverManager = ServerManager.getInstance(ns);
         let updateNeeded = false;
-        // TODO: We should decide if we want to update all servers at once
-        // If so, make clusters of the same ram and upgrade each of them to the same ram
+        if (!this.shouldUpgrade(ns))
+            return;
         for (const server of this.purchasedServers) {
             const maxRam = this.computeMaxRamPossible(ns, 1);
             if (maxRam > server.ram) {
@@ -89,9 +90,6 @@ export default class PurchasedServerManager {
             }
             else
                 break;
-        }
-        if (updateNeeded) {
-            serverManager.rebuildServerMap(ns);
         }
     }
     async upgradeServer(ns, server, ram) {
@@ -130,5 +128,17 @@ export default class PurchasedServerManager {
         const playerManager = PlayerManager.getInstance(ns);
         const money = playerManager.getMoney(ns) * CONSTANT.PURCHASED_SERVER_ALLOWANCE_PERCENTAGE;
         return cost <= money;
+    }
+    shouldUpgrade(ns) {
+        const utilization = this.determineUtilization(ns);
+        return (utilization > CONSTANT.SERVER_UTILIZATION_THRESHOLD);
+    }
+    determineUtilization(ns) {
+        const serverManager = ServerManager.getInstance(ns);
+        const serverMap = serverManager.getServerMap(ns, true);
+        // The number of RAM used
+        const available = serverMap.reduce((utilized, server) => utilized + Math.floor(ns.getServerRam(server.host)[1]), 0);
+        const total = serverMap.reduce((utilized, server) => utilized + Math.ceil(ns.getServerRam(server.host)[1]), 0);
+        return ((total - available) / total);
     }
 }

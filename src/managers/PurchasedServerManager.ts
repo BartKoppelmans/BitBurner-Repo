@@ -1,5 +1,6 @@
 import type { BitBurner as NS } from "Bitburner";
 import PurchasedServer from "/src/classes/PurchasedServer.js";
+import Server from "/src/classes/Server.js";
 import { CONSTANT } from "/src/lib/constants.js";
 import PlayerManager from "/src/managers/PlayerManager.js";
 import ServerManager from "/src/managers/ServerManager.js";
@@ -52,17 +53,19 @@ export default class PurchasedServerManager {
         this.purchaseServerLoop(ns);
     }
 
-
     // This tries to buy the highest number of servers at the same time, 
     // so that we can fill our servers up as quickly as possible
     private async purchaseServerLoop(ns: NS) {
         let updateNeeded: boolean = false;
 
         this.updateServerMap(ns);
+
         if (this.purchasedServers.length === CONSTANT.MAX_PURCHASED_SERVERS) {
             this.startUpgradeLoop(ns);
             return;
         }
+
+        if (!this.shouldUpgrade(ns)) return;
 
         const numServersLeft: number = CONSTANT.MAX_PURCHASED_SERVERS - this.purchasedServers.length;
         const ram: number = this.computeMaxRamPossible(ns, numServersLeft);
@@ -111,11 +114,9 @@ export default class PurchasedServerManager {
 
         this.updateServerMap(ns);
 
-        const serverManager: ServerManager = ServerManager.getInstance(ns);
         let updateNeeded: boolean = false;
 
-        // TODO: We should decide if we want to update all servers at once
-        // If so, make clusters of the same ram and upgrade each of them to the same ram
+        if (!this.shouldUpgrade(ns)) return;
 
         for (const server of this.purchasedServers) {
             const maxRam = this.computeMaxRamPossible(ns, 1);
@@ -123,10 +124,6 @@ export default class PurchasedServerManager {
             if (maxRam > server.ram) {
                 const updateNeeded = await this.upgradeServer(ns, server, maxRam);
             } else break;
-        }
-
-        if (updateNeeded) {
-            serverManager.rebuildServerMap(ns);
         }
     }
 
@@ -184,5 +181,21 @@ export default class PurchasedServerManager {
         const money: number = playerManager.getMoney(ns) * CONSTANT.PURCHASED_SERVER_ALLOWANCE_PERCENTAGE;
 
         return cost <= money;
+    }
+
+    private shouldUpgrade(ns: NS): boolean {
+        const utilization: number = this.determineUtilization(ns);
+        return (utilization > CONSTANT.SERVER_UTILIZATION_THRESHOLD);
+    }
+
+    private determineUtilization(ns: NS): number {
+        const serverManager: ServerManager = ServerManager.getInstance(ns);
+        const serverMap: Server[] = serverManager.getServerMap(ns, true);
+
+        // The number of RAM used
+        const available: number = serverMap.reduce((utilized, server) => utilized + Math.floor(ns.getServerRam(server.host)[1]), 0);
+        const total: number = serverMap.reduce((utilized, server) => utilized + Math.ceil(ns.getServerRam(server.host)[1]), 0);
+
+        return ((total - available) / total);
     }
 }

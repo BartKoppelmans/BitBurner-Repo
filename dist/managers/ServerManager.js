@@ -4,6 +4,8 @@ import PurchasedServer from '/src/classes/PurchasedServer.js';
 import HomeServer from "/src/classes/HomeServer.js";
 import { CONSTANT } from "/src/lib/constants.js";
 import * as ServerUtils from "/src/util/ServerUtils.js";
+// TODO: Move this to a seperate script that is always running,
+// Let it communicate the server lists via ports
 export default class ServerManager {
     constructor() {
         this.serverMap = [];
