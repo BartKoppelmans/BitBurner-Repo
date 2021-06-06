@@ -1,27 +1,20 @@
 import type { BitBurner as NS } from "Bitburner";
 import HomeServer from "/src/classes/HomeServer.js";
 import Server from "/src/classes/Server.js";
-import ServerManager from "/src/managers/ServerManager.js";
-import * as ServerUtils from "/src/util/ServerUtils.js";
-
-
+import { CONSTANT } from "/src/lib/constants.js";
 
 export function hasTor(ns: NS): boolean {
     const homeServer: HomeServer = HomeServer.getInstance(ns);
 
     if (homeServer.treeStructure && homeServer.treeStructure.children) {
-        return homeServer.treeStructure.children.some((server) => ServerUtils.isDarkwebServer(server));
+        return homeServer.treeStructure.children.some((server) => isDarkwebServer(server));
     } else throw new Error("The server map has not been initialized yet.");
 }
 
-export async function rootAllServers(ns: NS): Promise<void> {
-    const serverManager: ServerManager = ServerManager.getInstance(ns);
-    const serverMap: Server[] = await serverManager.getServerMap(ns, true);
+export function isDarkwebServer(server: Server) {
+    return isDarkweb(server.host);
+}
 
-    // Root all servers 
-    await Promise.all(serverMap.map(async (server) => {
-        if (!ServerUtils.isRooted(ns, server) && ServerUtils.canRoot(ns, server)) {
-            await ServerUtils.root(ns, server);
-        }
-    }));
+export function isDarkweb(host: string): boolean {
+    return (host === CONSTANT.DARKWEB_HOST);
 }

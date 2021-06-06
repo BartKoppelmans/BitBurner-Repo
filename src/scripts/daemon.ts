@@ -5,6 +5,7 @@ import ServerManager from "/src/managers/ServerManager.js";
 import HackableServer from "/src/classes/HackableServer.js";
 import { CONSTANT } from "/src/lib/constants.js";
 import * as HackUtils from "/src/util/HackUtils.js";
+import * as ServerUtils from "/src/util/ServerUtils.js";
 import { Heuristics } from "/src/util/Heuristics.js";
 import JobManager from "/src/managers/JobManager.js";
 
@@ -43,6 +44,8 @@ async function hackLoop(ns: NS) {
     const jobManager: JobManager = JobManager.getInstance();
 
     let potentialTargets: HackableServer[] = await serverManager.getTargetableServers(ns);
+
+    await serverManager.rootAllServers(ns);
 
     // Then evaluate the potential targets afterwards
     await Promise.all(potentialTargets.map(async (target) => {

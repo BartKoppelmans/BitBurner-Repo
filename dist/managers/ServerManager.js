@@ -4,8 +4,9 @@ import PurchasedServer from '/src/classes/PurchasedServer.js';
 import HomeServer from "/src/classes/HomeServer.js";
 import { CONSTANT } from "/src/lib/constants.js";
 import * as ServerUtils from "/src/util/ServerUtils.js";
+import * as ProgramUtils from "/src/util/ProgramUtils.js";
 // TODO: Move this to a seperate script that is always running,
-// Let it communicate the server lists via ports
+// Let it communicate the server lists via a file where all information of the server is stored.
 export default class ServerManager {
     constructor() {
         this.serverMap = [];
@@ -51,7 +52,7 @@ export default class ServerManager {
                     // A purchased server
                     return [new PurchasedServer(ns, nodeName)];
                 }
-                else if (ServerUtils.isHome(parent.host) && ServerUtils.isDarkweb(nodeName)) {
+                else if (ServerUtils.isHome(parent.host) && ProgramUtils.isDarkweb(nodeName)) {
                     // The darkweb server
                     return [new Server(ns, nodeName)];
                 }
@@ -137,5 +138,15 @@ export default class ServerManager {
             server.treeStructure.children.forEach(child => this.printServer(ns, child, level + 1));
         else
             ns.tprint(" ");
+    }
+    async rootAllServers(ns) {
+        const serverManager = ServerManager.getInstance(ns);
+        const serverMap = serverManager.getServerMap(ns, true);
+        // Root all servers 
+        await Promise.all(serverMap.map(async (server) => {
+            if (!ServerUtils.isRooted(ns, server) && ServerUtils.canRoot(ns, server)) {
+                await ServerUtils.root(ns, server);
+            }
+        }));
     }
 }

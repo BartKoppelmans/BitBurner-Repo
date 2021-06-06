@@ -79,7 +79,7 @@ export const CONSTANT = {
     /* 
      * Hacking manager constants
      */
-    MAX_TARGET_COUNT: 10,
+    MAX_TARGET_COUNT: 20,
 
     HACK_LOOP_DELAY: 1000,
 
@@ -87,7 +87,7 @@ export const CONSTANT = {
 
     SERVER_UTILIZATION_THRESHOLD: 0.7,
 
-    MAX_CYCLE_NUMBER: 50,
+    MAX_CYCLE_NUMBER: 25,
 
     // Max server growth rate, higher than this will be throttled
     MAX_GROWTH_RATE: 1.0035,

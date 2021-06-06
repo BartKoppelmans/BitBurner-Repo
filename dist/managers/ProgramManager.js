@@ -70,6 +70,8 @@ export default class ProgramManager {
             .slice(0, ports);
     }
     async onProgramsUpdated(ns) {
-        await ProgramUtils.rootAllServers(ns);
+        // We can't do this, but 
+        // TODO: Find a solution for that
+        // await ServerUtils.rootAllServers(ns);
     }
 }

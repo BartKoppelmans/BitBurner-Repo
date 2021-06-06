@@ -3,6 +3,7 @@ import HackableServer from "/src/classes/HackableServer.js";
 import { Program } from "/src/classes/Program.js";
 import Server from "/src/classes/Server.js";
 import { CONSTANT } from "/src/lib/constants.js";
+import ProgramManager from "/src/managers/ProgramManager.js";
 
 export function isHomeServer(server: Server): boolean {
     return isHome(server.host);
@@ -10,14 +11,6 @@ export function isHomeServer(server: Server): boolean {
 
 export function isHome(host: string): boolean {
     return (host === CONSTANT.HOME_SERVER_HOST);
-}
-
-export function isDarkwebServer(server: Server) {
-    return isDarkweb(server.host);
-}
-
-export function isDarkweb(host: string): boolean {
-    return (host === CONSTANT.DARKWEB_HOST);
 }
 
 export function isPurchasedServer(server: Server): boolean {
@@ -40,7 +33,6 @@ export function canRoot(ns: NS, server: Server) {
     if (!isHackableServer(server)) {
         return false;
     }
-    const ProgramManager: any = import('/src/managers/ProgramManager.js');
     const hackableServer: HackableServer = server as HackableServer;
     return ProgramManager.getInstance(ns).getNumCrackScripts(ns) >= hackableServer.staticHackingProperties.ports;
 }
@@ -57,7 +49,6 @@ export async function root(ns: NS, server: Server): Promise<void> {
 
     const hackableServer: HackableServer = server as HackableServer;
 
-    const ProgramManager: any = import('/src/managers/ProgramManager.js');
     const crackingScripts: Program[] = ProgramManager.getInstance(ns).getCrackingScripts(ns, hackableServer.staticHackingProperties.ports);
 
     crackingScripts.forEach(program => program.run(ns, server));

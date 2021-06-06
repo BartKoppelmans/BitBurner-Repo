@@ -8,6 +8,7 @@ import * as JobUtils from "/src/util/JobUtils.js";
 import * as ToolUtils from "/src/util/ToolUtils.js";
 import * as Utils from "/src/util/Utils.js";
 import * as ServerUtils from "/src/util/ServerUtils.js";
+import * as ProgramUtils from "/src/util/ProgramUtils.js";
 import HomeServer from "/src/classes/HomeServer.js";
 import PurchasedServer from "/src/classes/PurchasedServer.js";
 
@@ -139,7 +140,7 @@ export default class Job {
                 server = new PurchasedServer(ns, host);
             } else if (ServerUtils.isHome(host)) {
                 server = HomeServer.getInstance(ns);
-            } else if (ServerUtils.isDarkweb(host)) {
+            } else if (ProgramUtils.isDarkweb(host)) {
                 server = new Server(ns, host);
             } else {
                 server = new HackableServer(ns, host);

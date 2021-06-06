@@ -94,6 +94,8 @@ export default class ProgramManager {
     }
 
     private async onProgramsUpdated(ns: NS): Promise<void> {
-        await ProgramUtils.rootAllServers(ns);
+        // We can't do this, but 
+        // TODO: Find a solution for that
+        // await ServerUtils.rootAllServers(ns);
     }
 }
