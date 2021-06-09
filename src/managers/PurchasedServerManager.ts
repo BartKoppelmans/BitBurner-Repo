@@ -29,6 +29,7 @@ export default class PurchasedServerManager {
 
     public async updateServerMap(ns: NS) {
         const serverManager: ServerManager = ServerManager.getInstance(ns);
+        serverManager.rebuildServerMap(ns);
         this.purchasedServers = await serverManager.getPurchasedServers(ns);
     }
 
@@ -65,7 +66,7 @@ export default class PurchasedServerManager {
             return;
         }
 
-        if (!this.shouldUpgrade(ns)) return;
+        if (!(await this.shouldUpgrade(ns))) return;
 
         const numServersLeft: number = CONSTANT.MAX_PURCHASED_SERVERS - this.purchasedServers.length;
         const ram: number = this.computeMaxRamPossible(ns, numServersLeft);
@@ -111,18 +112,17 @@ export default class PurchasedServerManager {
     }
 
     private async upgradeLoop(ns: NS) {
-
         this.updateServerMap(ns);
 
-        let updateNeeded: boolean = false;
-
-        if (!this.shouldUpgrade(ns)) return;
-
         for (const server of this.purchasedServers) {
-            const maxRam = this.computeMaxRamPossible(ns, 1);
 
+            if (!(await this.shouldUpgrade(ns))) break;
+
+            const maxRam = this.computeMaxRamPossible(ns, 1);
             if (maxRam > server.ram) {
                 const updateNeeded = await this.upgradeServer(ns, server, maxRam);
+
+                if (updateNeeded) this.updateServerMap(ns);
             } else break;
         }
     }
@@ -183,18 +183,18 @@ export default class PurchasedServerManager {
         return cost <= money;
     }
 
-    private shouldUpgrade(ns: NS): boolean {
-        const utilization: number = this.determineUtilization(ns);
-        return (utilization > CONSTANT.SERVER_UTILIZATION_THRESHOLD);
+    private async shouldUpgrade(ns: NS): Promise<boolean> {
+        const utilization: number = await this.determineUtilization(ns);
+        return (utilization < CONSTANT.SERVER_UTILIZATION_THRESHOLD);
     }
 
-    private determineUtilization(ns: NS): number {
+    private async determineUtilization(ns: NS): Promise<number> {
         const serverManager: ServerManager = ServerManager.getInstance(ns);
-        const serverMap: Server[] = serverManager.getServerMap(ns, true);
+        const serverMap: Server[] = await serverManager.getHackingServers(ns);
 
         // The number of RAM used
         const available: number = serverMap.reduce((utilized, server) => utilized + Math.floor(ns.getServerRam(server.host)[1]), 0);
-        const total: number = serverMap.reduce((utilized, server) => utilized + Math.ceil(ns.getServerRam(server.host)[1]), 0);
+        const total: number = serverMap.reduce((utilized, server) => utilized + Math.ceil(ns.getServerRam(server.host)[0]), 0);
 
         return ((total - available) / total);
     }
