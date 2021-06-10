@@ -10,6 +10,7 @@ import * as BatchJobUtils from "/src/util/BatchJobUtils.js";
 import * as JobUtils from "/src/util/JobUtils.js";
 import * as ServerHackUtils from "/src/util/ServerHackUtils.js";
 import * as ToolUtils from "/src/util/ToolUtils.js";
+import * as Utils from "/src/util/Utils.js";
 
 // Return true when we have found a new target
 export async function hack(ns: NS, server: HackableServer): Promise<void> {
@@ -120,7 +121,13 @@ export async function attackServer(ns: NS, target: HackableServer): Promise<void
     let numCycles: number = Math.min(optimalCycles, maxCycles);
 
     // NOTE: This could cause us to never attack
-    if (numCycles === 0) return;
+    if (numCycles === 0) {
+
+        // TODO: Here we should schedule an attack for in the future.
+
+        Utils.tprintColored("Skipped an attack.", true, CONSTANT.COLOR_WARNING);
+        return;
+    }
 
     for (let i = 0; i < numCycles; i++) {
 

@@ -8,6 +8,7 @@ import * as BatchJobUtils from "/src/util/BatchJobUtils.js";
 import * as JobUtils from "/src/util/JobUtils.js";
 import * as ServerHackUtils from "/src/util/ServerHackUtils.js";
 import * as ToolUtils from "/src/util/ToolUtils.js";
+import * as Utils from "/src/util/Utils.js";
 // Return true when we have found a new target
 export async function hack(ns, server) {
     const jobManager = JobManager.getInstance();
@@ -87,8 +88,11 @@ export async function attackServer(ns, target) {
     const maxCycles = await BatchJobUtils.computeMaxCycles(ns, optimalBatchCost, true);
     let numCycles = Math.min(optimalCycles, maxCycles);
     // NOTE: This could cause us to never attack
-    if (numCycles === 0)
+    if (numCycles === 0) {
+        // TODO: Here we should schedule an attack for in the future.
+        Utils.tprintColored("Skipped an attack.", true, CONSTANT.COLOR_WARNING);
         return;
+    }
     for (let i = 0; i < numCycles; i++) {
         let cycleStart;
         // Set the start time of the cycle

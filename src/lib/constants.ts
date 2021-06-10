@@ -55,7 +55,7 @@ export const CONSTANT = {
     // Check if we can upgrade servers every 10 minutes
     UPGRADE_PURCHASED_SERVER_LOOP_INTERVAL: 60 * 1000,
 
-    MIN_PURCHASED_SERVER_RAM_EXPONENT: 5,
+    MIN_PURCHASED_SERVER_RAM_EXPONENT: 7,
     MAX_PURCHASED_SERVER_RAM_EXPONENT: 20,
 
     PURCHASED_SERVER_ALLOWANCE_PERCENTAGE: 0.10,
@@ -79,7 +79,9 @@ export const CONSTANT = {
     /* 
      * Hacking manager constants
      */
-    MAX_TARGET_COUNT: 20,
+
+    // TODO: Change this back to 20 after early game.
+    MAX_TARGET_COUNT: 5,
 
     HACK_LOOP_DELAY: 1000,
 

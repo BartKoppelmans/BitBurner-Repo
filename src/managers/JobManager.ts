@@ -84,7 +84,12 @@ export default class JobManager {
     }
 
     public getCurrentTargets(): string[] {
-        return [...new Set(jobs.filter((job) => !job.isPrep).map(job => job.target.host))];
+        return [...new Set(
+            jobs
+                // TODO: We probably want to revert this in the future.
+                // .filter((job) => !job.isPrep)
+                .map(job => job.target.host)
+        )];
     }
 
 
