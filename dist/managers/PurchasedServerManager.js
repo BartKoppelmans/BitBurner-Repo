@@ -1,7 +1,7 @@
 import { CONSTANT } from "/src/lib/constants.js";
 import PlayerManager from "/src/managers/PlayerManager.js";
-import ServerManager from "/src/managers/ServerManager.js";
 import * as Utils from "/src/util/Utils.js";
+import * as ServerAPI from "/src/api/ServerAPI.js";
 export default class PurchasedServerManager {
     constructor(ns) {
         this.purchasedServers = [];
@@ -14,9 +14,8 @@ export default class PurchasedServerManager {
         return PurchasedServerManager.instance;
     }
     async updateServerMap(ns) {
-        const serverManager = ServerManager.getInstance(ns);
-        serverManager.rebuildServerMap(ns);
-        this.purchasedServers = await serverManager.getPurchasedServers(ns);
+        await ServerAPI.requestUpdate(ns);
+        this.purchasedServers = await ServerAPI.getPurchasedServers(ns);
     }
     // Main entry point
     async start(ns) {
@@ -136,8 +135,7 @@ export default class PurchasedServerManager {
         return (utilization < CONSTANT.SERVER_UTILIZATION_THRESHOLD);
     }
     async determineUtilization(ns) {
-        const serverManager = ServerManager.getInstance(ns);
-        const serverMap = await serverManager.getHackingServers(ns);
+        const serverMap = await ServerAPI.getHackingServers(ns);
         // The number of RAM used
         const available = serverMap.reduce((utilized, server) => utilized + Math.floor(ns.getServerRam(server.host)[1]), 0);
         const total = serverMap.reduce((utilized, server) => utilized + Math.ceil(ns.getServerRam(server.host)[0]), 0);

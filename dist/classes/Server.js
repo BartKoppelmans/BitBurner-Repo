@@ -1,5 +1,8 @@
+import { ServerType } from "/src/interfaces/ServerInterfaces.js";
 export default class Server {
-    constructor(ns, host, treeStructure) {
+    constructor(ns, id, host, treeStructure) {
+        this.type = ServerType.BasicServer;
+        this.id = id;
         this.host = host;
         this.ram = ns.getServerRam(this.host)[0];
         this.files = ns.ls(this.host);
@@ -25,6 +28,11 @@ export default class Server {
         return total - used;
     }
     toJSON() {
-        return this.host;
+        return {
+            id: this.id,
+            host: this.host,
+            treeStructure: this.treeStructure,
+            type: this.type
+        };
     }
 }

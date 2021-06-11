@@ -1,21 +1,14 @@
 import type { BitBurner as NS } from "Bitburner";
 import Server from '/src/classes/Server.js';
+import { ServerType, TreeStructure } from "/src/interfaces/ServerInterfaces.js";
 import { CONSTANT } from "/src/lib/constants.js";
 
 export default class HomeServer extends Server {
-    private static instance: HomeServer;
+    type: ServerType = ServerType.HomeServer;
 
-    private constructor(ns: NS) {
-        super(ns, CONSTANT.HOME_SERVER_HOST);
+    public constructor(ns: NS, treeStructure?: TreeStructure) {
+        super(ns, CONSTANT.HOME_SERVER_ID, CONSTANT.HOME_SERVER_HOST, treeStructure);
         this.ram = ns.getServerRam(this.host)[0] - CONSTANT.DESIRED_HOME_FREE_RAM;
-    }
-
-    public static getInstance(ns: NS): HomeServer {
-        if (!HomeServer.instance) {
-            HomeServer.instance = new HomeServer(ns);
-        }
-
-        return HomeServer.instance;
     }
 
     // We want to make sure that we always have some RAM left.

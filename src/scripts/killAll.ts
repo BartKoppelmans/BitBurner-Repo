@@ -1,21 +1,17 @@
 import type { BitBurner as NS } from "Bitburner";
-import HomeServer from "/src/classes/HomeServer.js";
+import * as ServerAPI from "/src/api/ServerAPI.js";
 import Server from "/src/classes/Server.js";
 import { CONSTANT } from "/src/lib/constants.js";
-import ServerManager from "/src/managers/ServerManager.js";
 import * as ServerUtils from "/src/util/ServerUtils.js";
 
 export async function main(ns: NS) {
-    const serverManager: ServerManager = ServerManager.getInstance(ns);
-    const home: HomeServer = HomeServer.getInstance(ns);
-
-    let serverMap: Server[] = await serverManager.getServerMap(ns);
+    let serverMap: Server[] = await ServerAPI.getServerMap(ns);
 
     await Promise.all(serverMap.map(async (server) => {
         killServer(ns, server);
     }));
 
-    ns.killall(home.host);
+    ns.killall(CONSTANT.HOME_SERVER_HOST);
 }
 
 async function killServer(ns: NS, server: Server): Promise<void> {

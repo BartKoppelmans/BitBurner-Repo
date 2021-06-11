@@ -1,29 +1,28 @@
 import type { BitBurner as NS } from "Bitburner";
-import Server, { TreeStructure } from '/src/classes/Server.js';
-import HackableServer from '/src/classes/HackableServer.js';
-import PurchasedServer from '/src/classes/PurchasedServer.js';
-import HomeServer from "/src/classes/HomeServer.js";
+import Server from '/src/classes/Server.js';
 import { CONSTANT } from "/src/lib/constants.js";
-import * as ServerUtils from "/src/util/ServerUtils.js";
-import * as ProgramUtils from "/src/util/ProgramUtils.js";
+import * as ServerManagerUtils from "/src/util/ServerManagerUtils.js";
 
-// TODO: Move this to a seperate script that is always running,
-// Let it communicate the server lists via a file where all information of the server is stored.
+let intervals: ReturnType<typeof setInterval>[] = [];
 
-export default class ServerManager {
-    private static instance: ServerManager;
+class ServerManager {
 
     private serverMap: Server[] = [];
     private lastUpdated: Date = CONSTANT.EPOCH_DATE;
 
-    private constructor() { }
+    public constructor(ns: NS) { }
 
-    public static getInstance(ns: NS): ServerManager {
-        if (!ServerManager.instance) {
-            ServerManager.instance = new ServerManager();
-        }
+    public async initialize(ns: NS): Promise<void> {
+        // TODO: Clear the current map
 
-        return ServerManager.instance;
+        this.serverMap = this.buildServerMap(ns);
+    }
+
+    public async start(ns: NS): Promise<void> {
+
+        // TODO: Set the checker for reading the ports on whether an update is requested.
+
+        // TODO: Set the interval for updating the server map.
     }
 
     private buildServerMap(ns: NS): Server[] {
@@ -32,154 +31,49 @@ export default class ServerManager {
             throw new Error('Run the script from home');
         }
 
-        let serverMap: Server[] = this.spider(ns, hostName);
+        let serverMap: Server[] = ServerManagerUtils.spider(ns, 0, hostName);
+
+        this.serverMap = serverMap;
         this.lastUpdated = new Date();
+
+        this.onUpdate(ns);
+
         return serverMap;
     }
 
-    public rebuildServerMap(ns: NS) {
-        this.serverMap = this.buildServerMap(ns);
+    private onUpdate(ns: NS): void {
+        ServerManagerUtils.writeServerMap(ns, this.serverMap);
     }
 
-    public getServerMap(ns: NS, forceUpdate: boolean = false) {
-        if (this.needsUpdate(ns) || forceUpdate) {
-            this.rebuildServerMap(ns);
-        }
-        return this.serverMap;
+    private onUpdateRequested(ns: NS) {
+        this.serverMap = this.buildServerMap(ns);
     }
 
     private needsUpdate(ns: NS): boolean {
         return (Date.now() - this.lastUpdated.getTime()) > CONSTANT.SERVER_MAP_REBUILD_TIME;
     }
+}
 
-    private spider(ns: NS, nodeName: string, parent?: Server): Server[] {
-        let tempServerMap: Server[] = [];
+export async function main(ns: NS) {
+    const instance: ServerManager = new ServerManager(ns);
 
-        let queue: string[] = ns.scan(nodeName);
+    await instance.initialize(ns);
+    await instance.start(ns);
 
-        if (parent) {
-            const parentIndex: number = queue.indexOf(parent.host);
-            queue.splice(parentIndex, 1);
+    // We just keep sleeping because we have to keep this script running
+    while (true) {
 
-            // The current node is a leaf
-            if (queue.length === 0) {
 
-                // If the node is a purchased server
-                if (ServerUtils.isHome(parent.host) && ServerUtils.isPurchased(nodeName)) {
-                    // A purchased server
-                    return [new PurchasedServer(ns, nodeName)];
-                }
-                else if (ServerUtils.isHome(parent.host) && ProgramUtils.isDarkweb(nodeName)) {
-                    // The darkweb server
-                    return [new Server(ns, nodeName)];
-                }
-                else {
-                    const treeStructure = {
-                        connections: [parent],
-                        parent: parent,
-                        children: []
-                    };
+        // Just for debugging now
+        ServerManagerUtils.readServerMap(ns);
 
-                    // Create hackable node
-                    return [new HackableServer(ns, nodeName, treeStructure)];
-                }
-
-            }
-        }
-
-        // The current node is a subtree node
-        let subtreeNode: Server;
-        if (parent) {
-            subtreeNode = new HackableServer(ns, nodeName, { parent: parent });
-        } else {
-            subtreeNode = HomeServer.getInstance(ns);
-        }
-
-        // Loop through the current level
-        queue.forEach(childNodeName => {
-            tempServerMap = [
-                ...tempServerMap,
-                ...this.spider(ns, childNodeName, subtreeNode)
-            ];
-        });
-
-        let children: Server[] = tempServerMap.filter(node => queue.includes(node.host));
-
-        // Create the subtree structure
-        let treeStructure: TreeStructure;
-        if (parent) {
-            treeStructure = {
-                connections: [...children, parent],
-                children: children,
-                parent: parent
-            };
-        } else {
-            treeStructure = {
-                connections: children,
-                children: children
-            };
-        }
-
-        subtreeNode.updateTree(treeStructure);
-
-        return [
-            ...tempServerMap,
-            subtreeNode
-        ];
+        await ns.sleep(10 * 1000);
     }
 
-    public async getTargetableServers(ns: NS): Promise<HackableServer[]> {
-        let servers: HackableServer[] = (await this.getServerMap(ns))
-            .filter(server => ServerUtils.isHackableServer(server)) as HackableServer[];
-
-        servers = servers
-            .filter(server => server.isHackable(ns))
-            .filter(server => ServerUtils.isRooted(ns, server) || ServerUtils.canRoot(ns, server))
-            .filter(server => server.staticHackingProperties.maxMoney > 0);
-
-        return servers;
+    // TODO: Cancel all the intervals when the script is killed
+    /*
+    for (const interval of intervals) {
+        clearInterval(interval);
     }
-
-    // We sort this descending
-    public async getHackingServers(ns: NS): Promise<Server[]> {
-        return (await this.getServerMap(ns))
-            .filter((server: Server) => ServerUtils.isRooted(ns, server))
-            .sort((a, b) => b.getAvailableRam(ns) - a.getAvailableRam(ns));
-    }
-
-    // We sort this ascending
-    public async getPurchasedServers(ns: NS): Promise<PurchasedServer[]> {
-        return (await this.getServerMap(ns))
-            .filter((server: Server) => ServerUtils.isPurchasedServer(server))
-            .sort((a, b) => a.getAvailableRam(ns) - b.getAvailableRam(ns));
-    }
-
-    public async printServerMap(ns: NS) {
-        if (this.needsUpdate(ns)) {
-            await this.rebuildServerMap(ns);
-        }
-
-        this.printServer(ns, HomeServer.getInstance(ns), 0);
-    }
-
-    private printServer(ns: NS, server: Server, level: number) {
-        const text: string = "  ".repeat(level) + server.host;
-        ns.tprint(text);
-        if (server && server.treeStructure && server.treeStructure.children)
-            server.treeStructure.children.forEach(child => this.printServer(ns, child, level + 1));
-        else
-            ns.tprint(" ");
-    }
-
-    public async rootAllServers(ns: NS): Promise<void> {
-        const serverManager: ServerManager = ServerManager.getInstance(ns);
-        const serverMap: Server[] = serverManager.getServerMap(ns, true);
-
-        // Root all servers 
-        await Promise.all(serverMap.map(async (server) => {
-            if (!ServerUtils.isRooted(ns, server) && ServerUtils.canRoot(ns, server)) {
-                await ServerUtils.root(ns, server);
-            }
-        }));
-    }
+    */
 }

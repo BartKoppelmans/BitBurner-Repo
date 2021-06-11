@@ -1,9 +1,9 @@
 import { CONSTANT } from "/src/lib/constants.js";
-import ServerManager from "/src/managers/ServerManager.js";
 import { Tools } from "/src/tools/Tools.js";
 import * as ServerHackUtils from "/src/util/ServerHackUtils.js";
 import * as ToolUtils from "/src/util/ToolUtils.js";
 import * as Utils from "/src/util/Utils.js";
+import * as ServerAPI from "/src/api/ServerAPI.js";
 export async function computeThreadsNeeded(ns, tool, server) {
     switch (tool) {
         case Tools.GROW:
@@ -18,8 +18,7 @@ export async function computeThreadsNeeded(ns, tool, server) {
 }
 // Here we allow thread spreading over multiple servers
 export async function computeMaxThreads(ns, tool, allowSpread = true) {
-    const serverManager = ServerManager.getInstance(ns);
-    const serverMap = await serverManager.getHackingServers(ns);
+    const serverMap = await ServerAPI.getHackingServers(ns);
     const cost = ToolUtils.getToolCost(ns, tool);
     if (!allowSpread) {
         // NOTE: We always expect AT LEAST 1 rooted server to be available
@@ -29,7 +28,6 @@ export async function computeMaxThreads(ns, tool, allowSpread = true) {
     return serverMap.reduce((threads, server) => threads + Math.floor(server.getAvailableRam(ns) / cost), 0);
 }
 export async function computeThreadSpread(ns, tool, threads) {
-    const serverManager = ServerManager.getInstance(ns);
     // TODO: Remove this because we should already check it?
     const maxThreadsAvailable = await computeMaxThreads(ns, tool, true);
     if (threads > maxThreadsAvailable) {
@@ -38,7 +36,7 @@ export async function computeThreadSpread(ns, tool, threads) {
     const cost = ToolUtils.getToolCost(ns, tool);
     let threadsLeft = threads;
     let spreadMap = new Map();
-    const serverMap = await serverManager.getHackingServers(ns);
+    const serverMap = await ServerAPI.getHackingServers(ns);
     for (let server of serverMap) {
         let serverThreads = Math.floor(server.getAvailableRam(ns) / cost);
         // If we can't fit any more threads here, skip it

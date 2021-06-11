@@ -1,8 +1,10 @@
 import Server from '/src/classes/Server.js';
+import { ServerType } from "/src/interfaces/ServerInterfaces.js";
 import PlayerManager from "/src/managers/PlayerManager.js";
 export default class HackableServer extends Server {
-    constructor(ns, host, treeStructure) {
-        super(ns, host, treeStructure);
+    constructor(ns, id, host, treeStructure) {
+        super(ns, id, host, treeStructure);
+        this.type = ServerType.HackableServer;
         this.staticHackingProperties = this.getStaticHackingProperties(ns);
         this.dynamicHackingProperties = this.getDynamicHackingProperties(ns);
     }

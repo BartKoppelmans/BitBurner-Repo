@@ -1,13 +1,12 @@
 import type { BitBurner as NS } from "Bitburner";
-
-export interface TreeStructure {
-    connections?: Server[];
-    children?: Server[];
-    parent?: Server;
-}
+import { ServerType, TreeStructure } from "/src/interfaces/ServerInterfaces.js";
 
 export default class Server {
+
+    type: ServerType = ServerType.BasicServer;
+
     // Static values
+    id: number;
     host: string;
     treeStructure?: TreeStructure;
 
@@ -15,7 +14,8 @@ export default class Server {
     files: string[];
 
 
-    public constructor(ns: NS, host: string, treeStructure?: TreeStructure) {
+    public constructor(ns: NS, id: number, host: string, treeStructure?: TreeStructure) {
+        this.id = id;
         this.host = host;
 
         this.ram = ns.getServerRam(this.host)[0];
@@ -51,6 +51,11 @@ export default class Server {
 
 
     public toJSON() {
-        return this.host;
+        return {
+            id: this.id,
+            host: this.host,
+            treeStructure: this.treeStructure,
+            type: this.type
+        };
     }
 }

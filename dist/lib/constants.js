@@ -17,6 +17,7 @@ export const CONSTANT = {
     REMOTE_FOLDER: "dist",
     // The URL on GitHub to import from
     ROOT_URL: "https://raw.githubusercontent.com/BartKoppelmans/BitBurner-Repo/master",
+    SERVER_MAP_FILENAME: '/temp/servermap.txt',
     /*
      * Server constants
      */
@@ -25,6 +26,7 @@ export const CONSTANT = {
     // The name of the darkweb server
     DARKWEB_HOST: "darkweb",
     HOME_SERVER_HOST: "home",
+    HOME_SERVER_ID: 0,
     DESIRED_MONEY_RATIO: 0.9,
     MIN_SECURITY_LEVEL_OFFSET: 1,
     DESIRED_HOME_FREE_RAM: 64,

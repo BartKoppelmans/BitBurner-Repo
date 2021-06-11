@@ -1,8 +1,8 @@
 import ProgramManager from "/src/managers/ProgramManager.js";
 import PurchasedServerManager from "/src/managers/PurchasedServerManager.js";
-import ServerManager from "/src/managers/ServerManager.js";
 import { CONSTANT } from "/src/lib/constants.js";
 import * as HackUtils from "/src/util/HackUtils.js";
+import * as ServerAPI from "/src/api/ServerAPI.js";
 import { Heuristics } from "/src/util/Heuristics.js";
 import JobManager from "/src/managers/JobManager.js";
 export async function main(ns) {
@@ -16,20 +16,22 @@ export async function main(ns) {
     }
 }
 async function initialize(ns) {
-    const serverManager = ServerManager.getInstance(ns);
-    serverManager.rebuildServerMap(ns);
+    ServerAPI.startServerManager(ns);
     const purchasedServerManager = PurchasedServerManager.getInstance(ns);
     await purchasedServerManager.start(ns);
     const programManager = ProgramManager.getInstance(ns);
     await programManager.startCheckingLoop(ns);
     const jobManager = JobManager.getInstance();
     await jobManager.startManagingLoop(ns);
+    while (!isInitialized(ns)) {
+        ns.tprint("waiting for inits");
+        await ns.sleep(1000);
+    }
 }
 async function hackLoop(ns) {
-    const serverManager = ServerManager.getInstance(ns);
     const jobManager = JobManager.getInstance();
-    let potentialTargets = await serverManager.getTargetableServers(ns);
-    await serverManager.rootAllServers(ns);
+    let potentialTargets = await ServerAPI.getTargetableServers(ns);
+    await ServerAPI.rootAllServers(ns);
     // Then evaluate the potential targets afterwards
     await Promise.all(potentialTargets.map(async (target) => {
         target.evaluate(ns, Heuristics.MainHeuristic);
@@ -47,4 +49,7 @@ async function hackLoop(ns) {
     }
     // Wait a second!
     await ns.sleep(CONSTANT.HACK_LOOP_DELAY);
+}
+function isInitialized(ns) {
+    return (ServerAPI.isServerManagerRunning(ns));
 }

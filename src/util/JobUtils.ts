@@ -3,11 +3,11 @@ import HackableServer from "/src/classes/HackableServer.js";
 import Job from "/src/classes/Job.js";
 import Server from "/src/classes/Server.js";
 import { CONSTANT } from "/src/lib/constants.js";
-import ServerManager from "/src/managers/ServerManager.js";
 import { Tools } from "/src/tools/Tools.js";
 import * as ServerHackUtils from "/src/util/ServerHackUtils.js";
 import * as ToolUtils from "/src/util/ToolUtils.js";
 import * as Utils from "/src/util/Utils.js";
+import * as ServerAPI from "/src/api/ServerAPI.js";
 
 export async function computeThreadsNeeded(ns: NS, tool: Tools, server: HackableServer): Promise<number> {
     switch (tool) {
@@ -26,9 +26,7 @@ export async function computeThreadsNeeded(ns: NS, tool: Tools, server: Hackable
 // Here we allow thread spreading over multiple servers
 export async function computeMaxThreads(ns: NS, tool: Tools, allowSpread: boolean = true): Promise<number> {
 
-    const serverManager: ServerManager = ServerManager.getInstance(ns);
-
-    const serverMap: Server[] = await serverManager.getHackingServers(ns);
+    const serverMap: Server[] = await ServerAPI.getHackingServers(ns);
     const cost: number = ToolUtils.getToolCost(ns, tool);
 
     if (!allowSpread) {
@@ -42,8 +40,6 @@ export async function computeMaxThreads(ns: NS, tool: Tools, allowSpread: boolea
 
 export async function computeThreadSpread(ns: NS, tool: Tools, threads: number): Promise<Map<Server, number>> {
 
-    const serverManager: ServerManager = ServerManager.getInstance(ns);
-
     // TODO: Remove this because we should already check it?
     const maxThreadsAvailable = await computeMaxThreads(ns, tool, true);
 
@@ -55,7 +51,7 @@ export async function computeThreadSpread(ns: NS, tool: Tools, threads: number):
 
     let threadsLeft: number = threads;
     let spreadMap: Map<Server, number> = new Map<Server, number>();
-    const serverMap: Server[] = await serverManager.getHackingServers(ns);
+    const serverMap: Server[] = await ServerAPI.getHackingServers(ns);
 
     for (let server of serverMap) {
         let serverThreads: number = Math.floor(server.getAvailableRam(ns) / cost);

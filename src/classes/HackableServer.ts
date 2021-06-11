@@ -1,39 +1,20 @@
 import type { BitBurner as NS } from "Bitburner";
-import Server, { TreeStructure } from '/src/classes/Server.js';
+import Server from '/src/classes/Server.js';
+import { DynamicHackingProperties, ServerType, StaticHackingProperties, TreeStructure } from "/src/interfaces/ServerInterfaces.js";
 import PlayerManager from "/src/managers/PlayerManager.js";
 import { Heuristics } from "/src/util/Heuristics.js";
 
-export interface StaticHackingProperties {
-    minSecurityLevel: number;
-    baseSecurityLevel: number;
-    ports: number;
-    hackingLevel: number;
-    maxMoney: number;
-    growth: number;
-}
-
-export interface DynamicHackingProperties {
-
-    lastUpdated: Date;
-
-    securityLevel: number;
-    money: number;
-    availableRam: number;
-
-    weakenTime: number;
-    growTime: number;
-    hackTime: number;
-}
-
 export default class HackableServer extends Server {
+
+    type: ServerType = ServerType.HackableServer;
 
     staticHackingProperties: StaticHackingProperties;
     dynamicHackingProperties: DynamicHackingProperties;
 
     serverValue?: Heuristics.HeuristicValue;
 
-    constructor(ns: NS, host: string, treeStructure?: TreeStructure) {
-        super(ns, host, treeStructure);
+    constructor(ns: NS, id: number, host: string, treeStructure?: TreeStructure) {
+        super(ns, id, host, treeStructure);
 
         this.staticHackingProperties = this.getStaticHackingProperties(ns);
         this.dynamicHackingProperties = this.getDynamicHackingProperties(ns);

@@ -1,11 +1,10 @@
 import type { BitBurner as NS } from "Bitburner";
 import ProgramManager from "/src/managers/ProgramManager.js";
 import PurchasedServerManager from "/src/managers/PurchasedServerManager.js";
-import ServerManager from "/src/managers/ServerManager.js";
 import HackableServer from "/src/classes/HackableServer.js";
 import { CONSTANT } from "/src/lib/constants.js";
 import * as HackUtils from "/src/util/HackUtils.js";
-import * as ServerUtils from "/src/util/ServerUtils.js";
+import * as ServerAPI from "/src/api/ServerAPI.js";
 import { Heuristics } from "/src/util/Heuristics.js";
 import JobManager from "/src/managers/JobManager.js";
 
@@ -25,8 +24,7 @@ export async function main(ns: NS) {
 
 async function initialize(ns: NS) {
 
-    const serverManager: ServerManager = ServerManager.getInstance(ns);
-    serverManager.rebuildServerMap(ns);
+    ServerAPI.startServerManager(ns);
 
     const purchasedServerManager: PurchasedServerManager = PurchasedServerManager.getInstance(ns);
     await purchasedServerManager.start(ns);
@@ -36,16 +34,20 @@ async function initialize(ns: NS) {
 
     const jobManager: JobManager = JobManager.getInstance();
     await jobManager.startManagingLoop(ns);
+
+    while (!isInitialized(ns)) {
+        ns.tprint("waiting for inits");
+        await ns.sleep(1000);
+    }
 }
 
 async function hackLoop(ns: NS) {
 
-    const serverManager: ServerManager = ServerManager.getInstance(ns);
     const jobManager: JobManager = JobManager.getInstance();
 
-    let potentialTargets: HackableServer[] = await serverManager.getTargetableServers(ns);
+    let potentialTargets: HackableServer[] = await ServerAPI.getTargetableServers(ns);
 
-    await serverManager.rootAllServers(ns);
+    await ServerAPI.rootAllServers(ns);
 
     // Then evaluate the potential targets afterwards
     await Promise.all(potentialTargets.map(async (target) => {
@@ -70,4 +72,8 @@ async function hackLoop(ns: NS) {
 
     // Wait a second!
     await ns.sleep(CONSTANT.HACK_LOOP_DELAY);
+}
+
+function isInitialized(ns: NS): boolean {
+    return (ServerAPI.isServerManagerRunning(ns));
 }

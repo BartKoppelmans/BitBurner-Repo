@@ -1,6 +1,7 @@
 import { Program, ProgramType } from "/src/classes/Program.js";
 import { CONSTANT } from "/src/lib/constants.js";
-import * as ProgramUtils from "/src/util/ProgramUtils.js";
+import * as ServerUtils from "/src/util/ServerUtils.js";
+import * as ServerAPI from "/src/api/ServerAPI.js";
 export default class ProgramManager {
     constructor(ns) {
         this.obtainedPrograms = [];
@@ -46,7 +47,7 @@ export default class ProgramManager {
             clearInterval(this.programPurchaseInterval);
             return;
         }
-        const hasTor = ProgramUtils.hasTor(ns);
+        const hasTor = await hasDarkWeb(ns);
         if (!hasTor)
             return;
         let hasUpdated = false;
@@ -74,4 +75,38 @@ export default class ProgramManager {
         // TODO: Find a solution for that
         // await ServerUtils.rootAllServers(ns);
     }
+}
+export async function hasDarkWeb(ns) {
+    const homeServer = await ServerAPI.getServer(ns, CONSTANT.HOME_SERVER_ID);
+    if (homeServer.treeStructure && homeServer.treeStructure.children) {
+        return homeServer.treeStructure.children.some(async (id) => {
+            const server = await ServerAPI.getServer(ns, id);
+            return ServerUtils.isDarkwebServer(server);
+        });
+    }
+    else
+        throw new Error("The server map has not been initialized yet.");
+}
+export function isRooted(ns, server) {
+    return ns.hasRootAccess(server.host);
+}
+export function canRoot(ns, server) {
+    if (!ServerUtils.isHackableServer(server)) {
+        return false;
+    }
+    const hackableServer = server;
+    return ProgramManager.getInstance(ns).getNumCrackScripts(ns) >= hackableServer.staticHackingProperties.ports;
+}
+export async function root(ns, server) {
+    if (isRooted(ns, server)) {
+        throw new Error("Server is already rooted.");
+    }
+    // This also serves as a type check
+    if (!canRoot(ns, server)) {
+        throw new Error("Cannot crack the server.");
+    }
+    const hackableServer = server;
+    const crackingScripts = ProgramManager.getInstance(ns).getCrackingScripts(ns, hackableServer.staticHackingProperties.ports);
+    crackingScripts.forEach(program => program.run(ns, server));
+    ns.nuke(server.host);
 }

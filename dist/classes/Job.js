@@ -5,7 +5,6 @@ import * as JobUtils from "/src/util/JobUtils.js";
 import * as ToolUtils from "/src/util/ToolUtils.js";
 import * as Utils from "/src/util/Utils.js";
 import * as ServerUtils from "/src/util/ServerUtils.js";
-import * as ProgramUtils from "/src/util/ProgramUtils.js";
 import HomeServer from "/src/classes/HomeServer.js";
 import PurchasedServer from "/src/classes/PurchasedServer.js";
 let jobIdCounter = 0;
@@ -48,7 +47,7 @@ export default class Job {
         for (let [server, threads] of this.threadSpread) {
             // We have to copy the tool to the server if it is not available yet
             if (!ServerUtils.isHomeServer(server)) {
-                ns.scp(this.tool, HomeServer.getInstance(ns).host, server.host);
+                ns.scp(this.tool, CONSTANT.HOME_SERVER_HOST, server.host);
             }
             const args = { ...commonArgs, threads, server };
             ns.exec.apply(null, this.createArgumentArray(ns, args));
@@ -93,24 +92,24 @@ export default class Job {
         const object = JSON.parse(jobString);
         let spreadMap = new Map();
         object.threadSpread.forEach((pair) => {
-            const host = pair[0];
+            const parsedServer = pair[0];
             const threads = pair[1];
             let server;
-            if (ServerUtils.isPurchased(host)) {
-                server = new PurchasedServer(ns, host);
+            if (ServerUtils.isPurchased(parsedServer.host)) {
+                server = new PurchasedServer(ns, parsedServer.id, parsedServer.host);
             }
-            else if (ServerUtils.isHome(host)) {
-                server = HomeServer.getInstance(ns);
+            else if (ServerUtils.isHome(parsedServer.host)) {
+                server = new HomeServer(ns);
             }
-            else if (ProgramUtils.isDarkweb(host)) {
-                server = new Server(ns, host);
+            else if (ServerUtils.isDarkweb(parsedServer.host)) {
+                server = new Server(ns, parsedServer.id, parsedServer.host);
             }
             else {
-                server = new HackableServer(ns, host);
+                server = new HackableServer(ns, parsedServer.id, parsedServer.host);
             }
             spreadMap.set(server, threads);
         });
-        const target = new HackableServer(ns, object.target);
+        const target = new HackableServer(ns, object.target.id, object.target.host);
         return new Job(ns, {
             id: object.id,
             target: target,
