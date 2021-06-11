@@ -20,6 +20,8 @@ export namespace Heuristics {
 
         // TODO: Get rid of magic numbers
 
+        // TODO: Filter anything that we can't actually attack...
+
         return server.staticHackingProperties.maxMoney * (100 / (server.staticHackingProperties.minSecurityLevel + server.dynamicHackingProperties.securityLevel));
     }
 }

@@ -90,7 +90,8 @@ export async function attackServer(ns, target) {
     // NOTE: This could cause us to never attack
     if (numCycles === 0) {
         // TODO: Here we should schedule an attack for in the future.
-        Utils.tprintColored("Skipped an attack.", true, CONSTANT.COLOR_WARNING);
+        if (CONSTANT.DEBUG_HACKING)
+            Utils.tprintColored("Skipped an attack.", true, CONSTANT.COLOR_WARNING);
         return;
     }
     for (let i = 0; i < numCycles; i++) {

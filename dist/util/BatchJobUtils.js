@@ -12,7 +12,10 @@ export async function computeMaxCycles(ns, cycleCost, allowSpread = true) {
         const server = serverMap.shift();
         return Math.floor(server.getAvailableRam(ns) / cycleCost);
     }
-    return serverMap.reduce((threads, server) => threads + Math.floor(server.getAvailableRam(ns) / cycleCost), 0);
+    // TODO: Revert back
+    // return serverMap.reduce((threads, server) => threads + Math.floor(server.getAvailableRam(ns) / cycleCost), 0);
+    // TODO: Create an early game mode or smth
+    return Math.floor(serverMap.reduce((threads, server) => threads + server.getAvailableRam(ns), 0) / cycleCost);
 }
 export async function scheduleCycle(ns, target, batchStart) {
     const scheduledJob1 = await createCycleJob(ns, target, Tools.HACK, batchStart);

@@ -125,7 +125,8 @@ export async function attackServer(ns: NS, target: HackableServer): Promise<void
 
         // TODO: Here we should schedule an attack for in the future.
 
-        Utils.tprintColored("Skipped an attack.", true, CONSTANT.COLOR_WARNING);
+        if (CONSTANT.DEBUG_HACKING) Utils.tprintColored("Skipped an attack.", true, CONSTANT.COLOR_WARNING);
+
         return;
     }
 
