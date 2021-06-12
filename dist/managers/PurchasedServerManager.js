@@ -12,7 +12,7 @@ class PurchasedServerManager {
     }
     // Main entry point
     async start(ns) {
-        // Utils.tprintColored(`Starting the PurchasedServerManager`, true, CONSTANT.COLOR_INFORMATION);
+        Utils.tprintColored(`Starting the PurchasedServerManager`, true, CONSTANT.COLOR_INFORMATION);
         await this.updateServerMap(ns);
         if (this.purchasedServers.length < CONSTANT.MAX_PURCHASED_SERVERS) {
             await this.startPurchaseServerLoop(ns);
@@ -75,11 +75,12 @@ class PurchasedServerManager {
         await this.updateServerMap(ns);
         if (!(await PurchasedServerManagerUtils.shouldUpgrade(ns)))
             return;
-        const maxRam = PurchasedServerManagerUtils.computeMaxRamPossible(ns, this.purchasedServers.length);
         let updateNeeded = false;
-        for (const server of this.purchasedServers) {
+        const maxRam = PurchasedServerManagerUtils.computeMaxRamPossible(ns, this.purchasedServers.length);
+        for await (const server of this.purchasedServers) {
             if (maxRam > server.ram) {
-                updateNeeded = updateNeeded && await this.upgradeServer(ns, server, maxRam);
+                const isSuccessful = await this.upgradeServer(ns, server, maxRam);
+                updateNeeded = updateNeeded || isSuccessful;
             }
             else
                 break;

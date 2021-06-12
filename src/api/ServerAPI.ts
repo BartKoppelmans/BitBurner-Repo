@@ -11,6 +11,7 @@ export async function getServerMap(ns: NS): Promise<Server[]> {
 
 export async function requestUpdate(ns: NS): Promise<void> {
     // TODO: Request the update and then wait until it is executed
+    return;
 }
 
 export async function getServer(ns: NS, id: number): Promise<Server> {

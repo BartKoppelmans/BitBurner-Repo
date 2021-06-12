@@ -85,7 +85,7 @@ export function readServerMap(ns) {
     return serverMap;
 }
 function parseServerObject(ns, serverObject) {
-    switch (serverObject.type) {
+    switch (+serverObject.type) {
         case ServerType.BasicServer:
             return new Server(ns, serverObject.id, serverObject.host, serverObject.treeStructure);
         case ServerType.HackableServer:

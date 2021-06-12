@@ -5,6 +5,7 @@ export async function getServerMap(ns) {
 }
 export async function requestUpdate(ns) {
     // TODO: Request the update and then wait until it is executed
+    return;
 }
 export async function getServer(ns, id) {
     const server = (await getServerMap(ns)).find(server => server.id === id);

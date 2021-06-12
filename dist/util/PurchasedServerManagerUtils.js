@@ -21,12 +21,12 @@ export function canAfford(ns, cost) {
 }
 export async function shouldUpgrade(ns) {
     const utilization = await determineUtilization(ns);
-    return (utilization < CONSTANT.SERVER_UTILIZATION_THRESHOLD);
+    return (utilization > CONSTANT.SERVER_UTILIZATION_THRESHOLD);
 }
 export async function determineUtilization(ns) {
     const serverMap = await ServerAPI.getHackingServers(ns);
     // The number of RAM used
-    const available = serverMap.reduce((utilized, server) => utilized + Math.floor(ns.getServerRam(server.host)[1]), 0);
-    const total = serverMap.reduce((utilized, server) => utilized + Math.ceil(ns.getServerRam(server.host)[0]), 0);
-    return ((total - available) / total);
+    const utilized = serverMap.reduce((utilized, server) => utilized + Math.floor(ns.getServerRam(server.host)[1]), 0);
+    const total = serverMap.reduce((subtotal, server) => subtotal + Math.ceil(ns.getServerRam(server.host)[0]), 0);
+    return (utilized / total);
 }
