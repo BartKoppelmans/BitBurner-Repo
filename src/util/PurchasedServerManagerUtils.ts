@@ -1,5 +1,6 @@
 import type { BitBurner as NS } from "Bitburner";
 import * as ServerAPI from "/src/api/ServerAPI.js";
+import PurchasedServer from "/src/classes/PurchasedServer";
 import Server from "/src/classes/Server.js";
 import { CONSTANT } from "/src/lib/constants.js";
 import PlayerManager from "/src/managers/PlayerManager.js";
@@ -43,4 +44,21 @@ export async function determineUtilization(ns: NS): Promise<number> {
     const total: number = serverMap.reduce((subtotal, server) => subtotal + Math.ceil(ns.getServerRam(server.host)[0]), 0);
 
     return (utilized / total);
+}
+
+export function clusterServers(servers: PurchasedServer[]): Map<number, Server[]> {
+    const map = new Map();
+    servers.forEach((server) => {
+        const key = server.ram;
+        const collection = map.get(key);
+        if (!collection) {
+            map.set(key, [server]);
+        } else {
+            collection.push(server);
+        }
+    });
+
+    // TODO: Sort the map?
+
+    return map;
 }

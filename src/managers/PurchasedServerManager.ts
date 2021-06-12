@@ -103,13 +103,17 @@ class PurchasedServerManager {
 
         let updateNeeded: boolean = false;
 
-        const maxRam = PurchasedServerManagerUtils.computeMaxRamPossible(ns, this.purchasedServers.length);
+        const clusters: Map<number, PurchasedServer[]> = PurchasedServerManagerUtils.clusterServers(this.purchasedServers);
 
-        for await (const server of this.purchasedServers) {
-            if (maxRam > server.ram) {
-                const isSuccessful: boolean = await this.upgradeServer(ns, server, maxRam);
-                updateNeeded = updateNeeded || isSuccessful;
-            } else break;
+        for await (const cluster of clusters) {
+            const maxRam = PurchasedServerManagerUtils.computeMaxRamPossible(ns, cluster.length);
+
+            for await (const server of this.purchasedServers) {
+                if (maxRam > server.ram) {
+                    const isSuccessful: boolean = await this.upgradeServer(ns, server, maxRam);
+                    updateNeeded = updateNeeded || isSuccessful;
+                } else break;
+            }
         }
 
         if (updateNeeded) await this.updateServerMap(ns);
