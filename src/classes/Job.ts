@@ -1,15 +1,15 @@
-import type { BitBurner as NS, PortHandle } from "Bitburner";
+import type { BitBurner as NS } from "Bitburner";
 import HackableServer from "/src/classes/HackableServer.js";
+import HomeServer from "/src/classes/HomeServer.js";
+import PurchasedServer from "/src/classes/PurchasedServer.js";
 import Server from "/src/classes/Server.js";
 import { ExecArguments, IJOb, ToolArguments } from "/src/interfaces/JobInterfaces.js";
 import { CONSTANT } from "/src/lib/constants.js";
 import { Tools } from "/src/tools/Tools.js";
 import * as JobUtils from "/src/util/JobUtils.js";
+import * as ServerUtils from "/src/util/ServerUtils.js";
 import * as ToolUtils from "/src/util/ToolUtils.js";
 import * as Utils from "/src/util/Utils.js";
-import * as ServerUtils from "/src/util/ServerUtils.js";
-import HomeServer from "/src/classes/HomeServer.js";
-import PurchasedServer from "/src/classes/PurchasedServer.js";
 
 let jobIdCounter: number = 0;
 

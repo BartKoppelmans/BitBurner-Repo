@@ -1,10 +1,10 @@
 import type { BitBurner as NS } from "Bitburner";
+import * as ServerAPI from "/src/api/ServerAPI.js";
 import PurchasedServer from "/src/classes/PurchasedServer.js";
 import Server from "/src/classes/Server.js";
 import { CONSTANT } from "/src/lib/constants.js";
 import PlayerManager from "/src/managers/PlayerManager.js";
 import * as Utils from "/src/util/Utils.js";
-import * as ServerAPI from "/src/api/ServerAPI.js";
 
 export default class PurchasedServerManager {
     private static instance: PurchasedServerManager;

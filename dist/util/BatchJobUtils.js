@@ -1,9 +1,9 @@
+import * as ServerAPI from "/src/api/ServerAPI.js";
 import Job from "/src/classes/Job.js";
 import { CONSTANT } from "/src/lib/constants.js";
 import { Tools } from "/src/tools/Tools.js";
-import * as ToolUtils from "/src/util/ToolUtils.js";
 import * as ServerHackUtils from "/src/util/ServerHackUtils.js";
-import * as ServerAPI from "/src/api/ServerAPI.js";
+import * as ToolUtils from "/src/util/ToolUtils.js";
 export async function computeMaxCycles(ns, cycleCost, allowSpread = true) {
     const serverMap = await ServerAPI.getHackingServers(ns);
     // NOTE: We always expect AT LEAST 1 rooted server to be available

@@ -1,9 +1,9 @@
+import * as ServerAPI from "/src/api/ServerAPI.js";
 import { CONSTANT } from "/src/lib/constants.js";
 import { Tools } from "/src/tools/Tools.js";
 import * as ServerHackUtils from "/src/util/ServerHackUtils.js";
 import * as ToolUtils from "/src/util/ToolUtils.js";
 import * as Utils from "/src/util/Utils.js";
-import * as ServerAPI from "/src/api/ServerAPI.js";
 export async function computeThreadsNeeded(ns, tool, server) {
     switch (tool) {
         case Tools.GROW:

@@ -1,11 +1,11 @@
 import type { BitBurner as NS } from "Bitburner";
-import Server from '/src/classes/Server.js';
 import HackableServer from '/src/classes/HackableServer.js';
-import PurchasedServer from '/src/classes/PurchasedServer.js';
 import HomeServer from "/src/classes/HomeServer.js";
+import PurchasedServer from '/src/classes/PurchasedServer.js';
+import Server from '/src/classes/Server.js';
+import { ServerType, TreeStructure } from "/src/interfaces/ServerInterfaces.js";
 import { CONSTANT } from "/src/lib/constants.js";
 import * as ServerUtils from "/src/util/ServerUtils.js";
-import { ServerType, TreeStructure } from "/src/interfaces/ServerInterfaces.js";
 
 export function spider(ns: NS, id: number, nodeName: string, parent?: Server): Server[] {
     let tempServerMap: Server[] = [];

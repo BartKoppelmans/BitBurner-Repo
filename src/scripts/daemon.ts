@@ -1,12 +1,12 @@
 import type { BitBurner as NS } from "Bitburner";
-import ProgramManager from "/src/managers/ProgramManager.js";
-import PurchasedServerManager from "/src/managers/PurchasedServerManager.js";
+import * as ProgramAPI from "/src/api/ProgramAPI.js";
+import * as ServerAPI from "/src/api/ServerAPI.js";
 import HackableServer from "/src/classes/HackableServer.js";
 import { CONSTANT } from "/src/lib/constants.js";
-import * as HackUtils from "/src/util/HackUtils.js";
-import * as ServerAPI from "/src/api/ServerAPI.js";
-import { Heuristics } from "/src/util/Heuristics.js";
 import JobManager from "/src/managers/JobManager.js";
+import PurchasedServerManager from "/src/managers/PurchasedServerManager.js";
+import * as HackUtils from "/src/util/HackUtils.js";
+import { Heuristics } from "/src/util/Heuristics.js";
 
 export async function main(ns: NS) {
 
@@ -26,11 +26,10 @@ async function initialize(ns: NS) {
 
     ServerAPI.startServerManager(ns);
 
+    ProgramAPI.startProgramManager(ns);
+
     const purchasedServerManager: PurchasedServerManager = PurchasedServerManager.getInstance(ns);
     await purchasedServerManager.start(ns);
-
-    const programManager: ProgramManager = ProgramManager.getInstance(ns);
-    await programManager.startCheckingLoop(ns);
 
     const jobManager: JobManager = JobManager.getInstance();
     await jobManager.startManagingLoop(ns);
@@ -47,7 +46,7 @@ async function hackLoop(ns: NS) {
 
     let potentialTargets: HackableServer[] = await ServerAPI.getTargetableServers(ns);
 
-    await ServerAPI.rootAllServers(ns);
+    await ProgramAPI.rootAllServers(ns);
 
     // Then evaluate the potential targets afterwards
     await Promise.all(potentialTargets.map(async (target) => {
@@ -75,5 +74,8 @@ async function hackLoop(ns: NS) {
 }
 
 function isInitialized(ns: NS): boolean {
-    return (ServerAPI.isServerManagerRunning(ns));
+    return (
+        ServerAPI.isServerManagerRunning(ns) &&
+        ProgramAPI.isProgramManagerRunning(ns)
+    );
 }

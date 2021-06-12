@@ -1,4 +1,3 @@
-import * as ProgramManager from "/src/managers/ProgramManager.js";
 import * as ServerManagerUtils from "/src/util/ServerManagerUtils.js";
 import * as ServerUtils from "/src/util/ServerUtils.js";
 export async function getServerMap(ns) {
@@ -18,7 +17,7 @@ export async function getTargetableServers(ns) {
         .filter(server => ServerUtils.isHackableServer(server));
     servers = servers
         .filter(server => server.isHackable(ns))
-        .filter(server => ProgramManager.isRooted(ns, server) || ProgramManager.canRoot(ns, server))
+        .filter(server => server.isRooted(ns))
         .filter(server => server.staticHackingProperties.maxMoney > 0);
     return servers;
 }
@@ -26,7 +25,7 @@ export async function getTargetableServers(ns) {
 // We sort this descending
 export async function getHackingServers(ns) {
     return (await getServerMap(ns))
-        .filter((server) => ProgramManager.isRooted(ns, server))
+        .filter((server) => server.isRooted(ns))
         .sort((a, b) => b.getAvailableRam(ns) - a.getAvailableRam(ns));
 }
 ;
@@ -36,16 +35,6 @@ export async function getPurchasedServers(ns) {
         .filter((server) => ServerUtils.isPurchasedServer(server))
         .sort((a, b) => a.getAvailableRam(ns) - b.getAvailableRam(ns));
 }
-export async function rootAllServers(ns) {
-    const serverMap = await getServerMap(ns);
-    // Root all servers 
-    await Promise.all(serverMap.map(async (server) => {
-        if (!ProgramManager.isRooted(ns, server) && ProgramManager.canRoot(ns, server)) {
-            await ProgramManager.root(ns, server);
-        }
-    }));
-}
-;
 export function startServerManager(ns) {
     ns.exec('/src/managers/ServerManager.js', ns.getHostname());
 }

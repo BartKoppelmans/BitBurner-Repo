@@ -49,6 +49,9 @@ export default class Server {
         return total - used;
     }
 
+    public isRooted(ns: NS): boolean {
+        return ns.hasRootAccess(this.host);
+    }
 
     public toJSON() {
         return {

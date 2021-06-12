@@ -1,10 +1,10 @@
-import Server from '/src/classes/Server.js';
 import HackableServer from '/src/classes/HackableServer.js';
-import PurchasedServer from '/src/classes/PurchasedServer.js';
 import HomeServer from "/src/classes/HomeServer.js";
+import PurchasedServer from '/src/classes/PurchasedServer.js';
+import Server from '/src/classes/Server.js';
+import { ServerType } from "/src/interfaces/ServerInterfaces.js";
 import { CONSTANT } from "/src/lib/constants.js";
 import * as ServerUtils from "/src/util/ServerUtils.js";
-import { ServerType } from "/src/interfaces/ServerInterfaces.js";
 export function spider(ns, id, nodeName, parent) {
     let tempServerMap = [];
     let queue = ns.scan(nodeName);

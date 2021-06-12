@@ -1,12 +1,12 @@
 import type { BitBurner as NS } from "Bitburner";
+import * as ServerAPI from "/src/api/ServerAPI.js";
 import HackableServer from "/src/classes/HackableServer.js";
 import Job from "/src/classes/Job.js";
 import Server from "/src/classes/Server.js";
 import { CONSTANT } from "/src/lib/constants.js";
 import { Tools } from "/src/tools/Tools.js";
-import * as ToolUtils from "/src/util/ToolUtils.js";
 import * as ServerHackUtils from "/src/util/ServerHackUtils.js";
-import * as ServerAPI from "/src/api/ServerAPI.js";
+import * as ToolUtils from "/src/util/ToolUtils.js";
 
 export async function computeMaxCycles(ns: NS, cycleCost: number, allowSpread: boolean = true): Promise<number> {
 

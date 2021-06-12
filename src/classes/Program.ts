@@ -13,6 +13,7 @@ export class Program {
     name: string;
     price: number;
     type: ProgramType;
+    isObtained: boolean = false;
 
     constructor(ns: NS, name: string, price: number, type: ProgramType) {
         this.name = name;

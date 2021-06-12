@@ -1,7 +1,7 @@
+import * as ServerAPI from "/src/api/ServerAPI.js";
 import { CONSTANT } from "/src/lib/constants.js";
 import PlayerManager from "/src/managers/PlayerManager.js";
 import * as Utils from "/src/util/Utils.js";
-import * as ServerAPI from "/src/api/ServerAPI.js";
 export default class PurchasedServerManager {
     constructor(ns) {
         this.purchasedServers = [];

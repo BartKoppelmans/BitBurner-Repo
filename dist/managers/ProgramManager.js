@@ -1,10 +1,14 @@
+import * as ServerAPI from "/src/api/ServerAPI.js";
 import { Program, ProgramType } from "/src/classes/Program.js";
 import { CONSTANT } from "/src/lib/constants.js";
+import * as ProgramManagerUtils from "/src/util/ProgramManagerUtils.js";
 import * as ServerUtils from "/src/util/ServerUtils.js";
-import * as ServerAPI from "/src/api/ServerAPI.js";
-export default class ProgramManager {
+class ProgramManager {
     constructor(ns) {
         this.obtainedPrograms = [];
+        this.initialize(ns);
+    }
+    async initialize(ns) {
         this.programs = [
             new Program(ns, "BruteSSH.exe", 500000, ProgramType.Crack),
             new Program(ns, "FTPCrack.exe", 1500000, ProgramType.Crack),
@@ -16,19 +20,23 @@ export default class ProgramManager {
             new Program(ns, "Autolink.exe", 1000000, ProgramType.Util),
         ];
     }
-    static getInstance(ns) {
-        if (!ProgramManager.instance) {
-            ProgramManager.instance = new ProgramManager(ns);
-        }
-        return ProgramManager.instance;
+    async start(ns) {
+        await this.startCheckingLoop(ns);
+        await this.startRootLoop(ns);
+        // TODO: Set the checker for reading the ports on whether an update is requested.
+        // TODO: Set the interval for updating the server map.
     }
     async startCheckingLoop(ns) {
-        this.programCheckInterval = setInterval(this.checkingLoop, CONSTANT.PURCHASE_PROGRAM_LOOP_INTERVAL);
+        this.programCheckInterval = setInterval(this.checkingLoop.bind(this, ns), CONSTANT.PURCHASE_PROGRAM_LOOP_INTERVAL);
         await this.checkingLoop(ns);
     }
-    async startpurchaseLoop(ns) {
-        this.programPurchaseInterval = setInterval(this.purchaseLoop, CONSTANT.PURCHASE_PROGRAM_LOOP_INTERVAL);
+    async startPurchaseLoop(ns) {
+        this.programPurchaseInterval = setInterval(this.purchaseLoop.bind(this, ns), CONSTANT.PURCHASE_PROGRAM_LOOP_INTERVAL);
         await this.purchaseLoop(ns);
+    }
+    async startRootLoop(ns) {
+        this.rootInterval = setInterval(this.rootLoop.bind(this, ns), CONSTANT.ROOT_LOOP_INTERVAL);
+        await this.rootLoop(ns);
     }
     async checkingLoop(ns) {
         const obtainedPrograms = this.programs.filter((program) => program.hasProgram(ns));
@@ -44,10 +52,11 @@ export default class ProgramManager {
         const programsToPurchase = this.programs.filter((program) => !program.hasProgram(ns));
         // We have bought all programs
         if (programsToPurchase.length === 0) {
-            clearInterval(this.programPurchaseInterval);
+            if (this.programPurchaseInterval)
+                clearInterval(this.programPurchaseInterval);
             return;
         }
-        const hasTor = await hasDarkWeb(ns);
+        const hasTor = await ProgramManagerUtils.hasDarkWeb(ns);
         if (!hasTor)
             return;
         let hasUpdated = false;
@@ -56,6 +65,9 @@ export default class ProgramManager {
         });
         if (hasUpdated)
             this.onProgramsUpdated(ns);
+    }
+    async rootLoop(ns) {
+        await this.rootAllServers(ns);
     }
     getNumCrackScripts(ns) {
         return this.programs.filter(program => program.type === ProgramType.Crack && program.hasProgram(ns)).length;
@@ -70,43 +82,46 @@ export default class ProgramManager {
             .sort((a, b) => a.price - b.price)
             .slice(0, ports);
     }
+    canRoot(ns, server) {
+        if (!ServerUtils.isHackableServer(server)) {
+            return false;
+        }
+        const hackableServer = server;
+        return this.getNumCrackScripts(ns) >= hackableServer.staticHackingProperties.ports;
+    }
+    async root(ns, server) {
+        if (server.isRooted(ns)) {
+            throw new Error("Server is already rooted.");
+        }
+        // This also serves as a type check
+        if (!this.canRoot(ns, server)) {
+            throw new Error("Cannot crack the server.");
+        }
+        const hackableServer = server;
+        const crackingScripts = this.getCrackingScripts(ns, hackableServer.staticHackingProperties.ports);
+        crackingScripts.forEach(program => program.run(ns, server));
+        ns.nuke(server.host);
+    }
+    async rootAllServers(ns) {
+        const serverMap = await ServerAPI.getServerMap(ns);
+        // Root all servers 
+        await Promise.all(serverMap.map(async (server) => {
+            if (!server.isRooted(ns) && this.canRoot(ns, server)) {
+                await this.root(ns, server);
+            }
+        }));
+    }
+    ;
     async onProgramsUpdated(ns) {
-        // We can't do this, but 
-        // TODO: Find a solution for that
-        // await ServerUtils.rootAllServers(ns);
+        await this.rootAllServers(ns);
     }
 }
-export async function hasDarkWeb(ns) {
-    const homeServer = await ServerAPI.getServer(ns, CONSTANT.HOME_SERVER_ID);
-    if (homeServer.treeStructure && homeServer.treeStructure.children) {
-        return homeServer.treeStructure.children.some(async (id) => {
-            const server = await ServerAPI.getServer(ns, id);
-            return ServerUtils.isDarkwebServer(server);
-        });
+export async function main(ns) {
+    const instance = new ProgramManager(ns);
+    await instance.initialize(ns);
+    await instance.start(ns);
+    // We just keep sleeping because we have to keep this script running
+    while (true) {
+        await ns.sleep(10 * 1000);
     }
-    else
-        throw new Error("The server map has not been initialized yet.");
-}
-export function isRooted(ns, server) {
-    return ns.hasRootAccess(server.host);
-}
-export function canRoot(ns, server) {
-    if (!ServerUtils.isHackableServer(server)) {
-        return false;
-    }
-    const hackableServer = server;
-    return ProgramManager.getInstance(ns).getNumCrackScripts(ns) >= hackableServer.staticHackingProperties.ports;
-}
-export async function root(ns, server) {
-    if (isRooted(ns, server)) {
-        throw new Error("Server is already rooted.");
-    }
-    // This also serves as a type check
-    if (!canRoot(ns, server)) {
-        throw new Error("Cannot crack the server.");
-    }
-    const hackableServer = server;
-    const crackingScripts = ProgramManager.getInstance(ns).getCrackingScripts(ns, hackableServer.staticHackingProperties.ports);
-    crackingScripts.forEach(program => program.run(ns, server));
-    ns.nuke(server.host);
 }

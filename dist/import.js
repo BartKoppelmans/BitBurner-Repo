@@ -2,6 +2,7 @@ import { CONSTANT } from '/src/lib/constants.js';
 const files = [
     'Bitburner.t.js',
     'import.js',
+    'api/ProgramAPI.js',
     'api/ServerAPI.js',
     'classes/BatchJob.js',
     'classes/HackableServer.js',
@@ -29,7 +30,7 @@ const files = [
     'util/HackUtils.js',
     'util/Heuristics.js',
     'util/JobUtils.js',
-    'util/ProgramUtils.js',
+    'util/ProgramManagerUtils.js',
     'util/PurchasedServerUtils.js',
     'util/ServerHackUtils.js',
     'util/ServerManagerUtils.js',

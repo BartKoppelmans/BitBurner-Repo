@@ -1,12 +1,12 @@
 import HackableServer from "/src/classes/HackableServer.js";
+import HomeServer from "/src/classes/HomeServer.js";
+import PurchasedServer from "/src/classes/PurchasedServer.js";
 import Server from "/src/classes/Server.js";
 import { CONSTANT } from "/src/lib/constants.js";
 import * as JobUtils from "/src/util/JobUtils.js";
+import * as ServerUtils from "/src/util/ServerUtils.js";
 import * as ToolUtils from "/src/util/ToolUtils.js";
 import * as Utils from "/src/util/Utils.js";
-import * as ServerUtils from "/src/util/ServerUtils.js";
-import HomeServer from "/src/classes/HomeServer.js";
-import PurchasedServer from "/src/classes/PurchasedServer.js";
 let jobIdCounter = 0;
 export default class Job {
     constructor(ns, job) {

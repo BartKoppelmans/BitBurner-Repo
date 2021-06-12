@@ -1,4 +1,5 @@
 import type { BitBurner as NS, Port, PortHandle } from "Bitburner";
+import * as ServerAPI from "/src/api/ServerAPI.js";
 import HackableServer from "/src/classes/HackableServer.js";
 import Job from "/src/classes/Job.js";
 import Server from "/src/classes/Server.js";
@@ -7,7 +8,6 @@ import { Tools } from "/src/tools/Tools.js";
 import * as ServerHackUtils from "/src/util/ServerHackUtils.js";
 import * as ToolUtils from "/src/util/ToolUtils.js";
 import * as Utils from "/src/util/Utils.js";
-import * as ServerAPI from "/src/api/ServerAPI.js";
 
 export async function computeThreadsNeeded(ns: NS, tool: Tools, server: HackableServer): Promise<number> {
     switch (tool) {

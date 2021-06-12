@@ -2,7 +2,6 @@ import type { BitBurner as NS } from "Bitburner";
 import HackableServer from '/src/classes/HackableServer.js';
 import PurchasedServer from '/src/classes/PurchasedServer.js';
 import Server from '/src/classes/Server.js';
-import * as ProgramManager from "/src/managers/ProgramManager.js";
 import * as ServerManagerUtils from "/src/util/ServerManagerUtils.js";
 import * as ServerUtils from "/src/util/ServerUtils.js";
 
@@ -29,7 +28,7 @@ export async function getTargetableServers(ns: NS): Promise<HackableServer[]> {
 
     servers = servers
         .filter(server => server.isHackable(ns))
-        .filter(server => ProgramManager.isRooted(ns, server) || ProgramManager.canRoot(ns, server))
+        .filter(server => server.isRooted(ns))
         .filter(server => server.staticHackingProperties.maxMoney > 0);
 
     return servers;
@@ -38,7 +37,7 @@ export async function getTargetableServers(ns: NS): Promise<HackableServer[]> {
 // We sort this descending
 export async function getHackingServers(ns: NS): Promise<Server[]> {
     return (await getServerMap(ns))
-        .filter((server: Server) => ProgramManager.isRooted(ns, server))
+        .filter((server: Server) => server.isRooted(ns))
         .sort((a, b) => b.getAvailableRam(ns) - a.getAvailableRam(ns));
 };
 
@@ -48,17 +47,6 @@ export async function getPurchasedServers(ns: NS): Promise<PurchasedServer[]> {
         .filter((server: Server) => ServerUtils.isPurchasedServer(server))
         .sort((a, b) => a.getAvailableRam(ns) - b.getAvailableRam(ns));
 }
-
-export async function rootAllServers(ns: NS): Promise<void> {
-    const serverMap: Server[] = await getServerMap(ns);
-
-    // Root all servers 
-    await Promise.all(serverMap.map(async (server) => {
-        if (!ProgramManager.isRooted(ns, server) && ProgramManager.canRoot(ns, server)) {
-            await ProgramManager.root(ns, server);
-        }
-    }));
-};
 
 export function startServerManager(ns: NS): void {
     ns.exec('/src/managers/ServerManager.js', ns.getHostname());

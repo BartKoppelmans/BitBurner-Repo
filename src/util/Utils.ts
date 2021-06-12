@@ -1,5 +1,3 @@
-
-
 export function tprintColored(text: string, printDate: boolean = false, color: string = "var(--my-font-color)") {
     let terminalInput = document.getElementById("terminal-input");
     let rowElement = document.createElement("tr");
