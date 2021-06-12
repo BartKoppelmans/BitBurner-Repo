@@ -8,7 +8,6 @@ export var ProgramType;
 })(ProgramType || (ProgramType = {}));
 export class Program {
     constructor(ns, name, price, type) {
-        this.isObtained = false;
         this.name = name;
         this.price = price;
         this.type = type;

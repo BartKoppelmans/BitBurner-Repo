@@ -56,7 +56,7 @@ export const CONSTANT = {
      * Hacking manager constants
      */
     // TODO: Change this back to 20 after early game.
-    MAX_TARGET_COUNT: 5,
+    MAX_TARGET_COUNT: 20,
     HACK_LOOP_DELAY: 1000,
     ALLOW_THREAD_SPREADING: true,
     SERVER_UTILIZATION_THRESHOLD: 0.7,

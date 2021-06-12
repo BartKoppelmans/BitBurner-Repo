@@ -1,0 +1,32 @@
+import * as ServerAPI from "/src/api/ServerAPI.js";
+import { CONSTANT } from "/src/lib/constants.js";
+import PlayerManager from "/src/managers/PlayerManager.js";
+export function computeMaxRamPossible(ns, numServers) {
+    // We want to start at 8 gigabytes, cause otherwise it's not worth it
+    let exponent = CONSTANT.MIN_PURCHASED_SERVER_RAM_EXPONENT - 1;
+    for (exponent; exponent <= CONSTANT.MAX_PURCHASED_SERVER_RAM_EXPONENT; exponent++) {
+        const cost = Math.pow(2, exponent + 1) * CONSTANT.PURCHASED_SERVER_COST_PER_RAM;
+        const totalCost = cost * numServers;
+        // Stop if we can't afford a next upgrade
+        if (!canAfford(ns, totalCost)) {
+            break;
+        }
+    }
+    return Math.pow(2, exponent);
+}
+export function canAfford(ns, cost) {
+    const playerManager = PlayerManager.getInstance(ns);
+    const money = playerManager.getMoney(ns) * CONSTANT.PURCHASED_SERVER_ALLOWANCE_PERCENTAGE;
+    return cost <= money;
+}
+export async function shouldUpgrade(ns) {
+    const utilization = await determineUtilization(ns);
+    return (utilization < CONSTANT.SERVER_UTILIZATION_THRESHOLD);
+}
+export async function determineUtilization(ns) {
+    const serverMap = await ServerAPI.getHackingServers(ns);
+    // The number of RAM used
+    const available = serverMap.reduce((utilized, server) => utilized + Math.floor(ns.getServerRam(server.host)[1]), 0);
+    const total = serverMap.reduce((utilized, server) => utilized + Math.ceil(ns.getServerRam(server.host)[0]), 0);
+    return ((total - available) / total);
+}

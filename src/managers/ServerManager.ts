@@ -62,11 +62,6 @@ export async function main(ns: NS) {
 
     // We just keep sleeping because we have to keep this script running
     while (true) {
-
-
-        // Just for debugging now
-        ServerManagerUtils.readServerMap(ns);
-
         await ns.sleep(10 * 1000);
     }
 

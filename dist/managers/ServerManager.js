@@ -41,8 +41,6 @@ export async function main(ns) {
     await instance.start(ns);
     // We just keep sleeping because we have to keep this script running
     while (true) {
-        // Just for debugging now
-        ServerManagerUtils.readServerMap(ns);
         await ns.sleep(10 * 1000);
     }
     // TODO: Cancel all the intervals when the script is killed

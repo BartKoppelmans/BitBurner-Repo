@@ -1,48 +1,34 @@
 import type { BitBurner as NS } from "Bitburner";
 import * as ServerAPI from "/src/api/ServerAPI.js";
 import PurchasedServer from "/src/classes/PurchasedServer.js";
-import Server from "/src/classes/Server.js";
 import { CONSTANT } from "/src/lib/constants.js";
-import PlayerManager from "/src/managers/PlayerManager.js";
+import * as PurchasedServerManagerUtils from "/src/util/PurchasedServerManagerUtils.js";
 import * as Utils from "/src/util/Utils.js";
 
-export default class PurchasedServerManager {
-    private static instance: PurchasedServerManager;
+class PurchasedServerManager {
 
     private purchasedServers: PurchasedServer[] = [];
 
     private purchaseLoopInterval?: ReturnType<typeof setInterval>;
     private upgradeLoopInterval?: ReturnType<typeof setInterval>;
 
+    public constructor(ns: NS) { }
 
-    private constructor(ns: NS) {
-        this.updateServerMap(ns);
-    }
-
-    public static getInstance(ns: NS): PurchasedServerManager {
-        if (!PurchasedServerManager.instance) {
-            PurchasedServerManager.instance = new PurchasedServerManager(ns);
-        }
-
-        return PurchasedServerManager.instance;
-    }
-
-    public async updateServerMap(ns: NS) {
+    private async updateServerMap(ns: NS) {
         await ServerAPI.requestUpdate(ns);
         this.purchasedServers = await ServerAPI.getPurchasedServers(ns);
     }
 
     // Main entry point
     public async start(ns: NS) {
-
-        Utils.tprintColored(`Starting the PurchasedServerManager`, true, CONSTANT.COLOR_INFORMATION);
+        // Utils.tprintColored(`Starting the PurchasedServerManager`, true, CONSTANT.COLOR_INFORMATION);
 
         await this.updateServerMap(ns);
 
         if (this.purchasedServers.length < CONSTANT.MAX_PURCHASED_SERVERS) {
-            this.startPurchaseServerLoop(ns);
+            await this.startPurchaseServerLoop(ns);
         } else {
-            this.startUpgradeLoop(ns);
+            await this.startUpgradeLoop(ns);
         }
     }
 
@@ -50,7 +36,7 @@ export default class PurchasedServerManager {
 
     private async startPurchaseServerLoop(ns: NS) {
         this.purchaseLoopInterval = setInterval(this.purchaseServerLoop.bind(this, ns), CONSTANT.PURCHASE_PURCHASED_SERVER_LOOP_INTERVAL);
-        this.purchaseServerLoop(ns);
+        await this.purchaseServerLoop(ns);
     }
 
     // This tries to buy the highest number of servers at the same time, 
@@ -65,10 +51,10 @@ export default class PurchasedServerManager {
             return;
         }
 
-        if (!(await this.shouldUpgrade(ns))) return;
+        if (!(await PurchasedServerManagerUtils.shouldUpgrade(ns))) return;
 
         const numServersLeft: number = CONSTANT.MAX_PURCHASED_SERVERS - this.purchasedServers.length;
-        const ram: number = this.computeMaxRamPossible(ns, numServersLeft);
+        const ram: number = PurchasedServerManagerUtils.computeMaxRamPossible(ns, numServersLeft);
 
 
         for (let i = 0; i < numServersLeft; i++) {
@@ -81,7 +67,7 @@ export default class PurchasedServerManager {
         }
 
         if (updateNeeded) {
-            this.updateServerMap(ns);
+            await this.updateServerMap(ns);
             if (this.purchasedServers.length === CONSTANT.MAX_PURCHASED_SERVERS) {
                 this.startUpgradeLoop(ns);
             }
@@ -107,23 +93,25 @@ export default class PurchasedServerManager {
             clearInterval(this.purchaseLoopInterval);
         }
         this.upgradeLoopInterval = setInterval(this.upgradeLoop.bind(this, ns), CONSTANT.UPGRADE_PURCHASED_SERVER_LOOP_INTERVAL);
-        this.upgradeLoop(ns);
+        await this.upgradeLoop(ns);
     }
 
     private async upgradeLoop(ns: NS) {
-        this.updateServerMap(ns);
+        await this.updateServerMap(ns);
+
+        if (!(await PurchasedServerManagerUtils.shouldUpgrade(ns))) return;
+
+
+        const maxRam = PurchasedServerManagerUtils.computeMaxRamPossible(ns, this.purchasedServers.length);
+        let updateNeeded: boolean = false;
 
         for (const server of this.purchasedServers) {
-
-            if (!(await this.shouldUpgrade(ns))) break;
-
-            const maxRam = this.computeMaxRamPossible(ns, 1);
             if (maxRam > server.ram) {
-                const updateNeeded = await this.upgradeServer(ns, server, maxRam);
-
-                if (updateNeeded) this.updateServerMap(ns);
+                updateNeeded = updateNeeded && await this.upgradeServer(ns, server, maxRam);
             } else break;
         }
+
+        if (updateNeeded) await this.updateServerMap(ns);
     }
 
     private async upgradeServer(ns: NS, server: PurchasedServer, ram: number): Promise<boolean> {
@@ -154,46 +142,15 @@ export default class PurchasedServerManager {
         return !!boughtServer;
     }
 
+}
 
-    // Util thingies -----------------------------------------------
-    private computeMaxRamPossible(ns: NS, numServers: number): number {
+export async function main(ns: NS) {
+    const instance: PurchasedServerManager = new PurchasedServerManager(ns);
 
-        // We want to start at 8 gigabytes, cause otherwise it's not worth it
-        let exponent: number = CONSTANT.MIN_PURCHASED_SERVER_RAM_EXPONENT - 1;
+    await instance.start(ns);
 
-        for (exponent; exponent <= CONSTANT.MAX_PURCHASED_SERVER_RAM_EXPONENT; exponent++) {
-
-            const cost: number = Math.pow(2, exponent + 1) * CONSTANT.PURCHASED_SERVER_COST_PER_RAM;
-            const totalCost: number = cost * numServers;
-
-            // Stop if we can't afford a next upgrade
-            if (!this.canAfford(ns, totalCost)) {
-                break;
-            }
-        }
-
-        return Math.pow(2, exponent);
-    }
-
-    private canAfford(ns: NS, cost: number): boolean {
-        const playerManager: PlayerManager = PlayerManager.getInstance(ns);
-        const money: number = playerManager.getMoney(ns) * CONSTANT.PURCHASED_SERVER_ALLOWANCE_PERCENTAGE;
-
-        return cost <= money;
-    }
-
-    private async shouldUpgrade(ns: NS): Promise<boolean> {
-        const utilization: number = await this.determineUtilization(ns);
-        return (utilization < CONSTANT.SERVER_UTILIZATION_THRESHOLD);
-    }
-
-    private async determineUtilization(ns: NS): Promise<number> {
-        const serverMap: Server[] = await ServerAPI.getHackingServers(ns);
-
-        // The number of RAM used
-        const available: number = serverMap.reduce((utilized, server) => utilized + Math.floor(ns.getServerRam(server.host)[1]), 0);
-        const total: number = serverMap.reduce((utilized, server) => utilized + Math.ceil(ns.getServerRam(server.host)[0]), 0);
-
-        return ((total - available) / total);
+    // We just keep sleeping because we have to keep this script running
+    while (true) {
+        await ns.sleep(10 * 1000);
     }
 }

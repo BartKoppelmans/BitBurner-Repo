@@ -22,7 +22,7 @@ export async function getServer(ns: NS, id: number): Promise<Server> {
     return server;
 }
 
-export async function getTargetableServers(ns: NS): Promise<HackableServer[]> {
+export async function getTargetServers(ns: NS): Promise<HackableServer[]> {
     let servers: HackableServer[] = (await getServerMap(ns))
         .filter(server => ServerUtils.isHackableServer(server)) as HackableServer[];
 

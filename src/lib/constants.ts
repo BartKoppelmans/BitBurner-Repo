@@ -85,7 +85,7 @@ export const CONSTANT = {
      */
 
     // TODO: Change this back to 20 after early game.
-    MAX_TARGET_COUNT: 5,
+    MAX_TARGET_COUNT: 20,
 
     HACK_LOOP_DELAY: 1000,
 

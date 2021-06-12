@@ -12,7 +12,7 @@ export async function getServer(ns, id) {
         throw new Error("Could not find that server.");
     return server;
 }
-export async function getTargetableServers(ns) {
+export async function getTargetServers(ns) {
     let servers = (await getServerMap(ns))
         .filter(server => ServerUtils.isHackableServer(server));
     servers = servers

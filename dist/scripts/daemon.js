@@ -1,8 +1,8 @@
 import * as ProgramAPI from "/src/api/ProgramAPI.js";
+import * as PurchasedServerAPI from "/src/api/PurchasedServerAPI.js";
 import * as ServerAPI from "/src/api/ServerAPI.js";
 import { CONSTANT } from "/src/lib/constants.js";
 import JobManager from "/src/managers/JobManager.js";
-import PurchasedServerManager from "/src/managers/PurchasedServerManager.js";
 import * as HackUtils from "/src/util/HackUtils.js";
 import { Heuristics } from "/src/util/Heuristics.js";
 export async function main(ns) {
@@ -18,8 +18,7 @@ export async function main(ns) {
 async function initialize(ns) {
     ServerAPI.startServerManager(ns);
     ProgramAPI.startProgramManager(ns);
-    const purchasedServerManager = PurchasedServerManager.getInstance(ns);
-    await purchasedServerManager.start(ns);
+    PurchasedServerAPI.startPurchasedServerManager(ns);
     const jobManager = JobManager.getInstance();
     await jobManager.startManagingLoop(ns);
     while (!isInitialized(ns)) {
@@ -29,8 +28,7 @@ async function initialize(ns) {
 }
 async function hackLoop(ns) {
     const jobManager = JobManager.getInstance();
-    let potentialTargets = await ServerAPI.getTargetableServers(ns);
-    await ProgramAPI.rootAllServers(ns);
+    let potentialTargets = await ServerAPI.getTargetServers(ns);
     // Then evaluate the potential targets afterwards
     await Promise.all(potentialTargets.map(async (target) => {
         target.evaluate(ns, Heuristics.MainHeuristic);
@@ -51,5 +49,6 @@ async function hackLoop(ns) {
 }
 function isInitialized(ns) {
     return (ServerAPI.isServerManagerRunning(ns) &&
-        ProgramAPI.isProgramManagerRunning(ns));
+        ProgramAPI.isProgramManagerRunning(ns) &&
+        PurchasedServerAPI.isPurchasedServerManagerRunning(ns));
 }
