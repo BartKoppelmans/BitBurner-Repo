@@ -97,9 +97,11 @@ class PurchasedServerManager {
     }
 
     private async upgradeLoop(ns: NS) {
+
         await this.updateServerMap(ns);
 
-        if (!(await PurchasedServerManagerUtils.shouldUpgrade(ns))) return;
+        const shouldUpgrade: boolean = await PurchasedServerManagerUtils.shouldUpgrade(ns);
+        if (!shouldUpgrade) return;
 
         let updateNeeded: boolean = false;
 

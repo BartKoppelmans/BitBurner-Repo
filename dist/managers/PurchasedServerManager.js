@@ -73,7 +73,8 @@ class PurchasedServerManager {
     }
     async upgradeLoop(ns) {
         await this.updateServerMap(ns);
-        if (!(await PurchasedServerManagerUtils.shouldUpgrade(ns)))
+        const shouldUpgrade = await PurchasedServerManagerUtils.shouldUpgrade(ns);
+        if (!shouldUpgrade)
             return;
         let updateNeeded = false;
         const clusters = PurchasedServerManagerUtils.clusterServers(this.purchasedServers);
