@@ -40,7 +40,7 @@ class PurchasedServerManager {
         const numServersLeft = CONSTANT.MAX_PURCHASED_SERVERS - this.purchasedServers.length;
         const ram = PurchasedServerManagerUtils.computeMaxRamPossible(ns, numServersLeft);
         for (let i = 0; i < numServersLeft; i++) {
-            const id = CONSTANT.MAX_PURCHASED_SERVERS - numServersLeft + i;
+            const id = this.purchasedServers.length + i + ((this.purchasedServers.length === 0) ? 0 : 1);
             const isSuccessful = this.purchaseNewServer(ns, ram, id);
             if (!isSuccessful) {
                 throw new Error("We could not successfully purchase the server");
