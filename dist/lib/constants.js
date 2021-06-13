@@ -3,7 +3,7 @@ export const CONSTANT = {
      * General constants
      */
     MILLISECONDS_IN_SECOND: 1000,
-    SMALL_DELAY: 50,
+    SMALL_DELAY: 20,
     DEBUG_HACKING: false,
     COLOR_WARNING: "red",
     COLOR_HACKING: "white",

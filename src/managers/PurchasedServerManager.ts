@@ -107,8 +107,7 @@ class PurchasedServerManager {
         for await (const server of this.purchasedServers) {
             const maxRam = PurchasedServerManagerUtils.computeMaxRamPossible(ns);
 
-            // Here we make sure that we don't do single upgrades. Only upgrade when we really get a lot of benefit out of it.
-            if (maxRam > 2 * server.ram) {
+            if (maxRam > server.ram) {
                 const isSuccessful: boolean = await this.upgradeServer(ns, server, maxRam);
                 updateNeeded = updateNeeded || isSuccessful;
             } else break;
