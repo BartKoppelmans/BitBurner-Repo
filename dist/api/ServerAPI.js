@@ -1,3 +1,4 @@
+import { CONSTANT } from "/src/lib/constants.js";
 import * as ServerManagerUtils from "/src/util/ServerManagerUtils.js";
 import * as ServerUtils from "/src/util/ServerUtils.js";
 export async function getServerMap(ns) {
@@ -36,8 +37,11 @@ export async function getPurchasedServers(ns) {
         .filter((server) => ServerUtils.isPurchasedServer(server))
         .sort((a, b) => a.getAvailableRam(ns) - b.getAvailableRam(ns));
 }
-export function startServerManager(ns) {
+export async function startServerManager(ns) {
     ns.exec('/src/managers/ServerManager.js', ns.getHostname());
+    while (!isServerManagerRunning(ns)) {
+        await ns.sleep(CONSTANT.SMALL_DELAY);
+    }
 }
 export function isServerManagerRunning(ns) {
     return ns.isRunning('/src/managers/ServerManager.js', ns.getHostname());

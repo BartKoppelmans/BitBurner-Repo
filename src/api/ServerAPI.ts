@@ -2,6 +2,7 @@ import type { BitBurner as NS } from "Bitburner";
 import HackableServer from '/src/classes/HackableServer.js';
 import PurchasedServer from '/src/classes/PurchasedServer.js';
 import Server from '/src/classes/Server.js';
+import { CONSTANT } from "/src/lib/constants.js";
 import * as ServerManagerUtils from "/src/util/ServerManagerUtils.js";
 import * as ServerUtils from "/src/util/ServerUtils.js";
 
@@ -49,8 +50,12 @@ export async function getPurchasedServers(ns: NS): Promise<PurchasedServer[]> {
         .sort((a, b) => a.getAvailableRam(ns) - b.getAvailableRam(ns));
 }
 
-export function startServerManager(ns: NS): void {
+export async function startServerManager(ns: NS): Promise<void> {
     ns.exec('/src/managers/ServerManager.js', ns.getHostname());
+
+    while (!isServerManagerRunning(ns)) {
+        await ns.sleep(CONSTANT.SMALL_DELAY);
+    }
 }
 
 export function isServerManagerRunning(ns: NS): boolean {

@@ -1,7 +1,12 @@
 import type { BitBurner as NS } from "Bitburner";
+import { CONSTANT } from "/src/lib/constants.js";
 
-export function startPurchasedServerManager(ns: NS): void {
+export async function startPurchasedServerManager(ns: NS): Promise<void> {
     ns.exec('/src/managers/PurchasedServerManager.js', ns.getHostname());
+
+    while (!isPurchasedServerManagerRunning(ns)) {
+        await ns.sleep(CONSTANT.SMALL_DELAY);
+    }
 }
 
 export function isPurchasedServerManagerRunning(ns: NS): boolean {

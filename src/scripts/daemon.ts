@@ -24,19 +24,19 @@ export async function main(ns: NS) {
 
 async function initialize(ns: NS) {
 
-    ServerAPI.startServerManager(ns);
+    // NOTE: We wait until this is resolved before going on
+    await ServerAPI.startServerManager(ns);
 
-    ProgramAPI.startProgramManager(ns);
-
-    PurchasedServerAPI.startPurchasedServerManager(ns);
-
+    // TODO: Turn this into a distributed manager
     const jobManager: JobManager = JobManager.getInstance();
     await jobManager.startManagingLoop(ns);
 
-    while (!isInitialized(ns)) {
-        ns.tprint("waiting for inits");
-        await ns.sleep(1000);
-    }
+    // These will run in parallel
+    const programManagerReady: Promise<void> = ProgramAPI.startProgramManager(ns);
+    const purchasedServerManagerReady: Promise<void> = PurchasedServerAPI.startPurchasedServerManager(ns);
+
+    // Wait until everything is initialized
+    await Promise.allSettled([programManagerReady, purchasedServerManagerReady]);
 }
 
 async function hackLoop(ns: NS) {
@@ -67,12 +67,4 @@ async function hackLoop(ns: NS) {
 
     // Wait a second!
     await ns.sleep(CONSTANT.HACK_LOOP_DELAY);
-}
-
-function isInitialized(ns: NS): boolean {
-    return (
-        ServerAPI.isServerManagerRunning(ns) &&
-        ProgramAPI.isProgramManagerRunning(ns) &&
-        PurchasedServerAPI.isPurchasedServerManagerRunning(ns)
-    );
 }
