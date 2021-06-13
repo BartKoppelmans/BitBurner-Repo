@@ -1,7 +1,7 @@
 import * as ServerAPI from "/src/api/ServerAPI.js";
 import { CONSTANT } from "/src/lib/constants.js";
 import PlayerManager from "/src/managers/PlayerManager.js";
-export function computeMaxRamPossible(ns, numServers) {
+export function computeMaxRamPossible(ns, numServers = 1) {
     // We want to start at 8 gigabytes, cause otherwise it's not worth it
     let exponent = CONSTANT.MIN_PURCHASED_SERVER_RAM_EXPONENT - 1;
     for (exponent; exponent <= CONSTANT.MAX_PURCHASED_SERVER_RAM_EXPONENT; exponent++) {

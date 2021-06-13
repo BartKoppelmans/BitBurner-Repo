@@ -77,17 +77,15 @@ class PurchasedServerManager {
         if (!shouldUpgrade)
             return;
         let updateNeeded = false;
-        const clusters = PurchasedServerManagerUtils.clusterServers(this.purchasedServers);
-        for await (const cluster of clusters) {
-            const maxRam = PurchasedServerManagerUtils.computeMaxRamPossible(ns, cluster.length);
-            for await (const server of this.purchasedServers) {
-                if (maxRam > server.ram) {
-                    const isSuccessful = await this.upgradeServer(ns, server, maxRam);
-                    updateNeeded = updateNeeded || isSuccessful;
-                }
-                else
-                    break;
+        for await (const server of this.purchasedServers) {
+            const maxRam = PurchasedServerManagerUtils.computeMaxRamPossible(ns);
+            // Here we make sure that we don't do single upgrades. Only upgrade when we really get a lot of benefit out of it.
+            if (maxRam > 2 * server.ram) {
+                const isSuccessful = await this.upgradeServer(ns, server, maxRam);
+                updateNeeded = updateNeeded || isSuccessful;
             }
+            else
+                break;
         }
         if (updateNeeded)
             await this.updateServerMap(ns);
