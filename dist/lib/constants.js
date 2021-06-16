@@ -32,12 +32,17 @@ export const CONSTANT = {
     DESIRED_HOME_FREE_RAM: 64,
     PURCHASE_PROGRAM_LOOP_INTERVAL: 5 * 60 * 1000,
     CHECK_PROGRAM_LOOP_INTERVAL: 60 * 1000,
-    ROOT_LOOP_INTERVAL: 5 * 60 * 1000,
+    ROOT_LOOP_INTERVAL: 60 * 1000,
+    SERVER_MESSAGE_INTERVAL: 100,
+    MAX_SERVER_MESSAGE_WAIT: 10000,
     JOB_MANAGING_LOOP_INTERVAL: 100,
     JOB_PORT_NUMBERS: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+    CONTROL_FLOW_PORT: 20,
+    SERVER_MANAGER_REQUEST_PORT: 18,
+    SERVER_MANAGER_RESPONSE_PORT: 19,
     PURCHASE_PURCHASED_SERVER_LOOP_INTERVAL: 60 * 1000,
-    // Check if we can upgrade servers every 10 minutes
-    UPGRADE_PURCHASED_SERVER_LOOP_INTERVAL: 5 * 60 * 1000,
+    // Check if we can upgrade servers every 3 minutes
+    UPGRADE_PURCHASED_SERVER_LOOP_INTERVAL: 3 * 60 * 1000,
     MIN_PURCHASED_SERVER_RAM_EXPONENT: 7,
     MAX_PURCHASED_SERVER_RAM_EXPONENT: 20,
     PURCHASED_SERVER_ALLOWANCE_PERCENTAGE: 0.01,
@@ -49,7 +54,7 @@ export const CONSTANT = {
     * Server manager constants
     */
     // The time after which we force a rebuild of the server map (now 10 minutes)
-    SERVER_MAP_REBUILD_TIME: 10 * 60 * 1000,
+    SERVER_MAP_REBUILD_INTERVAL: 60 * 1000,
     // The oldest date possible, to ensure a rebuild of the server map
     EPOCH_DATE: new Date(1970, 0, 1, 0, 0, 0, 0),
     /*

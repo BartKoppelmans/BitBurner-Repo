@@ -1,41 +1,65 @@
+import { ServerResponseCode } from "/src/interfaces/PortMessageInterfaces.js";
 import { CONSTANT } from "/src/lib/constants.js";
 import * as ServerManagerUtils from "/src/util/ServerManagerUtils.js";
-let intervals = [];
 class ServerManager {
     constructor(ns) {
         this.serverMap = [];
         this.lastUpdated = CONSTANT.EPOCH_DATE;
     }
     async initialize(ns) {
-        // TODO: Clear the current map
-        this.serverMap = this.buildServerMap(ns);
+        ServerManagerUtils.clearServerMap(ns);
+        await this.updateServerMap(ns);
     }
     async start(ns) {
-        // TODO: Set the checker for reading the ports on whether an update is requested.
-        // TODO: Set the interval for updating the server map.
-    }
-    buildServerMap(ns) {
-        const hostName = ns.getHostname();
-        if (hostName !== 'home') {
-            throw new Error('Run the script from home');
+        if (this.updateLoopInterval) {
+            clearInterval(this.updateLoopInterval);
         }
-        let serverMap = ServerManagerUtils.spider(ns, 0, hostName);
+        if (this.requestLoopInterval) {
+            clearInterval(this.requestLoopInterval);
+        }
+        this.updateLoopInterval = setInterval(this.updateServerMap.bind(this, ns), CONSTANT.SERVER_MAP_REBUILD_INTERVAL);
+        this.requestLoopInterval = setInterval(this.requestLoop.bind(this, ns), CONSTANT.SERVER_MESSAGE_INTERVAL);
+        // TODO: Set the checker for reading the ports on whether an update is requested.
+    }
+    async requestLoop(ns) {
+        const requestPortHandle = ns.getPortHandle(CONSTANT.SERVER_MANAGER_REQUEST_PORT);
+        if (requestPortHandle.empty())
+            return;
+        await this.onUpdateRequested(ns);
+    }
+    async updateServerMap(ns) {
+        let serverMap = ServerManagerUtils.spider(ns, CONSTANT.HOME_SERVER_ID, CONSTANT.HOME_SERVER_HOST);
         this.serverMap = serverMap;
         this.lastUpdated = new Date();
         this.onUpdate(ns);
-        return serverMap;
     }
     onUpdate(ns) {
-        ServerManagerUtils.writeServerMap(ns, this.serverMap);
+        ServerManagerUtils.writeServerMap(ns, this.serverMap, this.lastUpdated);
     }
-    onUpdateRequested(ns) {
-        this.serverMap = this.buildServerMap(ns);
-    }
-    needsUpdate(ns) {
-        return (Date.now() - this.lastUpdated.getTime()) > CONSTANT.SERVER_MAP_REBUILD_TIME;
+    async onUpdateRequested(ns) {
+        const requestPortHandle = ns.getPortHandle(CONSTANT.SERVER_MANAGER_REQUEST_PORT);
+        const responsePortHandle = ns.getPortHandle(CONSTANT.SERVER_MANAGER_RESPONSE_PORT);
+        let responses = [];
+        for (const requestString of requestPortHandle.data) {
+            const request = JSON.parse(requestString.toString());
+            const response = {
+                code: ServerResponseCode.SUCCESSFUL,
+                type: "Response",
+                request
+            };
+            responses.push(response);
+        }
+        requestPortHandle.clear();
+        await this.updateServerMap(ns);
+        for (const response of responses) {
+            responsePortHandle.write(JSON.stringify(response));
+        }
     }
 }
 export async function main(ns) {
+    if (ns.getHostname() !== 'home') {
+        throw new Error('Run the script from home');
+    }
     const instance = new ServerManager(ns);
     await instance.initialize(ns);
     await instance.start(ns);

@@ -26,3 +26,7 @@ export function formatTime(date: Date = new Date()): string {
     return `[${date.toLocaleTimeString()}]`;
 }
 
+export function generateHash(): string {
+    return [...Array(32)].map(() => Math.random().toString(36)[2]).join('');
+}
+

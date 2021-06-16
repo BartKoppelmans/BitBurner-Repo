@@ -77,7 +77,9 @@ export function clearServerMap(ns) {
 }
 export function readServerMap(ns) {
     const serverMapString = ns.read(CONSTANT.SERVER_MAP_FILENAME).toString();
-    const map = JSON.parse(serverMapString);
+    const serverMapFile = JSON.parse(serverMapString);
+    // TODO: Check whether the lastUpdated property was within a certain threshold (like a minute or so)
+    const map = serverMapFile.serverMap;
     let serverMap = [];
     for (const server of map) {
         serverMap.push(parseServerObject(ns, server));
@@ -98,7 +100,8 @@ function parseServerObject(ns, serverObject) {
             throw new Error("Server type not recognized.");
     }
 }
-export function writeServerMap(ns, serverMap) {
-    ns.write(CONSTANT.SERVER_MAP_FILENAME, JSON.stringify(serverMap), 'w');
+export function writeServerMap(ns, serverMap, lastUpdated) {
+    const serverObject = { lastUpdated, serverMap };
+    ns.write(CONSTANT.SERVER_MAP_FILENAME, JSON.stringify(serverObject), 'w');
 }
 ;

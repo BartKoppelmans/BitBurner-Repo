@@ -3,7 +3,7 @@ import HackableServer from '/src/classes/HackableServer.js';
 import HomeServer from "/src/classes/HomeServer.js";
 import PurchasedServer from '/src/classes/PurchasedServer.js';
 import Server from '/src/classes/Server.js';
-import { ServerType, TreeStructure } from "/src/interfaces/ServerInterfaces.js";
+import { ServerMapFile, ServerType, TreeStructure } from "/src/interfaces/ServerInterfaces.js";
 import { CONSTANT } from "/src/lib/constants.js";
 import * as ServerUtils from "/src/util/ServerUtils.js";
 
@@ -93,7 +93,12 @@ export function clearServerMap(ns: NS): void {
 
 export function readServerMap(ns: NS): Server[] {
     const serverMapString: string = ns.read(CONSTANT.SERVER_MAP_FILENAME).toString();
-    const map: any[] = JSON.parse(serverMapString);
+
+    const serverMapFile: ServerMapFile = JSON.parse(serverMapString);
+
+    // TODO: Check whether the lastUpdated property was within a certain threshold (like a minute or so)
+
+    const map: any[] = serverMapFile.serverMap;
 
     let serverMap: Server[] = [];
 
@@ -119,6 +124,9 @@ function parseServerObject(ns: NS, serverObject: any): Server {
     }
 }
 
-export function writeServerMap(ns: NS, serverMap: Server[]): void {
-    ns.write(CONSTANT.SERVER_MAP_FILENAME, JSON.stringify(serverMap), 'w');
+export function writeServerMap(ns: NS, serverMap: Server[], lastUpdated: Date): void {
+
+    const serverObject: ServerMapFile = { lastUpdated, serverMap };
+
+    ns.write(CONSTANT.SERVER_MAP_FILENAME, JSON.stringify(serverObject), 'w');
 };

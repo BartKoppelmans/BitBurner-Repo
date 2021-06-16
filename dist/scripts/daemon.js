@@ -10,8 +10,12 @@ export async function main(ns) {
     if (hostName !== "home") {
         throw new Error("Execute daemon script from home.");
     }
+    // TODO: Make a decision on whether we start the to-be-made early hacking scripts, 
+    // or whether we want to start hacking using our main hacker
     await initialize(ns);
     while (true) {
+        // TODO: Do this through an interval or set timeout
+        // That way, we can always cancel the interval before quitting the script
         await hackLoop(ns);
     }
 }

@@ -1,12 +1,46 @@
+import { ServerRequestCode, ServerResponseCode } from "/src/interfaces/PortMessageInterfaces.js";
 import { CONSTANT } from "/src/lib/constants.js";
 import * as ServerManagerUtils from "/src/util/ServerManagerUtils.js";
 import * as ServerUtils from "/src/util/ServerUtils.js";
+import * as Utils from "/src/util/Utils.js";
 export async function getServerMap(ns) {
     return ServerManagerUtils.readServerMap(ns);
 }
 export async function requestUpdate(ns) {
-    // TODO: Request the update and then wait until it is executed
+    const requestPortHandle = ns.getPortHandle(CONSTANT.SERVER_MANAGER_REQUEST_PORT);
+    if (requestPortHandle.full()) {
+        throw new Error("Too much server requests sent already.");
+    }
+    const id = Utils.generateHash();
+    const request = {
+        type: "Request",
+        code: ServerRequestCode.UPDATE,
+        id
+    };
+    requestPortHandle.write(JSON.stringify(request));
+    const response = await getResponse(ns, id);
+    if (response.code === ServerResponseCode.FAILURE)
+        throw new Error("We could not update the server map.");
     return;
+}
+async function getResponse(ns, id) {
+    const responsePortHandle = ns.getPortHandle(CONSTANT.SERVER_MANAGER_RESPONSE_PORT);
+    let hasResponse = false;
+    let iteration = 0;
+    const maxIterations = CONSTANT.MAX_SERVER_MESSAGE_WAIT / CONSTANT.SERVER_MESSAGE_INTERVAL;
+    while (!hasResponse || (iteration > maxIterations)) {
+        const index = responsePortHandle.data.findIndex((resString) => {
+            const res = JSON.parse(resString.toString());
+            return (res.request.id === id);
+        });
+        if (index === -1)
+            await ns.sleep(CONSTANT.SERVER_MESSAGE_INTERVAL);
+        else {
+            return JSON.parse(responsePortHandle.data.splice(index, 1).toString());
+        }
+        iteration++;
+    }
+    throw new Error("We have been waiting for too long.");
 }
 export async function getServer(ns, id) {
     const server = (await getServerMap(ns)).find(server => server.id === id);
@@ -35,6 +69,7 @@ export async function getHackingServers(ns) {
 export async function getPurchasedServers(ns) {
     return (await getServerMap(ns))
         .filter((server) => ServerUtils.isPurchasedServer(server))
+        // TODO: Sort by name
         .sort((a, b) => a.getAvailableRam(ns) - b.getAvailableRam(ns));
 }
 export async function startServerManager(ns) {

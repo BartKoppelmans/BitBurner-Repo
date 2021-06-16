@@ -19,3 +19,6 @@ export function tprintColored(text, printDate = false, color = "var(--my-font-co
 export function formatTime(date = new Date()) {
     return `[${date.toLocaleTimeString()}]`;
 }
+export function generateHash() {
+    return [...Array(32)].map(() => Math.random().toString(36)[2]).join('');
+}

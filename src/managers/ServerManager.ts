@@ -1,60 +1,94 @@
 import type { BitBurner as NS } from "Bitburner";
 import Server from '/src/classes/Server.js';
+import { ServerRequest, ServerResponse, ServerResponseCode } from "/src/interfaces/PortMessageInterfaces.js";
 import { CONSTANT } from "/src/lib/constants.js";
 import * as ServerManagerUtils from "/src/util/ServerManagerUtils.js";
-
-let intervals: ReturnType<typeof setInterval>[] = [];
 
 class ServerManager {
 
     private serverMap: Server[] = [];
     private lastUpdated: Date = CONSTANT.EPOCH_DATE;
 
+    private updateLoopInterval?: ReturnType<typeof setInterval>;
+    private requestLoopInterval?: ReturnType<typeof setInterval>;
+
     public constructor(ns: NS) { }
 
     public async initialize(ns: NS): Promise<void> {
-        // TODO: Clear the current map
+        ServerManagerUtils.clearServerMap(ns);
 
-        this.serverMap = this.buildServerMap(ns);
+        await this.updateServerMap(ns);
     }
 
     public async start(ns: NS): Promise<void> {
 
-        // TODO: Set the checker for reading the ports on whether an update is requested.
-
-        // TODO: Set the interval for updating the server map.
-    }
-
-    private buildServerMap(ns: NS): Server[] {
-        const hostName = ns.getHostname();
-        if (hostName !== 'home') {
-            throw new Error('Run the script from home');
+        if (this.updateLoopInterval) {
+            clearInterval(this.updateLoopInterval);
         }
 
-        let serverMap: Server[] = ServerManagerUtils.spider(ns, 0, hostName);
+        if (this.requestLoopInterval) {
+            clearInterval(this.requestLoopInterval);
+        }
+
+        this.updateLoopInterval = setInterval(this.updateServerMap.bind(this, ns), CONSTANT.SERVER_MAP_REBUILD_INTERVAL);
+        this.requestLoopInterval = setInterval(this.requestLoop.bind(this, ns), CONSTANT.SERVER_MESSAGE_INTERVAL);
+
+        // TODO: Set the checker for reading the ports on whether an update is requested.
+
+    }
+
+    private async requestLoop(ns: NS): Promise<void> {
+
+        const requestPortHandle = ns.getPortHandle(CONSTANT.SERVER_MANAGER_REQUEST_PORT);
+        if (requestPortHandle.empty()) return;
+
+        await this.onUpdateRequested(ns);
+    }
+
+    private async updateServerMap(ns: NS): Promise<void> {
+        let serverMap: Server[] = ServerManagerUtils.spider(ns, CONSTANT.HOME_SERVER_ID, CONSTANT.HOME_SERVER_HOST);
 
         this.serverMap = serverMap;
         this.lastUpdated = new Date();
 
         this.onUpdate(ns);
-
-        return serverMap;
     }
 
     private onUpdate(ns: NS): void {
-        ServerManagerUtils.writeServerMap(ns, this.serverMap);
+        ServerManagerUtils.writeServerMap(ns, this.serverMap, this.lastUpdated);
     }
 
-    private onUpdateRequested(ns: NS) {
-        this.serverMap = this.buildServerMap(ns);
-    }
+    private async onUpdateRequested(ns: NS) {
+        const requestPortHandle = ns.getPortHandle(CONSTANT.SERVER_MANAGER_REQUEST_PORT);
+        const responsePortHandle = ns.getPortHandle(CONSTANT.SERVER_MANAGER_RESPONSE_PORT);
 
-    private needsUpdate(ns: NS): boolean {
-        return (Date.now() - this.lastUpdated.getTime()) > CONSTANT.SERVER_MAP_REBUILD_TIME;
+        let responses: ServerResponse[] = [];
+
+        for (const requestString of requestPortHandle.data) {
+            const request: ServerRequest = JSON.parse(requestString.toString());
+            const response: ServerResponse = {
+                code: ServerResponseCode.SUCCESSFUL,
+                type: "Response",
+                request
+            };
+            responses.push(response);
+        }
+
+        requestPortHandle.clear();
+
+        await this.updateServerMap(ns);
+
+        for (const response of responses) {
+            responsePortHandle.write(JSON.stringify(response));
+        }
     }
 }
 
 export async function main(ns: NS) {
+    if (ns.getHostname() !== 'home') {
+        throw new Error('Run the script from home');
+    }
+
     const instance: ServerManager = new ServerManager(ns);
 
     await instance.initialize(ns);

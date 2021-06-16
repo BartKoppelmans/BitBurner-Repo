@@ -1,6 +1,6 @@
 import type { BitBurner as NS } from "Bitburner";
 import * as ServerAPI from "/src/api/ServerAPI.js";
-import PurchasedServer from "/src/classes/PurchasedServer";
+import PurchasedServer from "/src/classes/PurchasedServer.js";
 import Server from "/src/classes/Server.js";
 import { CONSTANT } from "/src/lib/constants.js";
 import PlayerManager from "/src/managers/PlayerManager.js";

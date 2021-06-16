@@ -13,6 +13,7 @@ const files = [
     'classes/PurchasedServer.js',
     'classes/Server.js',
     'interfaces/JobInterfaces.js',
+    'interfaces/PortMessageInterfaces.js',
     'interfaces/ServerInterfaces.js',
     'lib/constants.js',
     'managers/JobManager.js',

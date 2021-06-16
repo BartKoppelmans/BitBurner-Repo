@@ -1,3 +1,5 @@
+import Server from "/src/classes/Server.js";
+
 // This only contains the id's 
 export interface TreeStructure {
     connections?: number[];
@@ -32,4 +34,9 @@ export interface DynamicHackingProperties {
     weakenTime: number;
     growTime: number;
     hackTime: number;
+}
+
+export interface ServerMapFile {
+    lastUpdated: Date;
+    serverMap: Server[];
 }
