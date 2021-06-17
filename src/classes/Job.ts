@@ -79,7 +79,7 @@ export default class Job {
             ns.exec.apply(null, this.createArgumentArray(ns, args));
         }
 
-        // TODO: Communicate the job
+        // TODO: Move this to job api
         await JobUtils.communicateJob(ns, this);
     }
 

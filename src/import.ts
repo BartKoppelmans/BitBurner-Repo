@@ -4,6 +4,7 @@ import { CONSTANT } from '/src/lib/constants.js';
 const files: string[] = [
     'Bitburner.t.js',
     'import.js',
+    'api/JobAPI.js',
     'api/ProgramAPI.js',
     'api/PurchasedServerAPI.js',
     'api/ServerAPI.js',
@@ -47,6 +48,8 @@ const files: string[] = [
  * This will import all files listed in importFiles.
  */
 export async function main(ns: NS) {
+
+    // TODO: First import the import script and run it seperately
 
     let filesImported = await importFiles(ns);
     ns.tprint('='.repeat(20));

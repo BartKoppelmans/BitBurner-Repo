@@ -12,7 +12,7 @@ class PurchasedServerManager {
     private purchaseLoopInterval?: ReturnType<typeof setInterval>;
     private upgradeLoopInterval?: ReturnType<typeof setInterval>;
 
-    public constructor(ns: NS) { }
+    public constructor() { }
 
     private async updateServerMap(ns: NS) {
         await ServerAPI.requestUpdate(ns);
@@ -57,7 +57,7 @@ class PurchasedServerManager {
         const ram: number = PurchasedServerManagerUtils.computeMaxRamPossible(ns, numServersLeft);
 
         for (let i = 0; i < numServersLeft; i++) {
-            const id: number = this.purchasedServers.length + i + ((this.purchasedServers.length === 0) ? 0 : 1);
+            const id: number = this.purchasedServers.length + i;
 
             const isSuccessful: boolean = this.purchaseNewServer(ns, ram, id);
             if (!isSuccessful) {
@@ -147,7 +147,7 @@ class PurchasedServerManager {
 }
 
 export async function main(ns: NS) {
-    const instance: PurchasedServerManager = new PurchasedServerManager(ns);
+    const instance: PurchasedServerManager = new PurchasedServerManager();
 
     await instance.start(ns);
 

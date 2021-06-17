@@ -4,9 +4,9 @@ import { CONSTANT } from "/src/lib/constants.js";
 import * as ProgramManagerUtils from "/src/util/ProgramManagerUtils.js";
 import * as ServerUtils from "/src/util/ServerUtils.js";
 class ProgramManager {
-    constructor(ns) {
+    constructor() {
+        this.programs = [];
         this.obtainedPrograms = [];
-        this.initialize(ns);
     }
     async initialize(ns) {
         this.programs = [
@@ -117,7 +117,7 @@ class ProgramManager {
     }
 }
 export async function main(ns) {
-    const instance = new ProgramManager(ns);
+    const instance = new ProgramManager();
     await instance.initialize(ns);
     await instance.start(ns);
     // We just keep sleeping because we have to keep this script running

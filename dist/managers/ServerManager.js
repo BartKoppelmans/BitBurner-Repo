@@ -1,22 +1,21 @@
-import { ServerResponseCode } from "/src/interfaces/PortMessageInterfaces.js";
 import { CONSTANT } from "/src/lib/constants.js";
 import * as ServerManagerUtils from "/src/util/ServerManagerUtils.js";
 class ServerManager {
-    constructor(ns) {
+    constructor() {
         this.serverMap = [];
         this.lastUpdated = CONSTANT.EPOCH_DATE;
     }
     async initialize(ns) {
         ServerManagerUtils.clearServerMap(ns);
-        await this.updateServerMap(ns);
-    }
-    async start(ns) {
         if (this.updateLoopInterval) {
             clearInterval(this.updateLoopInterval);
         }
         if (this.requestLoopInterval) {
             clearInterval(this.requestLoopInterval);
         }
+        await this.updateServerMap(ns);
+    }
+    async start(ns) {
         this.updateLoopInterval = setInterval(this.updateServerMap.bind(this, ns), CONSTANT.SERVER_MAP_REBUILD_INTERVAL);
         this.requestLoopInterval = setInterval(this.requestLoop.bind(this, ns), CONSTANT.SERVER_MESSAGE_INTERVAL);
         // TODO: Set the checker for reading the ports on whether an update is requested.
@@ -43,14 +42,13 @@ class ServerManager {
         for (const requestString of requestPortHandle.data) {
             const request = JSON.parse(requestString.toString());
             const response = {
-                code: ServerResponseCode.SUCCESSFUL,
                 type: "Response",
                 request
             };
             responses.push(response);
         }
-        requestPortHandle.clear();
         await this.updateServerMap(ns);
+        requestPortHandle.clear();
         for (const response of responses) {
             responsePortHandle.write(JSON.stringify(response));
         }
@@ -60,7 +58,7 @@ export async function main(ns) {
     if (ns.getHostname() !== 'home') {
         throw new Error('Run the script from home');
     }
-    const instance = new ServerManager(ns);
+    const instance = new ServerManager();
     await instance.initialize(ns);
     await instance.start(ns);
     // We just keep sleeping because we have to keep this script running

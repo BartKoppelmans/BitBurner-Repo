@@ -3,7 +3,7 @@ import { CONSTANT } from "/src/lib/constants.js";
 import * as PurchasedServerManagerUtils from "/src/util/PurchasedServerManagerUtils.js";
 import * as Utils from "/src/util/Utils.js";
 class PurchasedServerManager {
-    constructor(ns) {
+    constructor() {
         this.purchasedServers = [];
     }
     async updateServerMap(ns) {
@@ -40,7 +40,7 @@ class PurchasedServerManager {
         const numServersLeft = CONSTANT.MAX_PURCHASED_SERVERS - this.purchasedServers.length;
         const ram = PurchasedServerManagerUtils.computeMaxRamPossible(ns, numServersLeft);
         for (let i = 0; i < numServersLeft; i++) {
-            const id = this.purchasedServers.length + i + ((this.purchasedServers.length === 0) ? 0 : 1);
+            const id = this.purchasedServers.length + i;
             const isSuccessful = this.purchaseNewServer(ns, ram, id);
             if (!isSuccessful) {
                 throw new Error("We could not successfully purchase the server");
@@ -109,7 +109,7 @@ class PurchasedServerManager {
     }
 }
 export async function main(ns) {
-    const instance = new PurchasedServerManager(ns);
+    const instance = new PurchasedServerManager();
     await instance.start(ns);
     // We just keep sleeping because we have to keep this script running
     while (true) {

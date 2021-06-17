@@ -1,6 +1,6 @@
 import type { BitBurner as NS } from "Bitburner";
 import Server from '/src/classes/Server.js';
-import { ServerRequest, ServerResponse, ServerResponseCode } from "/src/interfaces/PortMessageInterfaces.js";
+import { ServerRequest, ServerResponse } from "/src/interfaces/PortMessageInterfaces.js";
 import { CONSTANT } from "/src/lib/constants.js";
 import * as ServerManagerUtils from "/src/util/ServerManagerUtils.js";
 
@@ -12,15 +12,10 @@ class ServerManager {
     private updateLoopInterval?: ReturnType<typeof setInterval>;
     private requestLoopInterval?: ReturnType<typeof setInterval>;
 
-    public constructor(ns: NS) { }
+    public constructor() { }
 
     public async initialize(ns: NS): Promise<void> {
         ServerManagerUtils.clearServerMap(ns);
-
-        await this.updateServerMap(ns);
-    }
-
-    public async start(ns: NS): Promise<void> {
 
         if (this.updateLoopInterval) {
             clearInterval(this.updateLoopInterval);
@@ -30,6 +25,10 @@ class ServerManager {
             clearInterval(this.requestLoopInterval);
         }
 
+        await this.updateServerMap(ns);
+    }
+
+    public async start(ns: NS): Promise<void> {
         this.updateLoopInterval = setInterval(this.updateServerMap.bind(this, ns), CONSTANT.SERVER_MAP_REBUILD_INTERVAL);
         this.requestLoopInterval = setInterval(this.requestLoop.bind(this, ns), CONSTANT.SERVER_MESSAGE_INTERVAL);
 
@@ -67,16 +66,15 @@ class ServerManager {
         for (const requestString of requestPortHandle.data) {
             const request: ServerRequest = JSON.parse(requestString.toString());
             const response: ServerResponse = {
-                code: ServerResponseCode.SUCCESSFUL,
                 type: "Response",
                 request
             };
             responses.push(response);
         }
 
-        requestPortHandle.clear();
-
         await this.updateServerMap(ns);
+
+        requestPortHandle.clear();
 
         for (const response of responses) {
             responsePortHandle.write(JSON.stringify(response));
@@ -89,7 +87,7 @@ export async function main(ns: NS) {
         throw new Error('Run the script from home');
     }
 
-    const instance: ServerManager = new ServerManager(ns);
+    const instance: ServerManager = new ServerManager();
 
     await instance.initialize(ns);
     await instance.start(ns);

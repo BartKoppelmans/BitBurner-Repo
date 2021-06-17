@@ -1,4 +1,4 @@
-import { ServerRequestCode, ServerResponseCode } from "/src/interfaces/PortMessageInterfaces.js";
+import { ServerRequestCode } from "/src/interfaces/PortMessageInterfaces.js";
 import { CONSTANT } from "/src/lib/constants.js";
 import * as ServerManagerUtils from "/src/util/ServerManagerUtils.js";
 import * as ServerUtils from "/src/util/ServerUtils.js";
@@ -19,8 +19,6 @@ export async function requestUpdate(ns) {
     };
     requestPortHandle.write(JSON.stringify(request));
     const response = await getResponse(ns, id);
-    if (response.code === ServerResponseCode.FAILURE)
-        throw new Error("We could not update the server map.");
     return;
 }
 async function getResponse(ns, id) {
@@ -77,6 +75,8 @@ export async function startServerManager(ns) {
     while (!isServerManagerRunning(ns)) {
         await ns.sleep(CONSTANT.SMALL_DELAY);
     }
+    // NOTE: This is out of the ordinary, but it is important to update before continuing
+    await requestUpdate(ns);
 }
 export function isServerManagerRunning(ns) {
     return ns.isRunning('/src/managers/ServerManager.js', ns.getHostname());

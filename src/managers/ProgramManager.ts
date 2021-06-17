@@ -8,16 +8,14 @@ import * as ProgramManagerUtils from "/src/util/ProgramManagerUtils.js";
 import * as ServerUtils from "/src/util/ServerUtils.js";
 
 class ProgramManager {
-    private programs!: Program[];
+    private programs: Program[] = [];
     private obtainedPrograms: Program[] = [];
 
     private programPurchaseInterval?: ReturnType<typeof setInterval>;
     private programCheckInterval?: ReturnType<typeof setInterval>;
     private rootInterval?: ReturnType<typeof setInterval>;
 
-    public constructor(ns: NS) {
-        this.initialize(ns);
-    }
+    public constructor() { }
 
     public async initialize(ns: NS): Promise<void> {
         this.programs = [
@@ -156,7 +154,7 @@ class ProgramManager {
 }
 
 export async function main(ns: NS) {
-    const instance: ProgramManager = new ProgramManager(ns);
+    const instance: ProgramManager = new ProgramManager();
 
     await instance.initialize(ns);
     await instance.start(ns);

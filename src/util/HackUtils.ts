@@ -3,10 +3,10 @@ import BatchJob from "/src/classes/BatchJob.js";
 import HackableServer from "/src/classes/HackableServer.js";
 import Job from "/src/classes/Job.js";
 import { CONSTANT } from "/src/lib/constants.js";
-import JobManager from "/src/managers/JobManager.js";
 import PlayerManager from "/src/managers/PlayerManager.js";
 import { Tools } from "/src/tools/Tools.js";
 import * as BatchJobUtils from "/src/util/BatchJobUtils.js";
+import * as JobAPI from "/src/api/JobAPI.js";
 import * as JobUtils from "/src/util/JobUtils.js";
 import * as ServerHackUtils from "/src/util/ServerHackUtils.js";
 import * as ToolUtils from "/src/util/ToolUtils.js";
@@ -15,15 +15,13 @@ import * as Utils from "/src/util/Utils.js";
 // Return true when we have found a new target
 export async function hack(ns: NS, server: HackableServer): Promise<void> {
 
-    const jobManager: JobManager = JobManager.getInstance();
-
     // If it is prepping, leave it
-    if (jobManager.isPrepping(ns, server)) return;
+    if (await JobAPI.isPrepping(ns, server)) return;
 
     // From here on it is a target
 
     // It is a target, but is currently resting
-    if (jobManager.isTargetting(ns, server)) return;
+    if (await JobAPI.isTargetting(ns, server)) return;
 
     // Prep the server
     await prepServer(ns, server);
@@ -32,7 +30,7 @@ export async function hack(ns: NS, server: HackableServer): Promise<void> {
     if (server.dynamicHackingProperties.securityLevel > server.staticHackingProperties.minSecurityLevel || server.dynamicHackingProperties.money < server.staticHackingProperties.maxMoney) return;
 
     // If it is prepping, leave it
-    if (jobManager.isPrepping(ns, server)) return;
+    if (await JobAPI.isPrepping(ns, server)) return;
 
     // TODO: Optimize performance metrics
 
@@ -43,10 +41,8 @@ export async function hack(ns: NS, server: HackableServer): Promise<void> {
 
 export async function prepServer(ns: NS, target: HackableServer): Promise<void> {
 
-    const jobManager: JobManager = JobManager.getInstance();
-
     // We should not prep anymore once we are targetting
-    if (jobManager.isTargetting(ns, target)) return;
+    if (await JobAPI.isTargetting(ns, target)) return;
 
     // If the server is optimal, we are done I guess
     if (target.dynamicHackingProperties.securityLevel === target.staticHackingProperties.minSecurityLevel && target.dynamicHackingProperties.money === target.staticHackingProperties.maxMoney) return;

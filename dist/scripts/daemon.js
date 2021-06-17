@@ -1,8 +1,8 @@
 import * as ProgramAPI from "/src/api/ProgramAPI.js";
 import * as PurchasedServerAPI from "/src/api/PurchasedServerAPI.js";
 import * as ServerAPI from "/src/api/ServerAPI.js";
+import * as JobAPI from "/src/api/JobAPI.js";
 import { CONSTANT } from "/src/lib/constants.js";
-import JobManager from "/src/managers/JobManager.js";
 import * as HackUtils from "/src/util/HackUtils.js";
 import { Heuristics } from "/src/util/Heuristics.js";
 export async function main(ns) {
@@ -22,17 +22,14 @@ export async function main(ns) {
 async function initialize(ns) {
     // NOTE: We wait until this is resolved before going on
     await ServerAPI.startServerManager(ns);
-    // TODO: Turn this into a distributed manager
-    const jobManager = JobManager.getInstance();
-    await jobManager.startManagingLoop(ns);
     // These will run in parallel
+    const jobManagerReady = JobAPI.startJobManager(ns);
     const programManagerReady = ProgramAPI.startProgramManager(ns);
     const purchasedServerManagerReady = PurchasedServerAPI.startPurchasedServerManager(ns);
     // Wait until everything is initialized
-    await Promise.allSettled([programManagerReady, purchasedServerManagerReady]);
+    await Promise.allSettled([jobManagerReady, programManagerReady, purchasedServerManagerReady]);
 }
 async function hackLoop(ns) {
-    const jobManager = JobManager.getInstance();
     let potentialTargets = await ServerAPI.getTargetServers(ns);
     // Then evaluate the potential targets afterwards
     await Promise.all(potentialTargets.map(async (target) => {
@@ -43,7 +40,7 @@ async function hackLoop(ns) {
         throw new Error("No potential targets found.");
     }
     for await (let target of potentialTargets) {
-        let currentTargets = jobManager.getCurrentTargets();
+        let currentTargets = await JobAPI.getCurrentTargets(ns);
         // Can't have too many targets at the same time
         if (currentTargets.length >= CONSTANT.MAX_TARGET_COUNT)
             break;

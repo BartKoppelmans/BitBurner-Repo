@@ -52,7 +52,7 @@ export default class Job {
             const args = { ...commonArgs, threads, server };
             ns.exec.apply(null, this.createArgumentArray(ns, args));
         }
-        // TODO: Communicate the job
+        // TODO: Move this to job api
         await JobUtils.communicateJob(ns, this);
     }
     async onStart(ns) {

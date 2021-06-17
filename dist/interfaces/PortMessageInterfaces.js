@@ -3,8 +3,9 @@ export var ServerRequestCode;
 (function (ServerRequestCode) {
     ServerRequestCode[ServerRequestCode["UPDATE"] = 0] = "UPDATE";
 })(ServerRequestCode || (ServerRequestCode = {}));
-export var ServerResponseCode;
-(function (ServerResponseCode) {
-    ServerResponseCode[ServerResponseCode["SUCCESSFUL"] = 0] = "SUCCESSFUL";
-    ServerResponseCode[ServerResponseCode["FAILURE"] = 1] = "FAILURE";
-})(ServerResponseCode || (ServerResponseCode = {}));
+export var JobRequestCode;
+(function (JobRequestCode) {
+    JobRequestCode[JobRequestCode["CURRENT_TARGETS"] = 0] = "CURRENT_TARGETS";
+    JobRequestCode[JobRequestCode["IS_PREPPING"] = 1] = "IS_PREPPING";
+    JobRequestCode[JobRequestCode["IS_TARGETTING"] = 2] = "IS_TARGETTING";
+})(JobRequestCode || (JobRequestCode = {}));

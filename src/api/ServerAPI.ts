@@ -2,7 +2,7 @@ import type { BitBurner as NS } from "Bitburner";
 import HackableServer from '/src/classes/HackableServer.js';
 import PurchasedServer from '/src/classes/PurchasedServer.js';
 import Server from '/src/classes/Server.js';
-import { ServerRequest, ServerRequestCode, ServerResponse, ServerResponseCode } from "/src/interfaces/PortMessageInterfaces.js";
+import { ServerRequest, ServerRequestCode, ServerResponse } from "/src/interfaces/PortMessageInterfaces.js";
 import { CONSTANT } from "/src/lib/constants.js";
 import * as ServerManagerUtils from "/src/util/ServerManagerUtils.js";
 import * as ServerUtils from "/src/util/ServerUtils.js";
@@ -31,8 +31,6 @@ export async function requestUpdate(ns: NS): Promise<void> {
     requestPortHandle.write(JSON.stringify(request));
 
     const response: ServerResponse = await getResponse(ns, id);
-
-    if (response.code === ServerResponseCode.FAILURE) throw new Error("We could not update the server map.");
 
     return;
 }
@@ -104,6 +102,9 @@ export async function startServerManager(ns: NS): Promise<void> {
     while (!isServerManagerRunning(ns)) {
         await ns.sleep(CONSTANT.SMALL_DELAY);
     }
+
+    // NOTE: This is out of the ordinary, but it is important to update before continuing
+    await requestUpdate(ns);
 }
 
 export function isServerManagerRunning(ns: NS): boolean {

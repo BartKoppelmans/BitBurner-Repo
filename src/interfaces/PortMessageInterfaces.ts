@@ -2,8 +2,7 @@
 export type MessageType = "Request" | "Response";
 
 // NOTE: Here we should add all possible message codes
-export type RequestCode = ServerRequestCode;
-export type ResponseCode = ServerResponseCode;
+export type RequestCode = ServerRequestCode | JobRequestCode;
 
 export interface Message {
     type: MessageType;
@@ -15,7 +14,6 @@ export interface Request extends Message {
 }
 
 export interface Response extends Message {
-    code: ResponseCode;
 }
 
 // The implementations ---------------------------------------------------
@@ -24,16 +22,40 @@ export enum ServerRequestCode {
     UPDATE,
 }
 
-export enum ServerResponseCode {
-    SUCCESSFUL,
-    FAILURE
+export enum JobRequestCode {
+    CURRENT_TARGETS,
+    IS_PREPPING,
+    IS_TARGETTING
 }
+
+
+
 
 export interface ServerRequest extends Request {
     code: ServerRequestCode;
 }
 
 export interface ServerResponse extends Response {
-    code: ServerResponseCode;
     request: ServerRequest;
+}
+
+
+
+
+export interface JobRequest extends Request {
+    code: JobRequestCode;
+}
+
+export interface JobActionRequest extends JobRequest {
+    body: string;
+}
+
+export interface JobTargetsResponse extends Response {
+    body: string[];
+    request: JobRequest;
+}
+
+export interface JobActionResponse extends Response {
+    body: boolean;
+    request: JobRequest;
 }
