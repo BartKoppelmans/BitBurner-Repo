@@ -32,7 +32,8 @@ export async function hack(ns: NS, server: HackableServer): Promise<void> {
     // If it is prepping, leave it
     if (await JobAPI.isPrepping(ns, server)) return;
 
-    // TODO: Optimize performance metrics
+    // Make sure that the percentage that we steal is optimal
+    await optimizePerformance(ns, server);
 
     await attackServer(ns, server);
 
@@ -154,4 +155,57 @@ export async function attackServer(ns: NS, target: HackableServer): Promise<void
         jobs,
         start: batchStart
     })).execute(ns);
+}
+
+async function optimizePerformance(ns: NS, target: HackableServer): Promise<void> {
+    let performanceUpdated: boolean = false;
+
+    let adjustment: number = 0.00;
+    do {
+        adjustment = await analyzePerformance(ns, target);
+
+        if (adjustment !== 0.00) {
+            performanceUpdated = true;
+            target.dynamicHackingProperties.percentageToSteal += adjustment;
+        }
+
+        ns.sleep(CONSTANT.SMALL_DELAY);
+    } while (adjustment !== 0.00);
+
+    if (performanceUpdated && CONSTANT.DEBUG_HACKING) {
+        const updatedPercentage: number = (Math.floor(ServerHackUtils.actualPercentageToSteal(ns, target) * 100 * 100) / 100);
+        Utils.tprintColored(`Updated percentage to steal for ${target.host} to ${updatedPercentage}`, true, CONSTANT.COLOR_HACKING);
+    }
+}
+
+async function analyzePerformance(ns: NS, target: HackableServer): Promise<number> {
+
+    const optimalBatchCost: number = BatchJobUtils.getOptimalBatchCost(ns, target);
+    const optimalCycles: number = ServerHackUtils.computeOptimalCycles(ns, target);
+    const maxCycles: number = await BatchJobUtils.computeMaxCycles(ns, optimalBatchCost, true);
+
+    const isMin: boolean = target.dynamicHackingProperties.percentageToSteal <= CONSTANT.MIN_PERCENTAGE_TO_STEAL;
+    const isMax: boolean = target.dynamicHackingProperties.percentageToSteal >= CONSTANT.MAX_PERCENTAGE_TO_STEAL;
+
+    if (maxCycles < optimalCycles && !isMin) return -0.01;
+    else if (maxCycles < optimalCycles && isMin) return 0.00;
+    else if (maxCycles > optimalCycles && isMax) return 0.00;
+    else if (maxCycles > optimalCycles && !isMax) {
+        // Make a comparison
+
+        target.dynamicHackingProperties.percentageToSteal += 0.01;
+        const shouldBeIncreased: boolean = await shouldIncrease(ns, target);
+        target.dynamicHackingProperties.percentageToSteal -= 0.01;
+
+        return ((shouldBeIncreased) ? 0.01 : 0.00);
+    }
+    return 0.00;
+}
+
+async function shouldIncrease(ns: NS, target: HackableServer): Promise<boolean> {
+    const optimalBatchCost: number = BatchJobUtils.getOptimalBatchCost(ns, target);
+    const optimalCycles: number = ServerHackUtils.computeOptimalCycles(ns, target);
+    const maxCycles: number = await BatchJobUtils.computeMaxCycles(ns, optimalBatchCost, true);
+
+    return maxCycles >= optimalCycles;
 }

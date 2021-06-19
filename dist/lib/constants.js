@@ -74,7 +74,9 @@ export const CONSTANT = {
     MAX_GROWTH_RATE: 1.0035,
     // Unadjusted server growth rate, this is higher than actually possible
     UNADJUSTED_GROWTH_RATE: 1.03,
-    HACK_PERCENTAGE: 0.5,
+    DEFAULT_PERCENTAGE_TO_STEAL: 0.5,
+    MIN_PERCENTAGE_TO_STEAL: 0.01,
+    MAX_PERCENTAGE_TO_STEAL: 0.98,
     // Currently set to 12 seconds
     QUEUE_DELAY: 12000,
     CYCLE_DELAY: 3000,

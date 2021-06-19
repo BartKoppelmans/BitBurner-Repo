@@ -1,5 +1,6 @@
 import Server from '/src/classes/Server.js';
 import { ServerType } from "/src/interfaces/ServerInterfaces.js";
+import { CONSTANT } from "/src/lib/constants.js";
 export default class HackableServer extends Server {
     constructor(ns, id, host, treeStructure) {
         super(ns, id, host, treeStructure);
@@ -24,6 +25,10 @@ export default class HackableServer extends Server {
         this.dynamicHackingProperties = this.getDynamicHackingProperties(ns);
     }
     getDynamicHackingProperties(ns) {
+        let percentageToSteal = CONSTANT.DEFAULT_PERCENTAGE_TO_STEAL;
+        if (this.dynamicHackingProperties && this.dynamicHackingProperties.percentageToSteal) {
+            percentageToSteal = this.dynamicHackingProperties.percentageToSteal;
+        }
         return {
             lastUpdated: new Date(),
             securityLevel: ns.getServerSecurityLevel(this.host),
@@ -32,6 +37,7 @@ export default class HackableServer extends Server {
             weakenTime: ns.getWeakenTime(this.host),
             growTime: ns.getGrowTime(this.host),
             hackTime: ns.getHackTime(this.host),
+            percentageToSteal
         };
     }
     // Setter for server Value

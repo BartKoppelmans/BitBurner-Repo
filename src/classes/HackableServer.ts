@@ -1,6 +1,7 @@
 import type { BitBurner as NS } from "Bitburner";
 import Server from '/src/classes/Server.js';
 import { DynamicHackingProperties, ServerType, StaticHackingProperties, TreeStructure } from "/src/interfaces/ServerInterfaces.js";
+import { CONSTANT } from "/src/lib/constants.js";
 import { Heuristics } from "/src/util/Heuristics.js";
 
 export default class HackableServer extends Server {
@@ -38,6 +39,13 @@ export default class HackableServer extends Server {
     }
 
     private getDynamicHackingProperties(ns: NS): DynamicHackingProperties {
+
+        let percentageToSteal: number = CONSTANT.DEFAULT_PERCENTAGE_TO_STEAL;
+
+        if (this.dynamicHackingProperties && this.dynamicHackingProperties.percentageToSteal) {
+            percentageToSteal = this.dynamicHackingProperties.percentageToSteal;
+        }
+
         return {
             lastUpdated: new Date(),
             securityLevel: ns.getServerSecurityLevel(this.host),
@@ -46,6 +54,7 @@ export default class HackableServer extends Server {
             weakenTime: ns.getWeakenTime(this.host),
             growTime: ns.getGrowTime(this.host),
             hackTime: ns.getHackTime(this.host),
+            percentageToSteal
         };
     }
 

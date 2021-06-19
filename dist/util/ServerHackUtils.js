@@ -39,7 +39,7 @@ export function actualPercentageToSteal(ns, target) {
     return hackThreadsNeeded(ns, target) * percentageStolenPerHackThread(ns, target);
 }
 export function hackThreadsNeeded(ns, target) {
-    return Math.floor(CONSTANT.HACK_PERCENTAGE / percentageStolenPerHackThread(ns, target));
+    return Math.floor(target.dynamicHackingProperties.percentageToSteal / percentageStolenPerHackThread(ns, target));
 }
 export function growThreadsNeeded(ns, target) {
     return Math.ceil(cyclesNeededForGrowthCoefficient(ns, target) / serverGrowthPercentage(ns, target));

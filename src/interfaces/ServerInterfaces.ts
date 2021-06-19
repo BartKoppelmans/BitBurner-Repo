@@ -27,6 +27,8 @@ export interface DynamicHackingProperties {
 
     lastUpdated: Date;
 
+    percentageToSteal: number;
+
     securityLevel: number;
     money: number;
     availableRam: number;
