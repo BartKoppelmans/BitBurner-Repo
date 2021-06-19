@@ -56,6 +56,10 @@ class PurchasedServerManager {
         const numServersLeft: number = CONSTANT.MAX_PURCHASED_SERVERS - this.purchasedServers.length;
         const ram: number = PurchasedServerManagerUtils.computeMaxRamPossible(ns, numServersLeft);
 
+        if (!PurchasedServerManagerUtils.canAfford(ns, ram * CONSTANT.PURCHASED_SERVER_COST_PER_RAM * numServersLeft)) {
+            return;
+        }
+
         for (let i = 0; i < numServersLeft; i++) {
             const id: number = this.purchasedServers.length + i;
 
