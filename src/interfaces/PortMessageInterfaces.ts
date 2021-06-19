@@ -2,7 +2,7 @@
 export type MessageType = "Request" | "Response";
 
 // NOTE: Here we should add all possible message codes
-export type RequestCode = ServerRequestCode | JobRequestCode;
+export type RequestCode = ServerRequestCode | JobRequestCode | ControlFlowCode;
 
 export interface Message {
     type: MessageType;
@@ -28,7 +28,10 @@ export enum JobRequestCode {
     IS_TARGETTING
 }
 
-
+export enum ControlFlowCode {
+    KILL_MANAGERS,
+    KILL_DAEMON
+}
 
 
 export interface ServerRequest extends Request {
@@ -40,6 +43,9 @@ export interface ServerResponse extends Response {
 }
 
 
+export interface ControlFlowRequest extends Request {
+    code: ControlFlowCode;
+}
 
 
 export interface JobRequest extends Request {

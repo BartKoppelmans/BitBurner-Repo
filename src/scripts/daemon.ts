@@ -1,13 +1,14 @@
 import type { BitBurner as NS } from "Bitburner";
+import * as ControlFlowAPI from "/src/api/ControlFlowAPI.js";
+import * as JobAPI from "/src/api/JobAPI.js";
 import * as ProgramAPI from "/src/api/ProgramAPI.js";
 import * as PurchasedServerAPI from "/src/api/PurchasedServerAPI.js";
 import * as ServerAPI from "/src/api/ServerAPI.js";
-import * as JobAPI from "/src/api/JobAPI.js";
 import HackableServer from "/src/classes/HackableServer.js";
 import { CONSTANT } from "/src/lib/constants.js";
-import * as Utils from "/src/util/Utils.js";
 import * as HackUtils from "/src/util/HackUtils.js";
 import { Heuristics } from "/src/util/Heuristics.js";
+import * as Utils from "/src/util/Utils.js";
 
 let hackLoopInterval: ReturnType<typeof setInterval>;
 
@@ -54,12 +55,22 @@ async function hackLoop(ns: NS) {
     await ns.sleep(CONSTANT.HACK_LOOP_DELAY);
 }
 
+export async function onDestroy(ns: NS) {
+    clearInterval(hackLoopInterval);
+
+    // TODO: Wait until it is done executing
+
+    Utils.tprintColored("Stopping the daemon", true, CONSTANT.COLOR_INFORMATION);
+}
+
 export async function main(ns: NS) {
 
     const hostName: string = ns.getHostname();
     if (hostName !== "home") {
         throw new Error("Execute daemon script from home.");
     }
+
+    Utils.tprintColored("Starting the daemon", true, CONSTANT.COLOR_INFORMATION);
 
     // TODO: Make a decision on whether we start the to-be-made early hacking scripts, 
     // or whether we want to start hacking using our main hacker
@@ -69,6 +80,13 @@ export async function main(ns: NS) {
     hackLoopInterval = setInterval(hackLoop.bind(null, ns), CONSTANT.HACK_LOOP_DELAY);
 
     while (true) {
-        await ns.sleep(10 * 1000);
+        const shouldKill: boolean = await ControlFlowAPI.hasDaemonKillRequest(ns);
+
+        if (shouldKill) {
+            await onDestroy(ns);
+            ns.exit();
+        }
+
+        await ns.sleep(CONSTANT.CONTROL_FLOW_CHECK_INTERVAL);
     }
 }

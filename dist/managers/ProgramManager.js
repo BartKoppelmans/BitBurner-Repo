@@ -1,9 +1,10 @@
+import * as ControlFlowAPI from "/src/api/ControlFlowAPI.js";
 import * as ServerAPI from "/src/api/ServerAPI.js";
 import { Program, ProgramType } from "/src/classes/Program.js";
 import { CONSTANT } from "/src/lib/constants.js";
-import * as Utils from "/src/util/Utils.js";
 import * as ProgramManagerUtils from "/src/util/ProgramManagerUtils.js";
 import * as ServerUtils from "/src/util/ServerUtils.js";
+import * as Utils from "/src/util/Utils.js";
 class ProgramManager {
     constructor() {
         this.programs = [];
@@ -23,10 +24,21 @@ class ProgramManager {
         ];
     }
     async start(ns) {
+        Utils.tprintColored(`Starting the ProgramManager`, true, CONSTANT.COLOR_INFORMATION);
         await this.startCheckingLoop(ns);
         await this.startRootLoop(ns);
-        // TODO: Set the checker for reading the ports on whether an update is requested.
-        // TODO: Set the interval for updating the server map.
+    }
+    async onDestroy(ns) {
+        if (this.programPurchaseInterval) {
+            clearInterval(this.programPurchaseInterval);
+        }
+        if (this.programCheckInterval) {
+            clearInterval(this.programCheckInterval);
+        }
+        if (this.rootInterval) {
+            clearInterval(this.rootInterval);
+        }
+        Utils.tprintColored(`Stopping the ProgramManager`, true, CONSTANT.COLOR_INFORMATION);
     }
     async startCheckingLoop(ns) {
         this.programCheckInterval = setInterval(this.checkingLoop.bind(this, ns), CONSTANT.PURCHASE_PROGRAM_LOOP_INTERVAL);
@@ -122,8 +134,12 @@ export async function main(ns) {
     const instance = new ProgramManager();
     await instance.initialize(ns);
     await instance.start(ns);
-    // We just keep sleeping because we have to keep this script running
     while (true) {
-        await ns.sleep(10 * 1000);
+        const shouldKill = await ControlFlowAPI.hasManagerKillRequest(ns);
+        if (shouldKill) {
+            await instance.onDestroy(ns);
+            ns.exit();
+        }
+        await ns.sleep(CONSTANT.CONTROL_FLOW_CHECK_INTERVAL);
     }
 }

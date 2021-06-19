@@ -43,7 +43,7 @@ async function getResponse(ns: NS, id: string): Promise<ServerResponse> {
     let iteration: number = 0;
     const maxIterations = CONSTANT.MAX_SERVER_MESSAGE_WAIT / CONSTANT.SERVER_MESSAGE_INTERVAL;
 
-    while (!hasResponse || (iteration > maxIterations)) {
+    while (iteration < maxIterations) {
         const index: number = responsePortHandle.data.findIndex((resString: string | number) => {
             const res: ServerResponse = JSON.parse(resString.toString());
 
@@ -99,7 +99,9 @@ export async function getPurchasedServers(ns: NS): Promise<PurchasedServer[]> {
 export async function startServerManager(ns: NS): Promise<void> {
     if (isServerManagerRunning(ns)) return;
 
-    ns.exec('/src/managers/ServerManager.js', ns.getHostname());
+    // TODO: Check whether there is enough ram available
+
+    ns.exec('/src/managers/ServerManager.js', CONSTANT.HOME_SERVER_HOST);
 
     while (!isServerManagerRunning(ns)) {
         await ns.sleep(CONSTANT.SMALL_DELAY);
@@ -110,5 +112,5 @@ export async function startServerManager(ns: NS): Promise<void> {
 }
 
 export function isServerManagerRunning(ns: NS): boolean {
-    return ns.isRunning('/src/managers/ServerManager.js', ns.getHostname());
+    return ns.isRunning('/src/managers/ServerManager.js', CONSTANT.HOME_SERVER_HOST);
 }

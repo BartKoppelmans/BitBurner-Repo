@@ -26,7 +26,7 @@ async function getResponse(ns, id) {
     let hasResponse = false;
     let iteration = 0;
     const maxIterations = CONSTANT.MAX_SERVER_MESSAGE_WAIT / CONSTANT.SERVER_MESSAGE_INTERVAL;
-    while (!hasResponse || (iteration > maxIterations)) {
+    while (iteration < maxIterations) {
         const index = responsePortHandle.data.findIndex((resString) => {
             const res = JSON.parse(resString.toString());
             return (res.request.id === id);
@@ -73,7 +73,8 @@ export async function getPurchasedServers(ns) {
 export async function startServerManager(ns) {
     if (isServerManagerRunning(ns))
         return;
-    ns.exec('/src/managers/ServerManager.js', ns.getHostname());
+    // TODO: Check whether there is enough ram available
+    ns.exec('/src/managers/ServerManager.js', CONSTANT.HOME_SERVER_HOST);
     while (!isServerManagerRunning(ns)) {
         await ns.sleep(CONSTANT.SMALL_DELAY);
     }
@@ -81,5 +82,5 @@ export async function startServerManager(ns) {
     await requestUpdate(ns);
 }
 export function isServerManagerRunning(ns) {
-    return ns.isRunning('/src/managers/ServerManager.js', ns.getHostname());
+    return ns.isRunning('/src/managers/ServerManager.js', CONSTANT.HOME_SERVER_HOST);
 }

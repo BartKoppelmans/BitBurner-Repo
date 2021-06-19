@@ -1,10 +1,9 @@
 import type { BitBurner as NS, Port, PortHandle } from "Bitburner";
+import * as ControlFlowAPI from "/src/api/ControlFlowAPI.js";
 import Job from "/src/classes/Job.js";
 import { JobActionRequest, JobActionResponse, JobRequest, JobRequestCode, JobTargetsResponse } from "/src/interfaces/PortMessageInterfaces.js";
 import { CONSTANT } from "/src/lib/constants.js";
 import * as Utils from "/src/util/Utils.js";
-
-
 
 export default class JobManager {
 
@@ -34,6 +33,8 @@ export default class JobManager {
     }
 
     public async start(ns: NS): Promise<void> {
+        Utils.tprintColored(`Starting the JobManager`, true, CONSTANT.COLOR_INFORMATION);
+
         const ports: Port[] = [...CONSTANT.JOB_PORT_NUMBERS];
         for (const port of ports) {
             const interval = setInterval(this.managingLoop.bind(this, ns, port), CONSTANT.JOB_MANAGING_LOOP_INTERVAL);
@@ -42,6 +43,24 @@ export default class JobManager {
         }
 
         this.requestLoopInterval = setInterval(this.requestLoop.bind(this, ns), CONSTANT.JOB_REQUEST_LOOP_INTERVAL);
+    }
+
+    public async onDestroy(ns: NS): Promise<void> {
+        this.clearAllPorts(ns);
+
+        if (this.managingLoopIntervals.length > 0) {
+            for (const interval of this.managingLoopIntervals) {
+                clearInterval(interval);
+            }
+
+            this.managingLoopIntervals = [];
+        }
+
+        if (this.requestLoopInterval) {
+            clearInterval(this.requestLoopInterval);
+        }
+
+        Utils.tprintColored(`Stopping the JobManager`, true, CONSTANT.COLOR_INFORMATION);
     }
 
     private async requestLoop(ns: NS): Promise<void> {
@@ -162,8 +181,14 @@ export async function main(ns: NS) {
     await instance.initialize(ns);
     await instance.start(ns);
 
-    // We just keep sleeping because we have to keep this script running
     while (true) {
-        await ns.sleep(10 * 1000);
+        const shouldKill: boolean = await ControlFlowAPI.hasManagerKillRequest(ns);
+
+        if (shouldKill) {
+            await instance.onDestroy(ns);
+            ns.exit();
+        }
+
+        await ns.sleep(CONSTANT.CONTROL_FLOW_CHECK_INTERVAL);
     }
 }

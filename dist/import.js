@@ -2,6 +2,7 @@ import { CONSTANT } from '/src/lib/constants.js';
 const files = [
     'Bitburner.t.js',
     'import.js',
+    'api/ControlFlowAPI.js',
     'api/JobAPI.js',
     'api/ProgramAPI.js',
     'api/PurchasedServerAPI.js',

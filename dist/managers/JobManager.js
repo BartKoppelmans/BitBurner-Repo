@@ -1,3 +1,4 @@
+import * as ControlFlowAPI from "/src/api/ControlFlowAPI.js";
 import Job from "/src/classes/Job.js";
 import { JobRequestCode } from "/src/interfaces/PortMessageInterfaces.js";
 import { CONSTANT } from "/src/lib/constants.js";
@@ -22,6 +23,7 @@ export default class JobManager {
         }
     }
     async start(ns) {
+        Utils.tprintColored(`Starting the JobManager`, true, CONSTANT.COLOR_INFORMATION);
         const ports = [...CONSTANT.JOB_PORT_NUMBERS];
         for (const port of ports) {
             const interval = setInterval(this.managingLoop.bind(this, ns, port), CONSTANT.JOB_MANAGING_LOOP_INTERVAL);
@@ -29,6 +31,19 @@ export default class JobManager {
             this.managingLoop(ns, port);
         }
         this.requestLoopInterval = setInterval(this.requestLoop.bind(this, ns), CONSTANT.JOB_REQUEST_LOOP_INTERVAL);
+    }
+    async onDestroy(ns) {
+        this.clearAllPorts(ns);
+        if (this.managingLoopIntervals.length > 0) {
+            for (const interval of this.managingLoopIntervals) {
+                clearInterval(interval);
+            }
+            this.managingLoopIntervals = [];
+        }
+        if (this.requestLoopInterval) {
+            clearInterval(this.requestLoopInterval);
+        }
+        Utils.tprintColored(`Stopping the JobManager`, true, CONSTANT.COLOR_INFORMATION);
     }
     async requestLoop(ns) {
         const requestPortHandle = ns.getPortHandle(CONSTANT.JOB_MANAGER_REQUEST_PORT);
@@ -120,8 +135,12 @@ export async function main(ns) {
     const instance = new JobManager();
     await instance.initialize(ns);
     await instance.start(ns);
-    // We just keep sleeping because we have to keep this script running
     while (true) {
-        await ns.sleep(10 * 1000);
+        const shouldKill = await ControlFlowAPI.hasManagerKillRequest(ns);
+        if (shouldKill) {
+            await instance.onDestroy(ns);
+            ns.exit();
+        }
+        await ns.sleep(CONSTANT.CONTROL_FLOW_CHECK_INTERVAL);
     }
 }

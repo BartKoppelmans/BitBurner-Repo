@@ -1,3 +1,4 @@
+import * as ControlFlowAPI from "/src/api/ControlFlowAPI.js";
 import * as ServerAPI from "/src/api/ServerAPI.js";
 import { CONSTANT } from "/src/lib/constants.js";
 import * as PurchasedServerManagerUtils from "/src/util/PurchasedServerManagerUtils.js";
@@ -20,6 +21,15 @@ class PurchasedServerManager {
         else {
             await this.startUpgradeLoop(ns);
         }
+    }
+    async onDestroy(ns) {
+        if (this.upgradeLoopInterval) {
+            clearInterval(this.upgradeLoopInterval);
+        }
+        if (this.purchaseLoopInterval) {
+            clearInterval(this.purchaseLoopInterval);
+        }
+        Utils.tprintColored("Stopping the PurchasedServerManager", true, CONSTANT.COLOR_INFORMATION);
     }
     // Purchasing new servers -------------------------------------------------------------------
     async startPurchaseServerLoop(ns) {
@@ -117,6 +127,11 @@ export async function main(ns) {
     await instance.start(ns);
     // We just keep sleeping because we have to keep this script running
     while (true) {
-        await ns.sleep(10 * 1000);
+        const shouldKill = await ControlFlowAPI.hasManagerKillRequest(ns);
+        if (shouldKill) {
+            await instance.onDestroy(ns);
+            ns.exit();
+        }
+        await ns.sleep(CONSTANT.CONTROL_FLOW_CHECK_INTERVAL);
     }
 }

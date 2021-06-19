@@ -6,11 +6,12 @@ export async function rootAllServers(ns) {
 export async function startProgramManager(ns) {
     if (isProgramManagerRunning(ns))
         return;
-    ns.exec('/src/managers/ProgramManager.js', ns.getHostname());
+    // TODO: Check whether there is enough ram available
+    ns.exec('/src/managers/ProgramManager.js', CONSTANT.HOME_SERVER_HOST);
     while (!isProgramManagerRunning(ns)) {
         await ns.sleep(CONSTANT.SMALL_DELAY);
     }
 }
 export function isProgramManagerRunning(ns) {
-    return ns.isRunning('/src/managers/ProgramManager.js', ns.getHostname());
+    return ns.isRunning('/src/managers/ProgramManager.js', CONSTANT.HOME_SERVER_HOST);
 }

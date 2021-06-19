@@ -9,3 +9,8 @@ export var JobRequestCode;
     JobRequestCode[JobRequestCode["IS_PREPPING"] = 1] = "IS_PREPPING";
     JobRequestCode[JobRequestCode["IS_TARGETTING"] = 2] = "IS_TARGETTING";
 })(JobRequestCode || (JobRequestCode = {}));
+export var ControlFlowCode;
+(function (ControlFlowCode) {
+    ControlFlowCode[ControlFlowCode["KILL_MANAGERS"] = 0] = "KILL_MANAGERS";
+    ControlFlowCode[ControlFlowCode["KILL_DAEMON"] = 1] = "KILL_DAEMON";
+})(ControlFlowCode || (ControlFlowCode = {}));

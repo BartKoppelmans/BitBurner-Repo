@@ -1,6 +1,7 @@
+import * as ControlFlowAPI from "/src/api/ControlFlowAPI.js";
 import { CONSTANT } from "/src/lib/constants.js";
-import * as Utils from "/src/util/Utils.js";
 import * as ServerManagerUtils from "/src/util/ServerManagerUtils.js";
+import * as Utils from "/src/util/Utils.js";
 class ServerManager {
     constructor() {
         this.serverMap = [];
@@ -18,9 +19,20 @@ class ServerManager {
         await this.updateServerMap(ns);
     }
     async start(ns) {
+        Utils.tprintColored(`Starting the ServerManager`, true, CONSTANT.COLOR_INFORMATION);
         this.updateLoopInterval = setInterval(this.updateServerMap.bind(this, ns), CONSTANT.SERVER_MAP_REBUILD_INTERVAL);
         this.requestLoopInterval = setInterval(this.requestLoop.bind(this, ns), CONSTANT.SERVER_MESSAGE_INTERVAL);
         // TODO: Set the checker for reading the ports on whether an update is requested.
+    }
+    async onDestroy(ns) {
+        ServerManagerUtils.clearServerMap(ns);
+        if (this.updateLoopInterval) {
+            clearInterval(this.updateLoopInterval);
+        }
+        if (this.requestLoopInterval) {
+            clearInterval(this.requestLoopInterval);
+        }
+        Utils.tprintColored(`Stopping the ServerManager`, true, CONSTANT.COLOR_INFORMATION);
     }
     async requestLoop(ns) {
         const requestPortHandle = ns.getPortHandle(CONSTANT.SERVER_MANAGER_REQUEST_PORT);
@@ -65,12 +77,11 @@ export async function main(ns) {
     await instance.start(ns);
     // We just keep sleeping because we have to keep this script running
     while (true) {
-        await ns.sleep(10 * 1000);
+        const shouldKill = await ControlFlowAPI.hasManagerKillRequest(ns);
+        if (shouldKill) {
+            await instance.onDestroy(ns);
+            ns.exit();
+        }
+        await ns.sleep(CONSTANT.CONTROL_FLOW_CHECK_INTERVAL);
     }
-    // TODO: Cancel all the intervals when the script is killed
-    /*
-    for (const interval of intervals) {
-        clearInterval(interval);
-    }
-    */
 }

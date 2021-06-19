@@ -50,7 +50,7 @@ async function getResponse(ns, id) {
     let hasResponse = false;
     let iteration = 0;
     const maxIterations = CONSTANT.MAX_JOB_MESSAGE_WAIT / CONSTANT.JOB_REQUEST_LOOP_INTERVAL;
-    while (!hasResponse || (iteration > maxIterations)) {
+    while (iteration < maxIterations) {
         const index = responsePortHandle.data.findIndex((resString) => {
             const res = JSON.parse(resString.toString());
             return (res.request.id === id);
@@ -67,11 +67,12 @@ async function getResponse(ns, id) {
 export async function startJobManager(ns) {
     if (isJobManagerRunning(ns))
         return;
-    ns.exec('/src/managers/JobManager.js', ns.getHostname());
+    // TODO: Check whether there is enough ram available
+    ns.exec('/src/managers/JobManager.js', CONSTANT.HOME_SERVER_HOST);
     while (!isJobManagerRunning(ns)) {
         await ns.sleep(CONSTANT.SMALL_DELAY);
     }
 }
 export function isJobManagerRunning(ns) {
-    return ns.isRunning('/src/managers/JobManager.js', ns.getHostname());
+    return ns.isRunning('/src/managers/JobManager.js', CONSTANT.HOME_SERVER_HOST);
 }

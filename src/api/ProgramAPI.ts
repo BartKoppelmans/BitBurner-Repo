@@ -9,7 +9,9 @@ export async function rootAllServers(ns: NS): Promise<void> {
 export async function startProgramManager(ns: NS): Promise<void> {
     if (isProgramManagerRunning(ns)) return;
 
-    ns.exec('/src/managers/ProgramManager.js', ns.getHostname());
+    // TODO: Check whether there is enough ram available
+
+    ns.exec('/src/managers/ProgramManager.js', CONSTANT.HOME_SERVER_HOST);
 
     while (!isProgramManagerRunning(ns)) {
         await ns.sleep(CONSTANT.SMALL_DELAY);
@@ -17,5 +19,5 @@ export async function startProgramManager(ns: NS): Promise<void> {
 }
 
 export function isProgramManagerRunning(ns: NS): boolean {
-    return ns.isRunning('/src/managers/ProgramManager.js', ns.getHostname());
+    return ns.isRunning('/src/managers/ProgramManager.js', CONSTANT.HOME_SERVER_HOST);
 }
