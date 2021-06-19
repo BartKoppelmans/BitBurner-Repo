@@ -54,13 +54,13 @@ export default class JobManager {
             switch (+request.code) {
                 case JobRequestCode.CURRENT_TARGETS:
                     this.onTargetRequested(ns, request);
-                    return;
+                    break;
                 case JobRequestCode.IS_PREPPING:
                     this.onHasActionRequested(ns, request as JobActionRequest, true);
-                    return;
+                    break;
                 case JobRequestCode.IS_TARGETTING:
                     this.onHasActionRequested(ns, request as JobActionRequest, false);
-                    return;
+                    break;
                 default:
                     throw new Error("Could not identify the type of request.");
             }
