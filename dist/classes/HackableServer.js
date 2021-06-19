@@ -1,6 +1,5 @@
 import Server from '/src/classes/Server.js';
 import { ServerType } from "/src/interfaces/ServerInterfaces.js";
-import PlayerManager from "/src/managers/PlayerManager.js";
 export default class HackableServer extends Server {
     constructor(ns, id, host, treeStructure) {
         super(ns, id, host, treeStructure);
@@ -41,6 +40,6 @@ export default class HackableServer extends Server {
         return this.serverValue = heuristic(ns, this);
     }
     isHackable(ns) {
-        return ns.getServerRequiredHackingLevel(this.host) <= PlayerManager.getInstance(ns).hackingLevel;
+        return ns.getServerRequiredHackingLevel(this.host) <= ns.getHackingLevel();
     }
 }

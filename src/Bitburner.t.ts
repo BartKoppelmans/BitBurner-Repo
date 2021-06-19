@@ -4503,6 +4503,6 @@ declare module "Bitburner" {
          * @ramCost 4 GB
          * @returns {object} Object containing the current BitNode multipliers.
          */
-        getBitNodeMultipliers(url: string, target: string, host: string): BitNodeMultipliers;
+        getBitNodeMultipliers(): BitNodeMultipliers;
     }
 }

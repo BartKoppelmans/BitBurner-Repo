@@ -1,7 +1,6 @@
 import type { BitBurner as NS } from "Bitburner";
 import Server from '/src/classes/Server.js';
 import { DynamicHackingProperties, ServerType, StaticHackingProperties, TreeStructure } from "/src/interfaces/ServerInterfaces.js";
-import PlayerManager from "/src/managers/PlayerManager.js";
 import { Heuristics } from "/src/util/Heuristics.js";
 
 export default class HackableServer extends Server {
@@ -57,6 +56,6 @@ export default class HackableServer extends Server {
     }
 
     public isHackable(ns: NS) {
-        return ns.getServerRequiredHackingLevel(this.host) <= PlayerManager.getInstance(ns).hackingLevel;
+        return ns.getServerRequiredHackingLevel(this.host) <= ns.getHackingLevel();
     }
 }

@@ -4,8 +4,8 @@ import { CONSTANT } from "/src/lib/constants.js";
  */
 export default class PlayerManager {
     constructor(ns) {
-        this.hackingLevel = ns.getHackingLevel();
         this.hackingMultipliers = ns.getHackingMultipliers();
+        this.bitNodeMultipliers = ns.getBitNodeMultipliers();
     }
     static getInstance(ns) {
         if (!PlayerManager.instance) {
@@ -18,14 +18,14 @@ export default class PlayerManager {
     }
     getGrowthMultiplier() {
         // TODO: Include the bitnode multiplier
-        return this.hackingMultipliers.growth;
+        return this.hackingMultipliers.growth * this.bitNodeMultipliers.ServerGrowthRate;
     }
     getHackMultiplier() {
         // TODO: Include the bitnode multiplier
-        return this.hackingMultipliers.money;
+        return this.hackingMultipliers.money * this.bitNodeMultipliers.ScriptHackMoney;
     }
     getWeakenPotency() {
         // TODO: Include the bitnode multiplier
-        return CONSTANT.WEAKEN_POTENCY;
+        return CONSTANT.WEAKEN_POTENCY * this.bitNodeMultipliers.ServerWeakenRate;
     }
 }

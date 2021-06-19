@@ -68,7 +68,7 @@ export const CONSTANT = {
     MAX_TARGET_COUNT: 20,
     HACK_LOOP_DELAY: 1000,
     ALLOW_THREAD_SPREADING: true,
-    SERVER_UTILIZATION_THRESHOLD: 0.9,
+    SERVER_UTILIZATION_THRESHOLD: 0.75,
     MAX_CYCLE_NUMBER: 100,
     // Max server growth rate, higher than this will be throttled
     MAX_GROWTH_RATE: 1.0035,
