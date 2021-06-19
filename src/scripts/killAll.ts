@@ -26,7 +26,7 @@ async function killServer(ns: NS, server: Server): Promise<void> {
     do {
         isRunningAnything = (ns.ps(server.host).length > 0);
 
-        ns.sleep(CONSTANT.SMALL_DELAY);
+        await ns.sleep(CONSTANT.SMALL_DELAY);
     } while (isRunningAnything);
 
     return;

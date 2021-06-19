@@ -7,6 +7,8 @@ export async function rootAllServers(ns: NS): Promise<void> {
 }
 
 export async function startProgramManager(ns: NS): Promise<void> {
+    if (isProgramManagerRunning(ns)) return;
+
     ns.exec('/src/managers/ProgramManager.js', ns.getHostname());
 
     while (!isProgramManagerRunning(ns)) {

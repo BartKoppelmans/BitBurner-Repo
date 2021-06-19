@@ -71,6 +71,8 @@ export async function getPurchasedServers(ns) {
         .sort((a, b) => a.getAvailableRam(ns) - b.getAvailableRam(ns));
 }
 export async function startServerManager(ns) {
+    if (isServerManagerRunning(ns))
+        return;
     ns.exec('/src/managers/ServerManager.js', ns.getHostname());
     while (!isServerManagerRunning(ns)) {
         await ns.sleep(CONSTANT.SMALL_DELAY);

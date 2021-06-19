@@ -4,6 +4,8 @@ export async function rootAllServers(ns) {
     return;
 }
 export async function startProgramManager(ns) {
+    if (isProgramManagerRunning(ns))
+        return;
     ns.exec('/src/managers/ProgramManager.js', ns.getHostname());
     while (!isProgramManagerRunning(ns)) {
         await ns.sleep(CONSTANT.SMALL_DELAY);

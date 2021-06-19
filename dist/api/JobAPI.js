@@ -65,6 +65,8 @@ async function getResponse(ns, id) {
     throw new Error("We have been waiting for too long.");
 }
 export async function startJobManager(ns) {
+    if (isJobManagerRunning(ns))
+        return;
     ns.exec('/src/managers/JobManager.js', ns.getHostname());
     while (!isJobManagerRunning(ns)) {
         await ns.sleep(CONSTANT.SMALL_DELAY);

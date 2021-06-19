@@ -67,6 +67,8 @@ export const CONSTANT = {
     SERVER_MANAGER_REQUEST_PORT: 18,
     SERVER_MANAGER_RESPONSE_PORT: 19,
 
+    CONTROL_FLOW_CHECK_INTERVAL: 1000,
+
     PURCHASE_PURCHASED_SERVER_LOOP_INTERVAL: 60 * 1000,
 
     // Check if we can upgrade servers every 3 minutes

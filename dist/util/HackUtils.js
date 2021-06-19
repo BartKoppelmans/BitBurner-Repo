@@ -126,7 +126,7 @@ async function optimizePerformance(ns, target) {
             performanceUpdated = true;
             target.dynamicHackingProperties.percentageToSteal += adjustment;
         }
-        ns.sleep(CONSTANT.SMALL_DELAY);
+        await ns.sleep(CONSTANT.SMALL_DELAY);
     } while (adjustment !== 0.00);
     if (performanceUpdated && CONSTANT.DEBUG_HACKING) {
         const updatedPercentage = (Math.floor(ServerHackUtils.actualPercentageToSteal(ns, target) * 100 * 100) / 100);

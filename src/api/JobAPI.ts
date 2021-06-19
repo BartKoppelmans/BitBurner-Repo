@@ -90,6 +90,8 @@ async function getResponse(ns: NS, id: string): Promise<JobTargetsResponse | Job
 }
 
 export async function startJobManager(ns: NS): Promise<void> {
+    if (isJobManagerRunning(ns)) return;
+
     ns.exec('/src/managers/JobManager.js', ns.getHostname());
 
     while (!isJobManagerRunning(ns)) {

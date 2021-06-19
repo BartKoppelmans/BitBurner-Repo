@@ -97,6 +97,8 @@ export async function getPurchasedServers(ns: NS): Promise<PurchasedServer[]> {
 }
 
 export async function startServerManager(ns: NS): Promise<void> {
+    if (isServerManagerRunning(ns)) return;
+
     ns.exec('/src/managers/ServerManager.js', ns.getHostname());
 
     while (!isServerManagerRunning(ns)) {

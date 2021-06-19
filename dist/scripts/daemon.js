@@ -6,28 +6,15 @@ import { CONSTANT } from "/src/lib/constants.js";
 import * as Utils from "/src/util/Utils.js";
 import * as HackUtils from "/src/util/HackUtils.js";
 import { Heuristics } from "/src/util/Heuristics.js";
-export async function main(ns) {
-    const hostName = ns.getHostname();
-    if (hostName !== "home") {
-        throw new Error("Execute daemon script from home.");
-    }
-    // TODO: Make a decision on whether we start the to-be-made early hacking scripts, 
-    // or whether we want to start hacking using our main hacker
-    await initialize(ns);
-    while (true) {
-        // TODO: Do this through an interval or set timeout
-        // That way, we can always cancel the interval before quitting the script
-        await hackLoop(ns);
-    }
-}
+let hackLoopInterval;
 async function initialize(ns) {
+    Utils.disableLogging(ns);
     // NOTE: We wait until this is resolved before going on
     await ServerAPI.startServerManager(ns);
     // These will run in parallel
     const jobManagerReady = JobAPI.startJobManager(ns);
     const programManagerReady = ProgramAPI.startProgramManager(ns);
     const purchasedServerManagerReady = PurchasedServerAPI.startPurchasedServerManager(ns);
-    Utils.disableLogging(ns);
     // Wait until everything is initialized
     await Promise.allSettled([jobManagerReady, programManagerReady, purchasedServerManagerReady]);
 }
@@ -50,4 +37,17 @@ async function hackLoop(ns) {
     }
     // Wait a second!
     await ns.sleep(CONSTANT.HACK_LOOP_DELAY);
+}
+export async function main(ns) {
+    const hostName = ns.getHostname();
+    if (hostName !== "home") {
+        throw new Error("Execute daemon script from home.");
+    }
+    // TODO: Make a decision on whether we start the to-be-made early hacking scripts, 
+    // or whether we want to start hacking using our main hacker
+    await initialize(ns);
+    hackLoopInterval = setInterval(hackLoop.bind(null, ns), CONSTANT.HACK_LOOP_DELAY);
+    while (true) {
+        await ns.sleep(10 * 1000);
+    }
 }
