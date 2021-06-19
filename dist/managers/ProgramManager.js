@@ -1,6 +1,7 @@
 import * as ServerAPI from "/src/api/ServerAPI.js";
 import { Program, ProgramType } from "/src/classes/Program.js";
 import { CONSTANT } from "/src/lib/constants.js";
+import * as Utils from "/src/util/Utils.js";
 import * as ProgramManagerUtils from "/src/util/ProgramManagerUtils.js";
 import * as ServerUtils from "/src/util/ServerUtils.js";
 class ProgramManager {
@@ -9,6 +10,7 @@ class ProgramManager {
         this.obtainedPrograms = [];
     }
     async initialize(ns) {
+        Utils.disableLogging(ns);
         this.programs = [
             new Program(ns, "BruteSSH.exe", 500000, ProgramType.Crack),
             new Program(ns, "FTPCrack.exe", 1500000, ProgramType.Crack),

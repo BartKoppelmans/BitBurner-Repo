@@ -149,6 +149,8 @@ class PurchasedServerManager {
 export async function main(ns: NS) {
     const instance: PurchasedServerManager = new PurchasedServerManager();
 
+    Utils.disableLogging(ns);
+
     await instance.start(ns);
 
     // We just keep sleeping because we have to keep this script running

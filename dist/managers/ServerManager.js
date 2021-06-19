@@ -1,4 +1,5 @@
 import { CONSTANT } from "/src/lib/constants.js";
+import * as Utils from "/src/util/Utils.js";
 import * as ServerManagerUtils from "/src/util/ServerManagerUtils.js";
 class ServerManager {
     constructor() {
@@ -6,6 +7,7 @@ class ServerManager {
         this.lastUpdated = CONSTANT.EPOCH_DATE;
     }
     async initialize(ns) {
+        Utils.disableLogging(ns);
         ServerManagerUtils.clearServerMap(ns);
         if (this.updateLoopInterval) {
             clearInterval(this.updateLoopInterval);

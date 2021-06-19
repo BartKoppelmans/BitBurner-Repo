@@ -3,6 +3,7 @@ import * as PurchasedServerAPI from "/src/api/PurchasedServerAPI.js";
 import * as ServerAPI from "/src/api/ServerAPI.js";
 import * as JobAPI from "/src/api/JobAPI.js";
 import { CONSTANT } from "/src/lib/constants.js";
+import * as Utils from "/src/util/Utils.js";
 import * as HackUtils from "/src/util/HackUtils.js";
 import { Heuristics } from "/src/util/Heuristics.js";
 export async function main(ns) {
@@ -26,6 +27,7 @@ async function initialize(ns) {
     const jobManagerReady = JobAPI.startJobManager(ns);
     const programManagerReady = ProgramAPI.startProgramManager(ns);
     const purchasedServerManagerReady = PurchasedServerAPI.startPurchasedServerManager(ns);
+    Utils.disableLogging(ns);
     // Wait until everything is initialized
     await Promise.allSettled([jobManagerReady, programManagerReady, purchasedServerManagerReady]);
 }

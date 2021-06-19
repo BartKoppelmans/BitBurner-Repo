@@ -2,6 +2,7 @@ import type { BitBurner as NS } from "Bitburner";
 import Server from '/src/classes/Server.js';
 import { ServerRequest, ServerResponse } from "/src/interfaces/PortMessageInterfaces.js";
 import { CONSTANT } from "/src/lib/constants.js";
+import * as Utils from "/src/util/Utils.js";
 import * as ServerManagerUtils from "/src/util/ServerManagerUtils.js";
 
 class ServerManager {
@@ -15,6 +16,8 @@ class ServerManager {
     public constructor() { }
 
     public async initialize(ns: NS): Promise<void> {
+        Utils.disableLogging(ns);
+
         ServerManagerUtils.clearServerMap(ns);
 
         if (this.updateLoopInterval) {

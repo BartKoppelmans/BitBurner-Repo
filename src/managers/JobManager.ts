@@ -2,6 +2,7 @@ import type { BitBurner as NS, Port, PortHandle } from "Bitburner";
 import Job from "/src/classes/Job.js";
 import { JobActionRequest, JobActionResponse, JobRequest, JobRequestCode, JobTargetsResponse } from "/src/interfaces/PortMessageInterfaces.js";
 import { CONSTANT } from "/src/lib/constants.js";
+import * as Utils from "/src/util/Utils.js";
 
 
 
@@ -14,6 +15,8 @@ export default class JobManager {
     public constructor() { }
 
     public async initialize(ns: NS) {
+        Utils.disableLogging(ns);
+
         // Clear the ports
         this.clearAllPorts(ns);
 

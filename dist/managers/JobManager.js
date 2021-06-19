@@ -1,12 +1,14 @@
 import Job from "/src/classes/Job.js";
 import { JobRequestCode } from "/src/interfaces/PortMessageInterfaces.js";
 import { CONSTANT } from "/src/lib/constants.js";
+import * as Utils from "/src/util/Utils.js";
 export default class JobManager {
     constructor() {
         this.managingLoopIntervals = [];
         this.jobs = [];
     }
     async initialize(ns) {
+        Utils.disableLogging(ns);
         // Clear the ports
         this.clearAllPorts(ns);
         if (this.managingLoopIntervals.length > 0) {

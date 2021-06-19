@@ -4,6 +4,7 @@ import HackableServer from "/src/classes/HackableServer.js";
 import { Program, ProgramType } from "/src/classes/Program.js";
 import Server from "/src/classes/Server.js";
 import { CONSTANT } from "/src/lib/constants.js";
+import * as Utils from "/src/util/Utils.js";
 import * as ProgramManagerUtils from "/src/util/ProgramManagerUtils.js";
 import * as ServerUtils from "/src/util/ServerUtils.js";
 
@@ -18,6 +19,8 @@ class ProgramManager {
     public constructor() { }
 
     public async initialize(ns: NS): Promise<void> {
+        Utils.disableLogging(ns);
+
         this.programs = [
             new Program(ns, "BruteSSH.exe", 500000, ProgramType.Crack),
             new Program(ns, "FTPCrack.exe", 1500000, ProgramType.Crack),
