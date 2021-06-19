@@ -2,6 +2,7 @@ import * as JobAPI from "/src/api/JobAPI.js";
 import * as ProgramAPI from "/src/api/ProgramAPI.js";
 import * as PurchasedServerAPI from "/src/api/PurchasedServerAPI.js";
 import * as ServerAPI from "/src/api/ServerAPI.js";
+import * as CodingContractAPI from "/src/api/CodingContractAPI.js";
 import { ControlFlowCode } from "/src/interfaces/PortMessageInterfaces.js";
 import { CONSTANT } from "/src/lib/constants.js";
 import * as ServerUtils from "/src/util/ServerUtils.js";
@@ -104,7 +105,8 @@ function areManagersRunning(ns) {
     return (JobAPI.isJobManagerRunning(ns) ||
         ProgramAPI.isProgramManagerRunning(ns) ||
         ServerAPI.isServerManagerRunning(ns) ||
-        PurchasedServerAPI.isPurchasedServerManagerRunning(ns));
+        PurchasedServerAPI.isPurchasedServerManagerRunning(ns) ||
+        CodingContractAPI.isCodingContractManagerRunning(ns));
 }
 function isDaemonRunning(ns) {
     return ns.isRunning('/src/scripts/daemon.js', CONSTANT.HOME_SERVER_HOST);

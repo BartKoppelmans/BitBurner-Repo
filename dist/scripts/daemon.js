@@ -2,6 +2,7 @@ import * as ControlFlowAPI from "/src/api/ControlFlowAPI.js";
 import * as JobAPI from "/src/api/JobAPI.js";
 import * as ProgramAPI from "/src/api/ProgramAPI.js";
 import * as PurchasedServerAPI from "/src/api/PurchasedServerAPI.js";
+import * as CodingContractAPI from "/src/api/CodingContractAPI.js";
 import * as ServerAPI from "/src/api/ServerAPI.js";
 import { CONSTANT } from "/src/lib/constants.js";
 import * as HackUtils from "/src/util/HackUtils.js";
@@ -16,8 +17,9 @@ async function initialize(ns) {
     const jobManagerReady = JobAPI.startJobManager(ns);
     const programManagerReady = ProgramAPI.startProgramManager(ns);
     const purchasedServerManagerReady = PurchasedServerAPI.startPurchasedServerManager(ns);
+    const codingContractManagerReady = CodingContractAPI.startCodingContractManager(ns);
     // Wait until everything is initialized
-    await Promise.allSettled([jobManagerReady, programManagerReady, purchasedServerManagerReady]);
+    await Promise.allSettled([jobManagerReady, programManagerReady, purchasedServerManagerReady, codingContractManagerReady]);
 }
 async function hackLoop(ns) {
     let potentialTargets = await ServerAPI.getTargetServers(ns);
