@@ -8,8 +8,8 @@ export async function getServerMap(ns) {
 }
 export async function requestUpdate(ns) {
     const requestPortHandle = ns.getPortHandle(CONSTANT.SERVER_MANAGER_REQUEST_PORT);
-    if (requestPortHandle.full()) {
-        throw new Error("Too much server requests sent already.");
+    while (requestPortHandle.full()) {
+        await ns.sleep(CONSTANT.PORT_FULL_RETRY_TIME);
     }
     const id = Utils.generateHash();
     const request = {
@@ -23,22 +23,17 @@ export async function requestUpdate(ns) {
 }
 async function getResponse(ns, id) {
     const responsePortHandle = ns.getPortHandle(CONSTANT.SERVER_MANAGER_RESPONSE_PORT);
-    let hasResponse = false;
-    let iteration = 0;
-    const maxIterations = CONSTANT.MAX_SERVER_MESSAGE_WAIT / CONSTANT.SERVER_MESSAGE_INTERVAL;
-    while (iteration < maxIterations) {
+    while (true) {
         const index = responsePortHandle.data.findIndex((resString) => {
             const res = JSON.parse(resString.toString());
             return (res.request.id === id);
         });
         if (index === -1)
-            await ns.sleep(CONSTANT.SERVER_MESSAGE_INTERVAL);
+            await ns.sleep(CONSTANT.RESPONSE_RETRY_DELAY);
         else {
             return JSON.parse(responsePortHandle.data.splice(index, 1).toString());
         }
-        iteration++;
     }
-    throw new Error("We have been waiting for too long.");
 }
 export async function getServer(ns, id) {
     const server = (await getServerMap(ns)).find(server => server.id === id);

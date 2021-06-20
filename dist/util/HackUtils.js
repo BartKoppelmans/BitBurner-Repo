@@ -12,11 +12,13 @@ import * as Utils from "/src/util/Utils.js";
 // Return true when we have found a new target
 export async function hack(ns, server) {
     // If it is prepping, leave it
-    if (await JobAPI.isPrepping(ns, server))
+    const isPrepping1 = await JobAPI.isPrepping(ns, server);
+    if (isPrepping1)
         return;
     // From here on it is a target
     // It is a target, but is currently resting
-    if (await JobAPI.isTargetting(ns, server))
+    const isTargetting = await JobAPI.isTargetting(ns, server);
+    if (isTargetting)
         return;
     // Prep the server
     await prepServer(ns, server);
@@ -24,7 +26,8 @@ export async function hack(ns, server) {
     if (server.dynamicHackingProperties.securityLevel > server.staticHackingProperties.minSecurityLevel || server.dynamicHackingProperties.money < server.staticHackingProperties.maxMoney)
         return;
     // If it is prepping, leave it
-    if (await JobAPI.isPrepping(ns, server))
+    const isPrepping2 = await JobAPI.isPrepping(ns, server);
+    if (isPrepping2)
         return;
     // Make sure that the percentage that we steal is optimal
     await optimizePerformance(ns, server);
@@ -33,7 +36,8 @@ export async function hack(ns, server) {
 }
 export async function prepServer(ns, target) {
     // We should not prep anymore once we are targetting
-    if (await JobAPI.isTargetting(ns, target))
+    const isTargetting = await JobAPI.isTargetting(ns, target);
+    if (isTargetting)
         return;
     // If the server is optimal, we are done I guess
     if (target.dynamicHackingProperties.securityLevel === target.staticHackingProperties.minSecurityLevel && target.dynamicHackingProperties.money === target.staticHackingProperties.maxMoney)

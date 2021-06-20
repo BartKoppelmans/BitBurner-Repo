@@ -44,7 +44,7 @@ async function hackLoop(ns: NS) {
         throw new Error("No potential targets found.");
     }
 
-    for await (let target of potentialTargets) {
+    for (let target of potentialTargets) {
         let currentTargets: string[] = await JobAPI.getCurrentTargets(ns);
 
         // Can't have too many targets at the same time
@@ -52,9 +52,6 @@ async function hackLoop(ns: NS) {
 
         await HackUtils.hack(ns, target);
     }
-
-    // Wait a second!
-    await ns.sleep(CONSTANT.HACK_LOOP_DELAY);
 }
 
 export async function onDestroy(ns: NS) {

@@ -87,7 +87,7 @@ class PurchasedServerManager {
         if (!shouldUpgrade)
             return;
         let updateNeeded = false;
-        for await (const server of this.purchasedServers) {
+        for (const server of this.purchasedServers) {
             const maxRam = PurchasedServerManagerUtils.computeMaxRamPossible(ns);
             if (maxRam > server.ram) {
                 const isSuccessful = await this.upgradeServer(ns, server, maxRam);

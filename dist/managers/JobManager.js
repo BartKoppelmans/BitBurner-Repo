@@ -49,9 +49,13 @@ export default class JobManager {
         const requestPortHandle = ns.getPortHandle(CONSTANT.JOB_MANAGER_REQUEST_PORT);
         if (requestPortHandle.empty())
             return;
-        let iteration = 0;
-        do {
-            const request = JSON.parse(requestPortHandle.read().toString());
+        const requestStrings = [...requestPortHandle.data];
+        // This might give us some trouble
+        // TODO: Assert that we have all the strings, otherwise we cut some off
+        requestPortHandle.clear();
+        // Process all job strings
+        for (const requestString of requestStrings) {
+            const request = JSON.parse(requestString);
             switch (+request.code) {
                 case JobRequestCode.CURRENT_TARGETS:
                     this.onTargetRequested(ns, request);
@@ -65,8 +69,7 @@ export default class JobManager {
                 default:
                     throw new Error("Could not identify the type of request.");
             }
-            iteration++;
-        } while (!requestPortHandle.empty() && iteration < CONSTANT.MAX_NUMBER_JOB_REQUESTS);
+        }
     }
     async onTargetRequested(ns, request) {
         const responsePortHandle = ns.getPortHandle(CONSTANT.JOB_MANAGER_RESPONSE_PORT);
@@ -91,7 +94,7 @@ export default class JobManager {
         const portHandle = ns.getPortHandle(port);
         if (portHandle.empty())
             return;
-        const jobStrings = portHandle.data;
+        const jobStrings = [...portHandle.data];
         // This might give us some trouble
         // TODO: Assert that we have all the strings
         portHandle.clear();

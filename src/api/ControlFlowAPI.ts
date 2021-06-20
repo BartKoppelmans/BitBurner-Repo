@@ -1,4 +1,4 @@
-import type { BitBurner as NS } from "Bitburner";
+import type { BitBurner as NS, Port } from "Bitburner";
 import * as JobAPI from "/src/api/JobAPI.js";
 import * as ProgramAPI from "/src/api/ProgramAPI.js";
 import * as PurchasedServerAPI from "/src/api/PurchasedServerAPI.js";
@@ -38,16 +38,18 @@ export async function hasManagerKillRequest(ns: NS): Promise<boolean> {
     else return false;
 }
 
-export function clearPort(ns: NS): void {
-    const requestPortHandle = ns.getPortHandle(CONSTANT.CONTROL_FLOW_PORT);
-    requestPortHandle.clear();
+export function clearPorts(ns: NS): void {
+    const ports: Port[] = Array.from({ length: 20 }, (_, i) => i + 1) as Port[];
+    for (const port of ports) {
+        ns.getPortHandle(port).clear();
+    }
 }
 
 export async function killDaemon(ns: NS): Promise<void> {
     const requestPortHandle = ns.getPortHandle(CONSTANT.CONTROL_FLOW_PORT);
 
-    if (requestPortHandle.full()) {
-        throw new Error("Too much control flow requests sent already.");
+    while (requestPortHandle.full()) {
+        await ns.sleep(CONSTANT.PORT_FULL_RETRY_TIME);
     }
 
     const id: string = Utils.generateHash();
@@ -59,19 +61,14 @@ export async function killDaemon(ns: NS): Promise<void> {
 
     requestPortHandle.write(JSON.stringify(request));
 
-    let iteration: number = 0;
-    const maxIterations = CONSTANT.MAX_CONTROL_FLOW_MESSAGE_WAIT / CONSTANT.CONTROL_FLOW_CHECK_INTERVAL;
+    // TODO: Make sure that there is a way to stop this, time-based doesn't work in the long run
 
-    while (iteration <= maxIterations) {
+    while (true) {
 
         if (!isDaemonRunning(ns)) return;
 
-        await ns.sleep(CONSTANT.CONTROL_FLOW_CHECK_INTERVAL);
-
-        iteration++;
+        await ns.sleep(CONSTANT.RESPONSE_RETRY_DELAY);
     }
-
-    throw new Error("We have been waiting for too long.");
 }
 
 export async function killAllManagers(ns: NS): Promise<void> {
@@ -80,8 +77,8 @@ export async function killAllManagers(ns: NS): Promise<void> {
 
     const requestPortHandle = ns.getPortHandle(CONSTANT.CONTROL_FLOW_PORT);
 
-    if (requestPortHandle.full()) {
-        throw new Error("Too much control flow requests sent already.");
+    while (requestPortHandle.full()) {
+        await ns.sleep(CONSTANT.PORT_FULL_RETRY_TIME);
     }
 
     const id: string = Utils.generateHash();
@@ -93,19 +90,14 @@ export async function killAllManagers(ns: NS): Promise<void> {
 
     requestPortHandle.write(JSON.stringify(request));
 
-    let iteration: number = 0;
-    const maxIterations = CONSTANT.MAX_CONTROL_FLOW_MESSAGE_WAIT / CONSTANT.CONTROL_FLOW_CHECK_INTERVAL;
+    // TODO: Make sure that there is a way to stop this, time-based doesn't work in the long run
 
-    while (iteration <= maxIterations) {
+    while (true) {
 
         if (!areManagersRunning(ns)) return;
 
-        await ns.sleep(CONSTANT.CONTROL_FLOW_CHECK_INTERVAL);
-
-        iteration++;
+        await ns.sleep(CONSTANT.RESPONSE_RETRY_DELAY);
     }
-
-    throw new Error("We have been waiting for too long.");
 }
 
 export async function killExternalServers(ns: NS, serverMap: Server[]): Promise<void> {

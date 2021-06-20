@@ -32,14 +32,16 @@ export async function hasManagerKillRequest(ns) {
     else
         return false;
 }
-export function clearPort(ns) {
-    const requestPortHandle = ns.getPortHandle(CONSTANT.CONTROL_FLOW_PORT);
-    requestPortHandle.clear();
+export function clearPorts(ns) {
+    const ports = Array.from({ length: 20 }, (_, i) => i + 1);
+    for (const port of ports) {
+        ns.getPortHandle(port).clear();
+    }
 }
 export async function killDaemon(ns) {
     const requestPortHandle = ns.getPortHandle(CONSTANT.CONTROL_FLOW_PORT);
-    if (requestPortHandle.full()) {
-        throw new Error("Too much control flow requests sent already.");
+    while (requestPortHandle.full()) {
+        await ns.sleep(CONSTANT.PORT_FULL_RETRY_TIME);
     }
     const id = Utils.generateHash();
     let request = {
@@ -48,21 +50,18 @@ export async function killDaemon(ns) {
         id
     };
     requestPortHandle.write(JSON.stringify(request));
-    let iteration = 0;
-    const maxIterations = CONSTANT.MAX_CONTROL_FLOW_MESSAGE_WAIT / CONSTANT.CONTROL_FLOW_CHECK_INTERVAL;
-    while (iteration <= maxIterations) {
+    // TODO: Make sure that there is a way to stop this, time-based doesn't work in the long run
+    while (true) {
         if (!isDaemonRunning(ns))
             return;
-        await ns.sleep(CONSTANT.CONTROL_FLOW_CHECK_INTERVAL);
-        iteration++;
+        await ns.sleep(CONSTANT.RESPONSE_RETRY_DELAY);
     }
-    throw new Error("We have been waiting for too long.");
 }
 export async function killAllManagers(ns) {
     // TODO: Perhaps move this to each API individually? Then we also know which one failed.
     const requestPortHandle = ns.getPortHandle(CONSTANT.CONTROL_FLOW_PORT);
-    if (requestPortHandle.full()) {
-        throw new Error("Too much control flow requests sent already.");
+    while (requestPortHandle.full()) {
+        await ns.sleep(CONSTANT.PORT_FULL_RETRY_TIME);
     }
     const id = Utils.generateHash();
     let request = {
@@ -71,15 +70,12 @@ export async function killAllManagers(ns) {
         id
     };
     requestPortHandle.write(JSON.stringify(request));
-    let iteration = 0;
-    const maxIterations = CONSTANT.MAX_CONTROL_FLOW_MESSAGE_WAIT / CONSTANT.CONTROL_FLOW_CHECK_INTERVAL;
-    while (iteration <= maxIterations) {
+    // TODO: Make sure that there is a way to stop this, time-based doesn't work in the long run
+    while (true) {
         if (!areManagersRunning(ns))
             return;
-        await ns.sleep(CONSTANT.CONTROL_FLOW_CHECK_INTERVAL);
-        iteration++;
+        await ns.sleep(CONSTANT.RESPONSE_RETRY_DELAY);
     }
-    throw new Error("We have been waiting for too long.");
 }
 export async function killExternalServers(ns, serverMap) {
     await Promise.all(serverMap.map(async (server) => {

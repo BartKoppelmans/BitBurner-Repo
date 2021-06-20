@@ -19,8 +19,8 @@ export async function isTargetting(ns, server) {
 // Returns the id of the request
 async function sendRequest(ns, requestCode, server) {
     const requestPortHandle = ns.getPortHandle(CONSTANT.JOB_MANAGER_REQUEST_PORT);
-    if (requestPortHandle.full()) {
-        throw new Error("Too much job requests sent already.");
+    while (requestPortHandle.full()) {
+        await ns.sleep(CONSTANT.PORT_FULL_RETRY_TIME);
     }
     const id = Utils.generateHash();
     let request;
@@ -47,22 +47,18 @@ async function sendRequest(ns, requestCode, server) {
 }
 async function getResponse(ns, id) {
     const responsePortHandle = ns.getPortHandle(CONSTANT.JOB_MANAGER_RESPONSE_PORT);
-    let hasResponse = false;
-    let iteration = 0;
-    const maxIterations = CONSTANT.MAX_JOB_MESSAGE_WAIT / CONSTANT.JOB_REQUEST_LOOP_INTERVAL;
-    while (iteration < maxIterations) {
+    // TODO: Make sure that there is a way to stop this, time-based doesn't work in the long run
+    while (true) {
         const index = responsePortHandle.data.findIndex((resString) => {
             const res = JSON.parse(resString.toString());
             return (res.request.id === id);
         });
         if (index === -1)
-            await ns.sleep(CONSTANT.JOB_REQUEST_LOOP_INTERVAL);
+            await ns.sleep(CONSTANT.RESPONSE_RETRY_DELAY);
         else {
             return JSON.parse(responsePortHandle.data.splice(index, 1).toString());
         }
-        iteration++;
     }
-    throw new Error("We have been waiting for too long.");
 }
 export async function startJobManager(ns) {
     if (isJobManagerRunning(ns))

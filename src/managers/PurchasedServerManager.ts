@@ -115,7 +115,7 @@ class PurchasedServerManager {
 
         let updateNeeded: boolean = false;
 
-        for await (const server of this.purchasedServers) {
+        for (const server of this.purchasedServers) {
             const maxRam = PurchasedServerManagerUtils.computeMaxRamPossible(ns);
 
             if (maxRam > server.ram) {

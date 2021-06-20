@@ -7,7 +7,7 @@ export async function main(ns) {
     await ControlFlowAPI.killDaemon(ns);
     await ControlFlowAPI.killAllManagers(ns);
     // Clear the queue
-    ControlFlowAPI.clearPort(ns);
+    ControlFlowAPI.clearPorts(ns);
     await ControlFlowAPI.killExternalServers(ns, serverMap);
     ns.killall(CONSTANT.HOME_SERVER_HOST);
     ns.exit();

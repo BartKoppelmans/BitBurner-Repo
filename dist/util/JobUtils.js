@@ -64,6 +64,8 @@ export async function communicateJob(ns, job) {
             break;
     }
     if (!isSuccessful) {
-        Utils.tprintColored("The ports are full and we could not write more", true, CONSTANT.COLOR_WARNING);
+        Utils.tprintColored(`The ports are full and we could not write more, trying again in ${CONSTANT.PORT_FULL_RETRY_TIME}ms`, true, CONSTANT.COLOR_WARNING);
+        await ns.sleep(CONSTANT.PORT_FULL_RETRY_TIME);
+        return communicateJob(ns, job);
     }
 }

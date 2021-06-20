@@ -31,15 +31,13 @@ async function hackLoop(ns) {
     if (potentialTargets.length === 0) {
         throw new Error("No potential targets found.");
     }
-    for await (let target of potentialTargets) {
+    for (let target of potentialTargets) {
         let currentTargets = await JobAPI.getCurrentTargets(ns);
         // Can't have too many targets at the same time
         if (currentTargets.length >= CONSTANT.MAX_TARGET_COUNT)
             break;
         await HackUtils.hack(ns, target);
     }
-    // Wait a second!
-    await ns.sleep(CONSTANT.HACK_LOOP_DELAY);
 }
 export async function onDestroy(ns) {
     clearInterval(hackLoopInterval);

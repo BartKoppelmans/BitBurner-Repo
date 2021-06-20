@@ -33,8 +33,8 @@ export async function isTargetting(ns: NS, server: HackableServer): Promise<bool
 async function sendRequest(ns: NS, requestCode: JobRequestCode, server?: HackableServer): Promise<string> {
     const requestPortHandle = ns.getPortHandle(CONSTANT.JOB_MANAGER_REQUEST_PORT);
 
-    if (requestPortHandle.full()) {
-        throw new Error("Too much job requests sent already.");
+    while (requestPortHandle.full()) {
+        await ns.sleep(CONSTANT.PORT_FULL_RETRY_TIME);
     }
 
     const id: string = Utils.generateHash();
@@ -67,26 +67,20 @@ async function sendRequest(ns: NS, requestCode: JobRequestCode, server?: Hackabl
 async function getResponse(ns: NS, id: string): Promise<JobTargetsResponse | JobActionResponse> {
     const responsePortHandle = ns.getPortHandle(CONSTANT.JOB_MANAGER_RESPONSE_PORT);
 
-    let hasResponse: boolean = false;
+    // TODO: Make sure that there is a way to stop this, time-based doesn't work in the long run
 
-    let iteration: number = 0;
-    const maxIterations = CONSTANT.MAX_JOB_MESSAGE_WAIT / CONSTANT.JOB_REQUEST_LOOP_INTERVAL;
-
-    while (iteration < maxIterations) {
+    while (true) {
         const index: number = responsePortHandle.data.findIndex((resString: string | number) => {
             const res: JobTargetsResponse = JSON.parse(resString.toString());
 
             return (res.request.id === id);
         });
 
-        if (index === -1) await ns.sleep(CONSTANT.JOB_REQUEST_LOOP_INTERVAL);
+        if (index === -1) await ns.sleep(CONSTANT.RESPONSE_RETRY_DELAY);
         else {
             return JSON.parse(responsePortHandle.data.splice(index, 1).toString());
         }
-        iteration++;
     }
-
-    throw new Error("We have been waiting for too long.");
 }
 
 export async function startJobManager(ns: NS): Promise<void> {

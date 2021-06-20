@@ -13,7 +13,7 @@ export async function main(ns: NS) {
     await ControlFlowAPI.killAllManagers(ns);
 
     // Clear the queue
-    ControlFlowAPI.clearPort(ns);
+    ControlFlowAPI.clearPorts(ns);
 
     await ControlFlowAPI.killExternalServers(ns, serverMap);
 

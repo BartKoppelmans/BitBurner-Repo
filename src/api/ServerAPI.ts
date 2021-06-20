@@ -16,8 +16,8 @@ export async function requestUpdate(ns: NS): Promise<void> {
 
     const requestPortHandle = ns.getPortHandle(CONSTANT.SERVER_MANAGER_REQUEST_PORT);
 
-    if (requestPortHandle.full()) {
-        throw new Error("Too much server requests sent already.");
+    while (requestPortHandle.full()) {
+        await ns.sleep(CONSTANT.PORT_FULL_RETRY_TIME);
     }
 
     const id: string = Utils.generateHash();
@@ -38,26 +38,18 @@ export async function requestUpdate(ns: NS): Promise<void> {
 async function getResponse(ns: NS, id: string): Promise<ServerResponse> {
     const responsePortHandle = ns.getPortHandle(CONSTANT.SERVER_MANAGER_RESPONSE_PORT);
 
-    let hasResponse: boolean = false;
-
-    let iteration: number = 0;
-    const maxIterations = CONSTANT.MAX_SERVER_MESSAGE_WAIT / CONSTANT.SERVER_MESSAGE_INTERVAL;
-
-    while (iteration < maxIterations) {
+    while (true) {
         const index: number = responsePortHandle.data.findIndex((resString: string | number) => {
             const res: ServerResponse = JSON.parse(resString.toString());
 
             return (res.request.id === id);
         });
 
-        if (index === -1) await ns.sleep(CONSTANT.SERVER_MESSAGE_INTERVAL);
+        if (index === -1) await ns.sleep(CONSTANT.RESPONSE_RETRY_DELAY);
         else {
             return JSON.parse(responsePortHandle.data.splice(index, 1).toString());
         }
-        iteration++;
     }
-
-    throw new Error("We have been waiting for too long.");
 }
 
 export async function getServer(ns: NS, id: number): Promise<Server> {
