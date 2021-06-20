@@ -18,11 +18,7 @@ export async function computeMaxCycles(ns: NS, cycleCost: number, allowSpread: b
         return Math.floor(server.getAvailableRam(ns) / cycleCost);
     }
 
-    // TODO: Revert back
-    // return serverMap.reduce((threads, server) => threads + Math.floor(server.getAvailableRam(ns) / cycleCost), 0);
-
-    // TODO: Create an early game mode or smth
-    return Math.floor(serverMap.reduce((threads, server) => threads + server.getAvailableRam(ns), 0) / cycleCost);
+    return serverMap.reduce((threads, server) => threads + Math.floor(server.getAvailableRam(ns) / cycleCost), 0);
 }
 
 export async function scheduleCycle(ns: NS, target: HackableServer, batchStart: Date): Promise<Job[]> {
