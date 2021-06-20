@@ -1,6 +1,8 @@
 import type { BitBurner as NS, CodingContractTypes } from "Bitburner";
 import Server from "/src/classes/Server.js";
 
+export type CodingContractAnswer = string | string[] | number;
+
 export class CodingContract {
     filename: string;
     server: Server;
@@ -16,7 +18,7 @@ export class CodingContract {
         this.data = ns.codingcontract.getData(filename, server.host);
     }
 
-    public attempt(ns: NS, answer: string | string[] | number): boolean {
+    public attempt(ns: NS, answer: CodingContractAnswer): boolean {
         return ns.codingcontract.attempt(answer, this.filename, this.server.host);
     }
 

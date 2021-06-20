@@ -79,6 +79,8 @@ export default class Job {
             ns.exec.apply(null, this.createArgumentArray(ns, args));
         }
 
+        // TODO: wait for the script to start running?
+
         // TODO: Move this to job api
         await JobUtils.communicateJob(ns, this);
     }

@@ -36,6 +36,7 @@ const files: string[] = [
     'tools/Tools.js',
     'tools/weaken.js',
     'util/BatchJobUtils.js',
+    'util/CodingContractUtils.js',
     'util/HackUtils.js',
     'util/Heuristics.js',
     'util/JobUtils.js',
