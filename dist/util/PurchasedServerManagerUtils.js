@@ -1,4 +1,4 @@
-import * as ServerAPI from "/src/api/ServerAPI.js";
+import * as HackUtils from "/src/util/HackUtils.js";
 import { CONSTANT } from "/src/lib/constants.js";
 import PlayerManager from "/src/managers/PlayerManager.js";
 export function computeMaxRamPossible(ns) {
@@ -22,15 +22,8 @@ export function canAfford(ns, cost) {
     return cost <= money;
 }
 export async function shouldUpgrade(ns) {
-    const utilization = await determineUtilization(ns);
+    const utilization = await HackUtils.determineUtilization(ns);
     return (utilization > CONSTANT.SERVER_UTILIZATION_THRESHOLD);
-}
-export async function determineUtilization(ns) {
-    const serverMap = await ServerAPI.getHackingServers(ns);
-    // The number of RAM used
-    const utilized = serverMap.reduce((utilized, server) => utilized + Math.floor(ns.getServerRam(server.host)[1]), 0);
-    const total = serverMap.reduce((subtotal, server) => subtotal + Math.ceil(ns.getServerRam(server.host)[0]), 0);
-    return (utilized / total);
 }
 export function clusterServers(servers) {
     const map = new Map();

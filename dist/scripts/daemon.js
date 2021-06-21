@@ -22,6 +22,9 @@ async function initialize(ns) {
     await Promise.allSettled([jobManagerReady, programManagerReady, purchasedServerManagerReady, codingContractManagerReady]);
 }
 async function hackLoop(ns) {
+    const utilization = await HackUtils.determineUtilization(ns);
+    if (utilization > 0.9)
+        return;
     let potentialTargets = await ServerAPI.getTargetServers(ns);
     // Then evaluate the potential targets afterwards
     await Promise.all(potentialTargets.map(async (target) => {

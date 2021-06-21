@@ -1,5 +1,5 @@
 import type { BitBurner as NS } from "Bitburner";
-import * as ServerAPI from "/src/api/ServerAPI.js";
+import * as HackUtils from "/src/util/HackUtils.js";
 import PurchasedServer from "/src/classes/PurchasedServer.js";
 import Server from "/src/classes/Server.js";
 import { CONSTANT } from "/src/lib/constants.js";
@@ -35,18 +35,8 @@ export function canAfford(ns: NS, cost: number): boolean {
 }
 
 export async function shouldUpgrade(ns: NS): Promise<boolean> {
-    const utilization: number = await determineUtilization(ns);
+    const utilization: number = await HackUtils.determineUtilization(ns);
     return (utilization > CONSTANT.SERVER_UTILIZATION_THRESHOLD);
-}
-
-export async function determineUtilization(ns: NS): Promise<number> {
-    const serverMap: Server[] = await ServerAPI.getHackingServers(ns);
-
-    // The number of RAM used
-    const utilized: number = serverMap.reduce((utilized, server) => utilized + Math.floor(ns.getServerRam(server.host)[1]), 0);
-    const total: number = serverMap.reduce((subtotal, server) => subtotal + Math.ceil(ns.getServerRam(server.host)[0]), 0);
-
-    return (utilized / total);
 }
 
 export function clusterServers(servers: PurchasedServer[]): Map<number, Server[]> {

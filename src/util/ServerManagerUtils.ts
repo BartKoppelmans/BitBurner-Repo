@@ -6,6 +6,7 @@ import Server from '/src/classes/Server.js';
 import { ServerMapFile, ServerType, TreeStructure } from "/src/interfaces/ServerInterfaces.js";
 import { CONSTANT } from "/src/lib/constants.js";
 import * as ServerUtils from "/src/util/ServerUtils.js";
+import * as ServerAPI from "/src/api/ServerAPI.js";
 
 export function spider(ns: NS, id: number, nodeName: string, parent?: Server): Server[] {
     let tempServerMap: Server[] = [];

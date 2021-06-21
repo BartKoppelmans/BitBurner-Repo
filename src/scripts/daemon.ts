@@ -31,6 +31,11 @@ async function initialize(ns: NS) {
 }
 
 async function hackLoop(ns: NS) {
+
+    const utilization: number = await HackUtils.determineUtilization(ns);
+
+    if (utilization > 0.9) return;
+
     let potentialTargets: HackableServer[] = await ServerAPI.getTargetServers(ns);
 
     // Then evaluate the potential targets afterwards

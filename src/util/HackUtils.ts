@@ -6,11 +6,13 @@ import { CONSTANT } from "/src/lib/constants.js";
 import PlayerManager from "/src/managers/PlayerManager.js";
 import { Tools } from "/src/tools/Tools.js";
 import * as BatchJobUtils from "/src/util/BatchJobUtils.js";
+import * as ServerAPI from "/src/api/ServerAPI.js";
 import * as JobAPI from "/src/api/JobAPI.js";
 import * as JobUtils from "/src/util/JobUtils.js";
 import * as ServerHackUtils from "/src/util/ServerHackUtils.js";
 import * as ToolUtils from "/src/util/ToolUtils.js";
 import * as Utils from "/src/util/Utils.js";
+import Server from "/src/classes/Server.js";
 
 // Return true when we have found a new target
 export async function hack(ns: NS, server: HackableServer): Promise<void> {
@@ -212,4 +214,15 @@ async function shouldIncrease(ns: NS, target: HackableServer): Promise<boolean> 
     const maxCycles: number = await BatchJobUtils.computeMaxCycles(ns, optimalBatchCost, true);
 
     return maxCycles >= optimalCycles;
+}
+
+
+export async function determineUtilization(ns: NS): Promise<number> {
+    const serverMap: Server[] = await ServerAPI.getHackingServers(ns);
+
+    // The number of RAM used
+    const utilized: number = serverMap.reduce((utilized, server) => utilized + Math.floor(ns.getServerRam(server.host)[1]), 0);
+    const total: number = serverMap.reduce((subtotal, server) => subtotal + Math.ceil(ns.getServerRam(server.host)[0]), 0);
+
+    return (utilized / total);
 }

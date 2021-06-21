@@ -4,6 +4,7 @@ import { CONSTANT } from "/src/lib/constants.js";
 import PlayerManager from "/src/managers/PlayerManager.js";
 import { Tools } from "/src/tools/Tools.js";
 import * as BatchJobUtils from "/src/util/BatchJobUtils.js";
+import * as ServerAPI from "/src/api/ServerAPI.js";
 import * as JobAPI from "/src/api/JobAPI.js";
 import * as JobUtils from "/src/util/JobUtils.js";
 import * as ServerHackUtils from "/src/util/ServerHackUtils.js";
@@ -163,4 +164,11 @@ async function shouldIncrease(ns, target) {
     const optimalCycles = ServerHackUtils.computeOptimalCycles(ns, target);
     const maxCycles = await BatchJobUtils.computeMaxCycles(ns, optimalBatchCost, true);
     return maxCycles >= optimalCycles;
+}
+export async function determineUtilization(ns) {
+    const serverMap = await ServerAPI.getHackingServers(ns);
+    // The number of RAM used
+    const utilized = serverMap.reduce((utilized, server) => utilized + Math.floor(ns.getServerRam(server.host)[1]), 0);
+    const total = serverMap.reduce((subtotal, server) => subtotal + Math.ceil(ns.getServerRam(server.host)[0]), 0);
+    return (utilized / total);
 }
