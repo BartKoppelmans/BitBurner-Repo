@@ -1,13 +1,10 @@
 import type { BitBurner as NS } from "Bitburner";
-import * as HackUtils from "/src/util/HackUtils.js";
-import PurchasedServer from "/src/classes/PurchasedServer.js";
-import Server from "/src/classes/Server.js";
 import { CONSTANT } from "/src/lib/constants.js";
 import PlayerManager from "/src/managers/PlayerManager.js";
 
-export function computeMaxRamPossible(ns: NS): number {
+export function computeMaxRamPossible(ns: NS, reservedMoney: number): number {
 
-    const canPurchase: boolean = canAfford(ns, Math.pow(2, CONSTANT.MIN_PURCHASED_SERVER_RAM_EXPONENT) * CONSTANT.PURCHASED_SERVER_COST_PER_RAM);
+    const canPurchase: boolean = canAfford(ns, Math.pow(2, CONSTANT.MIN_PURCHASED_SERVER_RAM_EXPONENT) * CONSTANT.PURCHASED_SERVER_COST_PER_RAM, reservedMoney);
 
     if (!canPurchase) return -1;
 
@@ -19,7 +16,7 @@ export function computeMaxRamPossible(ns: NS): number {
         const cost: number = Math.pow(2, exponent + 1) * CONSTANT.PURCHASED_SERVER_COST_PER_RAM;
 
         // Stop if we can't afford a next upgrade
-        if (!canAfford(ns, cost)) {
+        if (!canAfford(ns, cost, reservedMoney)) {
             break;
         }
     }
@@ -27,31 +24,9 @@ export function computeMaxRamPossible(ns: NS): number {
     return Math.pow(2, exponent);
 }
 
-export function canAfford(ns: NS, cost: number): boolean {
+export function canAfford(ns: NS, cost: number, reservedMoney: number): boolean {
     const playerManager: PlayerManager = PlayerManager.getInstance(ns);
-    const money: number = playerManager.getMoney(ns) * CONSTANT.PURCHASED_SERVER_ALLOWANCE_PERCENTAGE;
+    const money: number = (playerManager.getMoney(ns) - reservedMoney) * CONSTANT.PURCHASED_SERVER_ALLOWANCE_PERCENTAGE;
 
     return cost <= money;
-}
-
-export async function shouldUpgrade(ns: NS): Promise<boolean> {
-    const utilization: number = await HackUtils.determineUtilization(ns);
-    return (utilization > CONSTANT.SERVER_UTILIZATION_THRESHOLD);
-}
-
-export function clusterServers(servers: PurchasedServer[]): Map<number, Server[]> {
-    const map = new Map();
-    servers.forEach((server) => {
-        const key = server.ram;
-        const collection = map.get(key);
-        if (!collection) {
-            map.set(key, [server]);
-        } else {
-            collection.push(server);
-        }
-    });
-
-    // TODO: Sort the map?
-
-    return map;
 }

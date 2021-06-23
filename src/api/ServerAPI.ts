@@ -1,8 +1,8 @@
 import type { BitBurner as NS } from "Bitburner";
 import HackableServer from '/src/classes/HackableServer.js';
-import PurchasedServer from '/src/classes/PurchasedServer.js';
 import Server from '/src/classes/Server.js';
-import { ServerRequest, ServerRequestCode, ServerResponse } from "/src/interfaces/PortMessageInterfaces.js";
+import { ServerPurposeRequest, ServerRequest, ServerRequestCode, ServerResponse, ServerStatusRequest } from "/src/interfaces/PortMessageInterfaces.js";
+import { ServerPurpose, ServerStatus } from "/src/interfaces/ServerInterfaces.js";
 import { CONSTANT } from "/src/lib/constants.js";
 import * as ServerManagerUtils from "/src/util/ServerManagerUtils.js";
 import * as ServerUtils from "/src/util/ServerUtils.js";
@@ -10,6 +10,52 @@ import * as Utils from "/src/util/Utils.js";
 
 export async function getServerMap(ns: NS): Promise<Server[]> {
     return ServerManagerUtils.readServerMap(ns);
+}
+
+export async function updatePurpose(ns: NS, server: Server, purpose: ServerPurpose): Promise<void> {
+    const requestPortHandle = ns.getPortHandle(CONSTANT.SERVER_MANAGER_REQUEST_PORT);
+
+    while (requestPortHandle.full()) {
+        await ns.sleep(CONSTANT.PORT_FULL_RETRY_TIME);
+    }
+
+    const id: string = Utils.generateHash();
+
+    const request: ServerPurposeRequest = {
+        type: "Request",
+        code: ServerRequestCode.UPDATE_SERVER_PURPOSE,
+        id,
+        body: { server: server.characteristics.host, purpose }
+    };
+
+    requestPortHandle.write(JSON.stringify(request));
+
+    const response: ServerResponse = await getResponse(ns, id);
+
+    return;
+}
+
+export async function updateStatus(ns: NS, server: Server, status: ServerStatus): Promise<void> {
+    const requestPortHandle = ns.getPortHandle(CONSTANT.SERVER_MANAGER_REQUEST_PORT);
+
+    while (requestPortHandle.full()) {
+        await ns.sleep(CONSTANT.PORT_FULL_RETRY_TIME);
+    }
+
+    const id: string = Utils.generateHash();
+
+    const request: ServerStatusRequest = {
+        type: "Request",
+        code: ServerRequestCode.UPDATE_SERVER_MAP,
+        id,
+        body: { server: server.characteristics.host, status }
+    };
+
+    requestPortHandle.write(JSON.stringify(request));
+
+    const response: ServerResponse = await getResponse(ns, id);
+
+    return;
 }
 
 export async function requestUpdate(ns: NS): Promise<void> {
@@ -24,7 +70,7 @@ export async function requestUpdate(ns: NS): Promise<void> {
 
     const request: ServerRequest = {
         type: "Request",
-        code: ServerRequestCode.UPDATE,
+        code: ServerRequestCode.UPDATE_SERVER_MAP,
         id
     };
 
@@ -54,11 +100,21 @@ async function getResponse(ns: NS, id: string): Promise<ServerResponse> {
 
 export async function getServer(ns: NS, id: number): Promise<Server> {
 
-    const server: Server | undefined = (await getServerMap(ns)).find(server => server.id === id);
+    const server: Server | undefined = (await getServerMap(ns)).find(server => server.characteristics.id === id);
 
     if (!server) throw new Error("Could not find that server.");
 
     return server;
+}
+
+export async function getCurrentTargets(ns: NS): Promise<HackableServer[]> {
+    let servers: HackableServer[] = (await getServerMap(ns))
+        .filter(server => ServerUtils.isHackableServer(server)) as HackableServer[];
+
+    servers = servers
+        .filter(server => server.status === ServerStatus.PREPPING || server.status === ServerStatus.TARGETTING);
+
+    return servers;
 }
 
 export async function getTargetServers(ns: NS): Promise<HackableServer[]> {
@@ -74,17 +130,25 @@ export async function getTargetServers(ns: NS): Promise<HackableServer[]> {
 };
 
 // We sort this descending
+export async function getPreppingServers(ns: NS): Promise<Server[]> {
+    return (await getServerMap(ns))
+        .filter((server: Server) => server.isRooted(ns))
+        .filter((server: Server) => server.purpose === ServerPurpose.PREP)
+        .sort((a, b) => b.getAvailableRam(ns) - a.getAvailableRam(ns));
+};
+
+// We sort this descending
 export async function getHackingServers(ns: NS): Promise<Server[]> {
     return (await getServerMap(ns))
         .filter((server: Server) => server.isRooted(ns))
+        .filter((server: Server) => server.purpose === ServerPurpose.HACK)
         .sort((a, b) => b.getAvailableRam(ns) - a.getAvailableRam(ns));
 };
 
 // We sort this ascending
-export async function getPurchasedServers(ns: NS): Promise<PurchasedServer[]> {
+export async function getPurchasedServers(ns: NS): Promise<Server[]> {
     return (await getServerMap(ns))
         .filter((server: Server) => ServerUtils.isPurchasedServer(server))
-        // TODO: Sort by name
         .sort((a, b) => a.getAvailableRam(ns) - b.getAvailableRam(ns));
 }
 

@@ -1,9 +1,12 @@
 import type { BitBurner as NS } from "Bitburner";
 import * as ControlFlowAPI from "/src/api/ControlFlowAPI.js";
+import HackableServer from "/src/classes/HackableServer.js";
 import Server from '/src/classes/Server.js';
-import { ServerRequest, ServerResponse } from "/src/interfaces/PortMessageInterfaces.js";
+import { ServerPurposeRequest, ServerRequest, ServerRequestCode, ServerResponse, ServerStatusRequest } from "/src/interfaces/PortMessageInterfaces.js";
+import { ServerPurpose, ServerStatus, ServerType } from "/src/interfaces/ServerInterfaces.js";
 import { CONSTANT } from "/src/lib/constants.js";
 import * as ServerManagerUtils from "/src/util/ServerManagerUtils.js";
+import * as ServerUtils from "/src/util/ServerUtils.js";
 import * as Utils from "/src/util/Utils.js";
 
 class ServerManager {
@@ -29,7 +32,10 @@ class ServerManager {
             clearInterval(this.requestLoopInterval);
         }
 
-        await this.updateServerMap(ns);
+        this.serverMap = ServerManagerUtils.spider(ns, CONSTANT.HOME_SERVER_ID, CONSTANT.HOME_SERVER_HOST);
+        this.lastUpdated = new Date();
+        await this.determinePurposes(ns);
+        this.onUpdate(ns);
     }
 
     public async start(ns: NS): Promise<void> {
@@ -37,8 +43,6 @@ class ServerManager {
 
         this.updateLoopInterval = setInterval(this.updateServerMap.bind(this, ns), CONSTANT.SERVER_MAP_REBUILD_INTERVAL);
         this.requestLoopInterval = setInterval(this.requestLoop.bind(this, ns), CONSTANT.SERVER_MESSAGE_INTERVAL);
-
-        // TODO: Set the checker for reading the ports on whether an update is requested.
 
     }
 
@@ -61,30 +65,35 @@ class ServerManager {
         const requestPortHandle = ns.getPortHandle(CONSTANT.SERVER_MANAGER_REQUEST_PORT);
         if (requestPortHandle.empty()) return;
 
-        await this.onUpdateRequested(ns);
+        const requests: ServerRequest[] = requestPortHandle.data.map((string) => JSON.parse(string.toString()));
+
+        // NOTE: This could go wrong
+        requestPortHandle.clear();
+
+        const serverMapRequests: ServerRequest[] = requests.filter((request) => request.code === ServerRequestCode.UPDATE_SERVER_MAP);
+        const serverStatusRequests: ServerStatusRequest[] = requests.filter((request) => request.code === ServerRequestCode.UPDATE_SERVER_STATUS) as ServerStatusRequest[];
+        const serverPurposeRequests: ServerPurposeRequest[] = requests.filter((request) => request.code === ServerRequestCode.UPDATE_SERVER_PURPOSE) as ServerPurposeRequest[];
+
+        if (serverMapRequests.length > 0) {
+            await this.onServerMapUpdateRequested(ns, serverMapRequests);
+        }
+
+        for (const request of serverStatusRequests) {
+            await this.onServerStatusUpdateRequested(ns, request);
+        }
+
+        for (const request of serverPurposeRequests) {
+            await this.onServerPurposeUpdateRequested(ns, request);
+        }
     }
 
-    private async updateServerMap(ns: NS): Promise<void> {
-        let serverMap: Server[] = ServerManagerUtils.spider(ns, CONSTANT.HOME_SERVER_ID, CONSTANT.HOME_SERVER_HOST);
+    private async onServerMapUpdateRequested(ns: NS, requests: ServerRequest[]) {
 
-        this.serverMap = serverMap;
-        this.lastUpdated = new Date();
-
-        this.onUpdate(ns);
-    }
-
-    private onUpdate(ns: NS): void {
-        ServerManagerUtils.writeServerMap(ns, this.serverMap, this.lastUpdated);
-    }
-
-    private async onUpdateRequested(ns: NS) {
-        const requestPortHandle = ns.getPortHandle(CONSTANT.SERVER_MANAGER_REQUEST_PORT);
         const responsePortHandle = ns.getPortHandle(CONSTANT.SERVER_MANAGER_RESPONSE_PORT);
 
         let responses: ServerResponse[] = [];
 
-        for (const requestString of requestPortHandle.data) {
-            const request: ServerRequest = JSON.parse(requestString.toString());
+        for (const request of requests) {
             const response: ServerResponse = {
                 type: "Response",
                 request
@@ -94,12 +103,108 @@ class ServerManager {
 
         await this.updateServerMap(ns);
 
-        requestPortHandle.clear();
-
         for (const response of responses) {
             responsePortHandle.write(JSON.stringify(response));
         }
+
     }
+
+    private async onServerStatusUpdateRequested(ns: NS, request: ServerStatusRequest) {
+
+        const responsePortHandle = ns.getPortHandle(CONSTANT.SERVER_MANAGER_RESPONSE_PORT);
+
+        const response: ServerResponse = {
+            type: "Response",
+            request
+        };
+
+        const server: Server | undefined = this.serverMap.find((server) => server.characteristics.host === request.body.server);
+
+        if (!server) throw new Error("Could not find the server");
+        if (server.characteristics.type === ServerType.HackableServer) {
+            const hackableServer: HackableServer = server as HackableServer;
+
+            if (request.body.status !== ServerStatus.NONE && hackableServer.status !== ServerStatus.NONE) {
+                Utils.tprintColored(`Server ${hackableServer.characteristics.host} was already being prepped or targeted.`, false, CONSTANT.COLOR_WARNING);
+            }
+
+            hackableServer.setStatus(request.body.status);
+        } else throw new Error("We kind of expected this to be a hackable server");
+
+        await this.updateServerMap(ns);
+
+        responsePortHandle.write(JSON.stringify(response));
+    }
+
+
+
+    private async onServerPurposeUpdateRequested(ns: NS, request: ServerPurposeRequest) {
+
+        const responsePortHandle = ns.getPortHandle(CONSTANT.SERVER_MANAGER_RESPONSE_PORT);
+
+        const response: ServerResponse = {
+            type: "Response",
+            request
+        };
+
+        const server: Server | undefined = this.serverMap.find((server) => server.characteristics.host === request.body.server);
+
+        if (!server) throw new Error("Could not find the server");
+
+        server.setPurpose(request.body.purpose);
+
+        await this.updateServerMap(ns);
+
+        responsePortHandle.write(JSON.stringify(response));
+    }
+
+    private async updateServerMap(ns: NS): Promise<void> {
+        let tempServerMap: Server[] = ServerManagerUtils.spider(ns, CONSTANT.HOME_SERVER_ID, CONSTANT.HOME_SERVER_HOST);
+
+        // Copy the states of the old server map
+        for (const oldServer of this.serverMap) {
+            const newServer: Server | undefined = tempServerMap.find((s) => s.characteristics.host === oldServer.characteristics.host);
+
+            if (!newServer) throw new Error("The server has disappeared.");
+
+            newServer.setPurpose(oldServer.purpose);
+
+            if (ServerUtils.isHackableServer(oldServer)) {
+                (newServer as HackableServer).setStatus((oldServer as HackableServer).status);
+            }
+        }
+
+        this.serverMap = tempServerMap;
+        this.lastUpdated = new Date();
+
+        this.onUpdate(ns);
+    }
+
+    private onUpdate(ns: NS): void {
+        ServerManagerUtils.writeServerMap(ns, this.serverMap, this.lastUpdated);
+    }
+
+    private async determinePurposes(ns: NS): Promise<void> {
+        this.serverMap
+            .filter((server) => ServerUtils.isHackableServer(server))
+            .forEach((server) => server.setPurpose(ServerPurpose.PREP));
+
+        const home: Server | undefined = this.serverMap.find((server) => ServerUtils.isHomeServer(server));
+
+        if (home) home.setPurpose(ServerPurpose.HACK);
+
+        // The prepping servers
+        const b: Server[] = this.serverMap
+            .filter((server) => ServerUtils.isPurchasedServer(server))
+            .sort((a, b) => a.characteristics.host.localeCompare(b.characteristics.host, 'en', { numeric: true }));
+
+        // The hacking servers
+        const a: Server[] = b.splice(0, CONSTANT.NUM_PURCHASED_HACKING_SERVERS);
+
+        a.forEach((server) => server.setPurpose(ServerPurpose.HACK));
+        b.forEach((server) => server.setPurpose(ServerPurpose.PREP));
+    }
+
 }
 
 export async function main(ns: NS) {

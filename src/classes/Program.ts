@@ -47,15 +47,15 @@ export class Program {
     public run(ns: NS, server: Server) {
         switch (this.name) {
             case "BruteSSH.exe":
-                return ns.brutessh(server.host);
+                return ns.brutessh(server.characteristics.host);
             case "FTPCrack.exe":
-                return ns.ftpcrack(server.host);
+                return ns.ftpcrack(server.characteristics.host);
             case "relaySMTP.exe":
-                return ns.relaysmtp(server.host);
+                return ns.relaysmtp(server.characteristics.host);
             case "HTTPWorm.exe":
-                return ns.httpworm(server.host);
+                return ns.httpworm(server.characteristics.host);
             case "SQLInject.exe":
-                return ns.sqlinject(server.host);
+                return ns.sqlinject(server.characteristics.host);
             default:
                 throw new Error(`Program "${this.name}" not found.`);
         }

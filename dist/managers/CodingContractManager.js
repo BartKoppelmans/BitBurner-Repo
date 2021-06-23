@@ -44,7 +44,7 @@ class CodingContractManager {
         this.contracts = contracts;
     }
     async onNewContract(ns, contract) {
-        Utils.tprintColored(`We found a contract: ${contract.server.host}/${contract.filename}`, true, CONSTANT.COLOR_INFORMATION);
+        Utils.tprintColored(`We found a contract: ${contract.server.characteristics.host}/${contract.filename}`, true, CONSTANT.COLOR_INFORMATION);
     }
     async onSolveContract(ns, contract) {
         // TODO: Remove the contract from the list;

@@ -15,7 +15,7 @@ export namespace Heuristics {
 
     export function evaluate(ns: NS, server: HackableServer): HeuristicValue {
         if (!server.dynamicHackingProperties.securityLevel) {
-            throw new Error(`Unable to evaluate ${server.host}`);
+            throw new Error(`Unable to evaluate ${server.characteristics.host}`);
         }
 
         // TODO: Get rid of magic numbers

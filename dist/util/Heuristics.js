@@ -5,7 +5,7 @@ export var Heuristics;
     };
     function evaluate(ns, server) {
         if (!server.dynamicHackingProperties.securityLevel) {
-            throw new Error(`Unable to evaluate ${server.host}`);
+            throw new Error(`Unable to evaluate ${server.characteristics.host}`);
         }
         // TODO: Get rid of magic numbers
         // TODO: Filter anything that we can't actually attack...

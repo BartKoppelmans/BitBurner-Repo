@@ -1,11 +1,13 @@
 import * as ControlFlowAPI from "/src/api/ControlFlowAPI.js";
 import * as ServerAPI from "/src/api/ServerAPI.js";
+import { ServerPurpose } from "/src/interfaces/ServerInterfaces.js";
 import { CONSTANT } from "/src/lib/constants.js";
 import * as PurchasedServerManagerUtils from "/src/util/PurchasedServerManagerUtils.js";
 import * as Utils from "/src/util/Utils.js";
 class PurchasedServerManager {
     constructor() {
         this.purchasedServers = [];
+        this.quarantinedServers = [];
     }
     async updateServerMap(ns) {
         await ServerAPI.requestUpdate(ns);
@@ -47,7 +49,7 @@ class PurchasedServerManager {
         }
         const numServersLeft = CONSTANT.MAX_PURCHASED_SERVERS - this.purchasedServers.length;
         for (let i = 0; i < numServersLeft; i++) {
-            const ram = PurchasedServerManagerUtils.computeMaxRamPossible(ns);
+            const ram = PurchasedServerManagerUtils.computeMaxRamPossible(ns, this.getReservedMoney());
             if (ram === -1)
                 break;
             const id = this.purchasedServers.length + i;
@@ -83,15 +85,32 @@ class PurchasedServerManager {
     }
     async upgradeLoop(ns) {
         await this.updateServerMap(ns);
-        const shouldUpgrade = await PurchasedServerManagerUtils.shouldUpgrade(ns);
-        if (!shouldUpgrade)
-            return;
         let updateNeeded = false;
+        let finishedQuarantines = [];
+        for await (const quarantinedServer of this.quarantinedServers) {
+            const processes = ns.ps(quarantinedServer.server.characteristics.host);
+            if (processes.length !== 0)
+                continue;
+            const maxRam = PurchasedServerManagerUtils.computeMaxRamPossible(ns, this.getReservedMoney());
+            const isSuccessful = await this.upgradeServer(ns, quarantinedServer.server, maxRam);
+            updateNeeded = updateNeeded || isSuccessful;
+            if (isSuccessful) {
+                await ServerAPI.updatePurpose(ns, quarantinedServer.server, quarantinedServer.originalPurpose);
+                finishedQuarantines.push(quarantinedServer);
+                Utils.tprintColored(`We removed ${quarantinedServer.server.characteristics.host} from quarantine`, true, CONSTANT.COLOR_INFORMATION);
+            }
+        }
+        this.quarantinedServers = this.quarantinedServers.filter((q) => {
+            return !finishedQuarantines.some((fq) => fq.server.characteristics.host === q.server.characteristics.host);
+        });
         for (const server of this.purchasedServers) {
-            const maxRam = PurchasedServerManagerUtils.computeMaxRamPossible(ns);
-            if (maxRam > server.ram) {
-                const isSuccessful = await this.upgradeServer(ns, server, maxRam);
-                updateNeeded = updateNeeded || isSuccessful;
+            const isQuarantined = this.quarantinedServers.some((quarantinedServer) => quarantinedServer.server.characteristics.host === server.characteristics.host);
+            if (isQuarantined)
+                continue;
+            const maxRam = PurchasedServerManagerUtils.computeMaxRamPossible(ns, this.getReservedMoney());
+            if (maxRam > server.getTotalRam(ns)) {
+                const cost = maxRam * CONSTANT.PURCHASED_SERVER_COST_PER_RAM;
+                await this.quarantineServer(ns, server, cost);
             }
             else
                 break;
@@ -99,13 +118,15 @@ class PurchasedServerManager {
         if (updateNeeded)
             await this.updateServerMap(ns);
     }
+    async quarantineServer(ns, server, cost) {
+        this.quarantinedServers.push({ originalPurpose: server.purpose, server, cost });
+        // Quarantine the server
+        await ServerAPI.updatePurpose(ns, server, ServerPurpose.NONE);
+        // TODO: Subtract the costs from the money that we currently have, to also put some budget into quarantine
+        Utils.tprintColored(`We put ${server.characteristics.host} into quarantine`, true, CONSTANT.COLOR_INFORMATION);
+    }
     async upgradeServer(ns, server, ram) {
-        const hostName = server.host;
-        // TODO: We should make sure that the server finishes scripts first
-        // and is put into quarantine, so that no new scripts are started
-        // For now we just kill everything and hope for the best
-        ns.killall(hostName);
-        await ns.sleep(CONSTANT.SMALL_DELAY);
+        const hostName = server.characteristics.host;
         const deletedServer = ns.deleteServer(hostName);
         if (!deletedServer) {
             Utils.tprintColored(`Could not delete server ${hostName}`, true, CONSTANT.COLOR_WARNING);
@@ -116,6 +137,9 @@ class PurchasedServerManager {
             Utils.tprintColored(`Upgraded server ${boughtServer} with ${ram}GB ram.`, true, CONSTANT.COLOR_INFORMATION);
         }
         return !!boughtServer;
+    }
+    getReservedMoney() {
+        return this.quarantinedServers.reduce((reservedMoney, quarantinedServer) => reservedMoney + quarantinedServer.cost, 0);
     }
 }
 export async function main(ns) {

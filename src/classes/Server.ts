@@ -1,31 +1,28 @@
 import type { BitBurner as NS } from "Bitburner";
-import { ServerType, TreeStructure } from "/src/interfaces/ServerInterfaces.js";
+import { ServerCharacteristics, ServerPurpose, TreeStructure } from "/src/interfaces/ServerInterfaces.js";
+import { CONSTANT } from "/src/lib/constants.js";
+import * as ServerUtils from "/src/util/ServerUtils.js";
 
 export default class Server {
 
-    type: ServerType = ServerType.BasicServer;
+    characteristics: ServerCharacteristics;
 
-    // Static values
-    id: number;
-    host: string;
+    purpose: ServerPurpose;
+
     treeStructure?: TreeStructure;
-
-    ram: number;
     files: string[];
 
 
-    public constructor(ns: NS, id: number, host: string, treeStructure?: TreeStructure) {
-        this.id = id;
-        this.host = host;
+    public constructor(ns: NS, characteristics: ServerCharacteristics, treeStructure?: TreeStructure, purpose: ServerPurpose = ServerPurpose.NONE) {
+        this.characteristics = characteristics;
+        this.purpose = purpose;
 
-        this.ram = ns.getServerRam(this.host)[0];
-        this.files = ns.ls(this.host);
+        this.files = ns.ls(this.characteristics.host);
 
-        if (treeStructure)
-            this.updateTree(treeStructure);
+        if (treeStructure) this.updateTreeStructure(treeStructure);
     }
 
-    public updateTree(treeStructure: TreeStructure): void {
+    public updateTreeStructure(treeStructure: TreeStructure): void {
         if (!treeStructure.connections && !treeStructure.children && !treeStructure.parent) {
             return;
         }
@@ -45,20 +42,31 @@ export default class Server {
     }
 
     public getAvailableRam(ns: NS): number {
-        let [total, used] = ns.getServerRam(this.host);
-        return total - used;
+        let [total, used] = ns.getServerRam(this.characteristics.host);
+        return total - used - ((ServerUtils.isHomeServer(this)) ? CONSTANT.DESIRED_HOME_FREE_RAM : 0);
+    }
+
+    public getTotalRam(ns: NS): number {
+        return ns.getServerRam(this.characteristics.host)[0];
+    }
+
+    public getUsedRam(ns: NS): number {
+        return ns.getServerRam(this.characteristics.host)[1];
     }
 
     public isRooted(ns: NS): boolean {
-        return ns.hasRootAccess(this.host);
+        return ns.hasRootAccess(this.characteristics.host);
+    }
+
+    public setPurpose(purpose: ServerPurpose): void {
+        this.purpose = purpose;
     }
 
     public toJSON() {
         return {
-            id: this.id,
-            host: this.host,
+            characteristics: this.characteristics,
             treeStructure: this.treeStructure,
-            type: this.type
+            purpose: this.purpose
         };
     }
 }

@@ -27,15 +27,15 @@ export async function createCycleJob(ns, target, tool, start, isFirstWeaken = fa
     let threads;
     let executionTime;
     if (tool === Tools.HACK) {
-        executionTime = ns.getHackTime(target.host) * CONSTANT.MILLISECONDS_IN_SECOND;
+        executionTime = ns.getHackTime(target.characteristics.host) * CONSTANT.MILLISECONDS_IN_SECOND;
         threads = ServerHackUtils.hackThreadsNeeded(ns, target);
     }
     else if (tool === Tools.WEAKEN) {
-        executionTime = ns.getWeakenTime(target.host) * CONSTANT.MILLISECONDS_IN_SECOND;
+        executionTime = ns.getWeakenTime(target.characteristics.host) * CONSTANT.MILLISECONDS_IN_SECOND;
         threads = (isFirstWeaken) ? ServerHackUtils.weakenThreadsNeededAfterTheft(ns, target) : ServerHackUtils.weakenThreadsNeededAfterGrowth(ns, target);
     }
     else if (tool === Tools.GROW) {
-        executionTime = ns.getGrowTime(target.host) * CONSTANT.MILLISECONDS_IN_SECOND;
+        executionTime = ns.getGrowTime(target.characteristics.host) * CONSTANT.MILLISECONDS_IN_SECOND;
         threads = ServerHackUtils.growThreadsNeededAfterTheft(ns, target);
     }
     else {

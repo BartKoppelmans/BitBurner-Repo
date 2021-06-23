@@ -9,11 +9,11 @@ export function getToolCost(ns: NS, tool: Tools): number {
 export function getToolTime(ns: NS, tool: Tools, server: HackableServer) {
     switch (tool) {
         case Tools.GROW:
-            return ns.getGrowTime(server.host);
+            return ns.getGrowTime(server.characteristics.host);
         case Tools.WEAKEN:
-            return ns.getWeakenTime(server.host);
+            return ns.getWeakenTime(server.characteristics.host);
         case Tools.HACK:
-            return ns.getHackTime(server.host);
+            return ns.getHackTime(server.characteristics.host);
         default:
             throw new Error("Tool not recognized");
     }

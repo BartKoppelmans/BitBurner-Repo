@@ -1,8 +1,9 @@
+import { ServerPurpose, ServerStatus } from "/src/interfaces/ServerInterfaces.js";
 
 export type MessageType = "Request" | "Response";
 
 // NOTE: Here we should add all possible message codes
-export type RequestCode = ServerRequestCode | JobRequestCode | ControlFlowCode;
+export type RequestCode = ServerRequestCode | ControlFlowCode;
 
 export interface Message {
     type: MessageType;
@@ -19,13 +20,9 @@ export interface Response extends Message {
 // The implementations ---------------------------------------------------
 
 export enum ServerRequestCode {
-    UPDATE,
-}
-
-export enum JobRequestCode {
-    CURRENT_TARGETS,
-    IS_PREPPING,
-    IS_TARGETTING
+    UPDATE_SERVER_MAP,
+    UPDATE_SERVER_STATUS,
+    UPDATE_SERVER_PURPOSE,
 }
 
 export enum ControlFlowCode {
@@ -38,6 +35,14 @@ export interface ServerRequest extends Request {
     code: ServerRequestCode;
 }
 
+export interface ServerStatusRequest extends ServerRequest {
+    body: { server: string, status: ServerStatus; };
+}
+
+export interface ServerPurposeRequest extends ServerRequest {
+    body: { server: string, purpose: ServerPurpose; };
+}
+
 export interface ServerResponse extends Response {
     request: ServerRequest;
 }
@@ -45,23 +50,4 @@ export interface ServerResponse extends Response {
 
 export interface ControlFlowRequest extends Request {
     code: ControlFlowCode;
-}
-
-
-export interface JobRequest extends Request {
-    code: JobRequestCode;
-}
-
-export interface JobActionRequest extends JobRequest {
-    body: string;
-}
-
-export interface JobTargetsResponse extends Response {
-    body: string[];
-    request: JobRequest;
-}
-
-export interface JobActionResponse extends Response {
-    body: boolean;
-    request: JobRequest;
 }

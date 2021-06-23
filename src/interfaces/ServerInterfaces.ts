@@ -7,11 +7,36 @@ export interface TreeStructure {
     parent?: number;
 }
 
+export interface ServerCharacteristics {
+    id: number;
+    type: ServerType;
+    host: string;
+}
+
 export enum ServerType {
     BasicServer,
     HackableServer,
     HomeServer,
-    PurchasedServer
+    PurchasedServer,
+    DarkWebServer
+}
+
+export enum ServerPurpose {
+    NONE,
+    PREP,
+    HACK
+}
+
+export enum ServerStatus {
+    NONE,
+    PREPPING,
+    TARGETTING
+}
+
+export interface QuarantinedServer {
+    originalPurpose: ServerPurpose,
+    server: Server;
+    cost: number;
 }
 
 export interface StaticHackingProperties {

@@ -1,12 +1,9 @@
 import type { BitBurner as NS } from "Bitburner";
 import HackableServer from '/src/classes/HackableServer.js';
-import HomeServer from "/src/classes/HomeServer.js";
-import PurchasedServer from '/src/classes/PurchasedServer.js';
 import Server from '/src/classes/Server.js';
-import { ServerMapFile, ServerType, TreeStructure } from "/src/interfaces/ServerInterfaces.js";
+import { ServerCharacteristics, ServerMapFile, ServerType, TreeStructure } from "/src/interfaces/ServerInterfaces.js";
 import { CONSTANT } from "/src/lib/constants.js";
 import * as ServerUtils from "/src/util/ServerUtils.js";
-import * as ServerAPI from "/src/api/ServerAPI.js";
 
 export function spider(ns: NS, id: number, nodeName: string, parent?: Server): Server[] {
     let tempServerMap: Server[] = [];
@@ -14,41 +11,47 @@ export function spider(ns: NS, id: number, nodeName: string, parent?: Server): S
     let queue: string[] = ns.scan(nodeName);
 
     if (parent) {
-        const parentIndex: number = queue.indexOf(parent.host);
+        const parentIndex: number = queue.indexOf(parent.characteristics.host);
         queue.splice(parentIndex, 1);
 
         // The current node is a leaf
         if (queue.length === 0) {
 
-            // If the node is a purchased server
-            if (ServerUtils.isHome(parent.host) && ServerUtils.isPurchased(nodeName)) {
-                // A purchased server
-                return [new PurchasedServer(ns, id, nodeName)];
-            }
-            else if (ServerUtils.isHome(parent.host) && ServerUtils.isDarkweb(nodeName)) {
-                // The darkweb server
-                return [new Server(ns, id, nodeName)];
-            }
-            else {
-                const treeStructure = {
-                    connections: [parent.id],
-                    parent: parent.id,
-                    children: []
-                };
+            let type: ServerType;
 
-                // Create hackable node
-                return [new HackableServer(ns, id, nodeName, treeStructure)];
-            }
+            // Find the type of the server
+            if (ServerUtils.isPurchased(nodeName)) type = ServerType.PurchasedServer;
+            else if (ServerUtils.isDarkweb(nodeName)) type = ServerType.DarkWebServer;
+            else type = ServerType.HackableServer;
+
+            const characteristics: ServerCharacteristics = {
+                host: nodeName,
+                type,
+                id
+            };
+
+            const treeStructure = {
+                connections: [parent.characteristics.id],
+                parent: parent.characteristics.id,
+                children: []
+            };
+
+            return (type === ServerType.HackableServer) ? [new HackableServer(ns, characteristics, treeStructure)] : [new Server(ns, characteristics, treeStructure)];
 
         }
+
     }
+
 
     // The current node is a subtree node
     let subtreeNode: Server;
+    let characteristics: ServerCharacteristics;
     if (parent) {
-        subtreeNode = new HackableServer(ns, id, nodeName, { parent: parent.id });
+        characteristics = { id, type: ServerType.HackableServer, host: nodeName };
+        subtreeNode = new HackableServer(ns, characteristics, { parent: parent.characteristics.id });
     } else {
-        subtreeNode = new HomeServer(ns);
+        characteristics = { id, type: ServerType.HomeServer, host: CONSTANT.HOME_SERVER_HOST };
+        subtreeNode = new Server(ns, characteristics);
     }
 
 
@@ -60,27 +63,27 @@ export function spider(ns: NS, id: number, nodeName: string, parent?: Server): S
             ...spider(ns, currentId + 1, childNodeName, subtreeNode)
         ];
 
-        currentId = Math.max.apply(Math, tempServerMap.map((server) => server.id));
+        currentId = Math.max.apply(Math, tempServerMap.map((server) => server.characteristics.id));
     });
 
-    let children: Server[] = tempServerMap.filter(node => queue.includes(node.host));
+    let children: Server[] = tempServerMap.filter(node => queue.includes(node.characteristics.host));
 
     // Create the subtree structure
     let treeStructure: TreeStructure;
     if (parent) {
         treeStructure = {
-            connections: [...children.map((server) => server.id), parent.id],
-            children: children.map((server) => server.id),
-            parent: parent.id
+            connections: [...children.map((server) => server.characteristics.id), parent.characteristics.id],
+            children: children.map((server) => server.characteristics.id),
+            parent: parent.characteristics.id
         };
     } else {
         treeStructure = {
-            connections: children.map((server) => server.id),
-            children: children.map((server) => server.id)
+            connections: children.map((server) => server.characteristics.id),
+            children: children.map((server) => server.characteristics.id)
         };
     }
 
-    subtreeNode.updateTree(treeStructure);
+    subtreeNode.updateTreeStructure(treeStructure);
 
     return [
         ...tempServerMap,
@@ -111,15 +114,14 @@ export function readServerMap(ns: NS): Server[] {
 }
 
 function parseServerObject(ns: NS, serverObject: any): Server {
-    switch (+serverObject.type) {
-        case ServerType.BasicServer:
-            return new Server(ns, serverObject.id, serverObject.host, serverObject.treeStructure);
+    switch (+serverObject.characteristics.type) {
         case ServerType.HackableServer:
-            return new HackableServer(ns, serverObject.id, serverObject.host, serverObject.treeStructure);
+            return new HackableServer(ns, serverObject.characteristics, serverObject.treeStructure, serverObject.purpose,);
+        case ServerType.BasicServer:
         case ServerType.HomeServer:
-            return new HomeServer(ns, serverObject.treeStructure);
         case ServerType.PurchasedServer:
-            return new PurchasedServer(ns, serverObject.id, serverObject.host);
+        case ServerType.DarkWebServer:
+            return new Server(ns, serverObject.characteristics, serverObject.treeStructure, serverObject.purpose);
         default:
             throw new Error("Server type not recognized.");
     }

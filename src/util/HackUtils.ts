@@ -2,57 +2,40 @@ import type { BitBurner as NS } from "Bitburner";
 import BatchJob from "/src/classes/BatchJob.js";
 import HackableServer from "/src/classes/HackableServer.js";
 import Job from "/src/classes/Job.js";
+import { ServerStatus } from "/src/interfaces/ServerInterfaces.js";
 import { CONSTANT } from "/src/lib/constants.js";
 import PlayerManager from "/src/managers/PlayerManager.js";
 import { Tools } from "/src/tools/Tools.js";
 import * as BatchJobUtils from "/src/util/BatchJobUtils.js";
-import * as ServerAPI from "/src/api/ServerAPI.js";
-import * as JobAPI from "/src/api/JobAPI.js";
 import * as JobUtils from "/src/util/JobUtils.js";
 import * as ServerHackUtils from "/src/util/ServerHackUtils.js";
 import * as ToolUtils from "/src/util/ToolUtils.js";
 import * as Utils from "/src/util/Utils.js";
-import Server from "/src/classes/Server.js";
 
 // Return true when we have found a new target
-export async function hack(ns: NS, server: HackableServer): Promise<void> {
+export async function hack(ns: NS, target: HackableServer): Promise<void> {
 
-    // If it is prepping, leave it
-    const isPrepping1: boolean = await JobAPI.isPrepping(ns, server);
-    if (isPrepping1) return;
+    // If it is prepping or targetting, leave it
+    if (target.status !== ServerStatus.NONE) return;
 
-    // From here on it is a target
-
-    // It is a target, but is currently resting
-    const isTargetting: boolean = await JobAPI.isTargetting(ns, server);
-    if (isTargetting) return;
-
-    // Prep the server
-    await prepServer(ns, server);
-
-    // The server is not optimal, other targets take up the RAM
-    if (server.dynamicHackingProperties.securityLevel > server.staticHackingProperties.minSecurityLevel || server.dynamicHackingProperties.money < server.staticHackingProperties.maxMoney) return;
-
-    // If it is prepping, leave it
-    const isPrepping2: boolean = await JobAPI.isPrepping(ns, server);
-    if (isPrepping2) return;
+    // The server is not optimal, so we have to prep it first
+    if (!target.isOptimal()) {
+        await prepServer(ns, target);
+        return;
+    }
 
     // Make sure that the percentage that we steal is optimal
-    await optimizePerformance(ns, server);
+    await optimizePerformance(ns, target);
 
-    await attackServer(ns, server);
+    await attackServer(ns, target);
 
     return;
 }
 
 export async function prepServer(ns: NS, target: HackableServer): Promise<void> {
 
-    // We should not prep anymore once we are targetting
-    const isTargetting: boolean = await JobAPI.isTargetting(ns, target);
-    if (isTargetting) return;
-
     // If the server is optimal, we are done I guess
-    if (target.dynamicHackingProperties.securityLevel === target.staticHackingProperties.minSecurityLevel && target.dynamicHackingProperties.money === target.staticHackingProperties.maxMoney) return;
+    if (target.isOptimal()) return;
 
     const playerManager: PlayerManager = PlayerManager.getInstance(ns);
 
@@ -62,7 +45,7 @@ export async function prepServer(ns: NS, target: HackableServer): Promise<void> 
 
     // First grow, so that the amount of money is optimal
     if (target.dynamicHackingProperties.money < target.staticHackingProperties.maxMoney) {
-        let maxGrowThreads: number = await JobUtils.computeMaxThreads(ns, Tools.GROW, CONSTANT.ALLOW_THREAD_SPREADING);
+        let maxGrowThreads: number = await JobUtils.computeMaxThreads(ns, Tools.GROW, true);
         let neededGrowThreads: number = await JobUtils.computeThreadsNeeded(ns, Tools.GROW, target);
         let weakenThreadsNeeded: number = await JobUtils.computeThreadsNeeded(ns, Tools.WEAKEN, target);
 
@@ -94,7 +77,7 @@ export async function prepServer(ns: NS, target: HackableServer): Promise<void> 
     }
 
     let weakenThreadsNeeded: number = (await JobUtils.computeThreadsNeeded(ns, Tools.WEAKEN, target)) + compensationWeakenThreads;
-    let maxWeakenThreads: number = await JobUtils.computeMaxThreads(ns, Tools.WEAKEN, CONSTANT.ALLOW_THREAD_SPREADING);
+    let maxWeakenThreads: number = await JobUtils.computeMaxThreads(ns, Tools.WEAKEN, true);
     weakenThreads = Math.min(weakenThreadsNeeded, maxWeakenThreads);
 
     if (weakenThreads > 0) {
@@ -180,7 +163,7 @@ async function optimizePerformance(ns: NS, target: HackableServer): Promise<void
 
     if (performanceUpdated && CONSTANT.DEBUG_HACKING) {
         const updatedPercentage: number = (Math.floor(ServerHackUtils.actualPercentageToSteal(ns, target) * 100 * 100) / 100);
-        Utils.tprintColored(`Updated percentage to steal for ${target.host} to ${updatedPercentage}`, true, CONSTANT.COLOR_HACKING);
+        Utils.tprintColored(`Updated percentage to steal for ${target.characteristics.host} to ${updatedPercentage}`, true, CONSTANT.COLOR_HACKING);
     }
 }
 
@@ -214,15 +197,4 @@ async function shouldIncrease(ns: NS, target: HackableServer): Promise<boolean> 
     const maxCycles: number = await BatchJobUtils.computeMaxCycles(ns, optimalBatchCost, true);
 
     return maxCycles >= optimalCycles;
-}
-
-
-export async function determineUtilization(ns: NS): Promise<number> {
-    const serverMap: Server[] = await ServerAPI.getHackingServers(ns);
-
-    // The number of RAM used
-    const utilized: number = serverMap.reduce((utilized, server) => utilized + Math.floor(ns.getServerRam(server.host)[1]), 0);
-    const total: number = serverMap.reduce((subtotal, server) => subtotal + Math.ceil(ns.getServerRam(server.host)[0]), 0);
-
-    return (utilized / total);
 }

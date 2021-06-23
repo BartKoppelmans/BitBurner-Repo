@@ -2,7 +2,7 @@ import { CONSTANT } from "/src/lib/constants.js";
 import PlayerManager from "/src/managers/PlayerManager.js";
 export function serverGrowthPercentage(ns, target) {
     const playerManager = PlayerManager.getInstance(ns);
-    return ns.getServerGrowth(target.host) * playerManager.getGrowthMultiplier() / 100;
+    return ns.getServerGrowth(target.characteristics.host) * playerManager.getGrowthMultiplier() / 100;
 }
 export function adjustedGrowthRate(ns, target) {
     return Math.min(CONSTANT.MAX_GROWTH_RATE, 1 + ((CONSTANT.UNADJUSTED_GROWTH_RATE - 1) / target.staticHackingProperties.minSecurityLevel));
@@ -63,6 +63,6 @@ export function weakenThreadTotalPerCycle(ns, target) {
     return (weakenThreadsNeededAfterTheft(ns, target) + weakenThreadsNeededAfterGrowth(ns, target));
 }
 export function computeOptimalCycles(ns, target) {
-    const fullWeakenTime = ns.getWeakenTime(target.host) * CONSTANT.MILLISECONDS_IN_SECOND - CONSTANT.QUEUE_DELAY;
+    const fullWeakenTime = ns.getWeakenTime(target.characteristics.host) * CONSTANT.MILLISECONDS_IN_SECOND - CONSTANT.QUEUE_DELAY;
     return Math.min(CONSTANT.MAX_CYCLE_NUMBER, Math.max(1, Math.floor(fullWeakenTime / CONSTANT.QUEUE_DELAY)));
 }

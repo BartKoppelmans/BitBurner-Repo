@@ -1,10 +1,43 @@
 import { ServerRequestCode } from "/src/interfaces/PortMessageInterfaces.js";
+import { ServerPurpose, ServerStatus } from "/src/interfaces/ServerInterfaces.js";
 import { CONSTANT } from "/src/lib/constants.js";
 import * as ServerManagerUtils from "/src/util/ServerManagerUtils.js";
 import * as ServerUtils from "/src/util/ServerUtils.js";
 import * as Utils from "/src/util/Utils.js";
 export async function getServerMap(ns) {
     return ServerManagerUtils.readServerMap(ns);
+}
+export async function updatePurpose(ns, server, purpose) {
+    const requestPortHandle = ns.getPortHandle(CONSTANT.SERVER_MANAGER_REQUEST_PORT);
+    while (requestPortHandle.full()) {
+        await ns.sleep(CONSTANT.PORT_FULL_RETRY_TIME);
+    }
+    const id = Utils.generateHash();
+    const request = {
+        type: "Request",
+        code: ServerRequestCode.UPDATE_SERVER_PURPOSE,
+        id,
+        body: { server: server.characteristics.host, purpose }
+    };
+    requestPortHandle.write(JSON.stringify(request));
+    const response = await getResponse(ns, id);
+    return;
+}
+export async function updateStatus(ns, server, status) {
+    const requestPortHandle = ns.getPortHandle(CONSTANT.SERVER_MANAGER_REQUEST_PORT);
+    while (requestPortHandle.full()) {
+        await ns.sleep(CONSTANT.PORT_FULL_RETRY_TIME);
+    }
+    const id = Utils.generateHash();
+    const request = {
+        type: "Request",
+        code: ServerRequestCode.UPDATE_SERVER_MAP,
+        id,
+        body: { server: server.characteristics.host, status }
+    };
+    requestPortHandle.write(JSON.stringify(request));
+    const response = await getResponse(ns, id);
+    return;
 }
 export async function requestUpdate(ns) {
     const requestPortHandle = ns.getPortHandle(CONSTANT.SERVER_MANAGER_REQUEST_PORT);
@@ -14,7 +47,7 @@ export async function requestUpdate(ns) {
     const id = Utils.generateHash();
     const request = {
         type: "Request",
-        code: ServerRequestCode.UPDATE,
+        code: ServerRequestCode.UPDATE_SERVER_MAP,
         id
     };
     requestPortHandle.write(JSON.stringify(request));
@@ -36,10 +69,17 @@ async function getResponse(ns, id) {
     }
 }
 export async function getServer(ns, id) {
-    const server = (await getServerMap(ns)).find(server => server.id === id);
+    const server = (await getServerMap(ns)).find(server => server.characteristics.id === id);
     if (!server)
         throw new Error("Could not find that server.");
     return server;
+}
+export async function getCurrentTargets(ns) {
+    let servers = (await getServerMap(ns))
+        .filter(server => ServerUtils.isHackableServer(server));
+    servers = servers
+        .filter(server => server.status === ServerStatus.PREPPING || server.status === ServerStatus.TARGETTING);
+    return servers;
 }
 export async function getTargetServers(ns) {
     let servers = (await getServerMap(ns))
@@ -52,9 +92,18 @@ export async function getTargetServers(ns) {
 }
 ;
 // We sort this descending
+export async function getPreppingServers(ns) {
+    return (await getServerMap(ns))
+        .filter((server) => server.isRooted(ns))
+        .filter((server) => server.purpose === ServerPurpose.PREP)
+        .sort((a, b) => b.getAvailableRam(ns) - a.getAvailableRam(ns));
+}
+;
+// We sort this descending
 export async function getHackingServers(ns) {
     return (await getServerMap(ns))
         .filter((server) => server.isRooted(ns))
+        .filter((server) => server.purpose === ServerPurpose.HACK)
         .sort((a, b) => b.getAvailableRam(ns) - a.getAvailableRam(ns));
 }
 ;
@@ -62,7 +111,6 @@ export async function getHackingServers(ns) {
 export async function getPurchasedServers(ns) {
     return (await getServerMap(ns))
         .filter((server) => ServerUtils.isPurchasedServer(server))
-        // TODO: Sort by name
         .sort((a, b) => a.getAvailableRam(ns) - b.getAvailableRam(ns));
 }
 export async function startServerManager(ns) {

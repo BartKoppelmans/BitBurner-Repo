@@ -1,20 +1,20 @@
 import type { BitBurner as NS } from "Bitburner";
 import Server from '/src/classes/Server.js';
-import { DynamicHackingProperties, ServerType, StaticHackingProperties, TreeStructure } from "/src/interfaces/ServerInterfaces.js";
+import { DynamicHackingProperties, ServerCharacteristics, ServerPurpose, ServerStatus, StaticHackingProperties, TreeStructure } from "/src/interfaces/ServerInterfaces.js";
 import { CONSTANT } from "/src/lib/constants.js";
 import { Heuristics } from "/src/util/Heuristics.js";
 
 export default class HackableServer extends Server {
 
-    type: ServerType = ServerType.HackableServer;
+    status: ServerStatus = ServerStatus.NONE;
 
     staticHackingProperties: StaticHackingProperties;
     dynamicHackingProperties: DynamicHackingProperties;
 
     serverValue?: Heuristics.HeuristicValue;
 
-    constructor(ns: NS, id: number, host: string, treeStructure?: TreeStructure) {
-        super(ns, id, host, treeStructure);
+    constructor(ns: NS, characteristics: ServerCharacteristics, treeStructure?: TreeStructure, purpose: ServerPurpose = ServerPurpose.NONE) {
+        super(ns, characteristics, treeStructure, purpose);
 
         this.staticHackingProperties = this.getStaticHackingProperties(ns);
         this.dynamicHackingProperties = this.getDynamicHackingProperties(ns);
@@ -22,12 +22,12 @@ export default class HackableServer extends Server {
 
     private getStaticHackingProperties(ns: NS): StaticHackingProperties {
         return {
-            ports: ns.getServerNumPortsRequired(this.host),
-            hackingLevel: ns.getServerRequiredHackingLevel(this.host),
-            maxMoney: ns.getServerMaxMoney(this.host),
-            growth: ns.getServerGrowth(this.host),
-            minSecurityLevel: ns.getServerMinSecurityLevel(this.host),
-            baseSecurityLevel: ns.getServerBaseSecurityLevel(this.host),
+            ports: ns.getServerNumPortsRequired(this.characteristics.host),
+            hackingLevel: ns.getServerRequiredHackingLevel(this.characteristics.host),
+            maxMoney: ns.getServerMaxMoney(this.characteristics.host),
+            growth: ns.getServerGrowth(this.characteristics.host),
+            minSecurityLevel: ns.getServerMinSecurityLevel(this.characteristics.host),
+            baseSecurityLevel: ns.getServerBaseSecurityLevel(this.characteristics.host),
         };
     }
 
@@ -48,12 +48,12 @@ export default class HackableServer extends Server {
 
         return {
             lastUpdated: new Date(),
-            securityLevel: ns.getServerSecurityLevel(this.host),
-            money: ns.getServerMoneyAvailable(this.host),
+            securityLevel: ns.getServerSecurityLevel(this.characteristics.host),
+            money: ns.getServerMoneyAvailable(this.characteristics.host),
             availableRam: this.getAvailableRam(ns),
-            weakenTime: ns.getWeakenTime(this.host),
-            growTime: ns.getGrowTime(this.host),
-            hackTime: ns.getHackTime(this.host),
+            weakenTime: ns.getWeakenTime(this.characteristics.host),
+            growTime: ns.getGrowTime(this.characteristics.host),
+            hackTime: ns.getHackTime(this.characteristics.host),
             percentageToSteal
         };
     }
@@ -65,6 +65,25 @@ export default class HackableServer extends Server {
     }
 
     public isHackable(ns: NS) {
-        return ns.getServerRequiredHackingLevel(this.host) <= ns.getHackingLevel();
+        return ns.getServerRequiredHackingLevel(this.characteristics.host) <= ns.getHackingLevel();
+    }
+
+    public setStatus(status: ServerStatus): void {
+        this.status = status;
+    }
+
+    public isOptimal(): boolean {
+        return this.dynamicHackingProperties.securityLevel === this.staticHackingProperties.minSecurityLevel &&
+            this.dynamicHackingProperties.money === this.staticHackingProperties.maxMoney;
+    }
+
+    public toJSON() {
+        const json: any = super.toJSON();
+
+        return {
+            ...json,
+            status: this.status
+        };
+
     }
 }

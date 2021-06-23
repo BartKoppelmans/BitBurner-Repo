@@ -1,7 +1,7 @@
+import * as ServerAPI from "/src/api/ServerAPI.js";
 import HackableServer from "/src/classes/HackableServer.js";
-import HomeServer from "/src/classes/HomeServer.js";
-import PurchasedServer from "/src/classes/PurchasedServer.js";
 import Server from "/src/classes/Server.js";
+import { ServerStatus, ServerType } from "/src/interfaces/ServerInterfaces.js";
 import { CONSTANT } from "/src/lib/constants.js";
 import * as JobUtils from "/src/util/JobUtils.js";
 import * as ServerUtils from "/src/util/ServerUtils.js";
@@ -28,7 +28,7 @@ export default class Job {
         }
     }
     async execute(ns) {
-        const maxThreadsAvailable = await JobUtils.computeMaxThreads(ns, this.tool, true);
+        const maxThreadsAvailable = await JobUtils.computeMaxThreads(ns, this.tool, this.isPrep);
         if (maxThreadsAvailable === 0) {
             // Cancel the batch
             throw new Error("No threads available");
@@ -38,7 +38,7 @@ export default class Job {
             // For now just use he minimum of the two
             this.threads = Math.min(this.threads, maxThreadsAvailable);
         }
-        this.threadSpread = await JobUtils.computeThreadSpread(ns, this.tool, this.threads);
+        this.threadSpread = await JobUtils.computeThreadSpread(ns, this.tool, this.threads, this.isPrep);
         const commonArgs = {
             script: this.tool,
             target: this.target,
@@ -47,13 +47,13 @@ export default class Job {
         for (let [server, threads] of this.threadSpread) {
             // We have to copy the tool to the server if it is not available yet
             if (!ServerUtils.isHomeServer(server)) {
-                ns.scp(this.tool, CONSTANT.HOME_SERVER_HOST, server.host);
+                ns.scp(this.tool, CONSTANT.HOME_SERVER_HOST, server.characteristics.host);
             }
             const args = { ...commonArgs, threads, server };
             ns.exec.apply(null, this.createArgumentArray(ns, args));
         }
-        // TODO: wait for the script to start running?
-        // TODO: Move this to job api
+        const status = (this.isPrep) ? ServerStatus.PREPPING : ServerStatus.TARGETTING;
+        await ServerAPI.updateStatus(ns, this.target, status);
         await JobUtils.communicateJob(ns, this);
     }
     async onStart(ns) {
@@ -65,9 +65,9 @@ export default class Job {
     createArgumentArray(ns, args) {
         return [
             args.script,
-            args.server.host,
+            args.server.characteristics.host,
             args.threads,
-            args.target.host,
+            args.target.characteristics.host,
             args.start.getTime().toString()
         ];
     }
@@ -86,9 +86,6 @@ export default class Job {
         }
         return object;
     }
-    /*
-        {"id":302,"target":"defcomm","threadSpread":{},"tool":"/src/tools/weaken.js","isPrep":false,"start":1623030787309,"end":1623031719451}
-    */
     static parseJobString(ns, jobString) {
         const object = JSON.parse(jobString);
         let spreadMap = new Map();
@@ -96,21 +93,22 @@ export default class Job {
             const parsedServer = pair[0];
             const threads = pair[1];
             let server;
-            if (ServerUtils.isPurchased(parsedServer.host)) {
-                server = new PurchasedServer(ns, parsedServer.id, parsedServer.host);
-            }
-            else if (ServerUtils.isHome(parsedServer.host)) {
-                server = new HomeServer(ns);
-            }
-            else if (ServerUtils.isDarkweb(parsedServer.host)) {
-                server = new Server(ns, parsedServer.id, parsedServer.host);
-            }
-            else {
-                server = new HackableServer(ns, parsedServer.id, parsedServer.host);
+            switch (+parsedServer.characteristics.type) {
+                case ServerType.HackableServer:
+                    server = new HackableServer(ns, parsedServer.characteristics, parsedServer.treeStructure, parsedServer.purpose);
+                    break;
+                case ServerType.BasicServer:
+                case ServerType.PurchasedServer:
+                case ServerType.HomeServer:
+                case ServerType.DarkWebServer:
+                    server = new Server(ns, parsedServer.characteristics, parsedServer.treeStructure, parsedServer.purpose);
+                    break;
+                default:
+                    throw new Error("We did not recognize the server type.");
             }
             spreadMap.set(server, threads);
         });
-        const target = new HackableServer(ns, object.target.id, object.target.host);
+        const target = new HackableServer(ns, object.target.characteristics, object.target.treeStructure, object.target.purpose);
         return new Job(ns, {
             id: object.id,
             target: target,
@@ -135,7 +133,7 @@ export default class Job {
         else
             throw new Error("This should logically never happen.");
         if (CONSTANT.DEBUG_HACKING) {
-            Utils.tprintColored(`${ns.nFormat(this.id, "000000")} ${verb} ${this.target.host} - ${ToolUtils.getToolName(this.tool)}`, true, CONSTANT.COLOR_HACKING);
+            Utils.tprintColored(`${ns.nFormat(this.id, "000000")} ${verb} ${this.target.characteristics.host} - ${ToolUtils.getToolName(this.tool)}`, true, CONSTANT.COLOR_HACKING);
         }
     }
 }

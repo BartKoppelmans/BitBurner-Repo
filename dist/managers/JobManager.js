@@ -1,6 +1,7 @@
 import * as ControlFlowAPI from "/src/api/ControlFlowAPI.js";
+import * as ServerAPI from "/src/api/ServerAPI.js";
 import Job from "/src/classes/Job.js";
-import { JobRequestCode } from "/src/interfaces/PortMessageInterfaces.js";
+import { ServerStatus } from "/src/interfaces/ServerInterfaces.js";
 import { CONSTANT } from "/src/lib/constants.js";
 import * as Utils from "/src/util/Utils.js";
 export default class JobManager {
@@ -18,9 +19,6 @@ export default class JobManager {
             }
             this.managingLoopIntervals = [];
         }
-        if (this.requestLoopInterval) {
-            clearInterval(this.requestLoopInterval);
-        }
     }
     async start(ns) {
         Utils.tprintColored(`Starting the JobManager`, true, CONSTANT.COLOR_INFORMATION);
@@ -30,7 +28,6 @@ export default class JobManager {
             this.managingLoopIntervals.push(interval);
             this.managingLoop(ns, port);
         }
-        this.requestLoopInterval = setInterval(this.requestLoop.bind(this, ns), CONSTANT.JOB_REQUEST_LOOP_INTERVAL);
     }
     async onDestroy(ns) {
         this.clearAllPorts(ns);
@@ -40,55 +37,7 @@ export default class JobManager {
             }
             this.managingLoopIntervals = [];
         }
-        if (this.requestLoopInterval) {
-            clearInterval(this.requestLoopInterval);
-        }
         Utils.tprintColored(`Stopping the JobManager`, true, CONSTANT.COLOR_INFORMATION);
-    }
-    async requestLoop(ns) {
-        const requestPortHandle = ns.getPortHandle(CONSTANT.JOB_MANAGER_REQUEST_PORT);
-        if (requestPortHandle.empty())
-            return;
-        const requestStrings = [...requestPortHandle.data];
-        // This might give us some trouble
-        // TODO: Assert that we have all the strings, otherwise we cut some off
-        requestPortHandle.clear();
-        // Process all job strings
-        for (const requestString of requestStrings) {
-            const request = JSON.parse(requestString);
-            switch (+request.code) {
-                case JobRequestCode.CURRENT_TARGETS:
-                    this.onTargetRequested(ns, request);
-                    break;
-                case JobRequestCode.IS_PREPPING:
-                    this.onHasActionRequested(ns, request, true);
-                    break;
-                case JobRequestCode.IS_TARGETTING:
-                    this.onHasActionRequested(ns, request, false);
-                    break;
-                default:
-                    throw new Error("Could not identify the type of request.");
-            }
-        }
-    }
-    async onTargetRequested(ns, request) {
-        const responsePortHandle = ns.getPortHandle(CONSTANT.JOB_MANAGER_RESPONSE_PORT);
-        const response = {
-            type: "Response",
-            request,
-            body: this.getCurrentTargets()
-        };
-        responsePortHandle.write(JSON.stringify(response));
-    }
-    async onHasActionRequested(ns, request, isPrep) {
-        const responsePortHandle = ns.getPortHandle(CONSTANT.JOB_MANAGER_RESPONSE_PORT);
-        const body = (isPrep) ? this.isPrepping(ns, request.body) : this.isTargetting(ns, request.body);
-        let response = {
-            type: "Response",
-            request,
-            body
-        };
-        responsePortHandle.write(JSON.stringify(response));
     }
     async managingLoop(ns, port) {
         const portHandle = ns.getPortHandle(port);
@@ -106,26 +55,17 @@ export default class JobManager {
             setTimeout(this.finishJob.bind(this, ns, job.id), job.end.getTime() - Date.now());
         }
     }
-    finishJob(ns, id) {
+    async finishJob(ns, id) {
         const index = this.jobs.findIndex(job => job.id === id);
         if (index === -1) {
             throw new Error("Could not find the job");
         }
         const job = this.jobs.splice(index, 1)[0];
+        const otherJobIndex = this.jobs.findIndex((job) => job.target.characteristics.host === job.target.characteristics.host);
+        if (otherJobIndex === -1) {
+            await ServerAPI.updateStatus(ns, job.target, ServerStatus.NONE);
+        }
         job.onFinish(ns);
-    }
-    isPrepping(ns, server) {
-        return this.jobs.some((job) => {
-            return job.target.host === server && job.isPrep;
-        });
-    }
-    isTargetting(ns, server) {
-        return this.jobs.some((job) => {
-            return job.target.host === server && !job.isPrep;
-        });
-    }
-    getCurrentTargets() {
-        return [...new Set(this.jobs.map(job => job.target.host))];
     }
     clearAllPorts(ns) {
         const ports = [...CONSTANT.JOB_PORT_NUMBERS];

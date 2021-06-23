@@ -1,15 +1,15 @@
-import { ServerType } from "/src/interfaces/ServerInterfaces.js";
+import { ServerPurpose } from "/src/interfaces/ServerInterfaces.js";
+import { CONSTANT } from "/src/lib/constants.js";
+import * as ServerUtils from "/src/util/ServerUtils.js";
 export default class Server {
-    constructor(ns, id, host, treeStructure) {
-        this.type = ServerType.BasicServer;
-        this.id = id;
-        this.host = host;
-        this.ram = ns.getServerRam(this.host)[0];
-        this.files = ns.ls(this.host);
+    constructor(ns, characteristics, treeStructure, purpose = ServerPurpose.NONE) {
+        this.characteristics = characteristics;
+        this.purpose = purpose;
+        this.files = ns.ls(this.characteristics.host);
         if (treeStructure)
-            this.updateTree(treeStructure);
+            this.updateTreeStructure(treeStructure);
     }
-    updateTree(treeStructure) {
+    updateTreeStructure(treeStructure) {
         if (!treeStructure.connections && !treeStructure.children && !treeStructure.parent) {
             return;
         }
@@ -24,18 +24,26 @@ export default class Server {
             this.treeStructure.parent = treeStructure.parent;
     }
     getAvailableRam(ns) {
-        let [total, used] = ns.getServerRam(this.host);
-        return total - used;
+        let [total, used] = ns.getServerRam(this.characteristics.host);
+        return total - used - ((ServerUtils.isHomeServer(this)) ? CONSTANT.DESIRED_HOME_FREE_RAM : 0);
+    }
+    getTotalRam(ns) {
+        return ns.getServerRam(this.characteristics.host)[0];
+    }
+    getUsedRam(ns) {
+        return ns.getServerRam(this.characteristics.host)[1];
     }
     isRooted(ns) {
-        return ns.hasRootAccess(this.host);
+        return ns.hasRootAccess(this.characteristics.host);
+    }
+    setPurpose(purpose) {
+        this.purpose = purpose;
     }
     toJSON() {
         return {
-            id: this.id,
-            host: this.host,
+            characteristics: this.characteristics,
             treeStructure: this.treeStructure,
-            type: this.type
+            purpose: this.purpose
         };
     }
 }

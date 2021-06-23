@@ -1,14 +1,10 @@
 // The implementations ---------------------------------------------------
 export var ServerRequestCode;
 (function (ServerRequestCode) {
-    ServerRequestCode[ServerRequestCode["UPDATE"] = 0] = "UPDATE";
+    ServerRequestCode[ServerRequestCode["UPDATE_SERVER_MAP"] = 0] = "UPDATE_SERVER_MAP";
+    ServerRequestCode[ServerRequestCode["UPDATE_SERVER_STATUS"] = 1] = "UPDATE_SERVER_STATUS";
+    ServerRequestCode[ServerRequestCode["UPDATE_SERVER_PURPOSE"] = 2] = "UPDATE_SERVER_PURPOSE";
 })(ServerRequestCode || (ServerRequestCode = {}));
-export var JobRequestCode;
-(function (JobRequestCode) {
-    JobRequestCode[JobRequestCode["CURRENT_TARGETS"] = 0] = "CURRENT_TARGETS";
-    JobRequestCode[JobRequestCode["IS_PREPPING"] = 1] = "IS_PREPPING";
-    JobRequestCode[JobRequestCode["IS_TARGETTING"] = 2] = "IS_TARGETTING";
-})(JobRequestCode || (JobRequestCode = {}));
 export var ControlFlowCode;
 (function (ControlFlowCode) {
     ControlFlowCode[ControlFlowCode["KILL_MANAGERS"] = 0] = "KILL_MANAGERS";

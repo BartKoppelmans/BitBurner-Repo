@@ -114,7 +114,7 @@ class ProgramManager {
         const hackableServer = server;
         const crackingScripts = this.getCrackingScripts(ns, hackableServer.staticHackingProperties.ports);
         crackingScripts.forEach(program => program.run(ns, server));
-        ns.nuke(server.host);
+        ns.nuke(server.characteristics.host);
     }
     async rootAllServers(ns) {
         const serverMap = await ServerAPI.getServerMap(ns);

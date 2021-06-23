@@ -1,8 +1,8 @@
 import type { BitBurner as NS } from "Bitburner";
 import * as ControlFlowAPI from "/src/api/ControlFlowAPI.js";
 import * as ServerAPI from "/src/api/ServerAPI.js";
-import Server from "/src/classes/Server.js";
 import { CodingContract } from "/src/classes/CodingContract.js";
+import Server from "/src/classes/Server.js";
 import { CONSTANT } from "/src/lib/constants.js";
 import * as Utils from "/src/util/Utils.js";
 
@@ -60,7 +60,7 @@ class CodingContractManager {
     }
 
     private async onNewContract(ns: NS, contract: CodingContract) {
-        Utils.tprintColored(`We found a contract: ${contract.server.host}/${contract.filename}`, true, CONSTANT.COLOR_INFORMATION);
+        Utils.tprintColored(`We found a contract: ${contract.server.characteristics.host}/${contract.filename}`, true, CONSTANT.COLOR_INFORMATION);
     }
 
     private async onSolveContract(ns: NS, contract: CodingContract) {

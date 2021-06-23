@@ -24,9 +24,10 @@ export async function computeThreadsNeeded(ns: NS, tool: Tools, server: Hackable
 }
 
 // Here we allow thread spreading over multiple servers
-export async function computeMaxThreads(ns: NS, tool: Tools, allowSpread: boolean = true): Promise<number> {
+export async function computeMaxThreads(ns: NS, tool: Tools, isPrep: boolean, allowSpread: boolean = true): Promise<number> {
 
-    const serverMap: Server[] = await ServerAPI.getHackingServers(ns);
+    const serverMap: Server[] = (isPrep) ? await ServerAPI.getPreppingServers(ns) : await ServerAPI.getHackingServers(ns);
+
     const cost: number = ToolUtils.getToolCost(ns, tool);
 
     if (!allowSpread) {
@@ -38,10 +39,9 @@ export async function computeMaxThreads(ns: NS, tool: Tools, allowSpread: boolea
     return serverMap.reduce((threads, server) => threads + Math.floor(server.getAvailableRam(ns) / cost), 0);
 }
 
-export async function computeThreadSpread(ns: NS, tool: Tools, threads: number): Promise<Map<Server, number>> {
+export async function computeThreadSpread(ns: NS, tool: Tools, threads: number, isPrep: boolean): Promise<Map<Server, number>> {
 
-    // TODO: Remove this because we should already check it?
-    const maxThreadsAvailable = await computeMaxThreads(ns, tool, true);
+    const maxThreadsAvailable = await computeMaxThreads(ns, tool, isPrep);
 
     if (threads > maxThreadsAvailable) {
         throw new Error("We don't have that much threads available.");
@@ -51,7 +51,8 @@ export async function computeThreadSpread(ns: NS, tool: Tools, threads: number):
 
     let threadsLeft: number = threads;
     let spreadMap: Map<Server, number> = new Map<Server, number>();
-    const serverMap: Server[] = await ServerAPI.getHackingServers(ns);
+
+    const serverMap: Server[] = (isPrep) ? await ServerAPI.getPreppingServers(ns) : await ServerAPI.getHackingServers(ns);
 
     for (let server of serverMap) {
         let serverThreads: number = Math.floor(server.getAvailableRam(ns) / cost);

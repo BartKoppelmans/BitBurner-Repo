@@ -148,7 +148,7 @@ class ProgramManager {
 
         crackingScripts.forEach(program => program.run(ns, server));
 
-        ns.nuke(server.host);
+        ns.nuke(server.characteristics.host);
     }
 
     private async rootAllServers(ns: NS): Promise<void> {

@@ -1,8 +1,8 @@
+import * as CodingContractAPI from "/src/api/CodingContractAPI.js";
 import * as ControlFlowAPI from "/src/api/ControlFlowAPI.js";
 import * as JobAPI from "/src/api/JobAPI.js";
 import * as ProgramAPI from "/src/api/ProgramAPI.js";
 import * as PurchasedServerAPI from "/src/api/PurchasedServerAPI.js";
-import * as CodingContractAPI from "/src/api/CodingContractAPI.js";
 import * as ServerAPI from "/src/api/ServerAPI.js";
 import { CONSTANT } from "/src/lib/constants.js";
 import * as HackUtils from "/src/util/HackUtils.js";
@@ -22,9 +22,6 @@ async function initialize(ns) {
     await Promise.allSettled([jobManagerReady, programManagerReady, purchasedServerManagerReady, codingContractManagerReady]);
 }
 async function hackLoop(ns) {
-    const utilization = await HackUtils.determineUtilization(ns);
-    if (utilization > 0.9)
-        return;
     let potentialTargets = await ServerAPI.getTargetServers(ns);
     // Then evaluate the potential targets afterwards
     await Promise.all(potentialTargets.map(async (target) => {
@@ -35,7 +32,7 @@ async function hackLoop(ns) {
         throw new Error("No potential targets found.");
     }
     for (let target of potentialTargets) {
-        let currentTargets = await JobAPI.getCurrentTargets(ns);
+        let currentTargets = await ServerAPI.getCurrentTargets(ns);
         // Can't have too many targets at the same time
         if (currentTargets.length >= CONSTANT.MAX_TARGET_COUNT)
             break;

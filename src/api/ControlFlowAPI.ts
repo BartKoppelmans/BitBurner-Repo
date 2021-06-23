@@ -1,9 +1,9 @@
 import type { BitBurner as NS, Port } from "Bitburner";
+import * as CodingContractAPI from "/src/api/CodingContractAPI.js";
 import * as JobAPI from "/src/api/JobAPI.js";
 import * as ProgramAPI from "/src/api/ProgramAPI.js";
 import * as PurchasedServerAPI from "/src/api/PurchasedServerAPI.js";
 import * as ServerAPI from "/src/api/ServerAPI.js";
-import * as CodingContractAPI from "/src/api/CodingContractAPI.js";
 import Server from "/src/classes/Server.js";
 import { ControlFlowCode, ControlFlowRequest } from "/src/interfaces/PortMessageInterfaces.js";
 import { CONSTANT } from "/src/lib/constants.js";
@@ -102,7 +102,7 @@ export async function killAllManagers(ns: NS): Promise<void> {
 
 export async function killExternalServers(ns: NS, serverMap: Server[]): Promise<void> {
     await Promise.all(serverMap.map(async (server) => {
-        if (server.host !== CONSTANT.HOME_SERVER_HOST) {
+        if (server.characteristics.host !== CONSTANT.HOME_SERVER_HOST) {
             killServer(ns, server);
         }
     }));
@@ -115,10 +115,10 @@ async function killServer(ns: NS, server: Server): Promise<void> {
 
     if (!isRunningAnything) return;
 
-    ns.killall(server.host);
+    ns.killall(server.characteristics.host);
 
     do {
-        isRunningAnything = (ns.ps(server.host).length > 0);
+        isRunningAnything = (ns.ps(server.characteristics.host).length > 0);
 
         await ns.sleep(CONSTANT.SMALL_DELAY);
     } while (isRunningAnything);
