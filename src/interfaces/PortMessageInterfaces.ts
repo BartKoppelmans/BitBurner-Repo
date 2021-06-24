@@ -1,9 +1,10 @@
+import Job from "/src/classes/Job";
 import { ServerPurpose, ServerStatus } from "/src/interfaces/ServerInterfaces.js";
 
 export type MessageType = "Request" | "Response";
 
 // NOTE: Here we should add all possible message codes
-export type RequestCode = ServerRequestCode | ControlFlowCode;
+export type RequestCode = ServerRequestCode | ControlFlowCode | JobMessageCode;
 
 export interface Message {
     type: MessageType;
@@ -30,6 +31,10 @@ export enum ControlFlowCode {
     KILL_DAEMON
 }
 
+export enum JobMessageCode {
+    NEW_JOB
+}
+
 
 export interface ServerRequest extends Request {
     code: ServerRequestCode;
@@ -45,6 +50,16 @@ export interface ServerPurposeRequest extends ServerRequest {
 
 export interface ServerResponse extends Response {
     request: ServerRequest;
+}
+
+
+export interface JobMessageRequest extends Request {
+    code: JobMessageCode;
+    body: string; // This has to be serialized because of the map
+}
+
+export interface JobMessageResponse extends Response {
+    request: JobMessageRequest;
 }
 
 

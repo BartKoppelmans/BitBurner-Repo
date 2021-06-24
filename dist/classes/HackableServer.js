@@ -33,7 +33,6 @@ export default class HackableServer extends Server {
             lastUpdated: new Date(),
             securityLevel: ns.getServerSecurityLevel(this.characteristics.host),
             money: ns.getServerMoneyAvailable(this.characteristics.host),
-            availableRam: this.getAvailableRam(ns),
             weakenTime: ns.getWeakenTime(this.characteristics.host),
             growTime: ns.getGrowTime(this.characteristics.host),
             hackTime: ns.getHackTime(this.characteristics.host),

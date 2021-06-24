@@ -2,6 +2,7 @@ import type { BitBurner as NS, Port, PortHandle } from "Bitburner";
 import * as ControlFlowAPI from "/src/api/ControlFlowAPI.js";
 import * as ServerAPI from "/src/api/ServerAPI.js";
 import Job from "/src/classes/Job.js";
+import { JobMessageRequest, JobMessageResponse } from "/src/interfaces/PortMessageInterfaces.js";
 import { ServerStatus } from "/src/interfaces/ServerInterfaces.js";
 import { CONSTANT } from "/src/lib/constants.js";
 import * as Utils from "/src/util/Utils.js";
@@ -54,26 +55,35 @@ export default class JobManager {
     }
 
     private async managingLoop(ns: NS, port: Port): Promise<void> {
-        const portHandle = ns.getPortHandle(port);
+        const requestPortHandle = ns.getPortHandle(port);
+        const responsePortHandle = ns.getPortHandle(CONSTANT.JOB_RESPONSE_PORT);
 
-        if (portHandle.empty()) return;
+        if (requestPortHandle.empty()) return;
 
-        const jobStrings: string[] = [...portHandle.data] as string[];
+        const requestStrings: string[] = [...requestPortHandle.data] as string[];
 
         // This might give us some trouble
         // TODO: Assert that we have all the strings
 
-        portHandle.clear();
+        requestPortHandle.clear();
 
         // Process all job strings
-        for (const jobString of jobStrings) {
-            const job: Job = Job.parseJobString(ns, jobString);
+        for (const requestString of requestStrings) {
+            const request: JobMessageRequest = JSON.parse(requestString);
+
+            const job: Job = Job.parseJobString(ns, request.body);
 
             this.jobs.push(job);
 
             job.onStart(ns);
 
             setTimeout(this.finishJob.bind(this, ns, job.id), job.end.getTime() - Date.now());
+
+            const response: JobMessageResponse = {
+                type: "Response",
+                request
+            };
+            responsePortHandle.write(JSON.stringify(response));
         }
     }
 

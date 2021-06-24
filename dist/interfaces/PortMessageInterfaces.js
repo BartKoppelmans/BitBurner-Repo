@@ -10,3 +10,7 @@ export var ControlFlowCode;
     ControlFlowCode[ControlFlowCode["KILL_MANAGERS"] = 0] = "KILL_MANAGERS";
     ControlFlowCode[ControlFlowCode["KILL_DAEMON"] = 1] = "KILL_DAEMON";
 })(ControlFlowCode || (ControlFlowCode = {}));
+export var JobMessageCode;
+(function (JobMessageCode) {
+    JobMessageCode[JobMessageCode["NEW_JOB"] = 0] = "NEW_JOB";
+})(JobMessageCode || (JobMessageCode = {}));

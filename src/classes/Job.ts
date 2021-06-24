@@ -1,5 +1,6 @@
 import type { BitBurner as NS } from "Bitburner";
 import * as ServerAPI from "/src/api/ServerAPI.js";
+import * as JobAPI from "/src/api/JobAPI.js";
 import HackableServer from "/src/classes/HackableServer.js";
 import Server from "/src/classes/Server.js";
 import { ExecArguments, IJOb, ToolArguments } from "/src/interfaces/JobInterfaces.js";
@@ -79,11 +80,11 @@ export default class Job {
             ns.exec.apply(null, this.createArgumentArray(ns, args));
         }
 
-
+        // Perhaps move this to the job manager?
         const status: ServerStatus = (this.isPrep) ? ServerStatus.PREPPING : ServerStatus.TARGETTING;
         await ServerAPI.updateStatus(ns, this.target, status);
 
-        await JobUtils.communicateJob(ns, this);
+        await JobAPI.communicateJob(ns, this);
     }
 
     public async onStart(ns: NS) {

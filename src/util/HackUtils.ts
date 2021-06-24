@@ -104,6 +104,8 @@ export async function attackServer(ns: NS, target: HackableServer): Promise<void
     const optimalCycles: number = ServerHackUtils.computeOptimalCycles(ns, target);
     const maxCycles: number = await BatchJobUtils.computeMaxCycles(ns, optimalBatchCost, true);
 
+    // TODO: Somehow here we have more than 0 cycles
+
     let numCycles: number = Math.min(optimalCycles, maxCycles);
 
     // NOTE: This could cause us to never attack
@@ -115,6 +117,8 @@ export async function attackServer(ns: NS, target: HackableServer): Promise<void
 
         return;
     }
+
+    // TODO: But we don't have any cycles here?
 
     for (let i = 0; i < numCycles; i++) {
 

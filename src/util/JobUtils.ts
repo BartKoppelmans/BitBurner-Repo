@@ -1,13 +1,10 @@
-import type { BitBurner as NS, Port, PortHandle } from "Bitburner";
+import type { BitBurner as NS } from "Bitburner";
 import * as ServerAPI from "/src/api/ServerAPI.js";
 import HackableServer from "/src/classes/HackableServer.js";
-import Job from "/src/classes/Job.js";
 import Server from "/src/classes/Server.js";
-import { CONSTANT } from "/src/lib/constants.js";
 import { Tools } from "/src/tools/Tools.js";
 import * as ServerHackUtils from "/src/util/ServerHackUtils.js";
 import * as ToolUtils from "/src/util/ToolUtils.js";
-import * as Utils from "/src/util/Utils.js";
 
 export async function computeThreadsNeeded(ns: NS, tool: Tools, server: HackableServer): Promise<number> {
     switch (tool) {
@@ -71,25 +68,4 @@ export async function computeThreadSpread(ns: NS, tool: Tools, threads: number, 
     }
 
     return spreadMap;
-}
-
-export async function communicateJob(ns: NS, job: Job): Promise<void> {
-    const ports: Port[] = [...CONSTANT.JOB_PORT_NUMBERS];
-
-    let isSuccessful: boolean = false;
-    for (const port of ports) {
-        const portHandle: PortHandle = ns.getPortHandle(port);
-
-        if (portHandle.full()) continue;
-
-        isSuccessful = portHandle.tryWrite(JSON.stringify(job));
-
-        if (isSuccessful) break;
-    }
-
-    if (!isSuccessful) {
-        Utils.tprintColored(`The ports are full and we could not write more, trying again in ${CONSTANT.PORT_FULL_RETRY_TIME}ms`, true, CONSTANT.COLOR_WARNING);
-        await ns.sleep(CONSTANT.PORT_FULL_RETRY_TIME);
-        return communicateJob(ns, job);
-    }
 }

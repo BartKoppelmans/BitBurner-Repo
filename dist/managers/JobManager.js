@@ -40,19 +40,26 @@ export default class JobManager {
         Utils.tprintColored(`Stopping the JobManager`, true, CONSTANT.COLOR_INFORMATION);
     }
     async managingLoop(ns, port) {
-        const portHandle = ns.getPortHandle(port);
-        if (portHandle.empty())
+        const requestPortHandle = ns.getPortHandle(port);
+        const responsePortHandle = ns.getPortHandle(CONSTANT.JOB_RESPONSE_PORT);
+        if (requestPortHandle.empty())
             return;
-        const jobStrings = [...portHandle.data];
+        const requestStrings = [...requestPortHandle.data];
         // This might give us some trouble
         // TODO: Assert that we have all the strings
-        portHandle.clear();
+        requestPortHandle.clear();
         // Process all job strings
-        for (const jobString of jobStrings) {
-            const job = Job.parseJobString(ns, jobString);
+        for (const requestString of requestStrings) {
+            const request = JSON.parse(requestString);
+            const job = Job.parseJobString(ns, request.body);
             this.jobs.push(job);
             job.onStart(ns);
             setTimeout(this.finishJob.bind(this, ns, job.id), job.end.getTime() - Date.now());
+            const response = {
+                type: "Response",
+                request
+            };
+            responsePortHandle.write(JSON.stringify(response));
         }
     }
     async finishJob(ns, id) {

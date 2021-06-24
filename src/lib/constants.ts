@@ -59,7 +59,8 @@ export const CONSTANT = {
 
     RESPONSE_RETRY_DELAY: 500,
 
-    JOB_PORT_NUMBERS: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+    JOB_PORT_NUMBERS: [1, 2, 3, 4, 5, 6, 7, 8, 9],
+    JOB_RESPONSE_PORT: 10,
 
     CONTROL_FLOW_PORT: 20,
 

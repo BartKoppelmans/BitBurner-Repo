@@ -1,4 +1,5 @@
 import * as ServerAPI from "/src/api/ServerAPI.js";
+import * as JobAPI from "/src/api/JobAPI.js";
 import HackableServer from "/src/classes/HackableServer.js";
 import Server from "/src/classes/Server.js";
 import { ServerStatus, ServerType } from "/src/interfaces/ServerInterfaces.js";
@@ -52,9 +53,10 @@ export default class Job {
             const args = { ...commonArgs, threads, server };
             ns.exec.apply(null, this.createArgumentArray(ns, args));
         }
+        // Perhaps move this to the job manager?
         const status = (this.isPrep) ? ServerStatus.PREPPING : ServerStatus.TARGETTING;
         await ServerAPI.updateStatus(ns, this.target, status);
-        await JobUtils.communicateJob(ns, this);
+        await JobAPI.communicateJob(ns, this);
     }
     async onStart(ns) {
         this.print(ns, false);

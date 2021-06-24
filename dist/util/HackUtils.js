@@ -75,6 +75,7 @@ export async function attackServer(ns, target) {
     const optimalBatchCost = BatchJobUtils.getOptimalBatchCost(ns, target);
     const optimalCycles = ServerHackUtils.computeOptimalCycles(ns, target);
     const maxCycles = await BatchJobUtils.computeMaxCycles(ns, optimalBatchCost, true);
+    // TODO: Somehow here we have more than 0 cycles
     let numCycles = Math.min(optimalCycles, maxCycles);
     // NOTE: This could cause us to never attack
     if (numCycles === 0) {
@@ -83,6 +84,7 @@ export async function attackServer(ns, target) {
             Utils.tprintColored("Skipped an attack.", true, CONSTANT.COLOR_WARNING);
         return;
     }
+    // TODO: But we don't have any cycles here?
     for (let i = 0; i < numCycles; i++) {
         let cycleStart;
         // Set the start time of the cycle

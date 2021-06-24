@@ -56,7 +56,6 @@ export interface DynamicHackingProperties {
 
     securityLevel: number;
     money: number;
-    availableRam: number;
 
     weakenTime: number;
     growTime: number;

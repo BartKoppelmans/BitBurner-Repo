@@ -1,9 +1,7 @@
 import * as ServerAPI from "/src/api/ServerAPI.js";
-import { CONSTANT } from "/src/lib/constants.js";
 import { Tools } from "/src/tools/Tools.js";
 import * as ServerHackUtils from "/src/util/ServerHackUtils.js";
 import * as ToolUtils from "/src/util/ToolUtils.js";
-import * as Utils from "/src/util/Utils.js";
 export async function computeThreadsNeeded(ns, tool, server) {
     switch (tool) {
         case Tools.GROW:
@@ -50,21 +48,4 @@ export async function computeThreadSpread(ns, tool, threads, isPrep) {
         threadsLeft -= serverThreads;
     }
     return spreadMap;
-}
-export async function communicateJob(ns, job) {
-    const ports = [...CONSTANT.JOB_PORT_NUMBERS];
-    let isSuccessful = false;
-    for (const port of ports) {
-        const portHandle = ns.getPortHandle(port);
-        if (portHandle.full())
-            continue;
-        isSuccessful = portHandle.tryWrite(JSON.stringify(job));
-        if (isSuccessful)
-            break;
-    }
-    if (!isSuccessful) {
-        Utils.tprintColored(`The ports are full and we could not write more, trying again in ${CONSTANT.PORT_FULL_RETRY_TIME}ms`, true, CONSTANT.COLOR_WARNING);
-        await ns.sleep(CONSTANT.PORT_FULL_RETRY_TIME);
-        return communicateJob(ns, job);
-    }
 }
