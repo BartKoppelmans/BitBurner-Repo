@@ -1,6 +1,9 @@
 import type { BitBurner as NS } from "Bitburner";
+import { ServerPurpose } from "/src/interfaces/ServerInterfaces.js";
 import { CONSTANT } from "/src/lib/constants.js";
+import * as ServerAPI from "/src/api/ServerAPI.js";
 import PlayerManager from "/src/managers/PlayerManager.js";
+import Server from "/src/classes/Server.js";
 
 export function computeMaxRamPossible(ns: NS, reservedMoney: number): number {
 
@@ -29,4 +32,15 @@ export function canAfford(ns: NS, cost: number, reservedMoney: number): boolean 
     const money: number = (playerManager.getMoney(ns) - reservedMoney) * CONSTANT.PURCHASED_SERVER_ALLOWANCE_PERCENTAGE;
 
     return cost <= money;
+}
+
+
+
+export async function shouldUpgrade(ns: NS, purpose: ServerPurpose): Promise<boolean> {
+    const serverMap: Server[] = (purpose === ServerPurpose.HACK) ? await ServerAPI.getHackingServers(ns) : await ServerAPI.getPreppingServers(ns);
+
+    const utilized: number = serverMap.reduce((subtotal, server) => subtotal + server.getUsedRam(ns), 0);
+    const total: number = serverMap.reduce((subtotal, server) => subtotal + server.getTotalRam(ns), 0);
+
+    return ((utilized / total) > CONSTANT.PURCHASED_SERVER_UPGRADE_UTILIZATION_THRESHOLD);
 }

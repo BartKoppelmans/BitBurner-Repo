@@ -36,7 +36,7 @@ export enum ServerStatus {
 export interface QuarantinedServer {
     originalPurpose: ServerPurpose,
     server: Server;
-    cost: number;
+    ram: number;
 }
 
 export interface StaticHackingProperties {

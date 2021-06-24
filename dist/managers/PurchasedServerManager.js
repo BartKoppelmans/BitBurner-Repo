@@ -12,6 +12,18 @@ class PurchasedServerManager {
     async updateServerMap(ns) {
         await ServerAPI.requestUpdate(ns);
         this.purchasedServers = await ServerAPI.getPurchasedServers(ns);
+        for (const server of this.purchasedServers) {
+            const isQuarantined = this.quarantinedServers.some((quarantinedServer) => quarantinedServer.server.characteristics.host === server.characteristics.host);
+            if (!isQuarantined && server.purpose === ServerPurpose.NONE) {
+                const numberPattern = /\d+/g;
+                const match = server.characteristics.host.match(numberPattern);
+                if (!match)
+                    throw new Error("Could not get the id of the purchased server");
+                const id = parseInt(match[0]);
+                const purpose = (id < CONSTANT.NUM_PURCHASED_HACKING_SERVERS) ? ServerPurpose.HACK : ServerPurpose.PREP;
+                await ServerAPI.updatePurpose(ns, server, purpose);
+            }
+        }
     }
     // Main entry point
     async start(ns) {
@@ -91,8 +103,7 @@ class PurchasedServerManager {
             const processes = ns.ps(quarantinedServer.server.characteristics.host);
             if (processes.length !== 0)
                 continue;
-            const maxRam = PurchasedServerManagerUtils.computeMaxRamPossible(ns, this.getReservedMoney());
-            const isSuccessful = await this.upgradeServer(ns, quarantinedServer.server, maxRam);
+            const isSuccessful = await this.upgradeServer(ns, quarantinedServer.server, quarantinedServer.ram);
             updateNeeded = updateNeeded || isSuccessful;
             if (isSuccessful) {
                 await ServerAPI.updatePurpose(ns, quarantinedServer.server, quarantinedServer.originalPurpose);
@@ -107,10 +118,12 @@ class PurchasedServerManager {
             const isQuarantined = this.quarantinedServers.some((quarantinedServer) => quarantinedServer.server.characteristics.host === server.characteristics.host);
             if (isQuarantined)
                 continue;
+            const shouldUpgrade = await PurchasedServerManagerUtils.shouldUpgrade(ns, server.purpose);
+            if (!shouldUpgrade)
+                continue;
             const maxRam = PurchasedServerManagerUtils.computeMaxRamPossible(ns, this.getReservedMoney());
             if (maxRam > server.getTotalRam(ns)) {
-                const cost = maxRam * CONSTANT.PURCHASED_SERVER_COST_PER_RAM;
-                await this.quarantineServer(ns, server, cost);
+                await this.quarantineServer(ns, server, maxRam);
             }
             else
                 break;
@@ -118,8 +131,8 @@ class PurchasedServerManager {
         if (updateNeeded)
             await this.updateServerMap(ns);
     }
-    async quarantineServer(ns, server, cost) {
-        this.quarantinedServers.push({ originalPurpose: server.purpose, server, cost });
+    async quarantineServer(ns, server, ram) {
+        this.quarantinedServers.push({ originalPurpose: server.purpose, server, ram });
         // Quarantine the server
         await ServerAPI.updatePurpose(ns, server, ServerPurpose.NONE);
         // TODO: Subtract the costs from the money that we currently have, to also put some budget into quarantine
@@ -139,7 +152,7 @@ class PurchasedServerManager {
         return !!boughtServer;
     }
     getReservedMoney() {
-        return this.quarantinedServers.reduce((reservedMoney, quarantinedServer) => reservedMoney + quarantinedServer.cost, 0);
+        return this.quarantinedServers.reduce((reservedMoney, quarantinedServer) => reservedMoney + (quarantinedServer.ram * CONSTANT.PURCHASED_SERVER_COST_PER_RAM), 0);
     }
 }
 export async function main(ns) {
