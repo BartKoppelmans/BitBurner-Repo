@@ -8,7 +8,7 @@ export class CodingContract {
     server: Server;
     type: CodingContractTypes;
     description: string;
-    data: string;
+    data: string | number | number[] | number[][];
 
     public constructor(ns: NS, filename: string, server: Server) {
         this.filename = filename;

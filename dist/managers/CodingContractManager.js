@@ -3,6 +3,7 @@ import * as ServerAPI from "/src/api/ServerAPI.js";
 import { CodingContract } from "/src/classes/CodingContract.js";
 import { CONSTANT } from "/src/lib/constants.js";
 import * as Utils from "/src/util/Utils.js";
+import * as CodingContractUtils from "/src/util/CodingContractUtils.js";
 class CodingContractManager {
     constructor() {
         this.contracts = [];
@@ -44,10 +45,26 @@ class CodingContractManager {
         this.contracts = contracts;
     }
     async onNewContract(ns, contract) {
-        Utils.tprintColored(`We found a contract: ${contract.server.characteristics.host}/${contract.filename}`, true, CONSTANT.COLOR_INFORMATION);
+        Utils.tprintColored(`We found a contract: ${contract.server.characteristics.host}/${contract.filename}`, true, CONSTANT.COLOR_CODING_CONTRACT_INFORMATION);
+        await this.solveContract(ns, contract);
+    }
+    async solveContract(ns, contract) {
+        let solution = CodingContractUtils.findSolution(ns, contract);
+        if (!solution) {
+            Utils.tprintColored(`We currently cannot solve contract ${contract.server.characteristics.host}/${contract.filename}: ${contract.type}`, true, CONSTANT.COLOR_CODING_CONTRACT_INFORMATION);
+            return;
+        }
+        const isSuccessful = contract.attempt(ns, solution);
+        if (isSuccessful)
+            this.onSolveContract(ns, contract);
+        else
+            this.onFailedContract(ns, contract);
+    }
+    async onFailedContract(ns, contract) {
+        Utils.tprintColored(`Wrong solution for contract ${contract.server.characteristics.host}/${contract.filename}`, true, CONSTANT.COLOR_CODING_CONTRACT_INFORMATION);
     }
     async onSolveContract(ns, contract) {
-        // TODO: Remove the contract from the list;
+        Utils.tprintColored(`Solved contract ${contract.server.characteristics.host}/${contract.filename}`, true, CONSTANT.COLOR_CODING_CONTRACT_INFORMATION);
     }
 }
 export async function main(ns) {

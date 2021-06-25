@@ -1,10 +1,11 @@
 import type { BitBurner as NS } from "Bitburner";
 import * as ControlFlowAPI from "/src/api/ControlFlowAPI.js";
 import * as ServerAPI from "/src/api/ServerAPI.js";
-import { CodingContract } from "/src/classes/CodingContract.js";
+import { CodingContract, CodingContractAnswer } from "/src/classes/CodingContract.js";
 import Server from "/src/classes/Server.js";
 import { CONSTANT } from "/src/lib/constants.js";
 import * as Utils from "/src/util/Utils.js";
+import * as CodingContractUtils from "/src/util/CodingContractUtils.js";
 
 class CodingContractManager {
 
@@ -60,11 +61,31 @@ class CodingContractManager {
     }
 
     private async onNewContract(ns: NS, contract: CodingContract) {
-        Utils.tprintColored(`We found a contract: ${contract.server.characteristics.host}/${contract.filename}`, true, CONSTANT.COLOR_INFORMATION);
+        Utils.tprintColored(`We found a contract: ${contract.server.characteristics.host}/${contract.filename}`, true, CONSTANT.COLOR_CODING_CONTRACT_INFORMATION);
+
+        await this.solveContract(ns, contract);
+    }
+
+    private async solveContract(ns: NS, contract: CodingContract) {
+        let solution: CodingContractAnswer | null = CodingContractUtils.findSolution(ns, contract);
+
+        if (!solution) {
+            Utils.tprintColored(`We currently cannot solve contract ${contract.server.characteristics.host}/${contract.filename}: ${contract.type}`, true, CONSTANT.COLOR_CODING_CONTRACT_INFORMATION);
+            return;
+        }
+
+        const isSuccessful: boolean = contract.attempt(ns, solution);
+        if (isSuccessful) this.onSolveContract(ns, contract);
+        else this.onFailedContract(ns, contract);
+
+    }
+
+    private async onFailedContract(ns: NS, contract: CodingContract) {
+        Utils.tprintColored(`Wrong solution for contract ${contract.server.characteristics.host}/${contract.filename}`, true, CONSTANT.COLOR_CODING_CONTRACT_INFORMATION);
     }
 
     private async onSolveContract(ns: NS, contract: CodingContract) {
-        // TODO: Remove the contract from the list;
+        Utils.tprintColored(`Solved contract ${contract.server.characteristics.host}/${contract.filename}`, true, CONSTANT.COLOR_CODING_CONTRACT_INFORMATION);
     }
 
 }

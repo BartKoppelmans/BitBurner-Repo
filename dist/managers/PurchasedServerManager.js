@@ -83,7 +83,7 @@ class PurchasedServerManager {
         const name = CONSTANT.PURCHASED_SERVER_PREFIX + id.toString();
         const boughtServer = ns.purchaseServer(name, ram);
         if (boughtServer) {
-            Utils.tprintColored(`Purchased server ${boughtServer} with ${ram}GB ram.`, true, CONSTANT.COLOR_INFORMATION);
+            Utils.tprintColored(`Purchased server ${boughtServer} with ${ram}GB ram.`, true, CONSTANT.COLOR_PURCHASED_SERVER_INFORMATION);
         }
         return !!boughtServer;
     }
@@ -108,7 +108,7 @@ class PurchasedServerManager {
             if (isSuccessful) {
                 await ServerAPI.updatePurpose(ns, quarantinedServer.server, quarantinedServer.originalPurpose);
                 finishedQuarantines.push(quarantinedServer);
-                Utils.tprintColored(`We removed ${quarantinedServer.server.characteristics.host} from quarantine`, true, CONSTANT.COLOR_INFORMATION);
+                Utils.tprintColored(`We removed ${quarantinedServer.server.characteristics.host} from quarantine`, true, CONSTANT.COLOR_PURCHASED_SERVER_INFORMATION);
             }
         }
         this.quarantinedServers = this.quarantinedServers.filter((q) => {
@@ -136,7 +136,7 @@ class PurchasedServerManager {
         // Quarantine the server
         await ServerAPI.updatePurpose(ns, server, ServerPurpose.NONE);
         // TODO: Subtract the costs from the money that we currently have, to also put some budget into quarantine
-        Utils.tprintColored(`We put ${server.characteristics.host} into quarantine`, true, CONSTANT.COLOR_INFORMATION);
+        Utils.tprintColored(`We put ${server.characteristics.host} into quarantine`, true, CONSTANT.COLOR_PURCHASED_SERVER_INFORMATION);
     }
     async upgradeServer(ns, server, ram) {
         const hostName = server.characteristics.host;
@@ -147,7 +147,7 @@ class PurchasedServerManager {
         }
         const boughtServer = ns.purchaseServer(hostName, ram);
         if (boughtServer) {
-            Utils.tprintColored(`Upgraded server ${boughtServer} with ${ram}GB ram.`, true, CONSTANT.COLOR_INFORMATION);
+            Utils.tprintColored(`Upgraded server ${boughtServer} with ${ram}GB ram.`, true, CONSTANT.COLOR_PURCHASED_SERVER_INFORMATION);
         }
         return !!boughtServer;
     }
