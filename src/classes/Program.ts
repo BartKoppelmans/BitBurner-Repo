@@ -1,8 +1,8 @@
 import type { BitBurner as NS, PurchaseableProgram } from "Bitburner";
 import Server from "/src/classes/Server.js";
 import { CONSTANT } from "/src/lib/constants.js";
-import PlayerManager from "/src/managers/PlayerManager.js";
 import * as Utils from "/src/util/Utils.js";
+import * as PlayerUtils from "/src/util/PlayerUtils.js";
 
 export enum ProgramType {
     Crack,
@@ -26,8 +26,7 @@ export class Program {
 
     // Returns whether it was successful
     public attemptPurchase(ns: NS): boolean {
-        const playerManager: PlayerManager = PlayerManager.getInstance(ns);
-        const money: number = playerManager.getMoney(ns);
+        const money: number = PlayerUtils.getMoney(ns);
 
         if (this.price > money) return false;
 

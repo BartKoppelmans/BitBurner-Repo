@@ -31,7 +31,7 @@ export async function updateStatus(ns, server, status) {
     const id = Utils.generateHash();
     const request = {
         type: "Request",
-        code: ServerRequestCode.UPDATE_SERVER_MAP,
+        code: ServerRequestCode.UPDATE_SERVER_STATUS,
         id,
         body: { server: server.characteristics.host, status }
     };

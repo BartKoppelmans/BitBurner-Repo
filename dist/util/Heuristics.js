@@ -4,12 +4,12 @@ export var Heuristics;
         return 0;
     };
     function evaluate(ns, server) {
-        if (!server.dynamicHackingProperties.securityLevel) {
+        if (!server.getSecurityLevel(ns)) {
             throw new Error(`Unable to evaluate ${server.characteristics.host}`);
         }
         // TODO: Get rid of magic numbers
         // TODO: Filter anything that we can't actually attack...
-        return server.staticHackingProperties.maxMoney * (100 / (server.staticHackingProperties.minSecurityLevel + server.dynamicHackingProperties.securityLevel));
+        return server.staticHackingProperties.maxMoney * (100 / (server.staticHackingProperties.minSecurityLevel + server.getSecurityLevel(ns)));
     }
     Heuristics.evaluate = evaluate;
 })(Heuristics || (Heuristics = {}));

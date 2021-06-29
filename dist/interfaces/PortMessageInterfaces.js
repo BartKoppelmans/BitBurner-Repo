@@ -13,4 +13,5 @@ export var ControlFlowCode;
 export var JobMessageCode;
 (function (JobMessageCode) {
     JobMessageCode[JobMessageCode["NEW_JOB"] = 0] = "NEW_JOB";
+    JobMessageCode[JobMessageCode["NEW_BATCH_JOB"] = 1] = "NEW_BATCH_JOB";
 })(JobMessageCode || (JobMessageCode = {}));

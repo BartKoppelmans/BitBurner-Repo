@@ -1,9 +1,8 @@
-import * as ServerAPI from "/src/api/ServerAPI.js";
-import * as JobAPI from "/src/api/JobAPI.js";
 import HackableServer from "/src/classes/HackableServer.js";
 import Server from "/src/classes/Server.js";
-import { ServerStatus, ServerType } from "/src/interfaces/ServerInterfaces.js";
+import { ServerType } from "/src/interfaces/ServerInterfaces.js";
 import { CONSTANT } from "/src/lib/constants.js";
+import * as HackUtils from "/src/util/HackUtils.js";
 import * as JobUtils from "/src/util/JobUtils.js";
 import * as ServerUtils from "/src/util/ServerUtils.js";
 import * as ToolUtils from "/src/util/ToolUtils.js";
@@ -18,7 +17,7 @@ export default class Job {
         // Setting some default values in case they were not provided
         this.allowSpreading = (job.allowSpreading) ? job.allowSpreading : true;
         this.id = (job.id) ? job.id : ++jobIdCounter;
-        this.start = (job.start) ? job.start : new Date();
+        this.start = (job.start) ? job.start : new Date(Date.now() + CONSTANT.INITIAL_JOB_DELAY);
         if (job.threadSpread)
             this.threadSpread = job.threadSpread;
         if (job.end)
@@ -29,7 +28,7 @@ export default class Job {
         }
     }
     async execute(ns) {
-        const maxThreadsAvailable = await JobUtils.computeMaxThreads(ns, this.tool, this.isPrep);
+        const maxThreadsAvailable = await HackUtils.calculateMaxThreads(ns, this.tool, this.isPrep);
         if (maxThreadsAvailable === 0) {
             // Cancel the batch
             throw new Error("No threads available");
@@ -53,10 +52,6 @@ export default class Job {
             const args = { ...commonArgs, threads, server };
             ns.exec.apply(null, this.createArgumentArray(ns, args));
         }
-        // Perhaps move this to the job manager?
-        const status = (this.isPrep) ? ServerStatus.PREPPING : ServerStatus.TARGETTING;
-        await ServerAPI.updateStatus(ns, this.target, status);
-        await JobAPI.communicateJob(ns, this);
     }
     async onStart(ns) {
         this.print(ns, false);
@@ -91,25 +86,27 @@ export default class Job {
     static parseJobString(ns, jobString) {
         const object = JSON.parse(jobString);
         let spreadMap = new Map();
-        object.threadSpread.forEach((pair) => {
-            const parsedServer = pair[0];
-            const threads = pair[1];
-            let server;
-            switch (+parsedServer.characteristics.type) {
-                case ServerType.HackableServer:
-                    server = new HackableServer(ns, parsedServer.characteristics, parsedServer.treeStructure, parsedServer.purpose);
-                    break;
-                case ServerType.BasicServer:
-                case ServerType.PurchasedServer:
-                case ServerType.HomeServer:
-                case ServerType.DarkWebServer:
-                    server = new Server(ns, parsedServer.characteristics, parsedServer.treeStructure, parsedServer.purpose);
-                    break;
-                default:
-                    throw new Error("We did not recognize the server type.");
-            }
-            spreadMap.set(server, threads);
-        });
+        if (object.threadSpread) {
+            object.threadSpread.forEach((pair) => {
+                const parsedServer = pair[0];
+                const threads = pair[1];
+                let server;
+                switch (+parsedServer.characteristics.type) {
+                    case ServerType.HackableServer:
+                        server = new HackableServer(ns, parsedServer.characteristics, parsedServer.treeStructure, parsedServer.purpose);
+                        break;
+                    case ServerType.BasicServer:
+                    case ServerType.PurchasedServer:
+                    case ServerType.HomeServer:
+                    case ServerType.DarkWebServer:
+                        server = new Server(ns, parsedServer.characteristics, parsedServer.treeStructure, parsedServer.purpose);
+                        break;
+                    default:
+                        throw new Error("We did not recognize the server type.");
+                }
+                spreadMap.set(server, threads);
+            });
+        }
         const target = new HackableServer(ns, object.target.characteristics, object.target.treeStructure, object.target.purpose);
         return new Job(ns, {
             id: object.id,

@@ -2,7 +2,7 @@ import type { BitBurner as NS } from "Bitburner";
 import { ServerPurpose } from "/src/interfaces/ServerInterfaces.js";
 import { CONSTANT } from "/src/lib/constants.js";
 import * as ServerAPI from "/src/api/ServerAPI.js";
-import PlayerManager from "/src/managers/PlayerManager.js";
+import * as PlayerUtils from "/src/util/PlayerUtils.js";
 import Server from "/src/classes/Server.js";
 
 export function computeMaxRamPossible(ns: NS, reservedMoney: number): number {
@@ -28,8 +28,7 @@ export function computeMaxRamPossible(ns: NS, reservedMoney: number): number {
 }
 
 export function canAfford(ns: NS, cost: number, reservedMoney: number): boolean {
-    const playerManager: PlayerManager = PlayerManager.getInstance(ns);
-    const money: number = (playerManager.getMoney(ns) - reservedMoney) * CONSTANT.PURCHASED_SERVER_ALLOWANCE_PERCENTAGE;
+    const money: number = (PlayerUtils.getMoney(ns) - reservedMoney) * CONSTANT.PURCHASED_SERVER_ALLOWANCE_PERCENTAGE;
 
     return cost <= money;
 }

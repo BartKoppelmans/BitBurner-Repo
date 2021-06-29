@@ -1,8 +1,9 @@
 import type { BitBurner as NS, Port, PortHandle } from "Bitburner";
 import * as ControlFlowAPI from "/src/api/ControlFlowAPI.js";
 import * as ServerAPI from "/src/api/ServerAPI.js";
+import BatchJob from "/src/classes/BatchJob.js";
 import Job from "/src/classes/Job.js";
-import { JobMessageRequest, JobMessageResponse } from "/src/interfaces/PortMessageInterfaces.js";
+import { JobMessageCode, JobMessageRequest, JobMessageResponse } from "/src/interfaces/PortMessageInterfaces.js";
 import { ServerStatus } from "/src/interfaces/ServerInterfaces.js";
 import { CONSTANT } from "/src/lib/constants.js";
 import * as Utils from "/src/util/Utils.js";
@@ -71,13 +72,18 @@ export default class JobManager {
         for (const requestString of requestStrings) {
             const request: JobMessageRequest = JSON.parse(requestString);
 
-            const job: Job = Job.parseJobString(ns, request.body);
-
-            this.jobs.push(job);
-
-            job.onStart(ns);
-
-            setTimeout(this.finishJob.bind(this, ns, job.id), job.end.getTime() - Date.now());
+            switch (+request.code) {
+                case JobMessageCode.NEW_JOB:
+                    const job: Job = Job.parseJobString(ns, request.body);
+                    await this.startJob(ns, job, false);
+                    break;
+                case JobMessageCode.NEW_BATCH_JOB:
+                    const batchJob: BatchJob = BatchJob.parseBatchJobString(ns, request.body);
+                    await this.startBatchJob(ns, batchJob);
+                    break;
+                default:
+                    throw new Error("We did not recognize the JobMessageCode");
+            }
 
             const response: JobMessageResponse = {
                 type: "Response",
@@ -85,6 +91,29 @@ export default class JobManager {
             };
             responsePortHandle.write(JSON.stringify(response));
         }
+    }
+
+    private async startBatchJob(ns: NS, batchJob: BatchJob): Promise<void> {
+        const status: ServerStatus = (batchJob.jobs[0].isPrep) ? ServerStatus.PREPPING : ServerStatus.TARGETTING;
+        await ServerAPI.updateStatus(ns, batchJob.target, status);
+
+        for await (const job of batchJob.jobs) {
+            await this.startJob(ns, job, true);
+        }
+    }
+
+    private async startJob(ns: NS, job: Job, wasBatchJob: boolean): Promise<void> {
+        this.jobs.push(job);
+
+        if (!wasBatchJob) {
+            const status: ServerStatus = (job.isPrep) ? ServerStatus.PREPPING : ServerStatus.TARGETTING;
+            await ServerAPI.updateStatus(ns, job.target, status);
+        }
+
+        await job.execute(ns);
+        job.onStart(ns);
+
+        setTimeout(this.finishJob.bind(this, ns, job.id), job.end.getTime() - Date.now());
     }
 
     private async finishJob(ns: NS, id: number): Promise<void> {

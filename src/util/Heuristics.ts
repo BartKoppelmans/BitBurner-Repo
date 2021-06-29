@@ -14,7 +14,7 @@ export namespace Heuristics {
     };
 
     export function evaluate(ns: NS, server: HackableServer): HeuristicValue {
-        if (!server.dynamicHackingProperties.securityLevel) {
+        if (!server.getSecurityLevel(ns)) {
             throw new Error(`Unable to evaluate ${server.characteristics.host}`);
         }
 
@@ -22,7 +22,7 @@ export namespace Heuristics {
 
         // TODO: Filter anything that we can't actually attack...
 
-        return server.staticHackingProperties.maxMoney * (100 / (server.staticHackingProperties.minSecurityLevel + server.dynamicHackingProperties.securityLevel));
+        return server.staticHackingProperties.maxMoney * (100 / (server.staticHackingProperties.minSecurityLevel + server.getSecurityLevel(ns)));
     }
 }
 

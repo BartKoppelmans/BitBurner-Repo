@@ -1,8 +1,42 @@
 import type { BitBurner as NS, Port, PortHandle } from "Bitburner";
+import BatchJob from "/src/classes/BatchJob.js";
 import Job from "/src/classes/Job.js";
 import { JobMessageCode, JobMessageRequest, JobMessageResponse } from "/src/interfaces/PortMessageInterfaces.js";
 import { CONSTANT } from "/src/lib/constants.js";
 import * as Utils from "/src/util/Utils.js";
+
+export async function communicateBatchJob(ns: NS, batchJob: BatchJob): Promise<void> {
+    const ports: Port[] = [...CONSTANT.JOB_PORT_NUMBERS];
+
+    const id: string = Utils.generateHash();
+    const request: JobMessageRequest = {
+        type: "Request",
+        code: JobMessageCode.NEW_BATCH_JOB,
+        body: JSON.stringify(batchJob),
+        id
+    };
+
+    let isSuccessful: boolean = false;
+    for (const port of ports) {
+        const portHandle: PortHandle = ns.getPortHandle(port);
+
+        if (portHandle.full()) continue;
+
+        isSuccessful = portHandle.tryWrite(JSON.stringify(request));
+
+        if (isSuccessful) break;
+    }
+
+    if (!isSuccessful) {
+        Utils.tprintColored(`The ports are full and we could not write more, trying again in ${CONSTANT.PORT_FULL_RETRY_TIME}ms`, true, CONSTANT.COLOR_WARNING);
+        await ns.sleep(CONSTANT.PORT_FULL_RETRY_TIME);
+        await communicateBatchJob(ns, batchJob);
+        return;
+    } else {
+        const response: JobMessageResponse = await getResponse(ns, id);
+        return;
+    }
+}
 
 export async function communicateJob(ns: NS, job: Job): Promise<void> {
     const ports: Port[] = [...CONSTANT.JOB_PORT_NUMBERS];

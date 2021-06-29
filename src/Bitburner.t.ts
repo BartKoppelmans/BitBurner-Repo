@@ -1,4 +1,5 @@
 declare module "Bitburner" {
+
     export type Host = string;
     export type Script = string;
     export type StockSymbol =
@@ -3201,6 +3202,7 @@ declare module "Bitburner" {
 
     export interface BitBurner extends TIX, Singularity {
 
+
         /**
          * Not all functions in the Hacknet Node API are immediately available.
          *
@@ -3966,6 +3968,7 @@ declare module "Bitburner" {
          */
         getServerBaseSecurityLevel(host: Host): number;
 
+
         /**
          * Returns the minimum security level of the target server.
          *
@@ -4504,5 +4507,39 @@ declare module "Bitburner" {
          * @returns {object} Object containing the current BitNode multipliers.
          */
         getBitNodeMultipliers(): BitNodeMultipliers;
+
+        // NOTE: This was not available, so this is kind of hacky
+        formulas: {
+            basic: {
+                calculateSkill(exp: number, mult: number): number;
+                calculateExp(skill: number, mult: number): number;
+                hackChance(server: any, player: any): number;
+                hackExp(server: any, player: any): number;
+                hackPercent(server: any, player: any): number;
+                growPercent(server: any, threads: number, player: any): number;
+                hackTime(server: any, player: any): number;
+                growTime(server: any, player: any): number;
+                weakenTime(server: any, player: any): number;
+            },
+            hacknetNodes: {
+                moneyGainRate(level: number, ram: number, cores: number, mult: number): number;
+                levelUpgradeCost(startingLevel: number, extraLevels: number, costMult: number): number;
+                ramUpgradeCost(startingRam: number, extraLevels: number, costMult: number): number;
+                coreUpgradeCost(startingCore: number, extraCores: number, costMult: number): number;
+                hacknetNodeCost(n: number, mult: number): number;
+                constants(): any;
+            },
+            hacknetServers: {
+                hashGainRate(level: number, ramUsed: number, maxRam: number, cores: number, mult: number): number;
+                levelUpgradeCost(startingLevel: number, extraLevels: number, costMult: number): number;
+                ramUpgradeCost(startingRam: number, extraLevels: number, costMult: number): number;
+                coreUpgradeCost(startingCore: number, extraCores: number, costMult: number): number;
+                cacheUpgradeCost(startingCache: number, extraCache: number, costMult: number): number;
+                hashUpgradeCost(upgName: string, level: number): number;
+                hacknetServerCost(n: number, mult: number): number;
+                constants(): any;
+            },
+            // end formulas
+        };
     }
 }

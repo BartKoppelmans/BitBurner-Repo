@@ -46,7 +46,7 @@ export async function updateStatus(ns: NS, server: Server, status: ServerStatus)
 
     const request: ServerStatusRequest = {
         type: "Request",
-        code: ServerRequestCode.UPDATE_SERVER_MAP,
+        code: ServerRequestCode.UPDATE_SERVER_STATUS,
         id,
         body: { server: server.characteristics.host, status }
     };

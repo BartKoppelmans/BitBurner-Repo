@@ -1,6 +1,6 @@
 import type { BitBurner as NS } from "Bitburner";
 import Server from '/src/classes/Server.js';
-import { DynamicHackingProperties, ServerCharacteristics, ServerPurpose, ServerStatus, StaticHackingProperties, TreeStructure } from "/src/interfaces/ServerInterfaces.js";
+import { ServerCharacteristics, ServerPurpose, ServerStatus, StaticHackingProperties, TreeStructure } from "/src/interfaces/ServerInterfaces.js";
 import { CONSTANT } from "/src/lib/constants.js";
 import { Heuristics } from "/src/util/Heuristics.js";
 
@@ -9,15 +9,15 @@ export default class HackableServer extends Server {
     status: ServerStatus = ServerStatus.NONE;
 
     staticHackingProperties: StaticHackingProperties;
-    dynamicHackingProperties: DynamicHackingProperties;
+    percentageToSteal: number;
 
     serverValue?: Heuristics.HeuristicValue;
 
-    constructor(ns: NS, characteristics: ServerCharacteristics, treeStructure?: TreeStructure, purpose: ServerPurpose = ServerPurpose.NONE) {
+    constructor(ns: NS, characteristics: ServerCharacteristics, treeStructure?: TreeStructure, purpose: ServerPurpose = ServerPurpose.NONE, status: ServerStatus = ServerStatus.NONE) {
         super(ns, characteristics, treeStructure, purpose);
-
+        this.status = status;
         this.staticHackingProperties = this.getStaticHackingProperties(ns);
-        this.dynamicHackingProperties = this.getDynamicHackingProperties(ns);
+        this.percentageToSteal = CONSTANT.DEFAULT_PERCENTAGE_TO_STEAL;
     }
 
     private getStaticHackingProperties(ns: NS): StaticHackingProperties {
@@ -31,35 +31,32 @@ export default class HackableServer extends Server {
         };
     }
 
-    public updateDynamicHackingProperties(ns: NS, forceUpdate: boolean = false): void {
-        if (!forceUpdate) {
-            // TODO: Check if we need to update, otherwise return;
-        }
-        this.dynamicHackingProperties = this.getDynamicHackingProperties(ns);
+    public getServer(ns: NS) {
+        return (ns as any).getServer();
     }
 
-    private getDynamicHackingProperties(ns: NS): DynamicHackingProperties {
+    public getSecurityLevel(ns: NS): number {
+        return ns.getServerSecurityLevel(this.characteristics.host);
+    }
 
-        let percentageToSteal: number = CONSTANT.DEFAULT_PERCENTAGE_TO_STEAL;
+    public getMoney(ns: NS): number {
+        return ns.getServerMoneyAvailable(this.characteristics.host);
+    }
 
-        if (this.dynamicHackingProperties && this.dynamicHackingProperties.percentageToSteal) {
-            percentageToSteal = this.dynamicHackingProperties.percentageToSteal;
-        }
+    public getWeakenTime(ns: NS) {
+        return ns.getWeakenTime(this.characteristics.host);
+    }
 
-        return {
-            lastUpdated: new Date(),
-            securityLevel: ns.getServerSecurityLevel(this.characteristics.host),
-            money: ns.getServerMoneyAvailable(this.characteristics.host),
-            weakenTime: ns.getWeakenTime(this.characteristics.host),
-            growTime: ns.getGrowTime(this.characteristics.host),
-            hackTime: ns.getHackTime(this.characteristics.host),
-            percentageToSteal
-        };
+    public getHackTime(ns: NS) {
+        return ns.getHackTime(this.characteristics.host);
+    }
+
+    public getGrowTime(ns: NS) {
+        return ns.getGrowTime(this.characteristics.host);
     }
 
     // Setter for server Value
     async evaluate(ns: NS, heuristic: Heuristics.Heuristic): Promise<Heuristics.HeuristicValue> {
-        this.updateDynamicHackingProperties(ns, true);
         return this.serverValue = heuristic(ns, this);
     }
 
@@ -71,9 +68,17 @@ export default class HackableServer extends Server {
         this.status = status;
     }
 
-    public isOptimal(): boolean {
-        return this.dynamicHackingProperties.securityLevel === this.staticHackingProperties.minSecurityLevel &&
-            this.dynamicHackingProperties.money === this.staticHackingProperties.maxMoney;
+    public isOptimal(ns: NS): boolean {
+        return this.getSecurityLevel(ns) === this.staticHackingProperties.minSecurityLevel &&
+            this.getMoney(ns) === this.staticHackingProperties.maxMoney;
+    }
+
+    public needsGrow(ns: NS): boolean {
+        return this.getMoney(ns) < this.staticHackingProperties.maxMoney;
+    }
+
+    public needsWeaken(ns: NS): boolean {
+        return this.getSecurityLevel(ns) > this.staticHackingProperties.minSecurityLevel;
     }
 
     public toJSON() {

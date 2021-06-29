@@ -1,6 +1,8 @@
 import * as ControlFlowAPI from "/src/api/ControlFlowAPI.js";
 import * as ServerAPI from "/src/api/ServerAPI.js";
+import BatchJob from "/src/classes/BatchJob.js";
 import Job from "/src/classes/Job.js";
+import { JobMessageCode } from "/src/interfaces/PortMessageInterfaces.js";
 import { ServerStatus } from "/src/interfaces/ServerInterfaces.js";
 import { CONSTANT } from "/src/lib/constants.js";
 import * as Utils from "/src/util/Utils.js";
@@ -51,16 +53,41 @@ export default class JobManager {
         // Process all job strings
         for (const requestString of requestStrings) {
             const request = JSON.parse(requestString);
-            const job = Job.parseJobString(ns, request.body);
-            this.jobs.push(job);
-            job.onStart(ns);
-            setTimeout(this.finishJob.bind(this, ns, job.id), job.end.getTime() - Date.now());
+            switch (+request.code) {
+                case JobMessageCode.NEW_JOB:
+                    const job = Job.parseJobString(ns, request.body);
+                    await this.startJob(ns, job, false);
+                    break;
+                case JobMessageCode.NEW_BATCH_JOB:
+                    const batchJob = BatchJob.parseBatchJobString(ns, request.body);
+                    await this.startBatchJob(ns, batchJob);
+                    break;
+                default:
+                    throw new Error("We did not recognize the JobMessageCode");
+            }
             const response = {
                 type: "Response",
                 request
             };
             responsePortHandle.write(JSON.stringify(response));
         }
+    }
+    async startBatchJob(ns, batchJob) {
+        const status = (batchJob.jobs[0].isPrep) ? ServerStatus.PREPPING : ServerStatus.TARGETTING;
+        await ServerAPI.updateStatus(ns, batchJob.target, status);
+        for await (const job of batchJob.jobs) {
+            await this.startJob(ns, job, true);
+        }
+    }
+    async startJob(ns, job, wasBatchJob) {
+        this.jobs.push(job);
+        if (!wasBatchJob) {
+            const status = (job.isPrep) ? ServerStatus.PREPPING : ServerStatus.TARGETTING;
+            await ServerAPI.updateStatus(ns, job.target, status);
+        }
+        await job.execute(ns);
+        job.onStart(ns);
+        setTimeout(this.finishJob.bind(this, ns, job.id), job.end.getTime() - Date.now());
     }
     async finishJob(ns, id) {
         const index = this.jobs.findIndex(job => job.id === id);

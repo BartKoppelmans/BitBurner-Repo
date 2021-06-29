@@ -131,12 +131,11 @@ class ServerManager {
             hackableServer.setStatus(request.body.status);
         } else throw new Error("We kind of expected this to be a hackable server");
 
+
         await this.updateServerMap(ns);
 
         responsePortHandle.write(JSON.stringify(response));
     }
-
-
 
     private async onServerPurposeUpdateRequested(ns: NS, request: ServerPurposeRequest) {
 

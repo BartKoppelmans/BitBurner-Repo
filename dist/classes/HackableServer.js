@@ -2,11 +2,12 @@ import Server from '/src/classes/Server.js';
 import { ServerPurpose, ServerStatus } from "/src/interfaces/ServerInterfaces.js";
 import { CONSTANT } from "/src/lib/constants.js";
 export default class HackableServer extends Server {
-    constructor(ns, characteristics, treeStructure, purpose = ServerPurpose.NONE) {
+    constructor(ns, characteristics, treeStructure, purpose = ServerPurpose.NONE, status = ServerStatus.NONE) {
         super(ns, characteristics, treeStructure, purpose);
         this.status = ServerStatus.NONE;
+        this.status = status;
         this.staticHackingProperties = this.getStaticHackingProperties(ns);
-        this.dynamicHackingProperties = this.getDynamicHackingProperties(ns);
+        this.percentageToSteal = CONSTANT.DEFAULT_PERCENTAGE_TO_STEAL;
     }
     getStaticHackingProperties(ns) {
         return {
@@ -18,30 +19,26 @@ export default class HackableServer extends Server {
             baseSecurityLevel: ns.getServerBaseSecurityLevel(this.characteristics.host),
         };
     }
-    updateDynamicHackingProperties(ns, forceUpdate = false) {
-        if (!forceUpdate) {
-            // TODO: Check if we need to update, otherwise return;
-        }
-        this.dynamicHackingProperties = this.getDynamicHackingProperties(ns);
+    getServer(ns) {
+        return ns.getServer();
     }
-    getDynamicHackingProperties(ns) {
-        let percentageToSteal = CONSTANT.DEFAULT_PERCENTAGE_TO_STEAL;
-        if (this.dynamicHackingProperties && this.dynamicHackingProperties.percentageToSteal) {
-            percentageToSteal = this.dynamicHackingProperties.percentageToSteal;
-        }
-        return {
-            lastUpdated: new Date(),
-            securityLevel: ns.getServerSecurityLevel(this.characteristics.host),
-            money: ns.getServerMoneyAvailable(this.characteristics.host),
-            weakenTime: ns.getWeakenTime(this.characteristics.host),
-            growTime: ns.getGrowTime(this.characteristics.host),
-            hackTime: ns.getHackTime(this.characteristics.host),
-            percentageToSteal
-        };
+    getSecurityLevel(ns) {
+        return ns.getServerSecurityLevel(this.characteristics.host);
+    }
+    getMoney(ns) {
+        return ns.getServerMoneyAvailable(this.characteristics.host);
+    }
+    getWeakenTime(ns) {
+        return ns.getWeakenTime(this.characteristics.host);
+    }
+    getHackTime(ns) {
+        return ns.getHackTime(this.characteristics.host);
+    }
+    getGrowTime(ns) {
+        return ns.getGrowTime(this.characteristics.host);
     }
     // Setter for server Value
     async evaluate(ns, heuristic) {
-        this.updateDynamicHackingProperties(ns, true);
         return this.serverValue = heuristic(ns, this);
     }
     isHackable(ns) {
@@ -50,9 +47,15 @@ export default class HackableServer extends Server {
     setStatus(status) {
         this.status = status;
     }
-    isOptimal() {
-        return this.dynamicHackingProperties.securityLevel === this.staticHackingProperties.minSecurityLevel &&
-            this.dynamicHackingProperties.money === this.staticHackingProperties.maxMoney;
+    isOptimal(ns) {
+        return this.getSecurityLevel(ns) === this.staticHackingProperties.minSecurityLevel &&
+            this.getMoney(ns) === this.staticHackingProperties.maxMoney;
+    }
+    needsGrow(ns) {
+        return this.getMoney(ns) < this.staticHackingProperties.maxMoney;
+    }
+    needsWeaken(ns) {
+        return this.getSecurityLevel(ns) > this.staticHackingProperties.minSecurityLevel;
     }
     toJSON() {
         const json = super.toJSON();

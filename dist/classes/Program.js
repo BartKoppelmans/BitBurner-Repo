@@ -1,6 +1,6 @@
 import { CONSTANT } from "/src/lib/constants.js";
-import PlayerManager from "/src/managers/PlayerManager.js";
 import * as Utils from "/src/util/Utils.js";
+import * as PlayerUtils from "/src/util/PlayerUtils.js";
 export var ProgramType;
 (function (ProgramType) {
     ProgramType[ProgramType["Crack"] = 0] = "Crack";
@@ -17,8 +17,7 @@ export class Program {
     }
     // Returns whether it was successful
     attemptPurchase(ns) {
-        const playerManager = PlayerManager.getInstance(ns);
-        const money = playerManager.getMoney(ns);
+        const money = PlayerUtils.getMoney(ns);
         if (this.price > money)
             return false;
         const isSuccessful = ns.purchaseProgram(this.toValidString(ns, this.name));

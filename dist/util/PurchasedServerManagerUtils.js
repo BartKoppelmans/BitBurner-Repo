@@ -1,7 +1,7 @@
 import { ServerPurpose } from "/src/interfaces/ServerInterfaces.js";
 import { CONSTANT } from "/src/lib/constants.js";
 import * as ServerAPI from "/src/api/ServerAPI.js";
-import PlayerManager from "/src/managers/PlayerManager.js";
+import * as PlayerUtils from "/src/util/PlayerUtils.js";
 export function computeMaxRamPossible(ns, reservedMoney) {
     const canPurchase = canAfford(ns, Math.pow(2, CONSTANT.MIN_PURCHASED_SERVER_RAM_EXPONENT) * CONSTANT.PURCHASED_SERVER_COST_PER_RAM, reservedMoney);
     if (!canPurchase)
@@ -18,8 +18,7 @@ export function computeMaxRamPossible(ns, reservedMoney) {
     return Math.pow(2, exponent);
 }
 export function canAfford(ns, cost, reservedMoney) {
-    const playerManager = PlayerManager.getInstance(ns);
-    const money = (playerManager.getMoney(ns) - reservedMoney) * CONSTANT.PURCHASED_SERVER_ALLOWANCE_PERCENTAGE;
+    const money = (PlayerUtils.getMoney(ns) - reservedMoney) * CONSTANT.PURCHASED_SERVER_ALLOWANCE_PERCENTAGE;
     return cost <= money;
 }
 export async function shouldUpgrade(ns, purpose) {

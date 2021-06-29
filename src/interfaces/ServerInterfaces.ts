@@ -56,10 +56,6 @@ export interface DynamicHackingProperties {
 
     securityLevel: number;
     money: number;
-
-    weakenTime: number;
-    growTime: number;
-    hackTime: number;
 }
 
 export interface ServerMapFile {

@@ -1,4 +1,3 @@
-import Job from "/src/classes/Job";
 import { ServerPurpose, ServerStatus } from "/src/interfaces/ServerInterfaces.js";
 
 export type MessageType = "Request" | "Response";
@@ -32,7 +31,8 @@ export enum ControlFlowCode {
 }
 
 export enum JobMessageCode {
-    NEW_JOB
+    NEW_JOB,
+    NEW_BATCH_JOB
 }
 
 
@@ -52,7 +52,7 @@ export interface ServerResponse extends Response {
     request: ServerRequest;
 }
 
-
+// Note: This can also be a BatchJob
 export interface JobMessageRequest extends Request {
     code: JobMessageCode;
     body: string; // This has to be serialized because of the map
