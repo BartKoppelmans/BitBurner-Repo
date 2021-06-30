@@ -9,20 +9,12 @@ export namespace Heuristics {
         (ns: NS, server: HackableServer): HeuristicValue;
     }
 
-    export var MainHeuristic: Heuristic = function (ns: NS, server: HackableServer): HeuristicValue {
-        return 0;
+    export var MainHeuristic: Heuristic = function (ns: NS, target: HackableServer): HeuristicValue {
+        return target.staticHackingProperties.maxMoney * (100 / (target.staticHackingProperties.minSecurityLevel + target.getSecurityLevel(ns)));
     };
 
-    export function evaluate(ns: NS, server: HackableServer): HeuristicValue {
-        if (!server.getSecurityLevel(ns)) {
-            throw new Error(`Unable to evaluate ${server.characteristics.host}`);
-        }
-
-        // TODO: Get rid of magic numbers
-
-        // TODO: Filter anything that we can't actually attack...
-
-        return server.staticHackingProperties.maxMoney * (100 / (server.staticHackingProperties.minSecurityLevel + server.getSecurityLevel(ns)));
-    }
+    export var DiscordHeuristic: Heuristic = function (ns: NS, target: HackableServer): HeuristicValue {
+        return target.staticHackingProperties.maxMoney * target.staticHackingProperties.growth / target.staticHackingProperties.minSecurityLevel / (target.staticHackingProperties.hackingLevel + 50);
+    };
 }
 

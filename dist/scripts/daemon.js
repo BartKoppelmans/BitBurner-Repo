@@ -32,7 +32,7 @@ async function hackLoop(ns) {
     let potentialTargets = await ServerAPI.getTargetServers(ns);
     // Then evaluate the potential targets afterwards
     await Promise.all(potentialTargets.map(async (target) => {
-        target.evaluate(ns, Heuristics.MainHeuristic);
+        target.evaluate(ns, Heuristics.DiscordHeuristic);
     }));
     // We would have a problem if there are no targets
     if (potentialTargets.length === 0) {

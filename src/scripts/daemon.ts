@@ -44,7 +44,7 @@ async function hackLoop(ns: NS): Promise<void> {
 
     // Then evaluate the potential targets afterwards
     await Promise.all(potentialTargets.map(async (target) => {
-        target.evaluate(ns, Heuristics.MainHeuristic);
+        target.evaluate(ns, Heuristics.DiscordHeuristic);
     }));
 
     // We would have a problem if there are no targets
