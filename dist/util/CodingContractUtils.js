@@ -29,7 +29,9 @@ export function findSolution(ns, contract) {
         case "Merge Overlapping Intervals":
             return JSON.stringify(mergeIntervals(contract.data));
         case "Minimum Path Sum in a Triangle":
+            return triangleMinSum(contract.data);
         case "Find All Valid Math Expressions":
+            return findAllExpressions(contract.data[0], contract.data[1]);
         default:
             return null;
     }
@@ -245,5 +247,42 @@ function mergeIntervals(intervals) {
             prev = curr;
         }
     }
+    return res;
+}
+function triangleMinSum(triangle) {
+    for (let i = triangle.length - 2; i >= 0; i--)
+        for (let j = 0; j < triangle[i].length; j++)
+            triangle[i][j] += Math.min(triangle[i + 1][j], triangle[i + 1][j + 1]);
+    return triangle[0][0];
+}
+function findAllExpressions(num, target) {
+    let res = [];
+    if (!num.length)
+        return res;
+    function solver(path, pos, evaluation, mult) {
+        if (pos === num.length) {
+            if (target == evaluation)
+                res.push(path);
+            return;
+        }
+        ;
+        for (let i = pos; i < num.length; i++) {
+            if (i !== pos && num[pos] === '0')
+                break;
+            let curr = Number(num.slice(pos, i + 1));
+            if (pos == 0) {
+                solver(path + curr, i + 1, curr, curr);
+            }
+            else {
+                solver(`${path}+${curr}`, i + 1, evaluation + curr, curr);
+                solver(`${path}-${curr}`, i + 1, evaluation - curr, 0 - curr);
+                solver(`${path}*${curr}`, i + 1, evaluation - mult + mult * curr, mult * curr);
+            }
+            ;
+        }
+        ;
+    }
+    ;
+    solver("", 0, 0, 0);
     return res;
 }
