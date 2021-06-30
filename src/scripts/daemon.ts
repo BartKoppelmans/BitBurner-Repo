@@ -18,7 +18,7 @@ import { Heuristics } from "/src/util/Heuristics.js";
 import * as Utils from "/src/util/Utils.js";
 
 let isHacking: boolean = false;
-let hackLoopInterval: ReturnType<typeof setInterval>;
+let hackLoopTimeout: ReturnType<typeof setTimeout>;
 
 async function initialize(ns: NS) {
 
@@ -76,6 +76,8 @@ async function hackLoop(ns: NS): Promise<void> {
 
         isHacking = false;
     }
+
+    hackLoopTimeout = setTimeout(hackLoop.bind(null, ns), CONSTANT.HACK_LOOP_DELAY);
 }
 
 async function hack(ns: NS, target: HackableServer): Promise<void> {
@@ -107,14 +109,22 @@ async function prepServer(ns: NS, target: HackableServer): Promise<void> {
 
     let jobs: Job[] = [];
 
+    let availableThreads: number = await HackUtils.calculateMaxThreads(ns, Tools.WEAKEN, true);
+
+    if (availableThreads === 0) {
+        if (CONSTANT.DEBUG_HACKING) Utils.tprintColored("Skipped a prep.", true, CONSTANT.COLOR_WARNING);
+        return;
+    }
+
     // TODO: Ideally we pick the server that can fit all our threads here immediately, 
     // then we can have everything on one source server
 
     if (target.needsWeaken(ns)) {
         let neededWeakenThreads: number = HackUtils.calculateWeakenThreads(ns, target);
-        let maxWeakenThreads: number = await HackUtils.calculateMaxThreads(ns, Tools.WEAKEN, true);
 
-        let weakenThreads: number = Math.min(neededWeakenThreads, maxWeakenThreads);
+        let weakenThreads: number = Math.min(neededWeakenThreads, availableThreads);
+
+        availableThreads -= weakenThreads;
 
         initialWeakenJob = new Job(ns, {
             target,
@@ -129,9 +139,6 @@ async function prepServer(ns: NS, target: HackableServer): Promise<void> {
     // First grow, so that the amount of money is optimal
     if (target.needsGrow(ns)) {
 
-        // NOTE: Here we assume that the max number of growth and weaken threads is the same
-        const availableThreads: number = await HackUtils.calculateMaxThreads(ns, Tools.GROW, true);
-
         const neededGrowthThreads: number = HackUtils.calculateGrowthThreads(ns, target);
         const compensationWeakenThreads: number = HackUtils.calculateCompensationWeakenThreads(ns, target, Tools.GROW, neededGrowthThreads);
 
@@ -140,8 +147,14 @@ async function prepServer(ns: NS, target: HackableServer): Promise<void> {
         const threadsFit: boolean = (totalThreads < availableThreads);
 
         // NOTE: This should be around 0.8, I think
-        const growthThreads: number = (threadsFit) ? neededGrowthThreads : Math.ceil(neededGrowthThreads * (availableThreads / totalThreads));
-        const weakenThreads: number = (threadsFit) ? compensationWeakenThreads : Math.ceil(compensationWeakenThreads * (availableThreads / totalThreads));
+
+        // NOTE: Here we do Math.floor, which could cause us not to ececute enought weakens/grows
+        // However, we currently run into a lot of errors regarding too little threads available, which is why we do this.
+
+        const growthThreads: number = (threadsFit) ? neededGrowthThreads : Math.floor(neededGrowthThreads * (availableThreads / totalThreads));
+        const weakenThreads: number = (threadsFit) ? compensationWeakenThreads : Math.floor(compensationWeakenThreads * (availableThreads / totalThreads));
+
+        availableThreads -= growthThreads + weakenThreads;
 
         if (growthThreads > 0 && weakenThreads > 0) {
 
@@ -184,7 +197,9 @@ async function prepServer(ns: NS, target: HackableServer): Promise<void> {
 
 async function attackServer(ns: NS, target: HackableServer): Promise<void> {
 
-    const cycles: number = await CycleUtils.computeCycles(ns, target);
+    const possibleCycles: number = await CycleUtils.computeCycles(ns, target);
+
+    const cycles: number = Math.min(possibleCycles, CONSTANT.MAX_CYCLE_NUMBER);
 
     if (cycles === 0) {
         if (CONSTANT.DEBUG_HACKING) Utils.tprintColored("Skipped an attack.", true, CONSTANT.COLOR_WARNING);
@@ -240,7 +255,7 @@ async function optimizePerformance(ns: NS, target: HackableServer): Promise<void
 }
 
 export async function onDestroy(ns: NS) {
-    clearInterval(hackLoopInterval);
+    clearTimeout(hackLoopTimeout);
 
     // TODO: Wait until it is done executing
 
@@ -261,8 +276,10 @@ export async function main(ns: NS) {
 
     await initialize(ns);
 
-    hackLoopInterval = setInterval(hackLoop.bind(null, ns), CONSTANT.HACK_LOOP_DELAY);
+    hackLoopTimeout = setTimeout(hackLoop.bind(null, ns), CONSTANT.HACK_LOOP_DELAY);
 
+
+    // TODO: Here we should check whether we are still running the hackloop
     while (true) {
         const shouldKill: boolean = await ControlFlowAPI.hasDaemonKillRequest(ns);
 

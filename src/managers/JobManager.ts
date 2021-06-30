@@ -94,16 +94,43 @@ export default class JobManager {
     }
 
     private async startBatchJob(ns: NS, batchJob: BatchJob): Promise<void> {
+
+        const originalStatus: ServerStatus = batchJob.target.status;
+
+        // Set the status
         const status: ServerStatus = (batchJob.jobs[0].isPrep) ? ServerStatus.PREPPING : ServerStatus.TARGETTING;
         await ServerAPI.updateStatus(ns, batchJob.target, status);
 
+        let hasExecutedJob: boolean = false;
+
         for await (const job of batchJob.jobs) {
-            await this.startJob(ns, job, true);
+            try {
+                // Attempt to execute the job
+                await this.startJob(ns, job, true);
+
+                hasExecutedJob = true;
+            } catch (error) {
+                Utils.tprintColored(`Error encountered: \n
+                ${error.name} \n
+                ${error.message} \n
+                ${error.stack}
+                `, true, CONSTANT.COLOR_WARNING);
+
+                if (!hasExecutedJob) {
+
+                    // If it fails on the first job, revert the status
+                    await ServerAPI.updateStatus(ns, batchJob.target, originalStatus);
+
+                }
+
+                // Stop executing the jobs, but let the old ones run
+                // TODO: Kill the old jobs
+                break;
+            }
         }
     }
 
     private async startJob(ns: NS, job: Job, wasBatchJob: boolean): Promise<void> {
-        this.jobs.push(job);
 
         if (!wasBatchJob) {
             const status: ServerStatus = (job.isPrep) ? ServerStatus.PREPPING : ServerStatus.TARGETTING;
@@ -111,6 +138,7 @@ export default class JobManager {
         }
 
         await job.execute(ns);
+        this.jobs.push(job);
         job.onStart(ns);
 
         setTimeout(this.finishJob.bind(this, ns, job.id), job.end.getTime() - Date.now());
@@ -123,15 +151,15 @@ export default class JobManager {
             throw new Error("Could not find the job");
         }
 
-        const job: Job = this.jobs.splice(index, 1)[0];
+        const oldJob: Job = this.jobs.splice(index, 1)[0];
 
-        const otherJobIndex: number = this.jobs.findIndex((job) => job.target.characteristics.host === job.target.characteristics.host);
+        const otherJobIndex: number = this.jobs.findIndex((job) => oldJob.target.characteristics.host === job.target.characteristics.host);
 
         if (otherJobIndex === -1) {
-            await ServerAPI.updateStatus(ns, job.target, ServerStatus.NONE);
+            await ServerAPI.updateStatus(ns, oldJob.target, ServerStatus.NONE);
         }
 
-        job.onFinish(ns);
+        oldJob.onFinish(ns);
     }
 
     private clearAllPorts(ns: NS): void {
