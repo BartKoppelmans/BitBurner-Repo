@@ -158,24 +158,43 @@ async function prepServer(ns: NS, target: HackableServer): Promise<void> {
 
         if (growthThreads > 0 && weakenThreads > 0) {
 
-            const growthStartTime: Date | undefined = (initialWeakenJob) ? new Date(initialWeakenJob.end.getTime() + CONSTANT.JOB_DELAY) : undefined;
+            const weakenTime: number = target.getWeakenTime(ns);
+            const growthTime: number = target.getGrowTime(ns);
+
+            const firstStartTime: Date = (initialWeakenJob) ? new Date(initialWeakenJob.end.getTime() + CONSTANT.JOB_DELAY) : new Date(Date.now() + CONSTANT.INITIAL_JOB_DELAY);
+
+            let growthStartTime: Date, growthEndTime: Date, compensationWeakenEndTime: Date, compensationWeakenStartTime: Date;
+
+            if ((growthTime + CONSTANT.JOB_DELAY) > weakenTime) {
+                growthStartTime = new Date(firstStartTime.getTime());
+                growthEndTime = new Date(growthStartTime.getTime() + growthTime);
+
+                compensationWeakenEndTime = new Date(growthEndTime.getTime() + CONSTANT.JOB_DELAY);
+                compensationWeakenStartTime = new Date(compensationWeakenEndTime.getTime() - weakenTime);
+            } else {
+                compensationWeakenStartTime = new Date(firstStartTime.getTime());
+                compensationWeakenEndTime = new Date(compensationWeakenStartTime.getTime() + growthTime);
+
+                growthEndTime = new Date(compensationWeakenEndTime.getTime() - CONSTANT.JOB_DELAY);
+                growthStartTime = new Date(growthEndTime.getTime() - growthTime);
+            }
 
             growJob = new Job(ns, {
                 target,
                 threads: growthThreads,
                 tool: Tools.GROW,
                 isPrep: true,
-                start: growthStartTime
+                start: growthStartTime,
+                end: growthEndTime
             });
-
-            const compensationWeakenStartTime: Date = new Date(growJob.end.getTime() + CONSTANT.JOB_DELAY);
 
             compensationWeakenJob = new Job(ns, {
                 target,
                 threads: weakenThreads,
                 tool: Tools.WEAKEN,
                 isPrep: true,
-                start: compensationWeakenStartTime
+                start: compensationWeakenStartTime,
+                end: compensationWeakenEndTime
             });
 
             jobs.push(growJob);
