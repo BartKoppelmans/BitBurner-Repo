@@ -8,14 +8,14 @@ export function computeMaxRamPossible(ns, reservedMoney) {
         return -1;
     // We want to start at 8 gigabytes, cause otherwise it's not worth it
     let exponent = CONSTANT.MIN_PURCHASED_SERVER_RAM_EXPONENT - 1;
-    for (exponent; exponent <= CONSTANT.MAX_PURCHASED_SERVER_RAM_EXPONENT; exponent++) {
+    for (exponent; exponent < CONSTANT.MAX_PURCHASED_SERVER_RAM_EXPONENT; exponent++) {
         const cost = Math.pow(2, exponent + 1) * CONSTANT.PURCHASED_SERVER_COST_PER_RAM;
         // Stop if we can't afford a next upgrade
         if (!canAfford(ns, cost, reservedMoney)) {
             break;
         }
     }
-    return Math.pow(2, exponent);
+    return Math.min(Math.pow(2, exponent), ns.getPurchasedServerMaxRam());
 }
 export function canAfford(ns, cost, reservedMoney) {
     const money = (PlayerUtils.getMoney(ns) - reservedMoney) * CONSTANT.PURCHASED_SERVER_ALLOWANCE_PERCENTAGE;

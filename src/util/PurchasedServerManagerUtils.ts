@@ -14,7 +14,7 @@ export function computeMaxRamPossible(ns: NS, reservedMoney: number): number {
     // We want to start at 8 gigabytes, cause otherwise it's not worth it
     let exponent: number = CONSTANT.MIN_PURCHASED_SERVER_RAM_EXPONENT - 1;
 
-    for (exponent; exponent <= CONSTANT.MAX_PURCHASED_SERVER_RAM_EXPONENT; exponent++) {
+    for (exponent; exponent < CONSTANT.MAX_PURCHASED_SERVER_RAM_EXPONENT; exponent++) {
 
         const cost: number = Math.pow(2, exponent + 1) * CONSTANT.PURCHASED_SERVER_COST_PER_RAM;
 
@@ -24,7 +24,7 @@ export function computeMaxRamPossible(ns: NS, reservedMoney: number): number {
         }
     }
 
-    return Math.pow(2, exponent);
+    return Math.min(Math.pow(2, exponent), ns.getPurchasedServerMaxRam());
 }
 
 export function canAfford(ns: NS, cost: number, reservedMoney: number): boolean {
