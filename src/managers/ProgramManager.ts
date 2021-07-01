@@ -39,6 +39,8 @@ class ProgramManager {
 
         await this.startCheckingLoop(ns);
 
+        await this.startPurchaseLoop(ns);
+
         await this.startRootLoop(ns);
     }
 

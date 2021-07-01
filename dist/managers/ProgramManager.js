@@ -26,6 +26,7 @@ class ProgramManager {
     async start(ns) {
         Utils.tprintColored(`Starting the ProgramManager`, true, CONSTANT.COLOR_INFORMATION);
         await this.startCheckingLoop(ns);
+        await this.startPurchaseLoop(ns);
         await this.startRootLoop(ns);
     }
     async onDestroy(ns) {
