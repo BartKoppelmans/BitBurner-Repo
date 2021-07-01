@@ -94,6 +94,8 @@ export const CONSTANT = {
     NUM_PURCHASED_HACKING_SERVERS: 15,
     PURCHASED_SERVER_UPGRADE_UTILIZATION_THRESHOLD: 0.8,
 
+    CRIME_DELAY: 500,
+
     /*
     * Server manager constants
     */

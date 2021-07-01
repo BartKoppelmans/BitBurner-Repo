@@ -56,7 +56,7 @@ export default class HackableServer extends Server {
     }
 
     // Setter for server Value
-    async evaluate(ns: NS, heuristic: Heuristics.Heuristic): Promise<Heuristics.HeuristicValue> {
+    async evaluate(ns: NS, heuristic: Heuristics.ServerHeuristic): Promise<Heuristics.HeuristicValue> {
         return this.serverValue = heuristic(ns, this);
     }
 
