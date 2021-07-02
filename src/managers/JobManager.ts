@@ -1,9 +1,10 @@
 import type { BitBurner as NS, Port, PortHandle } from "Bitburner";
 import * as ControlFlowAPI from "/src/api/ControlFlowAPI.js";
+import * as LogAPI from "/src/api/LogAPI.js";
 import * as ServerAPI from "/src/api/ServerAPI.js";
 import BatchJob from "/src/classes/BatchJob.js";
 import Job from "/src/classes/Job.js";
-import { JobMessageCode, JobMessageRequest, JobMessageResponse } from "/src/interfaces/PortMessageInterfaces.js";
+import { JobMessageCode, JobMessageRequest, JobMessageResponse, LogMessageCode } from "/src/interfaces/PortMessageInterfaces.js";
 import { ServerStatus } from "/src/interfaces/ServerInterfaces.js";
 import { CONSTANT } from "/src/lib/constants.js";
 import * as Utils from "/src/util/Utils.js";
@@ -31,7 +32,7 @@ export default class JobManager {
     }
 
     public async start(ns: NS): Promise<void> {
-        Utils.tprintColored(`Starting the JobManager`, true, CONSTANT.COLOR_INFORMATION);
+        await LogAPI.log(ns, `Starting the JobManager`, true, LogMessageCode.INFORMATION);
 
         const ports: Port[] = [...CONSTANT.JOB_PORT_NUMBERS];
         for (const port of ports) {
@@ -52,7 +53,7 @@ export default class JobManager {
             this.managingLoopIntervals = [];
         }
 
-        Utils.tprintColored(`Stopping the JobManager`, true, CONSTANT.COLOR_INFORMATION);
+        await LogAPI.log(ns, `Stopping the JobManager`, true, LogMessageCode.INFORMATION);
     }
 
     private async managingLoop(ns: NS, port: Port): Promise<void> {
@@ -110,11 +111,11 @@ export default class JobManager {
 
                 hasExecutedJob = true;
             } catch (error) {
-                Utils.tprintColored(`Error encountered: \n
+                await LogAPI.log(ns, `Error encountered: \n
                 ${error.name} \n
                 ${error.message} \n
                 ${error.stack}
-                `, true, CONSTANT.COLOR_WARNING);
+                `, true, LogMessageCode.WARNING);
 
                 if (!hasExecutedJob) {
 

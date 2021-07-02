@@ -1,9 +1,11 @@
 import type { BitBurner as NS } from "Bitburner";
 import * as ControlFlowAPI from "/src/api/ControlFlowAPI.js";
+import * as LogAPI from "/src/api/LogAPI.js";
 import * as ServerAPI from "/src/api/ServerAPI.js";
 import HackableServer from "/src/classes/HackableServer.js";
 import { Program, ProgramType } from "/src/classes/Program.js";
 import Server from "/src/classes/Server.js";
+import { LogMessageCode } from "/src/interfaces/PortMessageInterfaces.js";
 import { CONSTANT } from "/src/lib/constants.js";
 import * as ProgramManagerUtils from "/src/util/ProgramManagerUtils.js";
 import * as ServerUtils from "/src/util/ServerUtils.js";
@@ -35,7 +37,7 @@ class ProgramManager {
     }
 
     public async start(ns: NS): Promise<void> {
-        Utils.tprintColored(`Starting the ProgramManager`, true, CONSTANT.COLOR_INFORMATION);
+        await LogAPI.log(ns, `Starting the ProgramManager`, true, LogMessageCode.INFORMATION);
 
         await this.startCheckingLoop(ns);
 
@@ -54,7 +56,7 @@ class ProgramManager {
         if (this.rootInterval) {
             clearInterval(this.rootInterval);
         }
-        Utils.tprintColored(`Stopping the ProgramManager`, true, CONSTANT.COLOR_INFORMATION);
+        await LogAPI.log(ns, `Stopping the ProgramManager`, true, LogMessageCode.INFORMATION);
     }
 
     private async startCheckingLoop(ns: NS): Promise<void> {
@@ -99,8 +101,9 @@ class ProgramManager {
         if (!hasTor) return;
 
         let hasUpdated: boolean = false;
-        programsToPurchase.forEach((program) => {
-            hasUpdated = hasUpdated || program.attemptPurchase(ns);
+        programsToPurchase.forEach(async (program) => {
+            const isSuccessful: boolean = await program.attemptPurchase(ns);
+            hasUpdated = hasUpdated || isSuccessful;
         });
 
         if (hasUpdated) this.onProgramsUpdated(ns);

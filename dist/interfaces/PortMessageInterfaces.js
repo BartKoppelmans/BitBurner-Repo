@@ -15,3 +15,11 @@ export var JobMessageCode;
     JobMessageCode[JobMessageCode["NEW_JOB"] = 0] = "NEW_JOB";
     JobMessageCode[JobMessageCode["NEW_BATCH_JOB"] = 1] = "NEW_BATCH_JOB";
 })(JobMessageCode || (JobMessageCode = {}));
+export var LogMessageCode;
+(function (LogMessageCode) {
+    LogMessageCode[LogMessageCode["INFORMATION"] = 0] = "INFORMATION";
+    LogMessageCode[LogMessageCode["WARNING"] = 1] = "WARNING";
+    LogMessageCode[LogMessageCode["HACKING"] = 2] = "HACKING";
+    LogMessageCode[LogMessageCode["PURCHASED_SERVER"] = 3] = "PURCHASED_SERVER";
+    LogMessageCode[LogMessageCode["CODING_CONTRACT"] = 4] = "CODING_CONTRACT";
+})(LogMessageCode || (LogMessageCode = {}));

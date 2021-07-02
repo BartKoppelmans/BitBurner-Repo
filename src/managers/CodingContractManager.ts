@@ -1,11 +1,13 @@
 import type { BitBurner as NS } from "Bitburner";
 import * as ControlFlowAPI from "/src/api/ControlFlowAPI.js";
+import * as LogAPI from "/src/api/LogAPI.js";
 import * as ServerAPI from "/src/api/ServerAPI.js";
 import { CodingContract, CodingContractAnswer } from "/src/classes/CodingContract.js";
 import Server from "/src/classes/Server.js";
+import { LogMessageCode } from "/src/interfaces/PortMessageInterfaces.js";
 import { CONSTANT } from "/src/lib/constants.js";
-import * as Utils from "/src/util/Utils.js";
 import * as CodingContractUtils from "/src/util/CodingContractUtils.js";
+import * as Utils from "/src/util/Utils.js";
 
 class CodingContractManager {
 
@@ -19,7 +21,7 @@ class CodingContractManager {
     }
 
     public async start(ns: NS): Promise<void> {
-        Utils.tprintColored(`Starting the ContractManager`, true, CONSTANT.COLOR_INFORMATION);
+        await LogAPI.log(ns, `Starting the ContractManager`, true, LogMessageCode.INFORMATION);
 
         await this.startCheckingLoop(ns);
     }
@@ -28,7 +30,7 @@ class CodingContractManager {
         if (this.contractCheckInterval) {
             clearInterval(this.contractCheckInterval);
         }
-        Utils.tprintColored(`Stopping the ContractManager`, true, CONSTANT.COLOR_INFORMATION);
+        await LogAPI.log(ns, `Stopping the ContractManager`, true, LogMessageCode.INFORMATION);
     }
 
     private async startCheckingLoop(ns: NS): Promise<void> {
@@ -61,7 +63,7 @@ class CodingContractManager {
     }
 
     private async onNewContract(ns: NS, contract: CodingContract) {
-        Utils.tprintColored(`We found a contract: ${contract.server.characteristics.host}/${contract.filename}`, true, CONSTANT.COLOR_CODING_CONTRACT_INFORMATION);
+        await LogAPI.log(ns, `We found a contract: ${contract.server.characteristics.host}/${contract.filename}`, true, LogMessageCode.CODING_CONTRACT);
 
         await this.solveContract(ns, contract);
     }
@@ -70,7 +72,7 @@ class CodingContractManager {
         let solution: CodingContractAnswer | null = CodingContractUtils.findSolution(ns, contract);
 
         if (!solution) {
-            Utils.tprintColored(`We currently cannot solve contract ${contract.server.characteristics.host}/${contract.filename}: ${contract.type}`, true, CONSTANT.COLOR_CODING_CONTRACT_INFORMATION);
+            await LogAPI.log(ns, `We currently cannot solve contract ${contract.server.characteristics.host}/${contract.filename}: ${contract.type}`, true, LogMessageCode.CODING_CONTRACT);
             return;
         }
 
@@ -81,11 +83,11 @@ class CodingContractManager {
     }
 
     private async onFailedContract(ns: NS, contract: CodingContract) {
-        Utils.tprintColored(`Wrong solution for contract ${contract.server.characteristics.host}/${contract.filename}`, true, CONSTANT.COLOR_CODING_CONTRACT_INFORMATION);
+        await LogAPI.log(ns, `Wrong solution for contract ${contract.server.characteristics.host}/${contract.filename}`, true, LogMessageCode.CODING_CONTRACT);
     }
 
     private async onSolveContract(ns: NS, contract: CodingContract) {
-        Utils.tprintColored(`Solved contract ${contract.server.characteristics.host}/${contract.filename}`, true, CONSTANT.COLOR_CODING_CONTRACT_INFORMATION);
+        await LogAPI.log(ns, `Solved contract ${contract.server.characteristics.host}/${contract.filename}`, true, LogMessageCode.CODING_CONTRACT);
     }
 
 }

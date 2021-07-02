@@ -1,7 +1,9 @@
 import type { BitBurner as NS, ProcessInfo } from "Bitburner";
 import * as ControlFlowAPI from "/src/api/ControlFlowAPI.js";
+import * as LogAPI from "/src/api/LogAPI.js";
 import * as ServerAPI from "/src/api/ServerAPI.js";
 import Server from "/src/classes/Server.js";
+import { LogMessageCode } from "/src/interfaces/PortMessageInterfaces.js";
 import { QuarantinedServer, ServerPurpose } from "/src/interfaces/ServerInterfaces.js";
 import { CONSTANT } from "/src/lib/constants.js";
 import * as PurchasedServerManagerUtils from "/src/util/PurchasedServerManagerUtils.js";
@@ -42,7 +44,7 @@ class PurchasedServerManager {
 
     // Main entry point
     public async start(ns: NS) {
-        Utils.tprintColored(`Starting the PurchasedServerManager`, true, CONSTANT.COLOR_INFORMATION);
+        await LogAPI.log(ns, `Starting the PurchasedServerManager`, true, LogMessageCode.INFORMATION);
 
         await this.updateServerMap(ns);
 
@@ -61,7 +63,7 @@ class PurchasedServerManager {
             clearInterval(this.purchaseLoopInterval);
         }
 
-        Utils.tprintColored("Stopping the PurchasedServerManager", true, CONSTANT.COLOR_INFORMATION);
+        await LogAPI.log(ns, "Stopping the PurchasedServerManager", true, LogMessageCode.INFORMATION);
     }
 
     // Purchasing new servers -------------------------------------------------------------------
@@ -91,7 +93,7 @@ class PurchasedServerManager {
 
             const id: number = this.purchasedServers.length + i;
 
-            const isSuccessful: boolean = this.purchaseNewServer(ns, ram, id);
+            const isSuccessful: boolean = await this.purchaseNewServer(ns, ram, id);
             if (!isSuccessful) {
                 throw new Error("We could not successfully purchase the server");
             } else updateNeeded = true;
@@ -105,12 +107,12 @@ class PurchasedServerManager {
         }
     }
 
-    private purchaseNewServer(ns: NS, ram: number, id: number): boolean {
+    private async purchaseNewServer(ns: NS, ram: number, id: number): Promise<boolean> {
         const name: string = CONSTANT.PURCHASED_SERVER_PREFIX + id.toString();
         const boughtServer: string = ns.purchaseServer(name, ram);
 
         if (boughtServer) {
-            Utils.tprintColored(`Purchased server ${boughtServer} with ${ram}GB ram.`, true, CONSTANT.COLOR_PURCHASED_SERVER_INFORMATION);
+            await LogAPI.log(ns, `Purchased server ${boughtServer} with ${ram}GB ram.`, true, LogMessageCode.PURCHASED_SERVER);
         }
 
         return !!boughtServer;
@@ -146,7 +148,7 @@ class PurchasedServerManager {
                 await ServerAPI.updatePurpose(ns, quarantinedServer.server, quarantinedServer.originalPurpose);
                 finishedQuarantines.push(quarantinedServer);
 
-                Utils.tprintColored(`We removed ${quarantinedServer.server.characteristics.host} from quarantine`, true, CONSTANT.COLOR_PURCHASED_SERVER_INFORMATION);
+                await LogAPI.log(ns, `We removed ${quarantinedServer.server.characteristics.host} from quarantine`, true, LogMessageCode.PURCHASED_SERVER);
             }
         }
 
@@ -180,7 +182,7 @@ class PurchasedServerManager {
 
         // TODO: Subtract the costs from the money that we currently have, to also put some budget into quarantine
 
-        Utils.tprintColored(`We put ${server.characteristics.host} into quarantine`, true, CONSTANT.COLOR_PURCHASED_SERVER_INFORMATION);
+        await LogAPI.log(ns, `We put ${server.characteristics.host} into quarantine`, true, LogMessageCode.PURCHASED_SERVER);
     }
 
     private async upgradeServer(ns: NS, server: Server, ram: number): Promise<boolean> {
@@ -189,14 +191,14 @@ class PurchasedServerManager {
         const deletedServer: boolean = ns.deleteServer(hostName);
 
         if (!deletedServer) {
-            Utils.tprintColored(`Could not delete server ${hostName}`, true, CONSTANT.COLOR_WARNING);
+            await LogAPI.log(ns, `Could not delete server ${hostName}`, true, LogMessageCode.WARNING);
             return false;
         }
 
         const boughtServer: string = ns.purchaseServer(hostName, ram);
 
         if (boughtServer) {
-            Utils.tprintColored(`Upgraded server ${boughtServer} with ${ram}GB ram.`, true, CONSTANT.COLOR_PURCHASED_SERVER_INFORMATION);
+            await LogAPI.log(ns, `Upgraded server ${boughtServer} with ${ram}GB ram.`, true, LogMessageCode.PURCHASED_SERVER);
         }
 
         return !!boughtServer;

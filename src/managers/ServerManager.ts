@@ -1,8 +1,9 @@
 import type { BitBurner as NS } from "Bitburner";
 import * as ControlFlowAPI from "/src/api/ControlFlowAPI.js";
+import * as LogAPI from "/src/api/LogAPI.js";
 import HackableServer from "/src/classes/HackableServer.js";
 import Server from '/src/classes/Server.js';
-import { ServerPurposeRequest, ServerRequest, ServerRequestCode, ServerResponse, ServerStatusRequest } from "/src/interfaces/PortMessageInterfaces.js";
+import { LogMessageCode, ServerPurposeRequest, ServerRequest, ServerRequestCode, ServerResponse, ServerStatusRequest } from "/src/interfaces/PortMessageInterfaces.js";
 import { ServerPurpose, ServerStatus, ServerType } from "/src/interfaces/ServerInterfaces.js";
 import { CONSTANT } from "/src/lib/constants.js";
 import * as ServerManagerUtils from "/src/util/ServerManagerUtils.js";
@@ -39,7 +40,7 @@ class ServerManager {
     }
 
     public async start(ns: NS): Promise<void> {
-        Utils.tprintColored(`Starting the ServerManager`, true, CONSTANT.COLOR_INFORMATION);
+        await LogAPI.log(ns, `Starting the ServerManager`, true, LogMessageCode.INFORMATION);
 
         this.updateLoopInterval = setInterval(this.updateServerMap.bind(this, ns), CONSTANT.SERVER_MAP_REBUILD_INTERVAL);
         this.requestLoopInterval = setInterval(this.requestLoop.bind(this, ns), CONSTANT.SERVER_MESSAGE_INTERVAL);
@@ -57,7 +58,7 @@ class ServerManager {
             clearInterval(this.requestLoopInterval);
         }
 
-        Utils.tprintColored(`Stopping the ServerManager`, true, CONSTANT.COLOR_INFORMATION);
+        await LogAPI.log(ns, `Stopping the ServerManager`, true, LogMessageCode.INFORMATION);
     }
 
     private async requestLoop(ns: NS): Promise<void> {
@@ -125,7 +126,7 @@ class ServerManager {
             const hackableServer: HackableServer = server as HackableServer;
 
             if (request.body.status !== ServerStatus.NONE && hackableServer.status !== ServerStatus.NONE) {
-                Utils.tprintColored(`Server ${hackableServer.characteristics.host} was already being prepped or targeted.`, false, CONSTANT.COLOR_WARNING);
+                await LogAPI.log(ns, `Server ${hackableServer.characteristics.host} was already being prepped or targeted.`, false, LogMessageCode.WARNING);
             }
 
             hackableServer.setStatus(request.body.status);

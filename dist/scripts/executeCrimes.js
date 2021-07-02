@@ -1,14 +1,15 @@
 import { CONSTANT } from "/src/lib/constants.js";
 import * as CrimeUtils from "/src/util/CrimeUtils.js";
-import * as Utils from "/src/util/Utils.js";
+import * as LogAPI from "/src/api/LogAPI.js";
+import { LogMessageCode } from "/src/interfaces/PortMessageInterfaces.js";
 export async function main(ns) {
     if (ns.isBusy()) {
-        Utils.tprintColored("Cannot execute crimes, we are currently busy.", true, CONSTANT.COLOR_WARNING);
+        await LogAPI.log(ns, "Cannot execute crimes, we are currently busy.", true, LogMessageCode.WARNING);
         return;
     }
     let crimes = CrimeUtils.getCrimes(ns);
     let isCancelled = false;
-    Utils.tprintColored("Executing crimes", true, CONSTANT.COLOR_INFORMATION);
+    await LogAPI.log(ns, "Executing crimes", true, LogMessageCode.INFORMATION);
     while (!isCancelled) {
         if (ns.isBusy()) {
             await ns.sleep(CONSTANT.CRIME_DELAY);
@@ -23,9 +24,11 @@ export async function main(ns) {
         const nextCrime = crimes[0];
         nextCrime.commit(ns);
         const cancelButton = document.getElementById("work-in-progress-cancel-button");
-        cancelButton?.addEventListener("click", () => {
-            isCancelled = true;
-        });
+        if (cancelButton) {
+            cancelButton.addEventListener("click", () => {
+                isCancelled = true;
+            });
+        }
         await ns.sleep(nextCrime.crimeStats.time);
     }
 }

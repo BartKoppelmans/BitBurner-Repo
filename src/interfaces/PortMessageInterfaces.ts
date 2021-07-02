@@ -3,7 +3,7 @@ import { ServerPurpose, ServerStatus } from "/src/interfaces/ServerInterfaces.js
 export type MessageType = "Request" | "Response";
 
 // NOTE: Here we should add all possible message codes
-export type RequestCode = ServerRequestCode | ControlFlowCode | JobMessageCode;
+export type RequestCode = ServerRequestCode | ControlFlowCode | JobMessageCode | LogMessageCode;
 
 export interface Message {
     type: MessageType;
@@ -35,6 +35,14 @@ export enum JobMessageCode {
     NEW_BATCH_JOB
 }
 
+export enum LogMessageCode {
+    INFORMATION,
+    WARNING,
+    HACKING,
+    PURCHASED_SERVER,
+    CODING_CONTRACT
+}
+
 
 export interface ServerRequest extends Request {
     code: ServerRequestCode;
@@ -50,6 +58,11 @@ export interface ServerPurposeRequest extends ServerRequest {
 
 export interface ServerResponse extends Response {
     request: ServerRequest;
+}
+
+export interface LogMessageRequest extends Request {
+    code: LogMessageCode;
+    body: { message: string, printDate: boolean; };
 }
 
 // Note: This can also be a BatchJob

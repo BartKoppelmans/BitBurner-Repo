@@ -1,6 +1,7 @@
-import { JobMessageCode } from "/src/interfaces/PortMessageInterfaces.js";
+import { JobMessageCode, LogMessageCode } from "/src/interfaces/PortMessageInterfaces.js";
 import { CONSTANT } from "/src/lib/constants.js";
 import * as Utils from "/src/util/Utils.js";
+import * as LogAPI from "/src/api/LogAPI.js";
 export async function communicateBatchJob(ns, batchJob) {
     const ports = [...CONSTANT.JOB_PORT_NUMBERS];
     const id = Utils.generateHash();
@@ -20,7 +21,7 @@ export async function communicateBatchJob(ns, batchJob) {
             break;
     }
     if (!isSuccessful) {
-        Utils.tprintColored(`The ports are full and we could not write more, trying again in ${CONSTANT.PORT_FULL_RETRY_TIME}ms`, true, CONSTANT.COLOR_WARNING);
+        await LogAPI.log(ns, `The ports are full and we could not write more, trying again in ${CONSTANT.PORT_FULL_RETRY_TIME}ms`, true, LogMessageCode.WARNING);
         await ns.sleep(CONSTANT.PORT_FULL_RETRY_TIME);
         await communicateBatchJob(ns, batchJob);
         return;
@@ -49,7 +50,7 @@ export async function communicateJob(ns, job) {
             break;
     }
     if (!isSuccessful) {
-        Utils.tprintColored(`The ports are full and we could not write more, trying again in ${CONSTANT.PORT_FULL_RETRY_TIME}ms`, true, CONSTANT.COLOR_WARNING);
+        await LogAPI.log(ns, `The ports are full and we could not write more, trying again in ${CONSTANT.PORT_FULL_RETRY_TIME}ms`, true, LogMessageCode.WARNING);
         await ns.sleep(CONSTANT.PORT_FULL_RETRY_TIME);
         return communicateJob(ns, job);
     }

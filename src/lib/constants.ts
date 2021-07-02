@@ -8,6 +8,7 @@ export const CONSTANT = {
     SMALL_DELAY: 20,
 
     DEBUG_HACKING: false,
+    LOGGING_ENABLED: true,
 
     COLOR_WARNING: "red",
     COLOR_HACKING: "white",
@@ -65,6 +66,7 @@ export const CONSTANT = {
     JOB_RESPONSE_PORT: 10,
 
     CONTROL_FLOW_PORT: 20,
+    LOG_MANAGER_REQUEST_PORT: 15,
 
     JOB_MANAGER_REQUEST_PORT: 16,
     JOB_MANAGER_RESPONSE_PORT: 17,
@@ -95,6 +97,8 @@ export const CONSTANT = {
     PURCHASED_SERVER_UPGRADE_UTILIZATION_THRESHOLD: 0.8,
 
     CRIME_DELAY: 500,
+
+    LOGGING_INTERVAL: 500,
 
     /*
     * Server manager constants

@@ -1,5 +1,5 @@
-import { CONSTANT } from "/src/lib/constants.js";
-import * as Utils from "/src/util/Utils.js";
+import * as LogAPI from "/src/api/LogAPI.js";
+import { LogMessageCode } from "/src/interfaces/PortMessageInterfaces.js";
 import * as PlayerUtils from "/src/util/PlayerUtils.js";
 export var ProgramType;
 (function (ProgramType) {
@@ -16,13 +16,13 @@ export class Program {
         return ns.fileExists(this.name, "home");
     }
     // Returns whether it was successful
-    attemptPurchase(ns) {
+    async attemptPurchase(ns) {
         const money = PlayerUtils.getMoney(ns);
         if (this.price > money)
             return false;
         const isSuccessful = ns.purchaseProgram(this.toValidString(ns, this.name));
         if (isSuccessful) {
-            Utils.tprintColored(`Purchased ${this.name}`, true, CONSTANT.COLOR_INFORMATION);
+            await LogAPI.log(ns, `Purchased ${this.name}`, true, LogMessageCode.INFORMATION);
         }
         return isSuccessful;
     }

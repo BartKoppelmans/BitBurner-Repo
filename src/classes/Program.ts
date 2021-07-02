@@ -1,7 +1,7 @@
 import type { BitBurner as NS, PurchaseableProgram } from "Bitburner";
+import * as LogAPI from "/src/api/LogAPI.js";
 import Server from "/src/classes/Server.js";
-import { CONSTANT } from "/src/lib/constants.js";
-import * as Utils from "/src/util/Utils.js";
+import { LogMessageCode } from "/src/interfaces/PortMessageInterfaces.js";
 import * as PlayerUtils from "/src/util/PlayerUtils.js";
 
 export enum ProgramType {
@@ -25,7 +25,7 @@ export class Program {
     }
 
     // Returns whether it was successful
-    public attemptPurchase(ns: NS): boolean {
+    public async attemptPurchase(ns: NS): Promise<boolean> {
         const money: number = PlayerUtils.getMoney(ns);
 
         if (this.price > money) return false;
@@ -33,7 +33,7 @@ export class Program {
         const isSuccessful: boolean = ns.purchaseProgram(this.toValidString(ns, this.name));
 
         if (isSuccessful) {
-            Utils.tprintColored(`Purchased ${this.name}`, true, CONSTANT.COLOR_INFORMATION);
+            await LogAPI.log(ns, `Purchased ${this.name}`, true, LogMessageCode.INFORMATION);
         }
 
         return isSuccessful;

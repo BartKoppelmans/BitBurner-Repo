@@ -1,5 +1,6 @@
 import * as ControlFlowAPI from "/src/api/ControlFlowAPI.js";
-import { ServerRequestCode } from "/src/interfaces/PortMessageInterfaces.js";
+import * as LogAPI from "/src/api/LogAPI.js";
+import { LogMessageCode, ServerRequestCode } from "/src/interfaces/PortMessageInterfaces.js";
 import { ServerPurpose, ServerStatus, ServerType } from "/src/interfaces/ServerInterfaces.js";
 import { CONSTANT } from "/src/lib/constants.js";
 import * as ServerManagerUtils from "/src/util/ServerManagerUtils.js";
@@ -25,7 +26,7 @@ class ServerManager {
         this.onUpdate(ns);
     }
     async start(ns) {
-        Utils.tprintColored(`Starting the ServerManager`, true, CONSTANT.COLOR_INFORMATION);
+        await LogAPI.log(ns, `Starting the ServerManager`, true, LogMessageCode.INFORMATION);
         this.updateLoopInterval = setInterval(this.updateServerMap.bind(this, ns), CONSTANT.SERVER_MAP_REBUILD_INTERVAL);
         this.requestLoopInterval = setInterval(this.requestLoop.bind(this, ns), CONSTANT.SERVER_MESSAGE_INTERVAL);
     }
@@ -37,7 +38,7 @@ class ServerManager {
         if (this.requestLoopInterval) {
             clearInterval(this.requestLoopInterval);
         }
-        Utils.tprintColored(`Stopping the ServerManager`, true, CONSTANT.COLOR_INFORMATION);
+        await LogAPI.log(ns, `Stopping the ServerManager`, true, LogMessageCode.INFORMATION);
     }
     async requestLoop(ns) {
         const requestPortHandle = ns.getPortHandle(CONSTANT.SERVER_MANAGER_REQUEST_PORT);
@@ -86,7 +87,7 @@ class ServerManager {
         if (server.characteristics.type === ServerType.HackableServer) {
             const hackableServer = server;
             if (request.body.status !== ServerStatus.NONE && hackableServer.status !== ServerStatus.NONE) {
-                Utils.tprintColored(`Server ${hackableServer.characteristics.host} was already being prepped or targeted.`, false, CONSTANT.COLOR_WARNING);
+                await LogAPI.log(ns, `Server ${hackableServer.characteristics.host} was already being prepped or targeted.`, false, LogMessageCode.WARNING);
             }
             hackableServer.setStatus(request.body.status);
         }

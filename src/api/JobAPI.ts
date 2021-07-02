@@ -1,9 +1,10 @@
 import type { BitBurner as NS, Port, PortHandle } from "Bitburner";
 import BatchJob from "/src/classes/BatchJob.js";
 import Job from "/src/classes/Job.js";
-import { JobMessageCode, JobMessageRequest, JobMessageResponse } from "/src/interfaces/PortMessageInterfaces.js";
+import { JobMessageCode, JobMessageRequest, JobMessageResponse, LogMessageCode } from "/src/interfaces/PortMessageInterfaces.js";
 import { CONSTANT } from "/src/lib/constants.js";
 import * as Utils from "/src/util/Utils.js";
+import * as LogAPI from "/src/api/LogAPI.js";
 
 export async function communicateBatchJob(ns: NS, batchJob: BatchJob): Promise<void> {
     const ports: Port[] = [...CONSTANT.JOB_PORT_NUMBERS];
@@ -28,7 +29,7 @@ export async function communicateBatchJob(ns: NS, batchJob: BatchJob): Promise<v
     }
 
     if (!isSuccessful) {
-        Utils.tprintColored(`The ports are full and we could not write more, trying again in ${CONSTANT.PORT_FULL_RETRY_TIME}ms`, true, CONSTANT.COLOR_WARNING);
+        await LogAPI.log(ns, `The ports are full and we could not write more, trying again in ${CONSTANT.PORT_FULL_RETRY_TIME}ms`, true, LogMessageCode.WARNING);
         await ns.sleep(CONSTANT.PORT_FULL_RETRY_TIME);
         await communicateBatchJob(ns, batchJob);
         return;
@@ -61,7 +62,7 @@ export async function communicateJob(ns: NS, job: Job): Promise<void> {
     }
 
     if (!isSuccessful) {
-        Utils.tprintColored(`The ports are full and we could not write more, trying again in ${CONSTANT.PORT_FULL_RETRY_TIME}ms`, true, CONSTANT.COLOR_WARNING);
+        await LogAPI.log(ns, `The ports are full and we could not write more, trying again in ${CONSTANT.PORT_FULL_RETRY_TIME}ms`, true, LogMessageCode.WARNING);
         await ns.sleep(CONSTANT.PORT_FULL_RETRY_TIME);
         return communicateJob(ns, job);
     } else {

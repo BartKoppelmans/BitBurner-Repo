@@ -1,11 +1,13 @@
 import * as CodingContractAPI from "/src/api/CodingContractAPI.js";
 import * as ControlFlowAPI from "/src/api/ControlFlowAPI.js";
 import * as JobAPI from "/src/api/JobAPI.js";
+import * as LogAPI from "/src/api/LogAPI.js";
 import * as ProgramAPI from "/src/api/ProgramAPI.js";
 import * as PurchasedServerAPI from "/src/api/PurchasedServerAPI.js";
 import * as ServerAPI from "/src/api/ServerAPI.js";
 import BatchJob from "/src/classes/BatchJob.js";
 import Job from "/src/classes/Job.js";
+import { LogMessageCode } from "/src/interfaces/PortMessageInterfaces.js";
 import { ServerStatus } from "/src/interfaces/ServerInterfaces.js";
 import { CONSTANT } from "/src/lib/constants.js";
 import { Tools } from "/src/tools/Tools.js";
@@ -24,8 +26,9 @@ async function initialize(ns) {
     const programManagerReady = ProgramAPI.startProgramManager(ns);
     const purchasedServerManagerReady = PurchasedServerAPI.startPurchasedServerManager(ns);
     const codingContractManagerReady = CodingContractAPI.startCodingContractManager(ns);
+    const logManagerReady = (CONSTANT.LOGGING_ENABLED) ? LogAPI.startLogManager(ns) : Promise.resolve();
     // Wait until everything is initialized
-    await Promise.allSettled([jobManagerReady, programManagerReady, purchasedServerManagerReady, codingContractManagerReady]);
+    await Promise.allSettled([jobManagerReady, programManagerReady, purchasedServerManagerReady, codingContractManagerReady, logManagerReady]);
 }
 async function hackLoop(ns) {
     // Get the potential targets
@@ -81,7 +84,7 @@ async function prepServer(ns, target) {
     let availableThreads = await HackUtils.calculateMaxThreads(ns, Tools.WEAKEN, true);
     if (availableThreads === 0) {
         if (CONSTANT.DEBUG_HACKING)
-            Utils.tprintColored("Skipped a prep.", true, CONSTANT.COLOR_WARNING);
+            await LogAPI.log(ns, "Skipped a prep.", true, LogMessageCode.WARNING);
         return;
     }
     // TODO: Ideally we pick the server that can fit all our threads here immediately, 
@@ -162,7 +165,7 @@ async function attackServer(ns, target) {
     const cycles = Math.min(possibleCycles, CONSTANT.MAX_CYCLE_NUMBER);
     if (cycles === 0) {
         if (CONSTANT.DEBUG_HACKING)
-            Utils.tprintColored("Skipped an attack.", true, CONSTANT.COLOR_WARNING);
+            await LogAPI.log(ns, "Skipped an attack.", true, LogMessageCode.WARNING);
         return;
     }
     let jobs = [];
@@ -198,23 +201,23 @@ async function optimizePerformance(ns, target) {
         await ns.sleep(CONSTANT.SMALL_DELAY);
     } while (adjustment !== 0.00);
     if (performanceUpdated && CONSTANT.DEBUG_HACKING) {
-        Utils.tprintColored(`Updated percentage to steal for ${target.characteristics.host} to ~${target.percentageToSteal * 100}%`, true, CONSTANT.COLOR_HACKING);
+        await LogAPI.log(ns, `Updated percentage to steal for ${target.characteristics.host} to ~${target.percentageToSteal * 100}%`, true, LogMessageCode.HACKING);
     }
 }
 export async function onDestroy(ns) {
     clearTimeout(hackLoopTimeout);
     // TODO: Wait until it is done executing
-    Utils.tprintColored("Stopping the daemon", true, CONSTANT.COLOR_INFORMATION);
+    await LogAPI.log(ns, "Stopping the daemon", true, LogMessageCode.INFORMATION);
 }
 export async function main(ns) {
     const hostName = ns.getHostname();
     if (hostName !== "home") {
         throw new Error("Execute daemon script from home.");
     }
-    Utils.tprintColored("Starting the daemon", true, CONSTANT.COLOR_INFORMATION);
     // TODO: Make a decision on whether we start the to-be-made early hacking scripts, 
     // or whether we want to start hacking using our main hacker
     await initialize(ns);
+    await LogAPI.log(ns, "Starting the daemon", true, LogMessageCode.INFORMATION);
     hackLoopTimeout = setTimeout(hackLoop.bind(null, ns), CONSTANT.HACK_LOOP_DELAY);
     // TODO: Here we should check whether we are still running the hackloop
     while (true) {

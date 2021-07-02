@@ -1,8 +1,9 @@
 import * as ControlFlowAPI from "/src/api/ControlFlowAPI.js";
+import * as LogAPI from "/src/api/LogAPI.js";
 import * as ServerAPI from "/src/api/ServerAPI.js";
 import BatchJob from "/src/classes/BatchJob.js";
 import Job from "/src/classes/Job.js";
-import { JobMessageCode } from "/src/interfaces/PortMessageInterfaces.js";
+import { JobMessageCode, LogMessageCode } from "/src/interfaces/PortMessageInterfaces.js";
 import { ServerStatus } from "/src/interfaces/ServerInterfaces.js";
 import { CONSTANT } from "/src/lib/constants.js";
 import * as Utils from "/src/util/Utils.js";
@@ -23,7 +24,7 @@ export default class JobManager {
         }
     }
     async start(ns) {
-        Utils.tprintColored(`Starting the JobManager`, true, CONSTANT.COLOR_INFORMATION);
+        await LogAPI.log(ns, `Starting the JobManager`, true, LogMessageCode.INFORMATION);
         const ports = [...CONSTANT.JOB_PORT_NUMBERS];
         for (const port of ports) {
             const interval = setInterval(this.managingLoop.bind(this, ns, port), CONSTANT.JOB_MANAGING_LOOP_INTERVAL);
@@ -39,7 +40,7 @@ export default class JobManager {
             }
             this.managingLoopIntervals = [];
         }
-        Utils.tprintColored(`Stopping the JobManager`, true, CONSTANT.COLOR_INFORMATION);
+        await LogAPI.log(ns, `Stopping the JobManager`, true, LogMessageCode.INFORMATION);
     }
     async managingLoop(ns, port) {
         const requestPortHandle = ns.getPortHandle(port);
@@ -85,11 +86,11 @@ export default class JobManager {
                 hasExecutedJob = true;
             }
             catch (error) {
-                Utils.tprintColored(`Error encountered: \n
+                await LogAPI.log(ns, `Error encountered: \n
                 ${error.name} \n
                 ${error.message} \n
                 ${error.stack}
-                `, true, CONSTANT.COLOR_WARNING);
+                `, true, LogMessageCode.WARNING);
                 if (!hasExecutedJob) {
                     // If it fails on the first job, revert the status
                     await ServerAPI.updateStatus(ns, batchJob.target, originalStatus);

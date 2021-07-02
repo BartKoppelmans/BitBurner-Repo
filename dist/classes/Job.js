@@ -1,12 +1,13 @@
+import * as LogAPI from "/src/api/LogAPI.js";
 import HackableServer from "/src/classes/HackableServer.js";
 import Server from "/src/classes/Server.js";
+import { LogMessageCode } from "/src/interfaces/PortMessageInterfaces.js";
 import { ServerType } from "/src/interfaces/ServerInterfaces.js";
 import { CONSTANT } from "/src/lib/constants.js";
 import * as HackUtils from "/src/util/HackUtils.js";
 import * as JobUtils from "/src/util/JobUtils.js";
 import * as ServerUtils from "/src/util/ServerUtils.js";
 import * as ToolUtils from "/src/util/ToolUtils.js";
-import * as Utils from "/src/util/Utils.js";
 let jobIdCounter = 0;
 export default class Job {
     constructor(ns, job) {
@@ -119,7 +120,7 @@ export default class Job {
             isPrep: object.isPrep,
         });
     }
-    print(ns, isFinished) {
+    async print(ns, isFinished) {
         let verb;
         if (this.isPrep && !isFinished)
             verb = "Prepping";
@@ -132,7 +133,7 @@ export default class Job {
         else
             throw new Error("This should logically never happen.");
         if (CONSTANT.DEBUG_HACKING) {
-            Utils.tprintColored(`${ns.nFormat(this.id, "000000")} ${verb} ${this.target.characteristics.host} - ${ToolUtils.getToolName(this.tool)}`, true, CONSTANT.COLOR_HACKING);
+            await LogAPI.log(ns, `${ns.nFormat(this.id, "000000")} ${verb} ${this.target.characteristics.host} - ${ToolUtils.getToolName(this.tool)}`, true, LogMessageCode.WARNING);
         }
     }
 }
