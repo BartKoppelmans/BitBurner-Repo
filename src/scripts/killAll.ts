@@ -12,6 +12,8 @@ export async function main(ns: NS) {
 
     await ControlFlowAPI.killAllManagers(ns);
 
+    await ControlFlowAPI.killLogManager(ns);
+
     // Clear the queue
     ControlFlowAPI.clearPorts(ns);
 

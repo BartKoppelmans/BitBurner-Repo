@@ -1,5 +1,6 @@
 import * as CodingContractAPI from "/src/api/CodingContractAPI.js";
 import * as JobAPI from "/src/api/JobAPI.js";
+import * as LogAPI from "/src/api/LogAPI.js";
 import * as ProgramAPI from "/src/api/ProgramAPI.js";
 import * as PurchasedServerAPI from "/src/api/PurchasedServerAPI.js";
 import * as ServerAPI from "/src/api/ServerAPI.js";
@@ -29,6 +30,20 @@ export async function hasManagerKillRequest(ns) {
     const request = JSON.parse(requestPortHandle.peek().toString());
     if (request.code === ControlFlowCode.KILL_MANAGERS)
         return true;
+    else
+        return false;
+}
+export async function hasLogManagerKillRequest(ns) {
+    const requestPortHandle = ns.getPortHandle(CONSTANT.CONTROL_FLOW_PORT);
+    if (requestPortHandle.empty())
+        return false;
+    // We only peek, as we want to be sure that we have a request for the daemon
+    const request = JSON.parse(requestPortHandle.peek().toString());
+    if (request.code === ControlFlowCode.KILL_LOGMANAGER) {
+        // Remove the request from the queue
+        requestPortHandle.read();
+        return true;
+    }
     else
         return false;
 }
@@ -73,6 +88,25 @@ export async function killAllManagers(ns) {
     // TODO: Make sure that there is a way to stop this, time-based doesn't work in the long run
     while (true) {
         if (!areManagersRunning(ns))
+            return;
+        await ns.sleep(CONSTANT.RESPONSE_RETRY_DELAY);
+    }
+}
+export async function killLogManager(ns) {
+    const requestPortHandle = ns.getPortHandle(CONSTANT.CONTROL_FLOW_PORT);
+    while (requestPortHandle.full()) {
+        await ns.sleep(CONSTANT.PORT_FULL_RETRY_TIME);
+    }
+    const id = Utils.generateHash();
+    let request = {
+        code: ControlFlowCode.KILL_LOGMANAGER,
+        type: "Request",
+        id
+    };
+    requestPortHandle.write(JSON.stringify(request));
+    // TODO: Make sure that there is a way to stop this, time-based doesn't work in the long run
+    while (true) {
+        if (!LogAPI.isLogManagerRunning(ns))
             return;
         await ns.sleep(CONSTANT.RESPONSE_RETRY_DELAY);
     }

@@ -6,6 +6,7 @@ export async function main(ns) {
     let serverMap = await ServerAPI.getServerMap(ns);
     await ControlFlowAPI.killDaemon(ns);
     await ControlFlowAPI.killAllManagers(ns);
+    await ControlFlowAPI.killLogManager(ns);
     // Clear the queue
     ControlFlowAPI.clearPorts(ns);
     await ControlFlowAPI.killExternalServers(ns, serverMap);

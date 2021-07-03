@@ -109,7 +109,7 @@ export async function main(ns: NS) {
 
     // We just keep sleeping because we have to keep this script running
     while (true) {
-        const shouldKill: boolean = await ControlFlowAPI.hasManagerKillRequest(ns);
+        const shouldKill: boolean = await ControlFlowAPI.hasLogManagerKillRequest(ns);
 
         if (shouldKill) {
             await instance.onDestroy(ns);

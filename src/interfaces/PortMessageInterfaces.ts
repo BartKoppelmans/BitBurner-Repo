@@ -27,7 +27,8 @@ export enum ServerRequestCode {
 
 export enum ControlFlowCode {
     KILL_MANAGERS,
-    KILL_DAEMON
+    KILL_DAEMON,
+    KILL_LOGMANAGER,
 }
 
 export enum JobMessageCode {
