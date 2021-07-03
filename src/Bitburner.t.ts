@@ -1454,6 +1454,10 @@ declare module "Bitburner" {
     }
 
     export interface Singularity {
+
+
+        installBackdoor(): void;
+
         /**
          * If you are not in BitNode-4, then you must have Level 1 of Source-File 4 in order to use this function and the RAM cost is doubled.
          *
@@ -3201,8 +3205,6 @@ declare module "Bitburner" {
     }
 
     export interface BitBurner extends TIX, Singularity {
-
-
         /**
          * Not all functions in the Hacknet Node API are immediately available.
          *

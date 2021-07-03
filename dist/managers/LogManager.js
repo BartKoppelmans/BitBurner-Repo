@@ -29,7 +29,7 @@ class LogManager {
         const requests = requestPortHandle.data.map((string) => JSON.parse(string.toString()));
         // NOTE: This could go wrong
         requestPortHandle.clear();
-        for (const request of requests) {
+        for await (const request of requests) {
             let color;
             switch (+request.code) {
                 case LogMessageCode.INFORMATION:

@@ -39,6 +39,7 @@ export async function main(ns: NS) {
         if (cancelButton) {
             cancelButton.addEventListener("click", () => {
                 isCancelled = true;
+                ns.exit();
             });
         }
 

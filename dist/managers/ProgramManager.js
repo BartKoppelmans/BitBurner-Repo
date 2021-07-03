@@ -20,7 +20,8 @@ class ProgramManager {
             new Program(ns, "relaySMTP.exe", 5000000, ProgramType.Crack),
             new Program(ns, "HTTPWorm.exe", 30000000, ProgramType.Crack),
             new Program(ns, "SQLInject.exe", 250000000, ProgramType.Crack),
-            new Program(ns, "DeepscanV1.exe", 500000, ProgramType.Util),
+            // We don't need this
+            // new Program(ns, "DeepscanV1.exe", 500000, ProgramType.Util),
             new Program(ns, "DeepscanV2.exe", 25000000, ProgramType.Util),
             new Program(ns, "Autolink.exe", 1000000, ProgramType.Util),
         ];

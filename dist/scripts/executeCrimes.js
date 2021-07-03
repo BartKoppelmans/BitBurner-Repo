@@ -27,6 +27,7 @@ export async function main(ns) {
         if (cancelButton) {
             cancelButton.addEventListener("click", () => {
                 isCancelled = true;
+                ns.exit();
             });
         }
         await ns.sleep(nextCrime.crimeStats.time);

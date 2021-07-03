@@ -46,7 +46,7 @@ class LogManager {
         // NOTE: This could go wrong
         requestPortHandle.clear();
 
-        for (const request of requests) {
+        for await (const request of requests) {
             let color: string;
             switch (+request.code) {
                 case LogMessageCode.INFORMATION:
