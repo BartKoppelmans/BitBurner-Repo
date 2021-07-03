@@ -6,8 +6,8 @@ import * as HackUtils from "/src/util/HackUtils.js";
 import * as ToolUtils from "/src/util/ToolUtils.js";
 export async function analyzePerformance(ns, target) {
     const cycles = await computeCycles(ns, target);
-    const isMin = target.percentageToSteal <= CONSTANT.MIN_PERCENTAGE_TO_STEAL;
-    const isMax = target.percentageToSteal >= CONSTANT.MAX_PERCENTAGE_TO_STEAL;
+    const isMin = Math.floor(target.percentageToSteal) <= CONSTANT.MIN_PERCENTAGE_TO_STEAL;
+    const isMax = Math.floor(target.percentageToSteal) >= CONSTANT.MAX_PERCENTAGE_TO_STEAL;
     if (cycles < CONSTANT.DESIRED_CYCLE_NUMBER && !isMin)
         return -0.01;
     else if (cycles < CONSTANT.DESIRED_CYCLE_NUMBER && isMin)

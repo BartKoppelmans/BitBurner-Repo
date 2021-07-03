@@ -13,8 +13,8 @@ export async function analyzePerformance(ns: NS, target: HackableServer): Promis
 
     const cycles: number = await computeCycles(ns, target);
 
-    const isMin: boolean = target.percentageToSteal <= CONSTANT.MIN_PERCENTAGE_TO_STEAL;
-    const isMax: boolean = target.percentageToSteal >= CONSTANT.MAX_PERCENTAGE_TO_STEAL;
+    const isMin: boolean = Math.floor(target.percentageToSteal) <= CONSTANT.MIN_PERCENTAGE_TO_STEAL;
+    const isMax: boolean = Math.floor(target.percentageToSteal) >= CONSTANT.MAX_PERCENTAGE_TO_STEAL;
 
     if (cycles < CONSTANT.DESIRED_CYCLE_NUMBER && !isMin) return -0.01;
     else if (cycles < CONSTANT.DESIRED_CYCLE_NUMBER && isMin) return 0.00;
