@@ -33,6 +33,7 @@ const files: string[] = [
     'scripts/daemon.js',
     'scripts/executeCrimes.js',
     'scripts/killAll.js',
+    'scripts/route.js',
     'tools/grow.js',
     'tools/hack.js',
     'tools/Tools.js',

@@ -5,6 +5,12 @@ import Server from "/src/classes/Server.js";
 import { CONSTANT } from "/src/lib/constants.js";
 
 export async function main(ns: NS) {
+
+    if (!ServerAPI.isServerManagerRunning(ns)) {
+        ns.tprint("We cannot kill all processes without the ServerManager.");
+        return;
+    }
+
     // Get this first, because in a bit we won't have the server manager running anymore
     let serverMap: Server[] = await ServerAPI.getServerMap(ns);
 
@@ -15,11 +21,12 @@ export async function main(ns: NS) {
     // Clear the queue because we need to exit the log manager
     ControlFlowAPI.clearPorts(ns);
 
+    await ns.sleep(5 * CONSTANT.LOGGING_INTERVAL);
+
     await ControlFlowAPI.killLogManager(ns);
 
     // Clear the queue
     ControlFlowAPI.clearPorts(ns);
-
 
     await ControlFlowAPI.killExternalServers(ns, serverMap);
 

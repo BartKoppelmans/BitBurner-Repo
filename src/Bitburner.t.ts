@@ -1458,6 +1458,8 @@ declare module "Bitburner" {
 
         installBackdoor(): void;
 
+        connect(host: string): boolean;
+
         /**
          * If you are not in BitNode-4, then you must have Level 1 of Source-File 4 in order to use this function and the RAM cost is doubled.
          *
