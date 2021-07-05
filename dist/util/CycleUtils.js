@@ -9,6 +9,18 @@ export async function computeCycles(ns, target) {
     const cycleCost = getOptimalBatchCost(ns, target);
     return Math.min(CONSTANT.MAX_CYCLE_NUMBER, serverMap.reduce((threads, server) => threads + Math.floor(server.getAvailableRam(ns) / cycleCost), 0));
 }
+export function calculateTotalBatchTime(ns, target, numCycles) {
+    if (numCycles === 0) {
+        return 0;
+    }
+    const firstCycleTime = target.getWeakenTime(ns) + 3 * CONSTANT.JOB_DELAY;
+    const sequentialCycleTime = CONSTANT.CYCLE_DELAY + 3 * CONSTANT.JOB_DELAY;
+    if (numCycles === 1)
+        return firstCycleTime;
+    else {
+        return firstCycleTime + ((numCycles - 1) * sequentialCycleTime);
+    }
+}
 // Returns the number of threads
 export function getOptimalBatchCost(ns, target) {
     const cycleThreads = determineCycleThreads(ns, target);

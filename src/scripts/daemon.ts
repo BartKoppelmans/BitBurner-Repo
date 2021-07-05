@@ -260,14 +260,18 @@ async function optimizePerformance(ns: NS, target: HackableServer): Promise<void
     let performanceUpdated: boolean = false;
 
     const originalPercentageToSteal: number = target.percentageToSteal;
-    let optimalTarget: { percentageToSteal: number, profit: number; } = { percentageToSteal: CONSTANT.MIN_PERCENTAGE_TO_STEAL, profit: -1 };
+    let optimalTarget: { percentageToSteal: number, profitsPerSecond: number; } = { percentageToSteal: CONSTANT.MIN_PERCENTAGE_TO_STEAL, profitsPerSecond: -1 };
     for (let n = CONSTANT.MIN_PERCENTAGE_TO_STEAL; n <= CONSTANT.MAX_PERCENTAGE_TO_STEAL; n += CONSTANT.DELTA_PERCENTAGE_TO_STEAL) {
         target.percentageToSteal = n;
         const cycles: number = await CycleUtils.computeCycles(ns, target);
         const profit: number = target.staticHackingProperties.maxMoney * target.percentageToSteal * cycles;
 
-        if (profit > optimalTarget.percentageToSteal) {
-            optimalTarget = { percentageToSteal: n, profit };
+        const totalTime: number = CycleUtils.calculateTotalBatchTime(ns, target, cycles);
+
+        const profitsPerSecond: number = profit / totalTime;
+
+        if (profitsPerSecond > optimalTarget.profitsPerSecond) {
+            optimalTarget = { percentageToSteal: n, profitsPerSecond };
         }
     }
 
@@ -276,7 +280,7 @@ async function optimizePerformance(ns: NS, target: HackableServer): Promise<void
     if (originalPercentageToSteal !== optimalTarget.percentageToSteal) performanceUpdated = true;
 
     if (performanceUpdated && CONSTANT.DEBUG_HACKING) {
-        await LogAPI.log(ns, `Updated percentage to steal for ${target.characteristics.host} to ~${target.percentageToSteal * 100}%`, true, LogMessageCode.HACKING);
+        await LogAPI.log(ns, `Updated percentage to steal for ${target.characteristics.host} to ~${Math.round(target.percentageToSteal * 100)}%`, true, LogMessageCode.HACKING);
     }
 }
 

@@ -17,6 +17,20 @@ export async function computeCycles(ns: NS, target: HackableServer): Promise<num
     return Math.min(CONSTANT.MAX_CYCLE_NUMBER, serverMap.reduce((threads, server) => threads + Math.floor(server.getAvailableRam(ns) / cycleCost), 0));
 }
 
+export function calculateTotalBatchTime(ns: NS, target: HackableServer, numCycles: number): number {
+    if (numCycles === 0) {
+        return 0;
+    }
+
+    const firstCycleTime: number = target.getWeakenTime(ns) + 3 * CONSTANT.JOB_DELAY;
+    const sequentialCycleTime: number = CONSTANT.CYCLE_DELAY + 3 * CONSTANT.JOB_DELAY;
+
+    if (numCycles === 1) return firstCycleTime;
+    else {
+        return firstCycleTime + ((numCycles - 1) * sequentialCycleTime);
+    }
+}
+
 // Returns the number of threads
 export function getOptimalBatchCost(ns: NS, target: HackableServer): number {
     const cycleThreads: CycleThreads = determineCycleThreads(ns, target);
