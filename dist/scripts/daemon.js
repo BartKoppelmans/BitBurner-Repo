@@ -161,27 +161,25 @@ async function prepServer(ns, target) {
     await JobAPI.communicateBatchJob(ns, batchJob);
 }
 async function attackServer(ns, target) {
-    const possibleCycles = await CycleUtils.computeCycles(ns, target);
-    const cycles = Math.min(possibleCycles, CONSTANT.MAX_CYCLE_NUMBER);
-    if (cycles === 0) {
+    const numPossibleCycles = await CycleUtils.computeCycles(ns, target);
+    const numCycles = Math.min(numPossibleCycles, CONSTANT.MAX_CYCLE_NUMBER);
+    if (numCycles === 0) {
         if (CONSTANT.DEBUG_HACKING)
             await LogAPI.log(ns, "Skipped an attack.", true, LogMessageCode.WARNING);
         return;
     }
-    let jobs = [];
+    let cycles = [];
     let previousCycle = undefined;
-    for (let i = 0; i < cycles; i++) {
-        let cycle = CycleUtils.scheduleCycle(ns, target, previousCycle);
-        jobs.push(cycle.hack);
-        jobs.push(cycle.growth);
-        jobs.push(cycle.weaken1);
-        jobs.push(cycle.weaken2);
-        previousCycle = cycle;
+    for (let i = 0; i < numCycles; i++) {
+        let cycle = CycleUtils.scheduleCycle(ns, target, cycles[cycles.length - 1]);
+        cycles.push(cycle);
         await ns.sleep(CONSTANT.SMALL_DELAY);
     }
-    if (jobs.length === 0) {
+    if (cycles.length === 0) {
         throw new Error("No cycles created");
     }
+    cycles = await CycleUtils.distributeThreads(ns, cycles);
+    const jobs = cycles.reduce((array, cycle) => [...array, cycle.hack, cycle.weaken1, cycle.growth, cycle.weaken2,], []);
     // Create the batch object
     const batchJob = new BatchJob(ns, {
         target,

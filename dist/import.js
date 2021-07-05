@@ -41,7 +41,6 @@ const files = [
     'util/CycleUtils.js',
     'util/HackUtils.js',
     'util/Heuristics.js',
-    'util/JobUtils.js',
     'util/PlayerUtils.js',
     'util/ProgramManagerUtils.js',
     'util/PurchasedServerManagerUtils.js',

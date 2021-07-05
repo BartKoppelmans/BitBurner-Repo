@@ -132,8 +132,8 @@ export const CONSTANT = {
     MAX_PERCENTAGE_TO_STEAL: 0.95,
     DELTA_PERCENTAGE_TO_STEAL: 0.01,
 
-    INITIAL_JOB_DELAY: 3000,
-    JOB_DELAY: 1000,
+    INITIAL_JOB_DELAY: 6000,
+    JOB_DELAY: 2000,
 
     // Currently set to 12 seconds
     QUEUE_DELAY: 12000,

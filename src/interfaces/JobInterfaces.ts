@@ -18,6 +18,8 @@ export interface IJOb {
 
     id?: number;
 
+    cycleId?: string;
+
     // The target of the hack
     target: HackableServer;
 

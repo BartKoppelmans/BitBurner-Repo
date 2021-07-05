@@ -7,6 +7,40 @@ import { Tools } from "/src/tools/Tools.js";
 import * as PlayerUtils from "/src/util/PlayerUtils.js";
 import * as ToolUtils from "/src/util/ToolUtils.js";
 
+export async function computeThreadSpread(ns: NS, tool: Tools, threads: number, isPrep: boolean): Promise<Map<Server, number>> {
+
+    const maxThreadsAvailable = await calculateMaxThreads(ns, tool, isPrep);
+
+    if (threads > maxThreadsAvailable) {
+        throw new Error("We don't have that much threads available.");
+    }
+
+    const cost: number = ToolUtils.getToolCost(ns, tool);
+
+    let threadsLeft: number = threads;
+    let spreadMap: Map<Server, number> = new Map<Server, number>();
+
+    const serverMap: Server[] = (isPrep) ? await ServerAPI.getPreppingServers(ns) : await ServerAPI.getHackingServers(ns);
+
+    for (let server of serverMap) {
+        let serverThreads: number = Math.floor(server.getAvailableRam(ns) / cost);
+
+        // If we can't fit any more threads here, skip it
+        if (serverThreads === 0) continue;
+
+        // We can fit all our threads in here!
+        if (serverThreads >= threadsLeft) {
+            spreadMap.set(server, threadsLeft);
+            break;
+        }
+
+        spreadMap.set(server, serverThreads);
+        threadsLeft -= serverThreads;
+    }
+
+    return spreadMap;
+}
+
 // Here we allow thread spreading over multiple servers
 export async function calculateMaxThreads(ns: NS, tool: Tools, isPrep: boolean): Promise<number> {
 

@@ -4,10 +4,41 @@ import { CONSTANT } from "/src/lib/constants.js";
 import { Tools } from "/src/tools/Tools.js";
 import * as HackUtils from "/src/util/HackUtils.js";
 import * as ToolUtils from "/src/util/ToolUtils.js";
+import * as Utils from "/src/util/Utils.js";
 export async function computeCycles(ns, target) {
     const serverMap = await ServerAPI.getHackingServers(ns);
     const cycleCost = getOptimalBatchCost(ns, target);
     return Math.min(CONSTANT.MAX_CYCLE_NUMBER, serverMap.reduce((threads, server) => threads + Math.floor(server.getAvailableRam(ns) / cycleCost), 0));
+}
+export async function distributeThreads(ns, cycles) {
+    // NOTE: Here we make the huge assumption that the number of threads determined earlier actually fits in some way
+    const target = cycles[0].hack.target;
+    const cost = ToolUtils.getToolCost(ns, Tools.HACK) * (cycles[0].hack.threads + cycles[0].growth.threads + cycles[0].weaken1.threads + cycles[0].weaken2.threads);
+    const serverMap = await ServerAPI.getHackingServers(ns);
+    const reservedServerMap = serverMap.map((server) => {
+        return { reserved: 0, server };
+    });
+    for (const cycle of cycles) {
+        reservedServerMap.sort((a, b) => (b.server.getAvailableRam(ns) - b.reserved) - (a.server.getAvailableRam(ns) - a.reserved));
+        const reservedServer = reservedServerMap[0];
+        if (cost > (reservedServer.server.getAvailableRam(ns) - reservedServer.reserved)) {
+            throw new Error("Not enough RAM available on the hacking server");
+        }
+        let hackSpreadMap = new Map();
+        hackSpreadMap.set(reservedServer.server, cycle.hack.threads);
+        cycle.hack.threadSpread = hackSpreadMap;
+        let growthSpreadMap = new Map();
+        growthSpreadMap.set(reservedServer.server, cycle.growth.threads);
+        cycle.growth.threadSpread = growthSpreadMap;
+        let weaken1SpreadMap = new Map();
+        weaken1SpreadMap.set(reservedServer.server, cycle.weaken1.threads);
+        cycle.weaken1.threadSpread = weaken1SpreadMap;
+        let weaken2SpreadMap = new Map();
+        weaken2SpreadMap.set(reservedServer.server, cycle.weaken2.threads);
+        cycle.weaken2.threadSpread = weaken2SpreadMap;
+        reservedServer.reserved += cost;
+    }
+    return cycles;
 }
 export function calculateTotalBatchTime(ns, target, numCycles) {
     if (numCycles === 0) {
@@ -36,7 +67,9 @@ export function scheduleCycle(ns, target, previousCycle) {
     let hackJob, weaken1Job, growthJob, weaken2Job;
     const cycleTimings = determineCycleTimings(ns, target, previousCycle);
     const cycleThreads = determineCycleThreads(ns, target);
+    const cycleId = Utils.generateCycleHash();
     hackJob = new Job(ns, {
+        cycleId,
         target,
         tool: Tools.HACK,
         threads: cycleThreads.hack,
@@ -45,6 +78,7 @@ export function scheduleCycle(ns, target, previousCycle) {
         isPrep: false
     });
     growthJob = new Job(ns, {
+        cycleId,
         target,
         tool: Tools.GROW,
         threads: cycleThreads.growth,
@@ -53,6 +87,7 @@ export function scheduleCycle(ns, target, previousCycle) {
         isPrep: false
     });
     weaken1Job = new Job(ns, {
+        cycleId,
         target,
         tool: Tools.WEAKEN,
         threads: cycleThreads.weaken1,
@@ -61,6 +96,7 @@ export function scheduleCycle(ns, target, previousCycle) {
         isPrep: false
     });
     weaken2Job = new Job(ns, {
+        cycleId,
         target,
         tool: Tools.WEAKEN,
         threads: cycleThreads.weaken2,
@@ -116,10 +152,10 @@ function determineCycleTimings(ns, target, previousCycle) {
     };
 }
 function determineCycleThreads(ns, target) {
-    const hackThreads = HackUtils.calculateHackThreads(ns, target);
-    const growthThreads = HackUtils.calculateCompensationGrowthThreads(ns, target, hackThreads);
-    const weaken1Threads = HackUtils.calculateCompensationWeakenThreads(ns, target, Tools.HACK, hackThreads);
-    const weaken2Threads = HackUtils.calculateCompensationWeakenThreads(ns, target, Tools.GROW, growthThreads);
+    const hackThreads = Math.floor(HackUtils.calculateHackThreads(ns, target));
+    const growthThreads = Math.ceil(HackUtils.calculateCompensationGrowthThreads(ns, target, hackThreads));
+    const weaken1Threads = Math.ceil(HackUtils.calculateCompensationWeakenThreads(ns, target, Tools.HACK, hackThreads));
+    const weaken2Threads = Math.ceil(HackUtils.calculateCompensationWeakenThreads(ns, target, Tools.GROW, growthThreads));
     return {
         hack: hackThreads,
         weaken1: weaken1Threads,

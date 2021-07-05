@@ -8,7 +8,6 @@ import { ServerType } from "/src/interfaces/ServerInterfaces.js";
 import { CONSTANT } from "/src/lib/constants.js";
 import { Tools } from "/src/tools/Tools.js";
 import * as HackUtils from "/src/util/HackUtils.js";
-import * as JobUtils from "/src/util/JobUtils.js";
 import * as ServerUtils from "/src/util/ServerUtils.js";
 import * as ToolUtils from "/src/util/ToolUtils.js";
 
@@ -16,6 +15,8 @@ let jobIdCounter: number = 0;
 
 export default class Job {
     id: number;
+    cycleId?: string;
+
     target: HackableServer;
     threads: number;
     threadSpread?: Map<Server, number>;
@@ -39,6 +40,8 @@ export default class Job {
 
         if (job.threadSpread) this.threadSpread = job.threadSpread;
 
+        if (job.cycleId) this.cycleId = job.cycleId;
+
         if (job.end) this.end = job.end;
         else {
             const executionTime: number = ToolUtils.getToolTime(ns, this.tool, this.target) * CONSTANT.MILLISECONDS_IN_SECOND;
@@ -48,20 +51,9 @@ export default class Job {
 
     public async execute(ns: NS): Promise<void> {
 
-        const maxThreadsAvailable: number = await HackUtils.calculateMaxThreads(ns, this.tool, this.isPrep);
-
-        if (maxThreadsAvailable === 0) {
-            // Cancel the batch
-            throw new Error("No threads available");
+        if (!this.threadSpread) {
+            this.threadSpread = await HackUtils.computeThreadSpread(ns, this.tool, this.threads, this.isPrep);
         }
-
-        if (this.threads > maxThreadsAvailable) {
-            // TODO: How do we handle this
-            // For now just use he minimum of the two
-            this.threads = Math.min(this.threads, maxThreadsAvailable);
-        }
-
-        this.threadSpread = await JobUtils.computeThreadSpread(ns, this.tool, this.threads, this.isPrep);
 
         const commonArgs = {
             script: this.tool,
@@ -70,6 +62,13 @@ export default class Job {
         };
 
         for (let [server, threads] of this.threadSpread) {
+
+            // Validate the threadspread before running (for hacking)
+            const cost: number = threads * ToolUtils.getToolCost(ns, this.tool);
+            if (cost > server.getAvailableRam(ns)) {
+                throw new Error("Not enough RAM available.");
+            }
+
             // We have to copy the tool to the server if it is not available yet
             if (!ServerUtils.isHomeServer(server)) {
                 ns.scp(this.tool, CONSTANT.HOME_SERVER_HOST, server.characteristics.host);
@@ -103,6 +102,7 @@ export default class Job {
 
         const object: any = {
             id: this.id,
+            cycleId: this.cycleId,
             target: this.target,
             threads: this.threads,
             tool: this.tool,
@@ -121,9 +121,10 @@ export default class Job {
     public static parseJobString(ns: NS, jobString: string): Job {
         const object: any = JSON.parse(jobString);
 
-        let spreadMap: Map<Server, number> = new Map<Server, number>();
+        let spreadMap: Map<Server, number> | undefined = undefined;
 
         if (object.threadSpread) {
+            spreadMap = new Map<Server, number>();
             object.threadSpread.forEach((pair: any[]) => {
 
                 const parsedServer: any = pair[0];
@@ -145,7 +146,9 @@ export default class Job {
                         throw new Error("We did not recognize the server type.");
                 }
 
-                spreadMap.set(server, threads);
+                if (spreadMap) {
+                    spreadMap.set(server, threads);
+                }
             });
 
         }
@@ -154,6 +157,7 @@ export default class Job {
 
         return new Job(ns, {
             id: object.id,
+            cycleId: object.cycleId,
             target: target,
             threads: object.threads,
             threadSpread: spreadMap,
