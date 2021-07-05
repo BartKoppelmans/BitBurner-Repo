@@ -4,25 +4,10 @@ import { CONSTANT } from "/src/lib/constants.js";
 import { Tools } from "/src/tools/Tools.js";
 import * as HackUtils from "/src/util/HackUtils.js";
 import * as ToolUtils from "/src/util/ToolUtils.js";
-export async function analyzePerformance(ns, target) {
-    const cycles = await computeCycles(ns, target);
-    const isMin = Math.floor(target.percentageToSteal) <= CONSTANT.MIN_PERCENTAGE_TO_STEAL;
-    const isMax = Math.floor(target.percentageToSteal) >= CONSTANT.MAX_PERCENTAGE_TO_STEAL;
-    if (cycles < CONSTANT.DESIRED_CYCLE_NUMBER && !isMin)
-        return -0.01;
-    else if (cycles < CONSTANT.DESIRED_CYCLE_NUMBER && isMin)
-        return 0.00;
-    else if (cycles > CONSTANT.DESIRED_CYCLE_NUMBER && isMax)
-        return 0.00;
-    else if (cycles > CONSTANT.DESIRED_CYCLE_NUMBER && !isMax)
-        return 0.01;
-    else
-        return 0.00;
-}
 export async function computeCycles(ns, target) {
     const serverMap = await ServerAPI.getHackingServers(ns);
     const cycleCost = getOptimalBatchCost(ns, target);
-    return serverMap.reduce((threads, server) => threads + Math.floor(server.getAvailableRam(ns) / cycleCost), 0);
+    return Math.min(CONSTANT.MAX_CYCLE_NUMBER, serverMap.reduce((threads, server) => threads + Math.floor(server.getAvailableRam(ns) / cycleCost), 0));
 }
 // Returns the number of threads
 export function getOptimalBatchCost(ns, target) {

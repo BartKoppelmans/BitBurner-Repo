@@ -191,15 +191,19 @@ async function attackServer(ns, target) {
 }
 async function optimizePerformance(ns, target) {
     let performanceUpdated = false;
-    let adjustment = 0.00;
-    do {
-        adjustment = await CycleUtils.analyzePerformance(ns, target);
-        if (adjustment !== 0.00) {
-            performanceUpdated = true;
-            target.percentageToSteal += adjustment;
+    const originalPercentageToSteal = target.percentageToSteal;
+    let optimalTarget = { percentageToSteal: CONSTANT.MIN_PERCENTAGE_TO_STEAL, profit: -1 };
+    for (let n = CONSTANT.MIN_PERCENTAGE_TO_STEAL; n <= CONSTANT.MAX_PERCENTAGE_TO_STEAL; n += CONSTANT.DELTA_PERCENTAGE_TO_STEAL) {
+        target.percentageToSteal = n;
+        const cycles = await CycleUtils.computeCycles(ns, target);
+        const profit = target.staticHackingProperties.maxMoney * target.percentageToSteal * cycles;
+        if (profit > optimalTarget.percentageToSteal) {
+            optimalTarget = { percentageToSteal: n, profit };
         }
-        await ns.sleep(CONSTANT.SMALL_DELAY);
-    } while (adjustment !== 0.00);
+    }
+    target.percentageToSteal = optimalTarget.percentageToSteal;
+    if (originalPercentageToSteal !== optimalTarget.percentageToSteal)
+        performanceUpdated = true;
     if (performanceUpdated && CONSTANT.DEBUG_HACKING) {
         await LogAPI.log(ns, `Updated percentage to steal for ${target.characteristics.host} to ~${target.percentageToSteal * 100}%`, true, LogMessageCode.HACKING);
     }

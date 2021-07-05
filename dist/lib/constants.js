@@ -78,7 +78,6 @@ export const CONSTANT = {
     // TODO: Change this back to 20 after early game.
     MAX_TARGET_COUNT: 25,
     HACK_LOOP_DELAY: 2000,
-    DESIRED_CYCLE_NUMBER: 25,
     MAX_CYCLE_NUMBER: 50,
     // Max server growth rate, higher than this will be throttled
     MAX_GROWTH_RATE: 1.0035,
@@ -87,6 +86,7 @@ export const CONSTANT = {
     DEFAULT_PERCENTAGE_TO_STEAL: 0.1,
     MIN_PERCENTAGE_TO_STEAL: 0.01,
     MAX_PERCENTAGE_TO_STEAL: 0.95,
+    DELTA_PERCENTAGE_TO_STEAL: 0.01,
     INITIAL_JOB_DELAY: 3000,
     JOB_DELAY: 1000,
     // Currently set to 12 seconds

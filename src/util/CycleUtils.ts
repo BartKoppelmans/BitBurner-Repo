@@ -9,26 +9,12 @@ import { Tools } from "/src/tools/Tools.js";
 import * as HackUtils from "/src/util/HackUtils.js";
 import * as ToolUtils from "/src/util/ToolUtils.js";
 
-export async function analyzePerformance(ns: NS, target: HackableServer): Promise<number> {
-
-    const cycles: number = await computeCycles(ns, target);
-
-    const isMin: boolean = Math.floor(target.percentageToSteal) <= CONSTANT.MIN_PERCENTAGE_TO_STEAL;
-    const isMax: boolean = Math.floor(target.percentageToSteal) >= CONSTANT.MAX_PERCENTAGE_TO_STEAL;
-
-    if (cycles < CONSTANT.DESIRED_CYCLE_NUMBER && !isMin) return -0.01;
-    else if (cycles < CONSTANT.DESIRED_CYCLE_NUMBER && isMin) return 0.00;
-    else if (cycles > CONSTANT.DESIRED_CYCLE_NUMBER && isMax) return 0.00;
-    else if (cycles > CONSTANT.DESIRED_CYCLE_NUMBER && !isMax) return 0.01;
-    else return 0.00;
-}
-
 export async function computeCycles(ns: NS, target: HackableServer): Promise<number> {
 
     const serverMap: Server[] = await ServerAPI.getHackingServers(ns);
     const cycleCost: number = getOptimalBatchCost(ns, target);
 
-    return serverMap.reduce((threads, server) => threads + Math.floor(server.getAvailableRam(ns) / cycleCost), 0);
+    return Math.min(CONSTANT.MAX_CYCLE_NUMBER, serverMap.reduce((threads, server) => threads + Math.floor(server.getAvailableRam(ns) / cycleCost), 0));
 }
 
 // Returns the number of threads
