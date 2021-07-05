@@ -18,6 +18,9 @@ export function calculateWeakenThreads(ns, target, start = target.getSecurityLev
 }
 export function calculateGrowthThreads(ns, target, start = target.getMoney(ns), goal = target.staticHackingProperties.maxMoney) {
     const growthFactor = 1 + ((goal - start) / start);
+    if (growthFactor < 1) {
+        return 0;
+    }
     return Math.ceil(ns.growthAnalyze(target.characteristics.host, growthFactor));
 }
 export function calculateCompensationWeakenThreads(ns, target, after, threads) {
