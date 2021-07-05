@@ -33,20 +33,6 @@ export async function hasManagerKillRequest(ns) {
     else
         return false;
 }
-export async function hasLogManagerKillRequest(ns) {
-    const requestPortHandle = ns.getPortHandle(CONSTANT.CONTROL_FLOW_PORT);
-    if (requestPortHandle.empty())
-        return false;
-    // We only peek, as we want to be sure that we have a request for the daemon
-    const request = JSON.parse(requestPortHandle.peek().toString());
-    if (request.code === ControlFlowCode.KILL_LOGMANAGER) {
-        // Remove the request from the queue
-        requestPortHandle.read();
-        return true;
-    }
-    else
-        return false;
-}
 export function clearPorts(ns) {
     const ports = Array.from({ length: 20 }, (_, i) => i + 1);
     for (const port of ports) {
@@ -92,25 +78,6 @@ export async function killAllManagers(ns) {
         await ns.sleep(CONSTANT.RESPONSE_RETRY_DELAY);
     }
 }
-export async function killLogManager(ns) {
-    const requestPortHandle = ns.getPortHandle(CONSTANT.CONTROL_FLOW_PORT);
-    while (requestPortHandle.full()) {
-        await ns.sleep(CONSTANT.PORT_FULL_RETRY_TIME);
-    }
-    const id = Utils.generateHash();
-    let request = {
-        code: ControlFlowCode.KILL_LOGMANAGER,
-        type: "Request",
-        id
-    };
-    requestPortHandle.write(JSON.stringify(request));
-    // TODO: Make sure that there is a way to stop this, time-based doesn't work in the long run
-    while (true) {
-        if (!LogAPI.isLogManagerRunning(ns))
-            return;
-        await ns.sleep(CONSTANT.RESPONSE_RETRY_DELAY);
-    }
-}
 export async function killExternalServers(ns, serverMap) {
     await Promise.all(serverMap.map(async (server) => {
         if (server.characteristics.host !== CONSTANT.HOME_SERVER_HOST) {
@@ -136,7 +103,8 @@ function areManagersRunning(ns) {
         ProgramAPI.isProgramManagerRunning(ns) ||
         ServerAPI.isServerManagerRunning(ns) ||
         PurchasedServerAPI.isPurchasedServerManagerRunning(ns) ||
-        CodingContractAPI.isCodingContractManagerRunning(ns));
+        CodingContractAPI.isCodingContractManagerRunning(ns) ||
+        LogAPI.isLogManagerRunning(ns));
 }
 function isDaemonRunning(ns) {
     return ns.isRunning('/src/scripts/daemon.js', CONSTANT.HOME_SERVER_HOST);

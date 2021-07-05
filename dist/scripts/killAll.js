@@ -10,10 +10,6 @@ export async function main(ns) {
     let serverMap = await ServerAPI.getServerMap(ns);
     await ControlFlowAPI.killDaemon(ns);
     await ControlFlowAPI.killAllManagers(ns);
-    // Clear the queue because we need to exit the log manager
-    ControlFlowAPI.clearPorts(ns);
-    await ns.sleep(5 * CONSTANT.LOGGING_INTERVAL);
-    await ControlFlowAPI.killLogManager(ns);
     // Clear the queue
     ControlFlowAPI.clearPorts(ns);
     await ControlFlowAPI.killExternalServers(ns, serverMap);

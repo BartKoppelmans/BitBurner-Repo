@@ -20,7 +20,7 @@ class LogManager {
     }
 
     public async start(ns: NS): Promise<void> {
-        this.tprintColored(`Starting the ServerManager`, true, CONSTANT.COLOR_INFORMATION);
+        this.tprintColored(`Starting the LogManager`, true, CONSTANT.COLOR_INFORMATION);
 
         this.loggingLoopInterval = setInterval(this.loggingLoop.bind(this, ns), CONSTANT.LOGGING_INTERVAL);
 
@@ -33,7 +33,7 @@ class LogManager {
             clearInterval(this.loggingLoopInterval);
         }
 
-        this.tprintColored(`Stopping the ServerManager`, true, CONSTANT.COLOR_INFORMATION);
+        this.tprintColored(`Stopping the LogManager`, true, CONSTANT.COLOR_INFORMATION);
     }
 
     private async loggingLoop(ns: NS): Promise<void> {
@@ -109,9 +109,12 @@ export async function main(ns: NS) {
 
     // We just keep sleeping because we have to keep this script running
     while (true) {
-        const shouldKill: boolean = await ControlFlowAPI.hasLogManagerKillRequest(ns);
+        const shouldKill: boolean = await ControlFlowAPI.hasManagerKillRequest(ns);
 
         if (shouldKill) {
+
+            await ns.sleep(CONSTANT.LOG_MANAGER_KILL_DELAY);
+
             await instance.onDestroy(ns);
             ns.exit();
         }

@@ -65,6 +65,7 @@ export const CONSTANT = {
     PURCHASED_SERVER_UPGRADE_UTILIZATION_THRESHOLD: 0.8,
     CRIME_DELAY: 500,
     LOGGING_INTERVAL: 500,
+    LOG_MANAGER_KILL_DELAY: 5000,
     /*
     * Server manager constants
     */
