@@ -23,6 +23,8 @@ export default class Crime {
 
     public async evaluate(ns: NS): Promise<number> {
         this.updateCrimeChance(ns);
-        return this.crimeValue = this.crimeChance * this.crimeStats.money / this.crimeStats.time;
+        return this.crimeValue = this.crimeChance *
+            (this.crimeStats.money / this.crimeStats.time) *
+            ((this.crimeStats.intelligence_exp * 0.1 + 1) / (this.crimeStats.intelligence_exp * 0.1 + 2));
     }
 }
