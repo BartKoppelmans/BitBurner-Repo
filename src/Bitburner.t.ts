@@ -3248,6 +3248,8 @@ declare module "Bitburner" {
          */
         readonly args: any[];
 
+        getPlayer(): any;
+
         /**
          * Function that is used to try and hack servers to steal money and gain hacking experience.
          * The runtime for this command depends on your hacking level and the target server’s

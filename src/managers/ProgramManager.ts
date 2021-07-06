@@ -10,6 +10,7 @@ import { CONSTANT } from "/src/lib/constants.js";
 import * as ProgramManagerUtils from "/src/util/ProgramManagerUtils.js";
 import * as ServerUtils from "/src/util/ServerUtils.js";
 import * as Utils from "/src/util/Utils.js";
+import * as PlayerUtils from "/src/util/PlayerUtils.js";
 
 class ProgramManager {
     private programs: Program[] = [];
@@ -23,6 +24,7 @@ class ProgramManager {
 
     public async initialize(ns: NS): Promise<void> {
         Utils.disableLogging(ns);
+
 
         this.programs = [
             new Program(ns, "BruteSSH.exe", 500000, ProgramType.Crack),
@@ -98,8 +100,11 @@ class ProgramManager {
             return;
         }
 
-        const hasTor: boolean = await ProgramManagerUtils.hasDarkWeb(ns);
-        if (!hasTor) return;
+        if (!ProgramManagerUtils.hasTor(ns)) {
+            const money: number = PlayerUtils.getMoney(ns);
+            if (money < CONSTANT.TOR_ROUTER_COST) return;
+            else ns.purchaseTor();
+        };
 
         let hasUpdated: boolean = false;
         programsToPurchase.forEach(async (program) => {
