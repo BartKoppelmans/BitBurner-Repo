@@ -152,9 +152,9 @@ function determineCycleTimings(ns, target, previousCycle) {
     };
 }
 function determineCycleThreads(ns, target) {
-    const hackThreads = Math.floor(HackUtils.calculateHackThreads(ns, target));
-    const growthThreads = Math.ceil(HackUtils.calculateCompensationGrowthThreads(ns, target, hackThreads));
+    const hackThreads = Math.max(1, Math.floor(HackUtils.calculateHackThreads(ns, target)));
     const weaken1Threads = Math.ceil(HackUtils.calculateCompensationWeakenThreads(ns, target, Tools.HACK, hackThreads));
+    const growthThreads = Math.ceil(HackUtils.calculateCompensationGrowthThreads(ns, target, hackThreads));
     const weaken2Threads = Math.ceil(HackUtils.calculateCompensationWeakenThreads(ns, target, Tools.GROW, growthThreads));
     return {
         hack: hackThreads,

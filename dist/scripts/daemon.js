@@ -169,7 +169,6 @@ async function attackServer(ns, target) {
         return;
     }
     let cycles = [];
-    let previousCycle = undefined;
     for (let i = 0; i < numCycles; i++) {
         let cycle = CycleUtils.scheduleCycle(ns, target, cycles[cycles.length - 1]);
         cycles.push(cycle);

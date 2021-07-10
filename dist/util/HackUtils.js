@@ -41,11 +41,33 @@ export function calculateWeakenThreads(ns, target, start = target.getSecurityLev
     return Math.ceil((start - goal) / PlayerUtils.getWeakenPotency(ns));
 }
 export function calculateGrowthThreads(ns, target, start = target.getMoney(ns), goal = target.staticHackingProperties.maxMoney) {
-    const growthFactor = 1 + ((goal - start) / start);
-    if (growthFactor < 1) {
-        return 0;
+    // maxIterations prevents it from somehow looping indefinitely
+    var guess = 1; // We can start with any number, really, but may as well make it simple.
+    var previous = 0;
+    var previous2 = 0; // The time before the time before; should identify cyclicle outputs.
+    start = Math.max(0, start); // Can't start with <0 cash.
+    if (start >= goal) {
+        return 0; // Good news! You're already there.
     }
-    return Math.ceil(ns.growthAnalyze(target.characteristics.host, growthFactor));
+    for (var iteration = 0; guess != previous && iteration < CONSTANT.MAX_GROWTH_CALCULATION_ITERATIONS; ++iteration) {
+        previous = guess;
+        let ratio = goal / (start + guess);
+        if (ratio > 1) {
+            guess = Math.ceil(ns.growthAnalyze(target.characteristics.host, ratio));
+        }
+        else {
+            guess = 1; // We'd only need 1 thread to meet the goal if adding the guess is sufficient to reach goal.
+        }
+        if (guess == previous2) { // We got the same output we got the time before last.
+            return Math.max(guess, previous); // The smaller number of the two is obviously insufficient.
+        }
+        previous2 = previous;
+    }
+    if (iteration >= CONSTANT.MAX_GROWTH_CALCULATION_ITERATIONS) {
+        // Whatever the biggest of the last three values was should be a safe guess.
+        return Math.max(guess, previous, previous2);
+    }
+    return guess; // It successfully stabilized!
 }
 export function calculateCompensationWeakenThreads(ns, target, after, threads) {
     switch (after) {

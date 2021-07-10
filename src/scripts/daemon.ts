@@ -229,7 +229,6 @@ async function attackServer(ns: NS, target: HackableServer): Promise<void> {
     }
 
     let cycles: Cycle[] = [];
-    let previousCycle: Cycle | undefined = undefined;
 
     for (let i = 0; i < numCycles; i++) {
         let cycle: Cycle = CycleUtils.scheduleCycle(ns, target, cycles[cycles.length - 1]);

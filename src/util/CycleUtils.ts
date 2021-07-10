@@ -201,9 +201,9 @@ function determineCycleTimings(ns: NS, target: HackableServer, previousCycle?: C
 }
 
 function determineCycleThreads(ns: NS, target: HackableServer): CycleThreads {
-    const hackThreads: number = Math.floor(HackUtils.calculateHackThreads(ns, target));
-    const growthThreads: number = Math.ceil(HackUtils.calculateCompensationGrowthThreads(ns, target, hackThreads));
+    const hackThreads: number = Math.max(1, Math.floor(HackUtils.calculateHackThreads(ns, target)));
     const weaken1Threads: number = Math.ceil(HackUtils.calculateCompensationWeakenThreads(ns, target, Tools.HACK, hackThreads));
+    const growthThreads: number = Math.ceil(HackUtils.calculateCompensationGrowthThreads(ns, target, hackThreads));
     const weaken2Threads: number = Math.ceil(HackUtils.calculateCompensationWeakenThreads(ns, target, Tools.GROW, growthThreads));
 
     return {

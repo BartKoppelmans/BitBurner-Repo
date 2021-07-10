@@ -85,6 +85,7 @@ export const CONSTANT = {
     MAX_GROWTH_RATE: 1.0035,
     // Unadjusted server growth rate, this is higher than actually possible
     UNADJUSTED_GROWTH_RATE: 1.03,
+    MAX_GROWTH_CALCULATION_ITERATIONS: 100,
     DEFAULT_PERCENTAGE_TO_STEAL: 0.1,
     MIN_PERCENTAGE_TO_STEAL: 0.01,
     MAX_PERCENTAGE_TO_STEAL: 0.95,
