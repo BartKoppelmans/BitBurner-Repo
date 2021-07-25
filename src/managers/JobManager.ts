@@ -111,6 +111,9 @@ export default class JobManager {
 
                 hasExecutedJob = true;
             } catch (error) {
+
+                ns.tprint("We have an error"); // TODO: Remove this
+
                 await LogAPI.log(ns, `Error encountered: \n
                 ${error.name} \n
                 ${error.message} \n
@@ -139,6 +142,7 @@ export default class JobManager {
         }
 
         await job.execute(ns);
+
         this.jobs.push(job);
         job.onStart(ns);
 

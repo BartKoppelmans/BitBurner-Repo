@@ -2,14 +2,14 @@ import type { BitBurner as NS } from "Bitburner";
 import * as ServerAPI from "/src/api/ServerAPI.js";
 import HackableServer from "/src/classes/HackableServer.js";
 import Server from "/src/classes/Server.js";
+import { ReservedServer, ReservedServerMap } from "/src/interfaces/ServerInterfaces.js";
 import { CONSTANT } from "/src/lib/constants.js";
 import { Tools } from "/src/tools/Tools.js";
 import * as PlayerUtils from "/src/util/PlayerUtils.js";
 import * as ToolUtils from "/src/util/ToolUtils.js";
 
-export async function computeThreadSpread(ns: NS, tool: Tools, threads: number, isPrep: boolean): Promise<Map<Server, number>> {
-
-    const maxThreadsAvailable = await calculateMaxThreads(ns, tool, isPrep);
+export async function computeThreadSpread(ns: NS, tool: Tools, threads: number, isPrep: boolean, reservations: ReservedServerMap = []): Promise<Map<Server, number>> {
+    const maxThreadsAvailable = await calculateMaxThreads(ns, tool, isPrep, reservations);
 
     if (threads > maxThreadsAvailable) {
         throw new Error("We don't have that much threads available.");
@@ -22,33 +22,43 @@ export async function computeThreadSpread(ns: NS, tool: Tools, threads: number, 
 
     const serverMap: Server[] = (isPrep) ? await ServerAPI.getPreppingServers(ns) : await ServerAPI.getHackingServers(ns);
 
-    for (let server of serverMap) {
-        let serverThreads: number = Math.floor(server.getAvailableRam(ns) / cost);
+    let reservedServerMap: ReservedServerMap = serverMap.map((server) => {
+        const reservedServer: ReservedServer | undefined = reservations.find((reservedServer) => reservedServer.server.characteristics.host === server.characteristics.host);
+        const reservation: number = (reservedServer) ? reservedServer.reserved : 0;
+        return { reserved: reservation, server };
+    });
+    reservedServerMap = reservedServerMap.sort((a, b) => (b.server.getAvailableRam(ns) - b.reserved) - (a.server.getAvailableRam(ns) - a.reserved));
+
+    for (let reservedServer of reservedServerMap) {
+        let serverThreads: number = Math.floor((reservedServer.server.getAvailableRam(ns) - reservedServer.reserved) / cost);
 
         // If we can't fit any more threads here, skip it
-        if (serverThreads === 0) continue;
+        if (serverThreads <= 0) continue;
 
         // We can fit all our threads in here!
         if (serverThreads >= threadsLeft) {
-            spreadMap.set(server, threadsLeft);
+            spreadMap.set(reservedServer.server, threadsLeft);
             break;
         }
 
-        spreadMap.set(server, serverThreads);
+        spreadMap.set(reservedServer.server, serverThreads);
         threadsLeft -= serverThreads;
     }
-
     return spreadMap;
 }
 
 // Here we allow thread spreading over multiple servers
-export async function calculateMaxThreads(ns: NS, tool: Tools, isPrep: boolean): Promise<number> {
+export async function calculateMaxThreads(ns: NS, tool: Tools, isPrep: boolean, reservations: ReservedServerMap = []): Promise<number> {
 
     const serverMap: Server[] = (isPrep) ? await ServerAPI.getPreppingServers(ns) : await ServerAPI.getHackingServers(ns);
 
     const cost: number = ToolUtils.getToolCost(ns, tool);
 
-    return serverMap.reduce((threads, server) => threads + Math.floor(server.getAvailableRam(ns) / cost), 0);
+    return serverMap.reduce((threads, server) => {
+        const reservedServer: ReservedServer | undefined = reservations.find((reservedServer) => reservedServer.server.characteristics.host === server.characteristics.host);
+        const reservation: number = (reservedServer) ? reservedServer.reserved : 0;
+        return threads + Math.floor((server.getAvailableRam(ns) - reservation) / cost);
+    }, 0);
 }
 
 export function calculateHackThreads(ns: NS, target: HackableServer): number {
@@ -107,4 +117,4 @@ export function calculateCompensationGrowthThreads(ns: NS, target: HackableServe
     const startAmount: number = target.getMoney(ns) - hackAmount;
 
     return calculateGrowthThreads(ns, target, startAmount);
-}
+};

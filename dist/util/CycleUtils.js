@@ -15,11 +15,11 @@ export async function distributeThreads(ns, cycles) {
     const target = cycles[0].hack.target;
     const cost = ToolUtils.getToolCost(ns, Tools.HACK) * (cycles[0].hack.threads + cycles[0].growth.threads + cycles[0].weaken1.threads + cycles[0].weaken2.threads);
     const serverMap = await ServerAPI.getHackingServers(ns);
-    const reservedServerMap = serverMap.map((server) => {
+    let reservedServerMap = serverMap.map((server) => {
         return { reserved: 0, server };
     });
     for (const cycle of cycles) {
-        reservedServerMap.sort((a, b) => (b.server.getAvailableRam(ns) - b.reserved) - (a.server.getAvailableRam(ns) - a.reserved));
+        reservedServerMap = reservedServerMap.sort((a, b) => (b.server.getAvailableRam(ns) - b.reserved) - (a.server.getAvailableRam(ns) - a.reserved));
         const reservedServer = reservedServerMap[0];
         if (cost > (reservedServer.server.getAvailableRam(ns) - reservedServer.reserved)) {
             throw new Error("Not enough RAM available on the hacking server");

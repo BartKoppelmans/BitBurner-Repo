@@ -100,7 +100,7 @@ export const CONSTANT = {
     CRIME_DELAY: 500,
 
     LOGGING_INTERVAL: 500,
-    LOG_MANAGER_KILL_DELAY: 5000,
+    LOG_MANAGER_KILL_DELAY: 1000,
 
     /*
     * Server manager constants

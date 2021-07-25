@@ -12,7 +12,7 @@ export async function main(ns: NS) {
         return;
     }
 
-    const useHomicide: boolean = ns.args[0];
+    const useHomicide: boolean = (ns.args[0] === "true" || ns.args[0] === "True");
 
     let crimes: Crime[] = CrimeUtils.getCrimes(ns);
     let isCancelled: boolean = false;
@@ -35,7 +35,7 @@ export async function main(ns: NS) {
             // Sort the potential crimes
             crimes = crimes.sort((a, b) => b.crimeValue! - a.crimeValue!);
 
-            const crime: Crime = crimes[0];
+            crime = crimes[0];
         }
 
 

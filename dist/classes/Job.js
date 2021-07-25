@@ -4,6 +4,7 @@ import Server from "/src/classes/Server.js";
 import { LogMessageCode } from "/src/interfaces/PortMessageInterfaces.js";
 import { ServerType } from "/src/interfaces/ServerInterfaces.js";
 import { CONSTANT } from "/src/lib/constants.js";
+import { Tools } from "/src/tools/Tools.js";
 import * as HackUtils from "/src/util/HackUtils.js";
 import * as ServerUtils from "/src/util/ServerUtils.js";
 import * as ToolUtils from "/src/util/ToolUtils.js";
@@ -38,6 +39,7 @@ export default class Job {
             target: this.target,
             start: this.start,
         };
+        let availableThreads = await HackUtils.calculateMaxThreads(ns, Tools.WEAKEN, true);
         for (let [server, threads] of this.threadSpread) {
             // Validate the threadspread before running (for hacking)
             const cost = threads * ToolUtils.getToolCost(ns, this.tool);

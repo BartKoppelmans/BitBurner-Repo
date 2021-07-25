@@ -62,3 +62,10 @@ export interface ServerMapFile {
     lastUpdated: Date;
     serverMap: Server[];
 }
+
+export interface ReservedServer {
+    reserved: number;
+    server: Server;
+}
+
+export type ReservedServerMap = ReservedServer[];

@@ -13,6 +13,7 @@ import { CONSTANT } from "/src/lib/constants.js";
 import { Tools } from "/src/tools/Tools.js";
 import * as CycleUtils from "/src/util/CycleUtils.js";
 import * as HackUtils from "/src/util/HackUtils.js";
+import * as ToolUtils from "/src/util/ToolUtils.js";
 import { Heuristics } from "/src/util/Heuristics.js";
 import * as Utils from "/src/util/Utils.js";
 let isHacking = false;
@@ -81,6 +82,7 @@ async function prepServer(ns, target) {
         return;
     let initialWeakenJob = undefined, growJob = undefined, compensationWeakenJob = undefined;
     let jobs = [];
+    let reservations = [];
     let availableThreads = await HackUtils.calculateMaxThreads(ns, Tools.WEAKEN, true);
     if (availableThreads === 0) {
         if (CONSTANT.DEBUG_HACKING)
@@ -89,25 +91,33 @@ async function prepServer(ns, target) {
     }
     // TODO: Ideally we pick the server that can fit all our threads here immediately, 
     // then we can have everything on one source server
+    // TODO: Refactor this shitshow
     if (target.needsWeaken(ns)) {
         let neededWeakenThreads = HackUtils.calculateWeakenThreads(ns, target);
         let weakenThreads = Math.min(neededWeakenThreads, availableThreads);
-        availableThreads -= weakenThreads;
+        const weakenThreadSpread = await HackUtils.computeThreadSpread(ns, Tools.WEAKEN, weakenThreads, true, reservations);
         initialWeakenJob = new Job(ns, {
             target,
             threads: weakenThreads,
+            threadSpread: weakenThreadSpread,
             tool: Tools.WEAKEN,
             isPrep: true
         });
         jobs.push(initialWeakenJob);
+        availableThreads -= weakenThreads;
+        for (const [server, threads] of weakenThreadSpread) {
+            reservations.push({
+                reserved: threads * ToolUtils.getToolCost(ns, Tools.WEAKEN),
+                server
+            });
+        }
     }
     // First grow, so that the amount of money is optimal
-    if (target.needsGrow(ns)) {
+    if (target.needsGrow(ns) && availableThreads > 0) {
         const neededGrowthThreads = HackUtils.calculateGrowthThreads(ns, target);
         const compensationWeakenThreads = HackUtils.calculateCompensationWeakenThreads(ns, target, Tools.GROW, neededGrowthThreads);
         const totalThreads = neededGrowthThreads + compensationWeakenThreads;
         const threadsFit = (totalThreads < availableThreads);
-        // NOTE: This should be around 0.8, I think
         // NOTE: Here we do Math.floor, which could cause us not to ececute enought weakens/grows
         // However, we currently run into a lot of errors regarding too little threads available, which is why we do this.
         const growthThreads = (threadsFit) ? neededGrowthThreads : Math.floor(neededGrowthThreads * (availableThreads / totalThreads));
@@ -130,23 +140,38 @@ async function prepServer(ns, target) {
                 growthEndTime = new Date(compensationWeakenEndTime.getTime() - CONSTANT.JOB_DELAY);
                 growthStartTime = new Date(growthEndTime.getTime() - growthTime);
             }
+            const growthThreadSpread = await HackUtils.computeThreadSpread(ns, Tools.GROW, growthThreads, true, reservations);
             growJob = new Job(ns, {
                 target,
                 threads: growthThreads,
+                threadSpread: growthThreadSpread,
                 tool: Tools.GROW,
                 isPrep: true,
                 start: growthStartTime,
                 end: growthEndTime
             });
+            for (const [server, threads] of growthThreadSpread) {
+                const index = reservations.findIndex((reservedServer) => reservedServer.server.characteristics.host === server.characteristics.host);
+                if (index > -1)
+                    reservations[index].reserved += threads * ToolUtils.getToolCost(ns, Tools.GROW);
+                else {
+                    reservations.push({
+                        reserved: threads * ToolUtils.getToolCost(ns, Tools.GROW),
+                        server
+                    });
+                }
+            }
+            jobs.push(growJob);
+            const compensationWeakenThreadSpread = await HackUtils.computeThreadSpread(ns, Tools.WEAKEN, weakenThreads, true, reservations);
             compensationWeakenJob = new Job(ns, {
                 target,
                 threads: weakenThreads,
+                threadSpread: compensationWeakenThreadSpread,
                 tool: Tools.WEAKEN,
                 isPrep: true,
                 start: compensationWeakenStartTime,
                 end: compensationWeakenEndTime
             });
-            jobs.push(growJob);
             jobs.push(compensationWeakenJob);
         }
     }

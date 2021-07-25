@@ -4,6 +4,7 @@ import HackableServer from "/src/classes/HackableServer.js";
 import Job from "/src/classes/Job.js";
 import Server from "/src/classes/Server.js";
 import { Cycle, CycleThreads, CycleTimings } from "/src/interfaces/HackInterfaces.js";
+import { ReservedServerMap } from "/src/interfaces/ServerInterfaces.js";
 import { CONSTANT } from "/src/lib/constants.js";
 import { Tools } from "/src/tools/Tools.js";
 import * as HackUtils from "/src/util/HackUtils.js";
@@ -26,12 +27,12 @@ export async function distributeThreads(ns: NS, cycles: Cycle[]): Promise<Cycle[
     const cost: number = ToolUtils.getToolCost(ns, Tools.HACK) * (cycles[0].hack.threads + cycles[0].growth.threads + cycles[0].weaken1.threads + cycles[0].weaken2.threads);
 
     const serverMap: Server[] = await ServerAPI.getHackingServers(ns);
-    const reservedServerMap: { reserved: number, server: Server; }[] = serverMap.map((server) => {
+    let reservedServerMap: ReservedServerMap = serverMap.map((server) => {
         return { reserved: 0, server };
     });
 
     for (const cycle of cycles) {
-        reservedServerMap.sort((a, b) => (b.server.getAvailableRam(ns) - b.reserved) - (a.server.getAvailableRam(ns) - a.reserved));
+        reservedServerMap = reservedServerMap.sort((a, b) => (b.server.getAvailableRam(ns) - b.reserved) - (a.server.getAvailableRam(ns) - a.reserved));
 
         const reservedServer: { reserved: number, server: Server; } = reservedServerMap[0];
 

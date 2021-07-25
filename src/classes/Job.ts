@@ -61,6 +61,8 @@ export default class Job {
             start: this.start,
         };
 
+        let availableThreads: number = await HackUtils.calculateMaxThreads(ns, Tools.WEAKEN, true);
+
         for (let [server, threads] of this.threadSpread) {
 
             // Validate the threadspread before running (for hacking)

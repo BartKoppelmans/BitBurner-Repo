@@ -9,13 +9,15 @@ import * as ServerAPI from "/src/api/ServerAPI.js";
 import BatchJob from "/src/classes/BatchJob.js";
 import HackableServer from "/src/classes/HackableServer.js";
 import Job from "/src/classes/Job.js";
+import Server from "/src/classes/Server.js";
 import { Cycle } from "/src/interfaces/HackInterfaces.js";
 import { LogMessageCode } from "/src/interfaces/PortMessageInterfaces.js";
-import { ServerStatus } from "/src/interfaces/ServerInterfaces.js";
+import { ReservedServerMap, ServerStatus } from "/src/interfaces/ServerInterfaces.js";
 import { CONSTANT } from "/src/lib/constants.js";
 import { Tools } from "/src/tools/Tools.js";
 import * as CycleUtils from "/src/util/CycleUtils.js";
 import * as HackUtils from "/src/util/HackUtils.js";
+import * as ToolUtils from "/src/util/ToolUtils.js";
 import { Heuristics } from "/src/util/Heuristics.js";
 import * as Utils from "/src/util/Utils.js";
 
@@ -112,8 +114,9 @@ async function prepServer(ns: NS, target: HackableServer): Promise<void> {
 
     let jobs: Job[] = [];
 
-    let availableThreads: number = await HackUtils.calculateMaxThreads(ns, Tools.WEAKEN, true);
+    let reservations: ReservedServerMap = [];
 
+    let availableThreads: number = await HackUtils.calculateMaxThreads(ns, Tools.WEAKEN, true);
     if (availableThreads === 0) {
         if (CONSTANT.DEBUG_HACKING) await LogAPI.log(ns, "Skipped a prep.", true, LogMessageCode.WARNING);
         return;
@@ -122,25 +125,36 @@ async function prepServer(ns: NS, target: HackableServer): Promise<void> {
     // TODO: Ideally we pick the server that can fit all our threads here immediately, 
     // then we can have everything on one source server
 
+    // TODO: Refactor this shitshow
+
     if (target.needsWeaken(ns)) {
         let neededWeakenThreads: number = HackUtils.calculateWeakenThreads(ns, target);
 
         let weakenThreads: number = Math.min(neededWeakenThreads, availableThreads);
-
-        availableThreads -= weakenThreads;
+        const weakenThreadSpread: Map<Server, number> = await HackUtils.computeThreadSpread(ns, Tools.WEAKEN, weakenThreads, true, reservations);
 
         initialWeakenJob = new Job(ns, {
             target,
             threads: weakenThreads,
+            threadSpread: weakenThreadSpread,
             tool: Tools.WEAKEN,
             isPrep: true
         });
 
         jobs.push(initialWeakenJob);
+
+        availableThreads -= weakenThreads;
+
+        for (const [server, threads] of weakenThreadSpread) {
+            reservations.push({
+                reserved: threads * ToolUtils.getToolCost(ns, Tools.WEAKEN),
+                server
+            });
+        }
     }
 
     // First grow, so that the amount of money is optimal
-    if (target.needsGrow(ns)) {
+    if (target.needsGrow(ns) && availableThreads > 0) {
 
         const neededGrowthThreads: number = HackUtils.calculateGrowthThreads(ns, target);
         const compensationWeakenThreads: number = HackUtils.calculateCompensationWeakenThreads(ns, target, Tools.GROW, neededGrowthThreads);
@@ -148,8 +162,6 @@ async function prepServer(ns: NS, target: HackableServer): Promise<void> {
         const totalThreads: number = neededGrowthThreads + compensationWeakenThreads;
 
         const threadsFit: boolean = (totalThreads < availableThreads);
-
-        // NOTE: This should be around 0.8, I think
 
         // NOTE: Here we do Math.floor, which could cause us not to ececute enought weakens/grows
         // However, we currently run into a lot of errors regarding too little threads available, which is why we do this.
@@ -182,25 +194,39 @@ async function prepServer(ns: NS, target: HackableServer): Promise<void> {
                 growthStartTime = new Date(growthEndTime.getTime() - growthTime);
             }
 
+            const growthThreadSpread: Map<Server, number> = await HackUtils.computeThreadSpread(ns, Tools.GROW, growthThreads, true, reservations);
             growJob = new Job(ns, {
                 target,
                 threads: growthThreads,
+                threadSpread: growthThreadSpread,
                 tool: Tools.GROW,
                 isPrep: true,
                 start: growthStartTime,
                 end: growthEndTime
             });
 
+            for (const [server, threads] of growthThreadSpread) {
+                const index: number = reservations.findIndex((reservedServer) => reservedServer.server.characteristics.host === server.characteristics.host);
+                if (index > -1) reservations[index].reserved += threads * ToolUtils.getToolCost(ns, Tools.GROW);
+                else {
+                    reservations.push({
+                        reserved: threads * ToolUtils.getToolCost(ns, Tools.GROW),
+                        server
+                    });
+                }
+            }
+            jobs.push(growJob);
+
+            const compensationWeakenThreadSpread: Map<Server, number> = await HackUtils.computeThreadSpread(ns, Tools.WEAKEN, weakenThreads, true, reservations);
             compensationWeakenJob = new Job(ns, {
                 target,
                 threads: weakenThreads,
+                threadSpread: compensationWeakenThreadSpread,
                 tool: Tools.WEAKEN,
                 isPrep: true,
                 start: compensationWeakenStartTime,
                 end: compensationWeakenEndTime
             });
-
-            jobs.push(growJob);
             jobs.push(compensationWeakenJob);
         }
     }

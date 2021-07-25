@@ -3,8 +3,8 @@ import { CONSTANT } from "/src/lib/constants.js";
 import { Tools } from "/src/tools/Tools.js";
 import * as PlayerUtils from "/src/util/PlayerUtils.js";
 import * as ToolUtils from "/src/util/ToolUtils.js";
-export async function computeThreadSpread(ns, tool, threads, isPrep) {
-    const maxThreadsAvailable = await calculateMaxThreads(ns, tool, isPrep);
+export async function computeThreadSpread(ns, tool, threads, isPrep, reservations = []) {
+    const maxThreadsAvailable = await calculateMaxThreads(ns, tool, isPrep, reservations);
     if (threads > maxThreadsAvailable) {
         throw new Error("We don't have that much threads available.");
     }
@@ -12,26 +12,36 @@ export async function computeThreadSpread(ns, tool, threads, isPrep) {
     let threadsLeft = threads;
     let spreadMap = new Map();
     const serverMap = (isPrep) ? await ServerAPI.getPreppingServers(ns) : await ServerAPI.getHackingServers(ns);
-    for (let server of serverMap) {
-        let serverThreads = Math.floor(server.getAvailableRam(ns) / cost);
+    let reservedServerMap = serverMap.map((server) => {
+        const reservedServer = reservations.find((reservedServer) => reservedServer.server.characteristics.host === server.characteristics.host);
+        const reservation = (reservedServer) ? reservedServer.reserved : 0;
+        return { reserved: reservation, server };
+    });
+    reservedServerMap = reservedServerMap.sort((a, b) => (b.server.getAvailableRam(ns) - b.reserved) - (a.server.getAvailableRam(ns) - a.reserved));
+    for (let reservedServer of reservedServerMap) {
+        let serverThreads = Math.floor((reservedServer.server.getAvailableRam(ns) - reservedServer.reserved) / cost);
         // If we can't fit any more threads here, skip it
-        if (serverThreads === 0)
+        if (serverThreads <= 0)
             continue;
         // We can fit all our threads in here!
         if (serverThreads >= threadsLeft) {
-            spreadMap.set(server, threadsLeft);
+            spreadMap.set(reservedServer.server, threadsLeft);
             break;
         }
-        spreadMap.set(server, serverThreads);
+        spreadMap.set(reservedServer.server, serverThreads);
         threadsLeft -= serverThreads;
     }
     return spreadMap;
 }
 // Here we allow thread spreading over multiple servers
-export async function calculateMaxThreads(ns, tool, isPrep) {
+export async function calculateMaxThreads(ns, tool, isPrep, reservations = []) {
     const serverMap = (isPrep) ? await ServerAPI.getPreppingServers(ns) : await ServerAPI.getHackingServers(ns);
     const cost = ToolUtils.getToolCost(ns, tool);
-    return serverMap.reduce((threads, server) => threads + Math.floor(server.getAvailableRam(ns) / cost), 0);
+    return serverMap.reduce((threads, server) => {
+        const reservedServer = reservations.find((reservedServer) => reservedServer.server.characteristics.host === server.characteristics.host);
+        const reservation = (reservedServer) ? reservedServer.reserved : 0;
+        return threads + Math.floor((server.getAvailableRam(ns) - reservation) / cost);
+    }, 0);
 }
 export function calculateHackThreads(ns, target) {
     const hackAmount = target.percentageToSteal * target.staticHackingProperties.maxMoney;
@@ -85,3 +95,4 @@ export function calculateCompensationGrowthThreads(ns, target, threads) {
     const startAmount = target.getMoney(ns) - hackAmount;
     return calculateGrowthThreads(ns, target, startAmount);
 }
+;
