@@ -7,6 +7,7 @@ export async function main(ns) {
         await LogAPI.log(ns, "Cannot execute crimes, we are currently busy.", true, LogMessageCode.WARNING);
         return;
     }
+    const useHomicide = ns.args[0];
     let crimes = CrimeUtils.getCrimes(ns);
     let isCancelled = false;
     await LogAPI.log(ns, "Executing crimes", true, LogMessageCode.INFORMATION);
@@ -15,14 +16,17 @@ export async function main(ns) {
             await ns.sleep(CONSTANT.CRIME_DELAY);
             continue;
         }
-        // Evaluate the potential crimes afterwards
-        await Promise.all(crimes.map(async (crime) => {
-            crime.evaluate(ns);
-        }));
-        // Sort the potential crimes
-        crimes = crimes.sort((a, b) => b.crimeValue - a.crimeValue);
-        const nextCrime = crimes[0];
-        nextCrime.commit(ns);
+        let crime = crimes.find((crime) => crime.name === "homicide");
+        if (!useHomicide) {
+            // Evaluate the potential crimes afterwards
+            await Promise.all(crimes.map(async (crime) => {
+                crime.evaluate(ns);
+            }));
+            // Sort the potential crimes
+            crimes = crimes.sort((a, b) => b.crimeValue - a.crimeValue);
+            const crime = crimes[0];
+        }
+        crime.commit(ns);
         const cancelButton = document.getElementById("work-in-progress-cancel-button");
         if (cancelButton) {
             cancelButton.addEventListener("click", () => {
@@ -30,6 +34,6 @@ export async function main(ns) {
                 ns.exit();
             });
         }
-        await ns.sleep(nextCrime.crimeStats.time);
+        await ns.sleep(crime.crimeStats.time);
     }
 }

@@ -12,6 +12,8 @@ export async function main(ns: NS) {
         return;
     }
 
+    const useHomicide: boolean = ns.args[0];
+
     let crimes: Crime[] = CrimeUtils.getCrimes(ns);
     let isCancelled: boolean = false;
 
@@ -22,17 +24,22 @@ export async function main(ns: NS) {
             continue;
         }
 
-        // Evaluate the potential crimes afterwards
-        await Promise.all(crimes.map(async (crime) => {
-            crime.evaluate(ns);
-        }));
+        let crime: Crime = crimes.find((crime) => crime.name === "homicide") as Crime;
 
-        // Sort the potential crimes
-        crimes = crimes.sort((a, b) => b.crimeValue! - a.crimeValue!);
+        if (!useHomicide) {
+            // Evaluate the potential crimes afterwards
+            await Promise.all(crimes.map(async (crime) => {
+                crime.evaluate(ns);
+            }));
 
-        const nextCrime: Crime = crimes[0];
+            // Sort the potential crimes
+            crimes = crimes.sort((a, b) => b.crimeValue! - a.crimeValue!);
 
-        nextCrime.commit(ns);
+            const crime: Crime = crimes[0];
+        }
+
+
+        crime.commit(ns);
 
         const cancelButton = document.getElementById("work-in-progress-cancel-button");
 
@@ -43,6 +50,6 @@ export async function main(ns: NS) {
             });
         }
 
-        await ns.sleep(nextCrime.crimeStats.time);
+        await ns.sleep(crime.crimeStats.time);
     }
 }

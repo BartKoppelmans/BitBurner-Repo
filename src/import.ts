@@ -32,6 +32,8 @@ const files: string[] = [
     'scripts/cleanHome.js',
     'scripts/daemon.js',
     'scripts/executeCrimes.js',
+    'scripts/hackingMission.js',
+    'scripts/infiltrationHelper.js',
     'scripts/killAll.js',
     'scripts/route.js',
     'tools/grow.js',
