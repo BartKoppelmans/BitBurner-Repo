@@ -7,7 +7,7 @@ export async function main(ns) {
         return;
     }
     // Get this first, because in a bit we won't have the server manager running anymore
-    let serverMap = await ServerAPI.getServerMap(ns);
+    const serverMap = await ServerAPI.getServerMap(ns);
     await ControlFlowAPI.killDaemon(ns);
     await ControlFlowAPI.killAllManagers(ns);
     // Clear the queue

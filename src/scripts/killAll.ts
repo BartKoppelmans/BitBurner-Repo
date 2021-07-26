@@ -12,7 +12,7 @@ export async function main(ns: NS) {
     }
 
     // Get this first, because in a bit we won't have the server manager running anymore
-    let serverMap: Server[] = await ServerAPI.getServerMap(ns);
+    const serverMap: Server[] = await ServerAPI.getServerMap(ns);
 
     await ControlFlowAPI.killDaemon(ns);
 
