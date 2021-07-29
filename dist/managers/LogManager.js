@@ -4,7 +4,6 @@ import { CONSTANT } from "/src/lib/constants.js";
 import * as ServerManagerUtils from "/src/util/ServerManagerUtils.js";
 import * as Utils from "/src/util/Utils.js";
 class LogManager {
-    constructor() { }
     async initialize(ns) {
         Utils.disableLogging(ns);
         if (this.loggingLoopInterval) {
@@ -26,7 +25,7 @@ class LogManager {
         const requestPortHandle = ns.getPortHandle(CONSTANT.LOG_MANAGER_REQUEST_PORT);
         if (requestPortHandle.empty())
             return;
-        const requests = requestPortHandle.data.map((string) => JSON.parse(string.toString()));
+        const requests = requestPortHandle.data.map((s) => JSON.parse(s.toString()));
         // NOTE: This could go wrong
         requestPortHandle.clear();
         for await (const request of requests) {
@@ -54,9 +53,10 @@ class LogManager {
         }
     }
     tprintColored(text, printDate = false, color) {
-        let terminalInput = document.getElementById("terminal-input");
-        let rowElement = document.createElement("tr");
-        let cellElement = document.createElement("td");
+        const doc = eval("document");
+        const terminalInput = doc.getElementById("terminal-input");
+        const rowElement = doc.createElement("tr");
+        const cellElement = doc.createElement("td");
         if (!terminalInput) {
             throw new Error("Could not find the terminal input.");
         }
@@ -86,6 +86,7 @@ export async function main(ns) {
             await ns.sleep(CONSTANT.LOG_MANAGER_KILL_DELAY);
             await instance.onDestroy(ns);
             ns.exit();
+            return;
         }
         await ns.sleep(CONSTANT.CONTROL_FLOW_CHECK_INTERVAL);
     }

@@ -61,9 +61,10 @@ function getFormattedServerName(ns: NS, server: Server): string {
 }
 
 function tprint(html: string) {
-    const terminalInput = document.getElementById("terminal-input");
-    const rowElement = document.createElement("tr");
-    const cellElement = document.createElement("td");
+    const doc: Document = eval("document");
+    const terminalInput = doc.getElementById("terminal-input");
+    const rowElement = doc.createElement("tr");
+    const cellElement = doc.createElement("td");
 
     if (!terminalInput) return
 

@@ -50,9 +50,10 @@ function getFormattedServerName(ns, server) {
         `<span style="color: ${pipColor}; display: ${(showCodingContract && hasContracts) ? "inline" : "none"}">⋐</span>`;
 }
 function tprint(html) {
-    const terminalInput = document.getElementById("terminal-input");
-    const rowElement = document.createElement("tr");
-    const cellElement = document.createElement("td");
+    const doc = eval("document");
+    const terminalInput = doc.getElementById("terminal-input");
+    const rowElement = doc.createElement("tr");
+    const cellElement = doc.createElement("td");
     if (!terminalInput)
         return;
     rowElement.classList.add("posted");

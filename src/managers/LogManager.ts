@@ -9,8 +9,6 @@ class LogManager {
 
     private loggingLoopInterval?: ReturnType<typeof setInterval>;
 
-    public constructor() { }
-
     public async initialize(ns: NS): Promise<void> {
         Utils.disableLogging(ns);
 
@@ -41,7 +39,7 @@ class LogManager {
         const requestPortHandle = ns.getPortHandle(CONSTANT.LOG_MANAGER_REQUEST_PORT);
         if (requestPortHandle.empty()) return;
 
-        const requests: LogMessageRequest[] = requestPortHandle.data.map((string) => JSON.parse(string.toString()));
+        const requests: LogMessageRequest[] = requestPortHandle.data.map((s) => JSON.parse(s.toString()));
 
         // NOTE: This could go wrong
         requestPortHandle.clear();
@@ -73,9 +71,10 @@ class LogManager {
     }
 
     public tprintColored(text: string, printDate: boolean = false, color: string) {
-        let terminalInput = document.getElementById("terminal-input");
-        let rowElement = document.createElement("tr");
-        let cellElement = document.createElement("td");
+        const doc: Document = eval("document");
+        const terminalInput = doc.getElementById("terminal-input");
+        const rowElement = doc.createElement("tr");
+        const cellElement = doc.createElement("td");
 
         if (!terminalInput) {
             throw new Error("Could not find the terminal input.");
@@ -117,6 +116,7 @@ export async function main(ns: NS) {
 
             await instance.onDestroy(ns);
             ns.exit();
+            return;
         }
 
         await ns.sleep(CONSTANT.CONTROL_FLOW_CHECK_INTERVAL);
