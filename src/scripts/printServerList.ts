@@ -34,7 +34,7 @@ function getFormattedServerName(ns: NS, server: Server): string {
     const hasContracts: boolean = (server.files.filter((file) => file.includes('.cct'))).length > 0;
     const clickFunction = `
         const terminal = document.getElementById('terminal-input-text-box');
-        terminal.value='route ${server.characteristics.host}';
+        terminal.value='home; run src/scripts/route.js ${server.characteristics.host}';
         document.body.dispatchEvent(new KeyboardEvent('keydown', {bubbles: true, keyCode: 13}));
     `
 
