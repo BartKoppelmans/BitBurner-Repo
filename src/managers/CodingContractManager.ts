@@ -69,16 +69,16 @@ class CodingContractManager {
     }
 
     private async solveContract(ns: NS, contract: CodingContract) {
-        let solution: CodingContractAnswer | null = CodingContractUtils.findSolution(ns, contract);
+        const solution: CodingContractAnswer | null = CodingContractUtils.findSolution(ns, contract);
 
-        if (!solution) {
+        if (solution === undefined || solution === null) {
             await LogAPI.log(ns, `We currently cannot solve contract ${contract.server.characteristics.host}/${contract.filename}: ${contract.type}`, true, LogMessageCode.CODING_CONTRACT);
             return;
         }
 
         const isSuccessful: boolean = contract.attempt(ns, solution);
-        if (isSuccessful) this.onSolveContract(ns, contract);
-        else this.onFailedContract(ns, contract);
+        if (isSuccessful) await this.onSolveContract(ns, contract);
+        else await this.onFailedContract(ns, contract);
 
     }
 
