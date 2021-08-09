@@ -16,6 +16,7 @@ import { Heuristics } from '/src/util/Heuristics.js';
 import * as Utils from '/src/util/Utils.js';
 let isHacking = false;
 let hackLoopTimeout;
+let runnerInterval;
 async function initialize(ns) {
     Utils.disableLogging(ns);
     await ServerAPI.initializeServerMap(ns);
@@ -238,8 +239,9 @@ async function optimizePerformance(ns, target) {
         await LogAPI.log(ns, `Updated percentage to steal for ${target.characteristics.host} to ~${Math.round(target.percentageToSteal * 100)}%`, true, LogMessageCode.HACKING);
     }
 }
-export async function onDestroy(ns) {
+export async function destroy(ns) {
     clearTimeout(hackLoopTimeout);
+    clearTimeout(runnerInterval);
     // TODO: Wait until it is done executing
     await LogAPI.log(ns, 'Stopping the daemon', true, LogMessageCode.INFORMATION);
 }
@@ -253,12 +255,14 @@ export async function main(ns) {
     await initialize(ns);
     await LogAPI.log(ns, 'Starting the daemon', true, LogMessageCode.INFORMATION);
     hackLoopTimeout = setTimeout(hackLoop.bind(null, ns), CONSTANT.HACK_LOOP_DELAY);
+    runnerInterval = setInterval(ControlFlowAPI.launchRunners.bind(null, ns), CONSTANT.RUNNER_INTERVAL);
     // TODO: Here we should check whether we are still running the hackloop
     while (true) {
         const shouldKill = await ControlFlowAPI.hasDaemonKillRequest(ns);
         if (shouldKill) {
-            await onDestroy(ns);
+            await destroy(ns);
             ns.exit();
+            return;
         }
         await ns.sleep(CONSTANT.CONTROL_FLOW_CHECK_INTERVAL);
     }

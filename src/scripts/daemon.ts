@@ -21,6 +21,7 @@ import * as Utils                           from '/src/util/Utils.js'
 
 let isHacking: boolean = false
 let hackLoopTimeout: ReturnType<typeof setTimeout>
+let runnerInterval: ReturnType<typeof setInterval>
 
 async function initialize(ns: NS) {
 
@@ -320,8 +321,9 @@ async function optimizePerformance(ns: NS, target: HackableServer): Promise<void
 	}
 }
 
-export async function onDestroy(ns: NS) {
+export async function destroy(ns: NS) {
 	clearTimeout(hackLoopTimeout)
+	clearTimeout(runnerInterval)
 
 	// TODO: Wait until it is done executing
 
@@ -343,15 +345,16 @@ export async function main(ns: NS) {
 	await LogAPI.log(ns, 'Starting the daemon', true, LogMessageCode.INFORMATION)
 
 	hackLoopTimeout = setTimeout(hackLoop.bind(null, ns), CONSTANT.HACK_LOOP_DELAY)
-
+	runnerInterval  = setInterval(ControlFlowAPI.launchRunners.bind(null, ns), CONSTANT.RUNNER_INTERVAL)
 
 	// TODO: Here we should check whether we are still running the hackloop
 	while (true) {
 		const shouldKill: boolean = await ControlFlowAPI.hasDaemonKillRequest(ns)
 
 		if (shouldKill) {
-			await onDestroy(ns)
+			await destroy(ns)
 			ns.exit()
+			return
 		}
 
 		await ns.sleep(CONSTANT.CONTROL_FLOW_CHECK_INTERVAL)
