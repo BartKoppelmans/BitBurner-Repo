@@ -1,8 +1,7 @@
-import * as ControlFlowAPI from "/src/api/ControlFlowAPI.js";
-import { LogMessageCode } from "/src/interfaces/PortMessageInterfaces.js";
-import { CONSTANT } from "/src/lib/constants.js";
-import * as ServerManagerUtils from "/src/util/ServerManagerUtils.js";
-import * as Utils from "/src/util/Utils.js";
+import * as ControlFlowAPI from '/src/api/ControlFlowAPI.js';
+import { LogMessageCode } from '/src/interfaces/PortMessageInterfaces.js';
+import { CONSTANT } from '/src/lib/constants.js';
+import * as Utils from '/src/util/Utils.js';
 class LogManager {
     async initialize(ns) {
         Utils.disableLogging(ns);
@@ -14,8 +13,7 @@ class LogManager {
         this.tprintColored(`Starting the LogManager`, true, CONSTANT.COLOR_INFORMATION);
         this.loggingLoopInterval = setInterval(this.loggingLoop.bind(this, ns), CONSTANT.LOGGING_INTERVAL);
     }
-    async onDestroy(ns) {
-        ServerManagerUtils.clearServerMap(ns);
+    async destroy(ns) {
         if (this.loggingLoopInterval) {
             clearInterval(this.loggingLoopInterval);
         }
@@ -47,24 +45,24 @@ class LogManager {
                     color = CONSTANT.COLOR_CODING_CONTRACT_INFORMATION;
                     break;
                 default:
-                    color = "var(--my-font-color)";
+                    color = 'var(--my-font-color)';
             }
             this.tprintColored(request.body.message, request.body.printDate, color);
         }
     }
     tprintColored(text, printDate = false, color) {
-        const doc = eval("document");
-        const terminalInput = doc.getElementById("terminal-input");
-        const rowElement = doc.createElement("tr");
-        const cellElement = doc.createElement("td");
+        const doc = eval('document');
+        const terminalInput = doc.getElementById('terminal-input');
+        const rowElement = doc.createElement('tr');
+        const cellElement = doc.createElement('td');
         if (!terminalInput) {
-            throw new Error("Could not find the terminal input.");
+            throw new Error('Could not find the terminal input.');
         }
         if (printDate) {
-            text = Utils.formatTime() + " " + text;
+            text = Utils.formatTime() + ' ' + text;
         }
-        rowElement.classList.add("posted");
-        cellElement.classList.add("terminal-line");
+        rowElement.classList.add('posted');
+        cellElement.classList.add('terminal-line');
         cellElement.style.color = color;
         cellElement.innerText = text;
         rowElement.appendChild(cellElement);
@@ -84,7 +82,7 @@ export async function main(ns) {
         const shouldKill = await ControlFlowAPI.hasManagerKillRequest(ns);
         if (shouldKill) {
             await ns.sleep(CONSTANT.LOG_MANAGER_KILL_DELAY);
-            await instance.onDestroy(ns);
+            await instance.destroy(ns);
             ns.exit();
             return;
         }

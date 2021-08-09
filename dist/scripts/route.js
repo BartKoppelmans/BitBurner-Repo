@@ -1,14 +1,14 @@
-import * as ServerAPI from "/src/api/ServerAPI.js";
+import * as ServerAPI from '/src/api/ServerAPI.js';
 import { CONSTANT } from '/src/lib/constants.js';
 async function findPath(ns, server) {
-    if (!ServerAPI.isServerManagerRunning(ns)) {
-        throw new Error("Please start the server manager first");
-    }
+    const isInitialized = await ServerAPI.isServerMapInitialized(ns);
+    if (!isInitialized)
+        await ServerAPI.initializeServerMap(ns);
     const path = [server];
     let currentServer = server;
     while (currentServer.characteristics.host !== CONSTANT.HOME_SERVER_HOST) {
         if (!currentServer.treeStructure) {
-            throw new Error("The tree structure was not correctly created");
+            throw new Error('The tree structure was not correctly created');
         }
         const parentServerId = currentServer.treeStructure.parent;
         if (!parentServerId) {
@@ -23,17 +23,17 @@ async function findPath(ns, server) {
 export async function main(ns) {
     const serverName = ns.args[0];
     if (!serverName) {
-        ns.tprint("Please provide a server to connect with.");
+        ns.tprint('Please provide a server to connect with.');
         return;
     }
     const serverMap = await ServerAPI.getServerMap(ns);
-    const server = serverMap.find((server) => server.characteristics.host === serverName);
+    const server = serverMap.servers.find((s) => s.characteristics.host === serverName);
     if (!server) {
-        ns.tprint("Cannot find server " + serverName);
+        ns.tprint('Cannot find server ' + serverName);
         return;
     }
     const path = await findPath(ns, server);
-    for (const server of path) {
-        const isSuccessful = ns.connect(server.characteristics.host);
+    for (const node of path) {
+        const isSuccessful = ns.connect(node.characteristics.host);
     }
 }

@@ -1,4 +1,4 @@
-import { CONSTANT } from "/src/lib/constants.js";
+import { CONSTANT } from '/src/lib/constants.js';
 export function getPlayer(ns) {
     return ns.getPlayer();
 }

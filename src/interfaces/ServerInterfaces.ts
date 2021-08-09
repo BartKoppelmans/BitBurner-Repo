@@ -1,71 +1,63 @@
-import Server from "/src/classes/Server.js";
+import Server          from '/src/classes/Server.js'
+import HackableServer  from '/src/classes/HackableServer.js'
+import PurchasedServer from '/src/classes/PurchasedServer.js'
 
-// This only contains the id's 
+// This only contains the id's
 export interface TreeStructure {
-    connections?: number[];
-    children?: number[];
-    parent?: number;
+	connections?: number[];
+	children?: number[];
+	parent?: number;
 }
 
 export interface ServerCharacteristics {
-    id: number;
-    type: ServerType;
-    host: string;
+	id: number;
+	type: ServerType;
+	host: string;
+}
+
+export interface PurchasedServerCharacteristics extends ServerCharacteristics {
+	purchasedServerId: number;
 }
 
 export enum ServerType {
-    BasicServer,
-    HackableServer,
-    HomeServer,
-    PurchasedServer,
-    DarkWebServer
+	BasicServer,
+	HackableServer,
+	HomeServer,
+	PurchasedServer,
+	DarkWebServer
 }
 
 export enum ServerPurpose {
-    NONE,
-    PREP,
-    HACK
+	NONE,
+	PREP,
+	HACK
 }
 
 export enum ServerStatus {
-    NONE,
-    PREPPING,
-    TARGETTING
+	NONE,
+	PREPPING,
+	TARGETING
 }
 
-export interface QuarantinedServer {
-    originalPurpose: ServerPurpose,
-    server: Server;
-    ram: number;
+export interface QuarantinedInformation {
+	quarantined: boolean;
+	ram?: number;
 }
 
 export interface StaticHackingProperties {
-    minSecurityLevel: number;
-    baseSecurityLevel: number;
-    ports: number;
-    hackingLevel: number;
-    maxMoney: number;
-    growth: number;
+	minSecurityLevel: number;
+	baseSecurityLevel: number;
+	ports: number;
+	hackingLevel: number;
+	maxMoney: number;
+	growth: number;
 }
 
-export interface DynamicHackingProperties {
-
-    lastUpdated: Date;
-
-    percentageToSteal: number;
-
-    securityLevel: number;
-    money: number;
+export interface ServerMap {
+	lastUpdated: Date;
+	servers: Server[];
 }
 
-export interface ServerMapFile {
-    lastUpdated: Date;
-    serverMap: Server[];
-}
-
-export interface ReservedServer {
-    reserved: number;
-    server: Server;
-}
-
-export type ReservedServerMap = ReservedServer[];
+export type ServerList = Server[]
+export type HackableServerList = HackableServer[]
+export type PurchasedServerList = PurchasedServer[]

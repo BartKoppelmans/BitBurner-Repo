@@ -16,5 +16,5 @@ export var ServerStatus;
 (function (ServerStatus) {
     ServerStatus[ServerStatus["NONE"] = 0] = "NONE";
     ServerStatus[ServerStatus["PREPPING"] = 1] = "PREPPING";
-    ServerStatus[ServerStatus["TARGETTING"] = 2] = "TARGETTING";
+    ServerStatus[ServerStatus["TARGETING"] = 2] = "TARGETING";
 })(ServerStatus || (ServerStatus = {}));

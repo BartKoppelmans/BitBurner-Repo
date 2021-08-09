@@ -1,54 +1,65 @@
-import HackableServer from "/src/classes/HackableServer.js";
-import Job from "/src/classes/Job.js";
-import Server from "/src/classes/Server.js";
-import { Tools } from "/src/tools/Tools.js";
+import HackableServer from '/src/classes/HackableServer.js'
+import Job            from '/src/classes/Job.js'
+import Server         from '/src/classes/Server.js'
+import { Tools }      from '/src/tools/Tools.js'
 
 export type ExecArguments = [script: string, host: string, numThreads?: number, ...args: string[]];
 
 export interface ToolArguments {
-    script: Tools;
-    server: Server;
-    threads: number;
+	script: Tools;
+	server: Server;
+	threads: number;
 
-    target: HackableServer; // ns.args[0]
-    start: Date; // ns.args[1]
+	target: HackableServer; // ns.args[0]
+	start: Date; // ns.args[1]
 }
 
 export interface IJOb {
 
-    id?: number;
+	pid?: number;
 
-    cycleId?: string;
+	id: string;
 
-    // The target of the hack
-    target: HackableServer;
+	cycleId?: string;
 
-    // The servers where we are hacking from, and the number of threads
-    threads: number;
+	batchId?: string
 
-    // The type of the hack
-    tool: Tools;
+	// The target of the hack
+	target: HackableServer;
 
-    // The start of the hack
-    start?: Date;
+	// The servers where we are hacking from, and the number of threads
+	threads: number;
 
-    // The intended end of the hack
-    end?: Date;
+	// The type of the hack
+	tool: Tools;
 
-    isPrep: boolean;
+	// The start of the hack
+	start: Date;
 
-    allowSpreading?: boolean;
+	// The intended end of the hack
+	end: Date;
 
-    threadSpread?: Map<Server, number>;
+	isPrep: boolean;
+
+	threadSpread: Map<Server, number>;
 }
 
 // A Batch object contains a list of cycles that should be executed on a specific server
 export interface IBatchJob {
-    target: HackableServer;
+	batchId: string;
 
-    jobs?: Job[];
+	target: HackableServer;
 
-    start?: Date;
+	jobs?: JobList;
 
-    end?: Date;
+	start?: Date;
+
+	end?: Date;
 }
+
+export interface JobMap {
+	lastUpdated: Date;
+	jobs: JobList;
+}
+
+export type JobList = Job[]

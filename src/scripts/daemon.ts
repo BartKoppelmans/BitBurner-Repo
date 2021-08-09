@@ -1,347 +1,359 @@
-import type { BitBurner as NS } from "Bitburner";
-import * as CodingContractAPI from "/src/api/CodingContractAPI.js";
-import * as ControlFlowAPI from "/src/api/ControlFlowAPI.js";
-import * as JobAPI from "/src/api/JobAPI.js";
-import * as LogAPI from "/src/api/LogAPI.js";
-import * as ProgramAPI from "/src/api/ProgramAPI.js";
-import * as PurchasedServerAPI from "/src/api/PurchasedServerAPI.js";
-import * as ServerAPI from "/src/api/ServerAPI.js";
-import BatchJob from "/src/classes/BatchJob.js";
-import HackableServer from "/src/classes/HackableServer.js";
-import Job from "/src/classes/Job.js";
-import Server from "/src/classes/Server.js";
-import { Cycle } from "/src/interfaces/HackInterfaces.js";
-import { LogMessageCode } from "/src/interfaces/PortMessageInterfaces.js";
-import { ReservedServerMap, ServerStatus } from "/src/interfaces/ServerInterfaces.js";
-import { CONSTANT } from "/src/lib/constants.js";
-import { Tools } from "/src/tools/Tools.js";
-import * as CycleUtils from "/src/util/CycleUtils.js";
-import * as HackUtils from "/src/util/HackUtils.js";
-import * as ToolUtils from "/src/util/ToolUtils.js";
-import { Heuristics } from "/src/util/Heuristics.js";
-import * as Utils from "/src/util/Utils.js";
+import type { BitBurner as NS }             from 'Bitburner'
+import * as ControlFlowAPI                  from '/src/api/ControlFlowAPI.js'
+import * as JobAPI                          from '/src/api/JobAPI.js'
+import * as LogAPI                          from '/src/api/LogAPI.js'
+import * as ProgramAPI                      from '/src/api/ProgramAPI.js'
+import * as ServerAPI                       from '/src/api/ServerAPI.js'
+import BatchJob                             from '/src/classes/BatchJob.js'
+import HackableServer                       from '/src/classes/HackableServer.js'
+import Job                                  from '/src/classes/Job.js'
+import Server                               from '/src/classes/Server.js'
+import { Cycle }                            from '/src/interfaces/HackInterfaces.js'
+import { LogMessageCode }                   from '/src/interfaces/PortMessageInterfaces.js'
+import { HackableServerList, ServerStatus } from '/src/interfaces/ServerInterfaces.js'
+import { CONSTANT }                         from '/src/lib/constants.js'
+import { Tools }                            from '/src/tools/Tools.js'
+import * as CycleUtils                      from '/src/util/CycleUtils.js'
+import * as HackUtils                       from '/src/util/HackUtils.js'
+import * as ToolUtils                       from '/src/util/ToolUtils.js'
+import { Heuristics }                       from '/src/util/Heuristics.js'
+import * as Utils                           from '/src/util/Utils.js'
 
-let isHacking: boolean = false;
-let hackLoopTimeout: ReturnType<typeof setTimeout>;
+let isHacking: boolean = false
+let hackLoopTimeout: ReturnType<typeof setTimeout>
 
 async function initialize(ns: NS) {
 
-    Utils.disableLogging(ns);
+	Utils.disableLogging(ns)
 
-    // NOTE: We wait until this is resolved before going on
-    await ServerAPI.startServerManager(ns);
+	await ServerAPI.initializeServerMap(ns)
+	await JobAPI.initializeJobMap(ns)
 
-    // These will run in parallel
-    const jobManagerReady: Promise<void> = JobAPI.startJobManager(ns);
-    const programManagerReady: Promise<void> = ProgramAPI.startProgramManager(ns);
-    const purchasedServerManagerReady: Promise<void> = PurchasedServerAPI.startPurchasedServerManager(ns);
-    const codingContractManagerReady: Promise<void> = CodingContractAPI.startCodingContractManager(ns);
-    const logManagerReady: Promise<void> = (CONSTANT.LOGGING_ENABLED) ? LogAPI.startLogManager(ns) : Promise.resolve();
-
-    // Wait until everything is initialized
-    await Promise.allSettled([jobManagerReady, programManagerReady, purchasedServerManagerReady, codingContractManagerReady, logManagerReady]);
+	await JobAPI.startJobManager(ns)
+	await LogAPI.startLogManager(ns)
+	await ProgramAPI.startProgramManager(ns)
 }
 
 async function hackLoop(ns: NS): Promise<void> {
 
-    // Get the potential targets
-    let potentialTargets: HackableServer[] = await ServerAPI.getTargetServers(ns);
+	await ControlFlowAPI.launchRunners(ns)
 
-    // Then evaluate the potential targets afterwards
-    await Promise.all(potentialTargets.map(async (target) => {
-        target.evaluate(ns, Heuristics.DiscordHeuristic);
-    }));
+	// Get the potential targets
+	let potentialTargets: HackableServerList = await ServerAPI.getTargetServers(ns)
 
-    // We would have a problem if there are no targets
-    if (potentialTargets.length === 0) {
-        throw new Error("No potential targets found.");
-    }
+	// Then evaluate the potential targets afterwards
+	await Promise.all(potentialTargets.map(async (target) => {
+		return target.evaluate(ns, Heuristics.DiscordHeuristic)
+	}))
 
-    // Sort the potential targets
-    potentialTargets = potentialTargets.sort((a, b) => a.serverValue! - b.serverValue!);
+	// We would have a problem if there are no targets
+	if (potentialTargets.length === 0) {
+		throw new Error('No potential targets found.')
+	}
 
-    // Attack each of the targets
-    for await (let target of potentialTargets) {
+	// Sort the potential targets
+	potentialTargets = potentialTargets.sort((a, b) => a.serverValue! - b.serverValue!)
 
-        while (isHacking) {
-            await ns.sleep(CONSTANT.SMALL_DELAY);
-        }
+	// Attack each of the targets
+	for await (const target of potentialTargets) {
 
-        isHacking = true;
+		while (isHacking) {
+			await ns.sleep(CONSTANT.SMALL_DELAY)
+		}
 
-        let currentTargets: HackableServer[] = await ServerAPI.getCurrentTargets(ns);
+		isHacking = true
 
-        // Can't have too many targets at the same time
-        if (currentTargets.length >= CONSTANT.MAX_TARGET_COUNT) {
-            isHacking = false;
-            break;
-        };
+		const currentTargets: HackableServer[] = await ServerAPI.getCurrentTargets(ns)
 
-        await hack(ns, target);
+		// Can't have too many targets at the same time
+		if (currentTargets.length >= CONSTANT.MAX_TARGET_COUNT) {
+			isHacking = false
+			break
+		}
 
-        isHacking = false;
-    }
+		await hack(ns, target)
 
-    hackLoopTimeout = setTimeout(hackLoop.bind(null, ns), CONSTANT.HACK_LOOP_DELAY);
+		isHacking = false
+	}
+
+	hackLoopTimeout = setTimeout(hackLoop.bind(null, ns), CONSTANT.HACK_LOOP_DELAY)
 }
 
 async function hack(ns: NS, target: HackableServer): Promise<void> {
-    // If it is prepping or targetting, leave it
-    if (target.status !== ServerStatus.NONE) return;
+	// If it is prepping or targetting, leave it
+	if (target.status !== ServerStatus.NONE) return
 
-    // The server is not optimal, so we have to prep it first
-    if (!target.isOptimal(ns)) {
-        await prepServer(ns, target);
-        return;
-    }
+	// The server is not optimal, so we have to prep it first
+	if (!target.isOptimal(ns)) {
+		await prepServer(ns, target)
+		return
+	}
 
-    // Make sure that the percentage that we steal is optimal
-    await optimizePerformance(ns, target);
+	// Make sure that the percentage that we steal is optimal
+	await optimizePerformance(ns, target)
 
-    await attackServer(ns, target);
+	await attackServer(ns, target)
 
-    return;
+	return
 }
 
 async function prepServer(ns: NS, target: HackableServer): Promise<void> {
 
-    // If the server is optimal, we are done I guess
-    if (target.isOptimal(ns)) return;
+	// If the server is optimal, we are done I guess
+	if (target.isOptimal(ns)) return
 
-    let initialWeakenJob: Job | undefined = undefined,
-        growJob: Job | undefined = undefined,
-        compensationWeakenJob: Job | undefined = undefined;
+	let initialWeakenJob: Job | undefined
+	let growJob: Job | undefined
+	let compensationWeakenJob: Job | undefined
 
-    let jobs: Job[] = [];
+	const batchId: string = Utils.generateHash()
 
-    let reservations: ReservedServerMap = [];
+	const jobs: Job[] = []
 
-    let availableThreads: number = await HackUtils.calculateMaxThreads(ns, Tools.WEAKEN, true);
-    if (availableThreads === 0) {
-        if (CONSTANT.DEBUG_HACKING) await LogAPI.log(ns, "Skipped a prep.", true, LogMessageCode.WARNING);
-        return;
-    }
+	let availableThreads: number = await HackUtils.calculateMaxThreads(ns, Tools.WEAKEN, true)
+	if (availableThreads === 0) {
+		if (CONSTANT.DEBUG_HACKING) await LogAPI.log(ns, 'Skipped a prep.', true, LogMessageCode.WARNING)
+		return
+	}
 
-    // TODO: Ideally we pick the server that can fit all our threads here immediately, 
-    // then we can have everything on one source server
+	// TODO: Ideally we pick the server that can fit all our threads here immediately,
+	// then we can have everything on one source server
 
-    // TODO: Refactor this shitshow
+	// TODO: Refactor this shitshow
 
-    if (target.needsWeaken(ns)) {
-        let neededWeakenThreads: number = HackUtils.calculateWeakenThreads(ns, target);
+	if (target.needsWeaken(ns)) {
+		const neededWeakenThreads: number = HackUtils.calculateWeakenThreads(ns, target)
 
-        let weakenThreads: number = Math.min(neededWeakenThreads, availableThreads);
-        const weakenThreadSpread: Map<Server, number> = await HackUtils.computeThreadSpread(ns, Tools.WEAKEN, weakenThreads, true, reservations);
+		const weakenThreads: number                   = Math.min(neededWeakenThreads, availableThreads)
+		const weakenThreadSpread: Map<Server, number> = await HackUtils.computeThreadSpread(ns, Tools.WEAKEN, weakenThreads, true)
 
-        initialWeakenJob = new Job(ns, {
-            target,
-            threads: weakenThreads,
-            threadSpread: weakenThreadSpread,
-            tool: Tools.WEAKEN,
-            isPrep: true
-        });
+		const weakenTime: number = target.getWeakenTime(ns)
 
-        jobs.push(initialWeakenJob);
+		const weakenStart: Date = new Date(Date.now() + CONSTANT.INITIAL_JOB_DELAY)
+		const weakenEnd: Date   = new Date(weakenStart.getTime() + weakenTime)
 
-        availableThreads -= weakenThreads;
+		initialWeakenJob = new Job(ns, {
+			id: Utils.generateHash(),
+			batchId,
+			start: weakenStart,
+			end: weakenEnd,
+			target,
+			threads: weakenThreads,
+			threadSpread: weakenThreadSpread,
+			tool: Tools.WEAKEN,
+			isPrep: true,
+		})
 
-        for (const [server, threads] of weakenThreadSpread) {
-            reservations.push({
-                reserved: threads * ToolUtils.getToolCost(ns, Tools.WEAKEN),
-                server
-            });
-        }
-    }
+		jobs.push(initialWeakenJob)
 
-    // First grow, so that the amount of money is optimal
-    if (target.needsGrow(ns) && availableThreads > 0) {
+		for await (const [server, threads] of weakenThreadSpread) {
+			await ServerAPI.increaseReservation(ns, server, threads * ToolUtils.getToolCost(ns, Tools.WEAKEN))
+		}
+	}
 
-        const neededGrowthThreads: number = HackUtils.calculateGrowthThreads(ns, target);
-        const compensationWeakenThreads: number = HackUtils.calculateCompensationWeakenThreads(ns, target, Tools.GROW, neededGrowthThreads);
+	// First grow, so that the amount of money is optimal
+	if (target.needsGrow(ns) && availableThreads > 0) {
 
-        const totalThreads: number = neededGrowthThreads + compensationWeakenThreads;
+		const neededGrowthThreads: number       = HackUtils.calculateGrowthThreads(ns, target)
+		const compensationWeakenThreads: number = HackUtils.calculateCompensationWeakenThreads(ns, target, Tools.GROW, neededGrowthThreads)
 
-        const threadsFit: boolean = (totalThreads < availableThreads);
+		const totalThreads: number = neededGrowthThreads + compensationWeakenThreads
 
-        // NOTE: Here we do Math.floor, which could cause us not to ececute enought weakens/grows
-        // However, we currently run into a lot of errors regarding too little threads available, which is why we do this.
+		const threadsFit: boolean = (totalThreads < availableThreads)
 
-        const growthThreads: number = (threadsFit) ? neededGrowthThreads : Math.floor(neededGrowthThreads * (availableThreads / totalThreads));
-        const weakenThreads: number = (threadsFit) ? compensationWeakenThreads : Math.floor(compensationWeakenThreads * (availableThreads / totalThreads));
+		// NOTE: Here we do Math.floor, which could cause us not to execute enough weakens/grows
+		// However, we currently run into a lot of errors regarding too little threads available, which is why we do
+		// this.
 
-        availableThreads -= growthThreads + weakenThreads;
+		const growthThreads: number = (threadsFit) ? neededGrowthThreads : Math.floor(neededGrowthThreads * (availableThreads / totalThreads))
+		const weakenThreads: number = (threadsFit) ? compensationWeakenThreads : Math.floor(compensationWeakenThreads * (availableThreads / totalThreads))
 
-        if (growthThreads > 0 && weakenThreads > 0) {
+		availableThreads -= growthThreads + weakenThreads
 
-            const weakenTime: number = target.getWeakenTime(ns);
-            const growthTime: number = target.getGrowTime(ns);
+		if (growthThreads > 0 && weakenThreads > 0) {
 
-            const firstStartTime: Date = (initialWeakenJob) ? new Date(initialWeakenJob.end.getTime() + CONSTANT.JOB_DELAY) : new Date(Date.now() + CONSTANT.INITIAL_JOB_DELAY);
+			const weakenTime: number = target.getWeakenTime(ns)
+			const growthTime: number = target.getGrowTime(ns)
 
-            let growthStartTime: Date, growthEndTime: Date, compensationWeakenEndTime: Date, compensationWeakenStartTime: Date;
+			const firstStartTime: Date = (initialWeakenJob) ? new Date(initialWeakenJob.end.getTime() + CONSTANT.JOB_DELAY) : new Date(Date.now() + CONSTANT.INITIAL_JOB_DELAY)
 
-            if ((growthTime + CONSTANT.JOB_DELAY) > weakenTime) {
-                growthStartTime = new Date(firstStartTime.getTime());
-                growthEndTime = new Date(growthStartTime.getTime() + growthTime);
+			let growthStartTime: Date
+			let growthEndTime: Date
+			let compensationWeakenEndTime: Date
+			let compensationWeakenStartTime: Date
 
-                compensationWeakenEndTime = new Date(growthEndTime.getTime() + CONSTANT.JOB_DELAY);
-                compensationWeakenStartTime = new Date(compensationWeakenEndTime.getTime() - weakenTime);
-            } else {
-                compensationWeakenStartTime = new Date(firstStartTime.getTime());
-                compensationWeakenEndTime = new Date(compensationWeakenStartTime.getTime() + growthTime);
+			if ((growthTime + CONSTANT.JOB_DELAY) > weakenTime) {
+				growthStartTime = new Date(firstStartTime.getTime())
+				growthEndTime   = new Date(growthStartTime.getTime() + growthTime)
 
-                growthEndTime = new Date(compensationWeakenEndTime.getTime() - CONSTANT.JOB_DELAY);
-                growthStartTime = new Date(growthEndTime.getTime() - growthTime);
-            }
+				compensationWeakenEndTime   = new Date(growthEndTime.getTime() + CONSTANT.JOB_DELAY)
+				compensationWeakenStartTime = new Date(compensationWeakenEndTime.getTime() - weakenTime)
+			} else {
+				compensationWeakenStartTime = new Date(firstStartTime.getTime())
+				compensationWeakenEndTime   = new Date(compensationWeakenStartTime.getTime() + growthTime)
 
-            const growthThreadSpread: Map<Server, number> = await HackUtils.computeThreadSpread(ns, Tools.GROW, growthThreads, true, reservations);
-            growJob = new Job(ns, {
-                target,
-                threads: growthThreads,
-                threadSpread: growthThreadSpread,
-                tool: Tools.GROW,
-                isPrep: true,
-                start: growthStartTime,
-                end: growthEndTime
-            });
+				growthEndTime   = new Date(compensationWeakenEndTime.getTime() - CONSTANT.JOB_DELAY)
+				growthStartTime = new Date(growthEndTime.getTime() - growthTime)
+			}
 
-            for (const [server, threads] of growthThreadSpread) {
-                const index: number = reservations.findIndex((reservedServer) => reservedServer.server.characteristics.host === server.characteristics.host);
-                if (index > -1) reservations[index].reserved += threads * ToolUtils.getToolCost(ns, Tools.GROW);
-                else {
-                    reservations.push({
-                        reserved: threads * ToolUtils.getToolCost(ns, Tools.GROW),
-                        server
-                    });
-                }
-            }
-            jobs.push(growJob);
+			const growthThreadSpread: Map<Server, number> = await HackUtils.computeThreadSpread(ns, Tools.GROW, growthThreads, true)
 
-            const compensationWeakenThreadSpread: Map<Server, number> = await HackUtils.computeThreadSpread(ns, Tools.WEAKEN, weakenThreads, true, reservations);
-            compensationWeakenJob = new Job(ns, {
-                target,
-                threads: weakenThreads,
-                threadSpread: compensationWeakenThreadSpread,
-                tool: Tools.WEAKEN,
-                isPrep: true,
-                start: compensationWeakenStartTime,
-                end: compensationWeakenEndTime
-            });
-            jobs.push(compensationWeakenJob);
-        }
-    }
+			growJob = new Job(ns, {
+				id: Utils.generateHash(),
+				batchId,
+				target,
+				threads: growthThreads,
+				threadSpread: growthThreadSpread,
+				tool: Tools.GROW,
+				isPrep: true,
+				start: growthStartTime,
+				end: growthEndTime,
+			})
 
-    // We could not create any jobs, probably the RAM was already fully used. 
-    // TODO: Filter this at the start, if we cannot start any threads, we should not even go here
-    if (jobs.length === 0) return;
+			jobs.push(growJob)
 
-    const batchJob: BatchJob = new BatchJob(ns, {
-        target,
-        jobs
-    });
+			for (const [server, threads] of growthThreadSpread) {
+				await ServerAPI.increaseReservation(ns, server, threads * ToolUtils.getToolCost(ns, Tools.GROW))
+			}
 
-    await JobAPI.communicateBatchJob(ns, batchJob);
+			const compensationWeakenThreadSpread: Map<Server, number> = await HackUtils.computeThreadSpread(ns, Tools.WEAKEN, weakenThreads, true)
+
+			compensationWeakenJob = new Job(ns, {
+				id: Utils.generateHash(),
+				batchId,
+				target,
+				threads: weakenThreads,
+				threadSpread: compensationWeakenThreadSpread,
+				tool: Tools.WEAKEN,
+				isPrep: true,
+				start: compensationWeakenStartTime,
+				end: compensationWeakenEndTime,
+			})
+
+			jobs.push(compensationWeakenJob)
+
+			for (const [server, threads] of compensationWeakenThreadSpread) {
+				await ServerAPI.increaseReservation(ns, server, threads * ToolUtils.getToolCost(ns, Tools.WEAKEN))
+			}
+		}
+	}
+
+	// We could not create any jobs, probably the RAM was already fully used.
+	// TODO: Filter this at the start, if we cannot start any threads, we should not even go here
+	if (jobs.length === 0) return
+
+	const batchJob: BatchJob = new BatchJob(ns, {
+		batchId,
+		target,
+		jobs,
+	})
+
+	await JobAPI.startBatchJob(ns, batchJob)
 }
 
 async function attackServer(ns: NS, target: HackableServer): Promise<void> {
 
-    const numPossibleCycles: number = await CycleUtils.computeCycles(ns, target);
+	const numPossibleCycles: number = await CycleUtils.computeCycles(ns, target)
 
-    const numCycles: number = Math.min(numPossibleCycles, CONSTANT.MAX_CYCLE_NUMBER);
+	const numCycles: number = Math.min(numPossibleCycles, CONSTANT.MAX_CYCLE_NUMBER)
 
-    if (numCycles === 0) {
-        if (CONSTANT.DEBUG_HACKING) await LogAPI.log(ns, "Skipped an attack.", true, LogMessageCode.WARNING);
-        return;
-    }
+	const batchId: string = Utils.generateHash()
 
-    let cycles: Cycle[] = [];
+	if (numCycles === 0) {
+		if (CONSTANT.DEBUG_HACKING) await LogAPI.log(ns, 'Skipped an attack.', true, LogMessageCode.WARNING)
+		return
+	}
 
-    for (let i = 0; i < numCycles; i++) {
-        let cycle: Cycle = CycleUtils.scheduleCycle(ns, target, cycles[cycles.length - 1]);
-        cycles.push(cycle);
+	const cycles: Cycle[] = []
 
-        await ns.sleep(CONSTANT.SMALL_DELAY);
-    }
+	for (let i = 0; i < numCycles; i++) {
+		const cycle: Cycle = await CycleUtils.scheduleCycle(ns, target, batchId, cycles[cycles.length - 1])
+		cycles.push(cycle)
 
-    if (cycles.length === 0) {
-        throw new Error("No cycles created");
-    }
+		await ns.sleep(CONSTANT.SMALL_DELAY)
+	}
 
-    cycles = await CycleUtils.distributeThreads(ns, cycles);
+	if (cycles.length === 0) {
+		throw new Error('No cycles created')
+	}
 
-    const jobs: Job[] = cycles.reduce((array: Job[], cycle: Cycle) => [...array, cycle.hack, cycle.weaken1, cycle.growth, cycle.weaken2,], []);
+	const jobs: Job[] = cycles.reduce((array: Job[], cycle: Cycle) => [...array, cycle.hack, cycle.weaken1, cycle.growth, cycle.weaken2], [])
 
-    // Create the batch object
-    const batchJob: BatchJob = new BatchJob(ns, {
-        target,
-        jobs
-    });
+	// Create the batch object
+	const batchJob: BatchJob = new BatchJob(ns, {
+		batchId: Utils.generateHash(),
+		target,
+		jobs,
+	})
 
-    await JobAPI.communicateBatchJob(ns, batchJob);
+	await JobAPI.startBatchJob(ns, batchJob)
 }
 
 async function optimizePerformance(ns: NS, target: HackableServer): Promise<void> {
-    let performanceUpdated: boolean = false;
+	let performanceUpdated: boolean = false
 
-    const originalPercentageToSteal: number = target.percentageToSteal;
-    let optimalTarget: { percentageToSteal: number, profitsPerSecond: number; } = { percentageToSteal: CONSTANT.MIN_PERCENTAGE_TO_STEAL, profitsPerSecond: -1 };
-    for (let n = CONSTANT.MIN_PERCENTAGE_TO_STEAL; n <= CONSTANT.MAX_PERCENTAGE_TO_STEAL; n += CONSTANT.DELTA_PERCENTAGE_TO_STEAL) {
-        target.percentageToSteal = n;
-        const cycles: number = await CycleUtils.computeCycles(ns, target);
-        const profit: number = target.staticHackingProperties.maxMoney * target.percentageToSteal * cycles;
+	const originalPercentageToSteal: number                                     = target.percentageToSteal
+	let optimalTarget: { percentageToSteal: number, profitsPerSecond: number; } = {
+		percentageToSteal: CONSTANT.MIN_PERCENTAGE_TO_STEAL,
+		profitsPerSecond: -1,
+	}
+	for (let n = CONSTANT.MIN_PERCENTAGE_TO_STEAL; n <= CONSTANT.MAX_PERCENTAGE_TO_STEAL; n += CONSTANT.DELTA_PERCENTAGE_TO_STEAL) {
+		target.percentageToSteal = n
+		const cycles: number     = await CycleUtils.computeCycles(ns, target)
+		const profit: number     = target.staticHackingProperties.maxMoney * target.percentageToSteal * cycles
 
-        const totalTime: number = CycleUtils.calculateTotalBatchTime(ns, target, cycles);
+		const totalTime: number = CycleUtils.calculateTotalBatchTime(ns, target, cycles)
 
-        const profitsPerSecond: number = profit / totalTime;
+		const profitsPerSecond: number = profit / totalTime
 
-        if (profitsPerSecond > optimalTarget.profitsPerSecond) {
-            optimalTarget = { percentageToSteal: n, profitsPerSecond };
-        }
-    }
+		if (profitsPerSecond > optimalTarget.profitsPerSecond) {
+			optimalTarget = { percentageToSteal: n, profitsPerSecond }
+		}
+	}
 
-    target.percentageToSteal = optimalTarget.percentageToSteal;
+	target.percentageToSteal = optimalTarget.percentageToSteal
 
-    if (originalPercentageToSteal !== optimalTarget.percentageToSteal) performanceUpdated = true;
+	if (originalPercentageToSteal !== optimalTarget.percentageToSteal) performanceUpdated = true
 
-    if (performanceUpdated && CONSTANT.DEBUG_HACKING) {
-        await LogAPI.log(ns, `Updated percentage to steal for ${target.characteristics.host} to ~${Math.round(target.percentageToSteal * 100)}%`, true, LogMessageCode.HACKING);
-    }
+	if (performanceUpdated && CONSTANT.DEBUG_HACKING) {
+		await LogAPI.log(ns, `Updated percentage to steal for ${target.characteristics.host} to ~${Math.round(target.percentageToSteal * 100)}%`, true, LogMessageCode.HACKING)
+	}
 }
 
 export async function onDestroy(ns: NS) {
-    clearTimeout(hackLoopTimeout);
+	clearTimeout(hackLoopTimeout)
 
-    // TODO: Wait until it is done executing
+	// TODO: Wait until it is done executing
 
-    await LogAPI.log(ns, "Stopping the daemon", true, LogMessageCode.INFORMATION);
+	await LogAPI.log(ns, 'Stopping the daemon', true, LogMessageCode.INFORMATION)
 }
 
 export async function main(ns: NS) {
 
-    const hostName: string = ns.getHostname();
-    if (hostName !== "home") {
-        throw new Error("Execute daemon script from home.");
-    }
+	const hostName: string = ns.getHostname()
+	if (hostName !== 'home') {
+		throw new Error('Execute daemon script from home.')
+	}
 
-    // TODO: Make a decision on whether we start the to-be-made early hacking scripts, 
-    // or whether we want to start hacking using our main hacker
+	// TODO: Make a decision on whether we start the to-be-made early hacking scripts,
+	// or whether we want to start hacking using our main hacker
 
-    await initialize(ns);
+	await initialize(ns)
 
-    await LogAPI.log(ns, "Starting the daemon", true, LogMessageCode.INFORMATION);
+	await LogAPI.log(ns, 'Starting the daemon', true, LogMessageCode.INFORMATION)
 
-    hackLoopTimeout = setTimeout(hackLoop.bind(null, ns), CONSTANT.HACK_LOOP_DELAY);
+	hackLoopTimeout = setTimeout(hackLoop.bind(null, ns), CONSTANT.HACK_LOOP_DELAY)
 
 
-    // TODO: Here we should check whether we are still running the hackloop
-    while (true) {
-        const shouldKill: boolean = await ControlFlowAPI.hasDaemonKillRequest(ns);
+	// TODO: Here we should check whether we are still running the hackloop
+	while (true) {
+		const shouldKill: boolean = await ControlFlowAPI.hasDaemonKillRequest(ns)
 
-        if (shouldKill) {
-            await onDestroy(ns);
-            ns.exit();
-        }
+		if (shouldKill) {
+			await onDestroy(ns)
+			ns.exit()
+		}
 
-        await ns.sleep(CONSTANT.CONTROL_FLOW_CHECK_INTERVAL);
-    }
+		await ns.sleep(CONSTANT.CONTROL_FLOW_CHECK_INTERVAL)
+	}
 }

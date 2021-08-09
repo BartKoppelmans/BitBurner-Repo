@@ -1,11 +1,11 @@
-import * as ControlFlowAPI from "/src/api/ControlFlowAPI.js";
-import * as LogAPI from "/src/api/LogAPI.js";
-import * as ServerAPI from "/src/api/ServerAPI.js";
-import { CodingContract } from "/src/classes/CodingContract.js";
-import { LogMessageCode } from "/src/interfaces/PortMessageInterfaces.js";
-import { CONSTANT } from "/src/lib/constants.js";
-import * as CodingContractUtils from "/src/util/CodingContractUtils.js";
-import * as Utils from "/src/util/Utils.js";
+import * as ControlFlowAPI from '/src/api/ControlFlowAPI.js';
+import * as LogAPI from '/src/api/LogAPI.js';
+import * as ServerAPI from '/src/api/ServerAPI.js';
+import { CodingContract } from '/src/classes/CodingContract.js';
+import { LogMessageCode } from '/src/interfaces/PortMessageInterfaces.js';
+import { CONSTANT } from '/src/lib/constants.js';
+import * as CodingContractUtils from '/src/util/CodingContractUtils.js';
+import * as Utils from '/src/util/Utils.js';
 class CodingContractManager {
     constructor() {
         this.contracts = [];
@@ -30,7 +30,7 @@ class CodingContractManager {
     async checkingLoop(ns) {
         const serverMap = await ServerAPI.getServerMap(ns);
         const contracts = [];
-        for (const server of serverMap) {
+        for (const server of serverMap.servers) {
             const serverContracts = server.files.filter((file) => file.includes('.cct'));
             if (serverContracts.length === 0)
                 continue;

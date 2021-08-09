@@ -1,17 +1,17 @@
 const excludedFiles = [
-    "/src/lib/constants.js",
-    "import.js"
+    '/src/lib/constants.js',
+    'import.js',
 ];
 const excludedExtensions = [
-    "lit",
-    "msg",
-    "script",
-    "exe"
+    'lit',
+    'msg',
+    'script',
+    'exe',
 ];
 export async function main(ns) {
     const host = ns.getHostname();
     if (host !== 'home') {
-        throw new Error("Execute script from home.");
+        throw new Error('Execute script from home.');
     }
     let files = ns.ls(host)
         .filter(file => !excludedFiles.includes(file))

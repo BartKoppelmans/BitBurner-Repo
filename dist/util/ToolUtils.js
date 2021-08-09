@@ -1,4 +1,4 @@
-import { Tools } from "/src/tools/Tools.js";
+import { Tools } from '/src/tools/Tools.js';
 export function getToolCost(ns, tool) {
     return ns.getScriptRam(tool);
 }
@@ -11,18 +11,18 @@ export function getToolTime(ns, tool, server) {
         case Tools.HACK:
             return ns.getHackTime(server.characteristics.host);
         default:
-            throw new Error("Tool not recognized");
+            throw new Error('Tool not recognized');
     }
 }
 export function getToolName(tool) {
     switch (tool) {
         case Tools.WEAKEN:
-            return "weaken";
+            return 'weaken';
         case Tools.HACK:
-            return "hack";
+            return 'hack';
         case Tools.GROW:
-            return "grow";
+            return 'grow';
         default:
-            throw new Error("Tool not recognized");
+            throw new Error('Tool not recognized');
     }
 }

@@ -258,12 +258,12 @@ async function waitingToEnterGame(ns) {
 function getButtons(ns) {
     const elements = document.getElementsByClassName('a-link-button-inactive tooltip hack-mission-header-element');
     /*
-    for(var i = 0; i < elements.length; i++)
-    {
-        var butt = elements[i];
-        ns.print(butt.text);
-    }
-    */
+     for(var i = 0; i < elements.length; i++)
+     {
+     var butt = elements[i];
+     ns.print(butt.text);
+     }
+     */
     return {
         attack: elements[0],
         scan: elements[1],

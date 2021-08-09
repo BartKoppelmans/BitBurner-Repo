@@ -1,36 +1,36 @@
 export function findSolution(ns, contract) {
     switch (contract.type) {
-        case "Unique Paths in a Grid I":
+        case 'Unique Paths in a Grid I':
             return uniquePathNoObstacle(contract.data[0], contract.data[1]);
-        case "Unique Paths in a Grid II":
+        case 'Unique Paths in a Grid II':
             return uniquePathWithObstacle(contract.data);
-        case "Find Largest Prime Factor":
+        case 'Find Largest Prime Factor':
             return largestPrime(contract.data);
-        case "Spiralize Matrix":
+        case 'Spiralize Matrix':
             return spiralize(contract.data).toString();
-        case "Array Jumping Game":
+        case 'Array Jumping Game':
             return (canJump(contract.data)) ? 1 : 0;
-        case "Generate IP Addresses":
+        case 'Generate IP Addresses':
             return generateIpAddresses(contract.data);
-        case "Algorithmic Stock Trader I":
+        case 'Algorithmic Stock Trader I':
             return stockTrader(1, contract.data);
-        case "Algorithmic Stock Trader II":
+        case 'Algorithmic Stock Trader II':
             return stockTrader(Math.ceil(contract.data.length / 2), contract.data);
-        case "Algorithmic Stock Trader III":
+        case 'Algorithmic Stock Trader III':
             return stockTrader(2, contract.data);
-        case "Algorithmic Stock Trader IV":
+        case 'Algorithmic Stock Trader IV':
             return stockTrader(contract.data[0], (contract.data[1]));
-        case "Sanitize Parentheses in Expression":
+        case 'Sanitize Parentheses in Expression':
             return removeInvalidParentheses(contract.data);
-        case "Subarray with Maximum Sum":
+        case 'Subarray with Maximum Sum':
             return maxSubArray(contract.data);
-        case "Total Ways to Sum":
+        case 'Total Ways to Sum':
             return waysToSum(contract.data);
-        case "Merge Overlapping Intervals":
+        case 'Merge Overlapping Intervals':
             return JSON.stringify(mergeIntervals(contract.data));
-        case "Minimum Path Sum in a Triangle":
+        case 'Minimum Path Sum in a Triangle':
             return triangleMinSum(contract.data);
-        case "Find All Valid Math Expressions":
+        case 'Find All Valid Math Expressions':
             return findAllExpressions(contract.data[0], contract.data[1]);
         default:
             return null;
@@ -39,16 +39,16 @@ export function findSolution(ns, contract) {
 function stockTrader(maxTrades, stockPrices) {
     let i, j, k;
     // WHY?
-    let tempStr = "[0";
+    let tempStr = '[0';
     for (i = 0; i < stockPrices.length; i++) {
-        tempStr += ",0";
+        tempStr += ',0';
     }
-    tempStr += "]";
-    let tempArr = "[" + tempStr;
+    tempStr += ']';
+    let tempArr = '[' + tempStr;
     for (i = 0; i < maxTrades - 1; i++) {
-        tempArr += "," + tempStr;
+        tempArr += ',' + tempStr;
     }
-    tempArr += "]";
+    tempArr += ']';
     let highestProfit = JSON.parse(tempArr);
     for (i = 0; i < maxTrades; i++) {
         for (j = 0; j < stockPrices.length; j++) { // Buy / Start
@@ -81,7 +81,7 @@ function isValidIp(octets) {
         if (octet.length > 1) {
             if (integer == 0)
                 return false;
-            else if (octet.substr(0, 1) === "0")
+            else if (octet.substr(0, 1) === '0')
                 return false;
         }
     }
@@ -89,7 +89,7 @@ function isValidIp(octets) {
 }
 function generateIpAddresses(data) {
     if (data.length > 12)
-        throw new Error("The data provided was wrong");
+        throw new Error('The data provided was wrong');
     let ipAddresses = [];
     for (let i = 1; i < Math.min(4, data.length); i++) {
         for (let j = i + 1; j < Math.min(i + 4, data.length); j++) {
@@ -100,7 +100,7 @@ function generateIpAddresses(data) {
                 let octet4 = data.substring(k);
                 let octets = [octet1, octet2, octet3, octet4];
                 if (isValidIp(octets)) {
-                    ipAddresses.push(octets.join("."));
+                    ipAddresses.push(octets.join('.'));
                 }
             }
         }
@@ -159,12 +159,14 @@ function uniquePathWithObstacle(grid) {
     if (grid[0][0])
         return 0;
     let m = grid.length, n = grid[0].length;
-    let dp = Array.from({ length: m }, (el) => { return new Uint32Array(n); });
+    let dp = Array.from({ length: m }, (el) => {
+        return new Uint32Array(n);
+    });
     dp[0][0] = 1;
     for (let i = 0; i < m; i++)
         for (let j = 0; j < n; j++)
-            if (grid[i][j] || (!i && !j))
-                continue;
+            if (grid[i][j] || (!i && !j)) {
+            }
             else
                 dp[i][j] = (i ? dp[i - 1][j] : 0) + (j ? dp[i][j - 1] : 0);
     return dp[m - 1][n - 1];
@@ -265,7 +267,6 @@ function findAllExpressions(num, target) {
                 res.push(path);
             return;
         }
-        ;
         for (let i = pos; i < num.length; i++) {
             if (i !== pos && num[pos] === '0')
                 break;
@@ -278,11 +279,8 @@ function findAllExpressions(num, target) {
                 solver(`${path}-${curr}`, i + 1, evaluation - curr, 0 - curr);
                 solver(`${path}*${curr}`, i + 1, evaluation - mult + mult * curr, mult * curr);
             }
-            ;
         }
-        ;
     }
-    ;
-    solver("", 0, 0, 0);
+    solver('', 0, 0, 0);
     return res;
 }

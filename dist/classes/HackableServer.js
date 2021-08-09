@@ -1,6 +1,6 @@
 import Server from '/src/classes/Server.js';
-import { ServerPurpose, ServerStatus } from "/src/interfaces/ServerInterfaces.js";
-import { CONSTANT } from "/src/lib/constants.js";
+import { ServerPurpose, ServerStatus, } from '/src/interfaces/ServerInterfaces.js';
+import { CONSTANT } from '/src/lib/constants.js';
 export default class HackableServer extends Server {
     constructor(ns, characteristics, treeStructure, purpose = ServerPurpose.NONE, status = ServerStatus.NONE) {
         super(ns, characteristics, treeStructure, purpose);
@@ -61,7 +61,7 @@ export default class HackableServer extends Server {
         const json = super.toJSON();
         return {
             ...json,
-            status: this.status
+            status: this.status,
         };
     }
 }

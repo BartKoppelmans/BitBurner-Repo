@@ -1,5 +1,5 @@
-import { CONSTANT } from "/src/lib/constants.js";
-import * as Utils from "/src/util/Utils.js";
+import { CONSTANT } from '/src/lib/constants.js';
+import * as Utils from '/src/util/Utils.js';
 export async function log(ns, message, printDate, logMessageCode) {
     if (!CONSTANT.LOGGING_ENABLED)
         return;
@@ -9,10 +9,10 @@ export async function log(ns, message, printDate, logMessageCode) {
     }
     const id = Utils.generateHash();
     const request = {
-        type: "Request",
+        type: 'Request',
         code: logMessageCode,
         id,
-        body: { message, printDate }
+        body: { message, printDate },
     };
     requestPortHandle.write(JSON.stringify(request));
     return;

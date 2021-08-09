@@ -1,23 +1,23 @@
-import type { BitBurner as NS } from "Bitburner";
-import { CONSTANT } from "/src/lib/constants.js";
+import type { BitBurner as NS } from 'Bitburner'
+import { CONSTANT }             from '/src/lib/constants.js'
 
 export async function rootAllServers(ns: NS): Promise<void> {
-    // nope not yet
-    return;
+	// nope not yet
+	return
 }
 
 export async function startProgramManager(ns: NS): Promise<void> {
-    if (isProgramManagerRunning(ns)) return;
+	if (isProgramManagerRunning(ns)) return
 
-    // TODO: Check whether there is enough ram available
+	// TODO: Check whether there is enough ram available
 
-    ns.exec('/src/managers/ProgramManager.js', CONSTANT.HOME_SERVER_HOST);
+	ns.exec('/src/runners/ProgramManager.js', CONSTANT.HOME_SERVER_HOST)
 
-    while (!isProgramManagerRunning(ns)) {
-        await ns.sleep(CONSTANT.SMALL_DELAY);
-    }
+	while (!isProgramManagerRunning(ns)) {
+		await ns.sleep(CONSTANT.SMALL_DELAY)
+	}
 }
 
 export function isProgramManagerRunning(ns: NS): boolean {
-    return ns.isRunning('/src/managers/ProgramManager.js', CONSTANT.HOME_SERVER_HOST);
+	return ns.isRunning('/src/runners/ProgramManager.js', CONSTANT.HOME_SERVER_HOST)
 }

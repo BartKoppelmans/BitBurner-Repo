@@ -1,29 +1,14 @@
-import type { BitBurner as NS } from "Bitburner";
-import * as ControlFlowAPI from "/src/api/ControlFlowAPI.js";
-import * as ServerAPI from "/src/api/ServerAPI.js";
-import Server from "/src/classes/Server.js";
-import { CONSTANT } from "/src/lib/constants.js";
+import type { BitBurner as NS } from 'Bitburner'
+import * as ControlFlowAPI      from '/src/api/ControlFlowAPI.js'
 
 export async function main(ns: NS) {
 
-    if (!ServerAPI.isServerManagerRunning(ns)) {
-        ns.tprint("We cannot kill all processes without the ServerManager.");
-        return;
-    }
+	await ControlFlowAPI.killDaemon(ns)
 
-    // Get this first, because in a bit we won't have the server manager running anymore
-    const serverMap: Server[] = await ServerAPI.getServerMap(ns);
+	await ControlFlowAPI.killAllManagers(ns)
 
-    await ControlFlowAPI.killDaemon(ns);
+	// Clear the queue
+	ControlFlowAPI.clearPorts(ns)
 
-    await ControlFlowAPI.killAllManagers(ns);
-
-    // Clear the queue
-    ControlFlowAPI.clearPorts(ns);
-
-    await ControlFlowAPI.killExternalServers(ns, serverMap);
-
-    ns.killall(CONSTANT.HOME_SERVER_HOST);
-
-    ns.exit();
+	ns.exit()
 }

@@ -1,13 +1,13 @@
-import * as ControlFlowAPI from "/src/api/ControlFlowAPI.js";
-import * as LogAPI from "/src/api/LogAPI.js";
-import * as ServerAPI from "/src/api/ServerAPI.js";
-import { Program, ProgramType } from "/src/classes/Program.js";
-import { LogMessageCode } from "/src/interfaces/PortMessageInterfaces.js";
-import { CONSTANT } from "/src/lib/constants.js";
-import * as ProgramManagerUtils from "/src/util/ProgramManagerUtils.js";
-import * as ServerUtils from "/src/util/ServerUtils.js";
-import * as Utils from "/src/util/Utils.js";
-import * as PlayerUtils from "/src/util/PlayerUtils.js";
+import * as ControlFlowAPI from '/src/api/ControlFlowAPI.js';
+import * as LogAPI from '/src/api/LogAPI.js';
+import * as ServerAPI from '/src/api/ServerAPI.js';
+import { Program, ProgramType } from '/src/classes/Program.js';
+import { LogMessageCode } from '/src/interfaces/PortMessageInterfaces.js';
+import { CONSTANT } from '/src/lib/constants.js';
+import * as ProgramManagerUtils from '/src/util/ProgramManagerUtils.js';
+import * as ServerUtils from '/src/util/ServerUtils.js';
+import * as Utils from '/src/util/Utils.js';
+import * as PlayerUtils from '/src/util/PlayerUtils.js';
 class ProgramManager {
     constructor() {
         this.programs = [];
@@ -16,15 +16,16 @@ class ProgramManager {
     async initialize(ns) {
         Utils.disableLogging(ns);
         this.programs = [
-            new Program(ns, "BruteSSH.exe", 500000, ProgramType.Crack),
-            new Program(ns, "FTPCrack.exe", 1500000, ProgramType.Crack),
-            new Program(ns, "relaySMTP.exe", 5000000, ProgramType.Crack),
-            new Program(ns, "HTTPWorm.exe", 30000000, ProgramType.Crack),
-            new Program(ns, "SQLInject.exe", 250000000, ProgramType.Crack),
+            new Program(ns, 'BruteSSH.exe', 500000, ProgramType.Crack),
+            new Program(ns, 'FTPCrack.exe', 1500000, ProgramType.Crack),
+            new Program(ns, 'relaySMTP.exe', 5000000, ProgramType.Crack),
+            new Program(ns, 'HTTPWorm.exe', 30000000, ProgramType.Crack),
+            new Program(ns, 'SQLInject.exe', 250000000, ProgramType.Crack),
             // We don't need this
             // new Program(ns, "DeepscanV1.exe", 500000, ProgramType.Util),
-            new Program(ns, "DeepscanV2.exe", 25000000, ProgramType.Util),
-            new Program(ns, "Autolink.exe", 1000000, ProgramType.Util),
+            // We have replaced this with our own printservers thing
+            // new Program(ns, 'DeepscanV2.exe', 25000000, ProgramType.Util),
+            new Program(ns, 'Autolink.exe', 1000000, ProgramType.Util),
         ];
     }
     async start(ns) {
@@ -82,7 +83,6 @@ class ProgramManager {
             else
                 ns.purchaseTor();
         }
-        ;
         let hasUpdated = false;
         programsToPurchase.forEach(async (program) => {
             const isSuccessful = await program.attemptPurchase(ns);
@@ -100,7 +100,7 @@ class ProgramManager {
     // Returns a sorted list of cracking scripts that can be used to root
     getCrackingScripts(ns, ports) {
         if (ports > this.getNumCrackScripts(ns)) {
-            throw new Error("Not enough cracking scripts available.");
+            throw new Error('Not enough cracking scripts available.');
         }
         return this.programs
             .filter(program => program.type === ProgramType.Crack && program.hasProgram(ns))
@@ -116,11 +116,11 @@ class ProgramManager {
     }
     async root(ns, server) {
         if (server.isRooted(ns)) {
-            throw new Error("Server is already rooted.");
+            throw new Error('Server is already rooted.');
         }
         // This also serves as a type check
         if (!this.canRoot(ns, server)) {
-            throw new Error("Cannot crack the server.");
+            throw new Error('Cannot crack the server.');
         }
         const hackableServer = server;
         const crackingScripts = this.getCrackingScripts(ns, hackableServer.staticHackingProperties.ports);
@@ -129,8 +129,8 @@ class ProgramManager {
     }
     async rootAllServers(ns) {
         const serverMap = await ServerAPI.getServerMap(ns);
-        // Root all servers 
-        await Promise.all(serverMap.map(async (server) => {
+        // Root all servers
+        await Promise.all(serverMap.servers.map(async (server) => {
             if (!server.isRooted(ns) && this.canRoot(ns, server)) {
                 await this.root(ns, server);
             }

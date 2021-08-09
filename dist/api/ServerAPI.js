@@ -1,129 +1,157 @@
-import { ServerRequestCode } from "/src/interfaces/PortMessageInterfaces.js";
-import { ServerPurpose, ServerStatus } from "/src/interfaces/ServerInterfaces.js";
-import { CONSTANT } from "/src/lib/constants.js";
-import * as ServerManagerUtils from "/src/util/ServerManagerUtils.js";
-import * as ServerUtils from "/src/util/ServerUtils.js";
-import * as Utils from "/src/util/Utils.js";
+import { ServerPurpose, ServerStatus, } from '/src/interfaces/ServerInterfaces.js';
+import { CONSTANT } from '/src/lib/constants.js';
+import * as ServerUtils from '/src/util/ServerUtils.js';
+import * as SerializationUtils from '/src/util/SerializationUtils.js';
+import * as LogAPI from '/src/api/LogAPI.js';
+import { LogMessageCode } from '/src/interfaces/PortMessageInterfaces.js';
+import PurchasedServer from '/src/classes/PurchasedServer.js';
 export async function getServerMap(ns) {
-    return ServerManagerUtils.readServerMap(ns);
+    return await readServerMap(ns);
 }
-export async function updatePurpose(ns, server, purpose) {
-    const requestPortHandle = ns.getPortHandle(CONSTANT.SERVER_MANAGER_REQUEST_PORT);
-    while (requestPortHandle.full()) {
-        await ns.sleep(CONSTANT.PORT_FULL_RETRY_TIME);
+async function readServerMap(ns) {
+    // TODO: Build in more robustness checks here
+    const serverMapString = ns.read(CONSTANT.SERVER_MAP_FILENAME).toString();
+    const serverMap = JSON.parse(serverMapString);
+    serverMap.lastUpdated = new Date(serverMap.lastUpdated);
+    const serverObjects = Array.from(serverMap.servers);
+    serverMap.servers = [];
+    for (const server of serverObjects) {
+        serverMap.servers.push(SerializationUtils.serverFromJSON(ns, server));
     }
-    const id = Utils.generateHash();
-    const request = {
-        type: "Request",
-        code: ServerRequestCode.UPDATE_SERVER_PURPOSE,
-        id,
-        body: { server: server.characteristics.host, purpose }
-    };
-    requestPortHandle.write(JSON.stringify(request));
-    const response = await getResponse(ns, id);
-    return;
+    return serverMap;
 }
-export async function updateStatus(ns, server, status) {
-    const requestPortHandle = ns.getPortHandle(CONSTANT.SERVER_MANAGER_REQUEST_PORT);
-    while (requestPortHandle.full()) {
-        await ns.sleep(CONSTANT.PORT_FULL_RETRY_TIME);
-    }
-    const id = Utils.generateHash();
-    const request = {
-        type: "Request",
-        code: ServerRequestCode.UPDATE_SERVER_STATUS,
-        id,
-        body: { server: server.characteristics.host, status }
-    };
-    requestPortHandle.write(JSON.stringify(request));
-    const response = await getResponse(ns, id);
-    return;
+export async function clearServerMap(ns) {
+    ns.clear(CONSTANT.SERVER_MAP_FILENAME);
 }
-export async function requestUpdate(ns) {
-    const requestPortHandle = ns.getPortHandle(CONSTANT.SERVER_MANAGER_REQUEST_PORT);
-    while (requestPortHandle.full()) {
-        await ns.sleep(CONSTANT.PORT_FULL_RETRY_TIME);
-    }
-    const id = Utils.generateHash();
-    const request = {
-        type: "Request",
-        code: ServerRequestCode.UPDATE_SERVER_MAP,
-        id
-    };
-    requestPortHandle.write(JSON.stringify(request));
-    const response = await getResponse(ns, id);
-    return;
+export async function writeServerMap(ns, serverMap) {
+    // NOTE: Do we want to do this?
+    serverMap.lastUpdated = new Date();
+    ns.write(CONSTANT.SERVER_MAP_FILENAME, JSON.stringify(serverMap), 'w');
 }
-async function getResponse(ns, id) {
-    const responsePortHandle = ns.getPortHandle(CONSTANT.SERVER_MANAGER_RESPONSE_PORT);
-    while (true) {
-        const index = responsePortHandle.data.findIndex((resString) => {
-            const res = JSON.parse(resString.toString());
-            return (res.request.id === id);
-        });
-        if (index === -1)
-            await ns.sleep(CONSTANT.RESPONSE_RETRY_DELAY);
-        else {
-            return JSON.parse(responsePortHandle.data.splice(index, 1).toString());
-        }
+export async function updateServer(ns, server) {
+    const serverMap = await getServerMap(ns);
+    const index = serverMap.servers.findIndex((s) => s.characteristics.host === server.characteristics.host);
+    if (index === -1)
+        throw new Error('Could not find the server.');
+    serverMap.servers[index] = server;
+    await writeServerMap(ns, serverMap);
+}
+export async function setPurpose(ns, server, purpose) {
+    server.setPurpose(purpose);
+    await updateServer(ns, server);
+}
+export async function setStatus(ns, server, status) {
+    if (!ServerUtils.isHackableServer(server))
+        throw new Error('The server is not a hackable server');
+    server.setStatus(status);
+    await updateServer(ns, server);
+}
+export async function getNewId(ns) {
+    const idList = (await getServerMap(ns)).servers.map((s) => s.characteristics.id).sort();
+    return idList[idList.length - 1] + 1;
+}
+export async function addServer(ns, server) {
+    const serverMap = await getServerMap(ns);
+    const serverAlreadyExists = serverMap.servers.some((s) => s.characteristics.host === server.characteristics.host);
+    if (serverAlreadyExists)
+        throw new Error('Cannot add a server that already exists in the list');
+    serverMap.servers.push(server);
+    await writeServerMap(ns, serverMap);
+}
+export async function quarantine(ns, server, ram) {
+    server.setPurpose(ServerPurpose.NONE);
+    server.quarantinedInformation = { quarantined: true, ram };
+    await updateServer(ns, server);
+    await LogAPI.log(ns, `We put ${server.characteristics.host} into quarantine`, true, LogMessageCode.PURCHASED_SERVER);
+}
+export async function upgradeServer(ns, server, ram) {
+    // TODO: Do some checks here
+    if (!server.canUpgrade(ns, ram))
+        throw new Error('Cannot upgrade the server.');
+    // TODO: Perhaps we should check here again how much we can actually purchase
+    const deletedServer = ns.deleteServer(server.characteristics.host);
+    if (!deletedServer)
+        throw new Error(`Could not delete server ${server.characteristics.host}`);
+    const boughtServer = ns.purchaseServer(server.characteristics.host, ram);
+    if (boughtServer) {
+        await LogAPI.log(ns, `Upgraded server ${boughtServer} with ${ram}GB ram.`, true, LogMessageCode.PURCHASED_SERVER);
     }
+    else
+        throw new Error('Could not purchase the server again.');
+    server.setPurpose(PurchasedServer.determinePurpose(server.characteristics.purchasedServerId));
+    server.quarantinedInformation = { quarantined: false };
+    await updateServer(ns, server);
+}
+export async function setReservation(ns, server, reservation) {
+    server.setReservation(reservation);
+    await updateServer(ns, server);
+}
+export async function increaseReservation(ns, server, reservation) {
+    server.increaseReservation(ns, reservation);
+    await updateServer(ns, server);
+}
+export async function decreaseReservation(ns, server, reservation) {
+    server.decreaseReservation(ns, reservation);
+    await updateServer(ns, server);
 }
 export async function getServer(ns, id) {
-    const server = (await getServerMap(ns)).find(server => server.characteristics.id === id);
+    const server = (await getServerMap(ns)).servers.find(s => s.characteristics.id === id);
     if (!server)
-        throw new Error("Could not find that server.");
+        throw new Error('Could not find that server.');
     return server;
 }
+export async function getHackableServers(ns) {
+    return (await getServerMap(ns)).servers.filter(server => ServerUtils.isHackableServer(server));
+}
 export async function getCurrentTargets(ns) {
-    let servers = (await getServerMap(ns))
-        .filter(server => ServerUtils.isHackableServer(server));
-    servers = servers
-        .filter(server => server.status === ServerStatus.PREPPING || server.status === ServerStatus.TARGETTING);
-    return servers;
+    return (await getHackableServers(ns))
+        .filter(server => server.status === ServerStatus.PREPPING || server.status === ServerStatus.TARGETING);
 }
 export async function getTargetServers(ns) {
-    let servers = (await getServerMap(ns))
-        .filter(server => ServerUtils.isHackableServer(server));
-    servers = servers
+    return (await getHackableServers(ns))
         .filter(server => server.isHackable(ns))
         .filter(server => server.isRooted(ns))
         .filter(server => server.staticHackingProperties.maxMoney > 0);
-    return servers;
 }
-;
 // We sort this descending
 export async function getPreppingServers(ns) {
-    return (await getServerMap(ns))
+    return (await getServerMap(ns)).servers
         .filter((server) => server.isRooted(ns))
         .filter((server) => server.purpose === ServerPurpose.PREP)
         .sort((a, b) => b.getAvailableRam(ns) - a.getAvailableRam(ns));
 }
-;
 // We sort this descending
 export async function getHackingServers(ns) {
-    return (await getServerMap(ns))
+    return (await getServerMap(ns)).servers
         .filter((server) => server.isRooted(ns))
         .filter((server) => server.purpose === ServerPurpose.HACK)
         .sort((a, b) => b.getAvailableRam(ns) - a.getAvailableRam(ns));
 }
-;
 // We sort this ascending
 export async function getPurchasedServers(ns) {
-    return (await getServerMap(ns))
+    return (await getServerMap(ns)).servers
         .filter((server) => ServerUtils.isPurchasedServer(server))
         .sort((a, b) => a.getAvailableRam(ns) - b.getAvailableRam(ns));
 }
-export async function startServerManager(ns) {
-    if (isServerManagerRunning(ns))
-        return;
-    // TODO: Check whether there is enough ram available
-    ns.exec('/src/managers/ServerManager.js', CONSTANT.HOME_SERVER_HOST);
-    while (!isServerManagerRunning(ns)) {
+export async function isServerMapInitialized(ns) {
+    try {
+        const currentServerMap = await readServerMap(ns);
+        const lastAugTime = new Date(Date.now() - ns.getTimeSinceLastAug());
+        // We have updated the server map file already, so we can stop now
+        return (lastAugTime <= currentServerMap.lastUpdated);
+    }
+    catch (e) {
+        return false;
+    }
+}
+export async function initializeServerMap(ns) {
+    const pid = ns.run('/src/runners/ServerMapRunner.js');
+    // TODO: Change this so that it logs or something
+    if (pid === 0)
+        throw new Error('Cannot start the ServerMapRunner');
+    // Wait until the server map runner has finished
+    while (ns.isRunning(pid)) {
         await ns.sleep(CONSTANT.SMALL_DELAY);
     }
-    // NOTE: This is out of the ordinary, but it is important to update before continuing
-    await requestUpdate(ns);
-}
-export function isServerManagerRunning(ns) {
-    return ns.isRunning('/src/managers/ServerManager.js', CONSTANT.HOME_SERVER_HOST);
+    return;
 }

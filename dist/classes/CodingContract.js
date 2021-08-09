@@ -13,7 +13,7 @@ export class CodingContract {
         return {
             filename: this.filename,
             server: this.server.characteristics.host,
-            type: this.type
+            type: this.type,
         };
     }
 }

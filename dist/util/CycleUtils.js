@@ -1,44 +1,38 @@
-import * as ServerAPI from "/src/api/ServerAPI.js";
-import Job from "/src/classes/Job.js";
-import { CONSTANT } from "/src/lib/constants.js";
-import { Tools } from "/src/tools/Tools.js";
-import * as HackUtils from "/src/util/HackUtils.js";
-import * as ToolUtils from "/src/util/ToolUtils.js";
-import * as Utils from "/src/util/Utils.js";
+import * as ServerAPI from '/src/api/ServerAPI.js';
+import Job from '/src/classes/Job.js';
+import { CONSTANT } from '/src/lib/constants.js';
+import { Tools } from '/src/tools/Tools.js';
+import * as HackUtils from '/src/util/HackUtils.js';
+import * as ToolUtils from '/src/util/ToolUtils.js';
+import * as Utils from '/src/util/Utils.js';
 export async function computeCycles(ns, target) {
     const serverMap = await ServerAPI.getHackingServers(ns);
-    const cycleCost = getOptimalBatchCost(ns, target);
+    const cycleCost = getOptimalCycleCost(ns, target);
     return Math.min(CONSTANT.MAX_CYCLE_NUMBER, serverMap.reduce((threads, server) => threads + Math.floor(server.getAvailableRam(ns) / cycleCost), 0));
 }
-export async function distributeThreads(ns, cycles) {
-    // NOTE: Here we make the huge assumption that the number of threads determined earlier actually fits in some way
-    const target = cycles[0].hack.target;
-    const cost = ToolUtils.getToolCost(ns, Tools.HACK) * (cycles[0].hack.threads + cycles[0].growth.threads + cycles[0].weaken1.threads + cycles[0].weaken2.threads);
-    const serverMap = await ServerAPI.getHackingServers(ns);
-    let reservedServerMap = serverMap.map((server) => {
-        return { reserved: 0, server };
-    });
-    for (const cycle of cycles) {
-        reservedServerMap = reservedServerMap.sort((a, b) => (b.server.getAvailableRam(ns) - b.reserved) - (a.server.getAvailableRam(ns) - a.reserved));
-        const reservedServer = reservedServerMap[0];
-        if (cost > (reservedServer.server.getAvailableRam(ns) - reservedServer.reserved)) {
-            throw new Error("Not enough RAM available on the hacking server");
-        }
-        let hackSpreadMap = new Map();
-        hackSpreadMap.set(reservedServer.server, cycle.hack.threads);
-        cycle.hack.threadSpread = hackSpreadMap;
-        let growthSpreadMap = new Map();
-        growthSpreadMap.set(reservedServer.server, cycle.growth.threads);
-        cycle.growth.threadSpread = growthSpreadMap;
-        let weaken1SpreadMap = new Map();
-        weaken1SpreadMap.set(reservedServer.server, cycle.weaken1.threads);
-        cycle.weaken1.threadSpread = weaken1SpreadMap;
-        let weaken2SpreadMap = new Map();
-        weaken2SpreadMap.set(reservedServer.server, cycle.weaken2.threads);
-        cycle.weaken2.threadSpread = weaken2SpreadMap;
-        reservedServer.reserved += cost;
+export async function determineCycleThreadSpreads(ns, target, cycleThreads) {
+    const serverList = await ServerAPI.getHackingServers(ns);
+    // Get the server with the most available RAM
+    const server = serverList[0];
+    const cost = getOptimalCycleCost(ns, target);
+    if (cost > server.getAvailableRam(ns)) {
+        throw new Error('Not enough RAM available to create a cycle (on one server)');
     }
-    return cycles;
+    const hackSpreadMap = new Map();
+    const growthSpreadMap = new Map();
+    const weaken1SpreadMap = new Map();
+    const weaken2SpreadMap = new Map();
+    hackSpreadMap.set(server, cycleThreads.hack);
+    growthSpreadMap.set(server, cycleThreads.growth);
+    weaken1SpreadMap.set(server, cycleThreads.weaken1);
+    weaken2SpreadMap.set(server, cycleThreads.weaken2);
+    await ServerAPI.increaseReservation(ns, server, cost);
+    return {
+        hack: hackSpreadMap,
+        weaken1: weaken1SpreadMap,
+        growth: growthSpreadMap,
+        weaken2: weaken2SpreadMap,
+    };
 }
 export function calculateTotalBatchTime(ns, target, numCycles) {
     if (numCycles === 0) {
@@ -53,7 +47,7 @@ export function calculateTotalBatchTime(ns, target, numCycles) {
     }
 }
 // Returns the number of threads
-export function getOptimalBatchCost(ns, target) {
+export function getOptimalCycleCost(ns, target) {
     const cycleThreads = determineCycleThreads(ns, target);
     const hackThreads = cycleThreads.hack;
     const growthThreads = cycleThreads.growth;
@@ -63,52 +57,64 @@ export function getOptimalBatchCost(ns, target) {
     const weakenCost = weakenThreads * ToolUtils.getToolCost(ns, Tools.WEAKEN);
     return hackCost + growCost + weakenCost;
 }
-export function scheduleCycle(ns, target, previousCycle) {
-    let hackJob, weaken1Job, growthJob, weaken2Job;
+export async function scheduleCycle(ns, target, batchId, previousCycle) {
     const cycleTimings = determineCycleTimings(ns, target, previousCycle);
     const cycleThreads = determineCycleThreads(ns, target);
-    const cycleId = Utils.generateCycleHash();
-    hackJob = new Job(ns, {
+    const cycleThreadSpreads = await determineCycleThreadSpreads(ns, target, cycleThreads);
+    const cycleId = Utils.generateHash();
+    const hackJob = new Job(ns, {
+        batchId,
         cycleId,
+        id: Utils.generateHash(),
         target,
         tool: Tools.HACK,
         threads: cycleThreads.hack,
+        threadSpread: cycleThreadSpreads.hack,
         start: cycleTimings.hack.start,
         end: cycleTimings.hack.end,
-        isPrep: false
+        isPrep: false,
     });
-    growthJob = new Job(ns, {
+    const growthJob = new Job(ns, {
+        batchId,
         cycleId,
+        id: Utils.generateHash(),
         target,
         tool: Tools.GROW,
         threads: cycleThreads.growth,
+        threadSpread: cycleThreadSpreads.growth,
         start: cycleTimings.growth.start,
         end: cycleTimings.growth.end,
-        isPrep: false
+        isPrep: false,
     });
-    weaken1Job = new Job(ns, {
+    const weaken1Job = new Job(ns, {
+        batchId,
         cycleId,
+        id: Utils.generateHash(),
         target,
         tool: Tools.WEAKEN,
         threads: cycleThreads.weaken1,
+        threadSpread: cycleThreadSpreads.weaken1,
         start: cycleTimings.weaken1.start,
         end: cycleTimings.weaken1.end,
-        isPrep: false
+        isPrep: false,
     });
-    weaken2Job = new Job(ns, {
+    const weaken2Job = new Job(ns, {
+        batchId,
         cycleId,
+        id: Utils.generateHash(),
         target,
         tool: Tools.WEAKEN,
         threads: cycleThreads.weaken2,
+        threadSpread: cycleThreadSpreads.weaken2,
         start: cycleTimings.weaken2.start,
         end: cycleTimings.weaken2.end,
-        isPrep: false
+        isPrep: false,
     });
     return {
         hack: hackJob,
         growth: growthJob,
         weaken1: weaken1Job,
-        weaken2: weaken2Job
+        weaken2: weaken2Job,
     };
 }
 function determineCycleTimings(ns, target, previousCycle) {
@@ -116,9 +122,16 @@ function determineCycleTimings(ns, target, previousCycle) {
     const weakenTime = target.getWeakenTime(ns);
     const growthTime = target.getGrowTime(ns);
     if (hackTime > weakenTime || growthTime > weakenTime) {
-        throw new Error("We can't schedule a cycle where the weaken time is the longest.");
+        throw new Error('We can\'t schedule a cycle where the weaken time is the longest.');
     }
-    let weaken1Start, weaken1End, hackStart, hackEnd, growthStart, growthEnd, weaken2Start, weaken2End;
+    let weaken1Start;
+    let weaken1End;
+    let hackStart;
+    let hackEnd;
+    let growthStart;
+    let growthEnd;
+    let weaken2Start;
+    let weaken2End;
     if (previousCycle) {
         hackEnd = new Date(previousCycle.weaken2.end.getTime() + CONSTANT.JOB_DELAY + CONSTANT.CYCLE_DELAY);
         hackStart = new Date(hackEnd.getTime() - hackTime);

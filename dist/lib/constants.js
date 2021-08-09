@@ -6,29 +6,30 @@ export const CONSTANT = {
     SMALL_DELAY: 20,
     DEBUG_HACKING: false,
     LOGGING_ENABLED: true,
-    COLOR_WARNING: "red",
-    COLOR_HACKING: "white",
-    COLOR_INFORMATION: "blue",
-    COLOR_PURCHASED_SERVER_INFORMATION: "green",
-    COLOR_CODING_CONTRACT_INFORMATION: "yellow",
+    COLOR_WARNING: 'red',
+    COLOR_HACKING: 'white',
+    COLOR_INFORMATION: 'blue',
+    COLOR_PURCHASED_SERVER_INFORMATION: 'green',
+    COLOR_CODING_CONTRACT_INFORMATION: 'yellow',
     /*
      * Import script constants
      */
     // The local folder where files should be stored on BitBurner
-    LOCAL_FOLDER: "src",
+    LOCAL_FOLDER: 'src',
     // The remote folder where BitBurner gets its files (from GitHub)
-    REMOTE_FOLDER: "dist",
+    REMOTE_FOLDER: 'dist',
     // The URL on GitHub to import from
-    ROOT_URL: "https://raw.githubusercontent.com/BartKoppelmans/BitBurner-Repo/master",
+    ROOT_URL: 'https://raw.githubusercontent.com/BartKoppelmans/BitBurner-Repo/master',
     SERVER_MAP_FILENAME: '/temp/servermap.txt',
+    JOB_MAP_FILENAME: '/temp/jobmap.txt',
     /*
      * Server constants
      */
     // The prefix that is used when purchasing external servers
-    PURCHASED_SERVER_PREFIX: "BartServer-",
+    PURCHASED_SERVER_PREFIX: 'BartServer-',
     // The name of the darkweb server
-    DARKWEB_HOST: "darkweb",
-    HOME_SERVER_HOST: "home",
+    DARKWEB_HOST: 'darkweb',
+    HOME_SERVER_HOST: 'home',
     HOME_SERVER_ID: 0,
     DESIRED_MONEY_RATIO: 0.9,
     MIN_SECURITY_LEVEL_OFFSET: 1,
@@ -68,8 +69,8 @@ export const CONSTANT = {
     LOGGING_INTERVAL: 500,
     LOG_MANAGER_KILL_DELAY: 1000,
     /*
-    * Server manager constants
-    */
+     * Server manager constants
+     */
     // The time after which we force a rebuild of the server map (now 10 minutes)
     SERVER_MAP_REBUILD_INTERVAL: 60 * 1000,
     // The oldest date possible, to ensure a rebuild of the server map

@@ -1,120 +1,113 @@
-import type { BitBurner as NS } from "Bitburner";
-import * as ServerAPI from "/src/api/ServerAPI.js";
-import HackableServer from "/src/classes/HackableServer.js";
-import Server from "/src/classes/Server.js";
-import { ReservedServer, ReservedServerMap } from "/src/interfaces/ServerInterfaces.js";
-import { CONSTANT } from "/src/lib/constants.js";
-import { Tools } from "/src/tools/Tools.js";
-import * as PlayerUtils from "/src/util/PlayerUtils.js";
-import * as ToolUtils from "/src/util/ToolUtils.js";
+import type { BitBurner as NS } from 'Bitburner'
+import * as ServerAPI           from '/src/api/ServerAPI.js'
+import HackableServer           from '/src/classes/HackableServer.js'
+import Server                   from '/src/classes/Server.js'
+import { CONSTANT }             from '/src/lib/constants.js'
+import { Tools }                from '/src/tools/Tools.js'
+import * as PlayerUtils         from '/src/util/PlayerUtils.js'
+import * as ToolUtils           from '/src/util/ToolUtils.js'
+import { ServerList }           from '/src/interfaces/ServerInterfaces.js'
 
-export async function computeThreadSpread(ns: NS, tool: Tools, threads: number, isPrep: boolean, reservations: ReservedServerMap = []): Promise<Map<Server, number>> {
-    const maxThreadsAvailable = await calculateMaxThreads(ns, tool, isPrep, reservations);
+export async function computeThreadSpread(ns: NS, tool: Tools, threads: number, isPrep: boolean): Promise<Map<Server, number>> {
+	const maxThreadsAvailable = await calculateMaxThreads(ns, tool, isPrep)
 
-    if (threads > maxThreadsAvailable) {
-        throw new Error("We don't have that much threads available.");
-    }
+	if (threads > maxThreadsAvailable) {
+		throw new Error('We don\'t have that much threads available.')
+	}
 
-    const cost: number = ToolUtils.getToolCost(ns, tool);
+	const cost: number = ToolUtils.getToolCost(ns, tool)
 
-    let threadsLeft: number = threads;
-    let spreadMap: Map<Server, number> = new Map<Server, number>();
+	let threadsLeft: number              = threads
+	const spreadMap: Map<Server, number> = new Map<Server, number>()
 
-    const serverMap: Server[] = (isPrep) ? await ServerAPI.getPreppingServers(ns) : await ServerAPI.getHackingServers(ns);
+	const serverList: ServerList = (isPrep) ? await ServerAPI.getPreppingServers(ns) : await ServerAPI.getHackingServers(ns)
 
-    let reservedServerMap: ReservedServerMap = serverMap.map((server) => {
-        const reservedServer: ReservedServer | undefined = reservations.find((reservedServer) => reservedServer.server.characteristics.host === server.characteristics.host);
-        const reservation: number = (reservedServer) ? reservedServer.reserved : 0;
-        return { reserved: reservation, server };
-    });
-    reservedServerMap = reservedServerMap.sort((a, b) => (b.server.getAvailableRam(ns) - b.reserved) - (a.server.getAvailableRam(ns) - a.reserved));
 
-    for (let reservedServer of reservedServerMap) {
-        let serverThreads: number = Math.floor((reservedServer.server.getAvailableRam(ns) - reservedServer.reserved) / cost);
+	for (const server of serverList) {
+		const serverThreads: number = Math.floor(server.getAvailableRam(ns) / cost)
 
-        // If we can't fit any more threads here, skip it
-        if (serverThreads <= 0) continue;
+		// If we can't fit any more threads here, skip it
+		if (serverThreads <= 0) continue
 
-        // We can fit all our threads in here!
-        if (serverThreads >= threadsLeft) {
-            spreadMap.set(reservedServer.server, threadsLeft);
-            break;
-        }
+		// We can fit all our threads in here!
+		if (serverThreads >= threadsLeft) {
+			spreadMap.set(server, threadsLeft)
+			break
+		}
 
-        spreadMap.set(reservedServer.server, serverThreads);
-        threadsLeft -= serverThreads;
-    }
-    return spreadMap;
+		spreadMap.set(server, serverThreads)
+		threadsLeft -= serverThreads
+	}
+	return spreadMap
 }
 
 // Here we allow thread spreading over multiple servers
-export async function calculateMaxThreads(ns: NS, tool: Tools, isPrep: boolean, reservations: ReservedServerMap = []): Promise<number> {
+export async function calculateMaxThreads(ns: NS, tool: Tools, isPrep: boolean): Promise<number> {
 
-    const serverMap: Server[] = (isPrep) ? await ServerAPI.getPreppingServers(ns) : await ServerAPI.getHackingServers(ns);
+	const serverList: ServerList = (isPrep) ? await ServerAPI.getPreppingServers(ns) : await ServerAPI.getHackingServers(ns)
 
-    const cost: number = ToolUtils.getToolCost(ns, tool);
+	const cost: number = ToolUtils.getToolCost(ns, tool)
 
-    return serverMap.reduce((threads, server) => {
-        const reservedServer: ReservedServer | undefined = reservations.find((reservedServer) => reservedServer.server.characteristics.host === server.characteristics.host);
-        const reservation: number = (reservedServer) ? reservedServer.reserved : 0;
-        return threads + Math.floor((server.getAvailableRam(ns) - reservation) / cost);
-    }, 0);
+	return serverList.reduce((threads, server) => {
+		return threads + Math.floor(server.getAvailableRam(ns) / cost)
+	}, 0)
 }
 
 export function calculateHackThreads(ns: NS, target: HackableServer): number {
-    const hackAmount: number = target.percentageToSteal * target.staticHackingProperties.maxMoney;
-    return ns.hackAnalyzeThreads(target.characteristics.host, hackAmount);
+	const hackAmount: number = target.percentageToSteal * target.staticHackingProperties.maxMoney
+	return ns.hackAnalyzeThreads(target.characteristics.host, hackAmount)
 }
 
 export function calculateWeakenThreads(ns: NS, target: HackableServer, start = target.getSecurityLevel(ns), goal = target.staticHackingProperties.minSecurityLevel) {
-    return Math.ceil((start - goal) / PlayerUtils.getWeakenPotency(ns));
+	return Math.ceil((start - goal) / PlayerUtils.getWeakenPotency(ns))
 }
 
 export function calculateGrowthThreads(ns: NS, target: HackableServer, start = target.getMoney(ns), goal = target.staticHackingProperties.maxMoney) {
-    // maxIterations prevents it from somehow looping indefinitely
-    var guess = 1;  // We can start with any number, really, but may as well make it simple.
-    var previous = 0;
-    var previous2 = 0;  // The time before the time before; should identify cyclicle outputs.
+	// maxIterations prevents it from somehow looping indefinitely
+	let guess     = 1  // We can start with any number, really, but may as well make it simple.
+	let previous  = 0
+	let previous2 = 0  // The time before the time before; should identify cyclical outputs.
+	let iteration = 0
 
-    start = Math.max(0, start);    // Can't start with <0 cash.
-    if (start >= goal) {
-        return 0;   // Good news! You're already there.
-    }
-    for (var iteration = 0; guess != previous && iteration < CONSTANT.MAX_GROWTH_CALCULATION_ITERATIONS; ++iteration) {
-        previous = guess;
-        let ratio = goal / (start + guess);
-        if (ratio > 1) {
-            guess = Math.ceil(ns.growthAnalyze(target.characteristics.host, ratio));
-        } else {
-            guess = 1;  // We'd only need 1 thread to meet the goal if adding the guess is sufficient to reach goal.
-        }
-        if (guess == previous2) {   // We got the same output we got the time before last.
-            return Math.max(guess, previous);    // The smaller number of the two is obviously insufficient.
-        }
-        previous2 = previous;
-    }
-    if (iteration >= CONSTANT.MAX_GROWTH_CALCULATION_ITERATIONS) {
-        // Whatever the biggest of the last three values was should be a safe guess.
-        return Math.max(guess, previous, previous2);
-    }
-    return guess;   // It successfully stabilized!
+	start = Math.max(0, start)    // Can't start with <0 cash.
+	if (start >= goal) {
+		return 0   // Good news! You're already there.
+	}
+	for (iteration = 0; guess !== previous && iteration < CONSTANT.MAX_GROWTH_CALCULATION_ITERATIONS; ++iteration) {
+		previous    = guess
+		const ratio = goal / (start + guess)
+		if (ratio > 1) {
+			guess = Math.ceil(ns.growthAnalyze(target.characteristics.host, ratio))
+		} else {
+			guess = 1  // We'd only need 1 thread to meet the goal if adding the guess is sufficient to reach goal.
+		}
+		if (guess === previous2) {   // We got the same output we got the time before last.
+			return Math.max(guess, previous)    // The smaller number of the two is obviously insufficient.
+		}
+		previous2 = previous
+	}
+	if (iteration >= CONSTANT.MAX_GROWTH_CALCULATION_ITERATIONS) {
+		// Whatever the biggest of the last three values was should be a safe guess.
+		return Math.max(guess, previous, previous2)
+	}
+	return guess   // It successfully stabilized!
 }
 
 export function calculateCompensationWeakenThreads(ns: NS, target: HackableServer, after: Tools, threads: number): number {
-    switch (after) {
-        case Tools.GROW:
-            return Math.ceil(threads * CONSTANT.GROW_HARDENING / PlayerUtils.getWeakenPotency(ns));
-        case Tools.HACK:
-            return Math.ceil(threads * CONSTANT.HACK_HARDENING / PlayerUtils.getWeakenPotency(ns));
-        default:
-            throw new Error("We did not recognize the tool");
-    }
+	switch (after) {
+		case Tools.GROW:
+			return Math.ceil(threads * CONSTANT.GROW_HARDENING / PlayerUtils.getWeakenPotency(ns))
+		case Tools.HACK:
+			return Math.ceil(threads * CONSTANT.HACK_HARDENING / PlayerUtils.getWeakenPotency(ns))
+		default:
+			throw new Error('We did not recognize the tool')
+	}
 }
 
 // This is always after a hack
 export function calculateCompensationGrowthThreads(ns: NS, target: HackableServer, threads: number): number {
-    const hackAmount: number = ((threads * ns.hackAnalyzePercent(target.characteristics.host)) / 100) * target.staticHackingProperties.maxMoney;
-    const startAmount: number = target.getMoney(ns) - hackAmount;
+	const hackAmount: number  = ((threads * ns.hackAnalyzePercent(target.characteristics.host)) / 100) * target.staticHackingProperties.maxMoney
+	const startAmount: number = target.getMoney(ns) - hackAmount
 
-    return calculateGrowthThreads(ns, target, startAmount);
-};
+	return calculateGrowthThreads(ns, target, startAmount)
+}

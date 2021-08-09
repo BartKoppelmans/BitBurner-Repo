@@ -1,6 +1,6 @@
-import * as LogAPI from "/src/api/LogAPI.js";
-import { LogMessageCode } from "/src/interfaces/PortMessageInterfaces.js";
-import * as PlayerUtils from "/src/util/PlayerUtils.js";
+import * as LogAPI from '/src/api/LogAPI.js';
+import { LogMessageCode } from '/src/interfaces/PortMessageInterfaces.js';
+import * as PlayerUtils from '/src/util/PlayerUtils.js';
 export var ProgramType;
 (function (ProgramType) {
     ProgramType[ProgramType["Crack"] = 0] = "Crack";
@@ -13,7 +13,7 @@ export class Program {
         this.type = type;
     }
     hasProgram(ns) {
-        return ns.fileExists(this.name, "home");
+        return ns.fileExists(this.name, 'home');
     }
     // Returns whether it was successful
     async attemptPurchase(ns) {
@@ -31,15 +31,15 @@ export class Program {
     }
     run(ns, server) {
         switch (this.name) {
-            case "BruteSSH.exe":
+            case 'BruteSSH.exe':
                 return ns.brutessh(server.characteristics.host);
-            case "FTPCrack.exe":
+            case 'FTPCrack.exe':
                 return ns.ftpcrack(server.characteristics.host);
-            case "relaySMTP.exe":
+            case 'relaySMTP.exe':
                 return ns.relaysmtp(server.characteristics.host);
-            case "HTTPWorm.exe":
+            case 'HTTPWorm.exe':
                 return ns.httpworm(server.characteristics.host);
-            case "SQLInject.exe":
+            case 'SQLInject.exe':
                 return ns.sqlinject(server.characteristics.host);
             default:
                 throw new Error(`Program "${this.name}" not found.`);
