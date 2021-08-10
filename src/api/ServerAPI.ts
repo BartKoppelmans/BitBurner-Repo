@@ -122,20 +122,23 @@ export async function upgradeServer(ns: NS, server: PurchasedServer, ram: number
 }
 
 export async function setReservation(ns: NS, server: Server, reservation: number): Promise<void> {
-	server.setReservation(reservation)
+	const roundedReservation: number = Math.round((reservation + Number.EPSILON) * 100) / 100
+	server.setReservation(roundedReservation)
 
 	await updateServer(ns, server)
 }
 
 export async function increaseReservation(ns: NS, server: Server, reservation: number): Promise<void> {
-	server.increaseReservation(ns, reservation)
+	const roundedReservation: number = Math.round((reservation + Number.EPSILON) * 100) / 100
+	server.increaseReservation(ns, roundedReservation)
 
 	await updateServer(ns, server)
 
 }
 
 export async function decreaseReservation(ns: NS, server: Server, reservation: number): Promise<void> {
-	server.decreaseReservation(ns, reservation)
+	const roundedReservation: number = Math.round((reservation + Number.EPSILON) * 100) / 100
+	server.decreaseReservation(ns, roundedReservation)
 
 	await updateServer(ns, server)
 }

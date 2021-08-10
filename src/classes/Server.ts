@@ -66,6 +66,7 @@ export default class Server {
 
 	public setReservation(reservation: number): void {
 		this.reservation = reservation
+
 	}
 
 	public increaseReservation(ns: NS, reservation: number): void {

@@ -83,15 +83,18 @@ export async function upgradeServer(ns, server, ram) {
     await updateServer(ns, server);
 }
 export async function setReservation(ns, server, reservation) {
-    server.setReservation(reservation);
+    const roundedReservation = Math.round((reservation + Number.EPSILON) * 100) / 100;
+    server.setReservation(roundedReservation);
     await updateServer(ns, server);
 }
 export async function increaseReservation(ns, server, reservation) {
-    server.increaseReservation(ns, reservation);
+    const roundedReservation = Math.round((reservation + Number.EPSILON) * 100) / 100;
+    server.increaseReservation(ns, roundedReservation);
     await updateServer(ns, server);
 }
 export async function decreaseReservation(ns, server, reservation) {
-    server.decreaseReservation(ns, reservation);
+    const roundedReservation = Math.round((reservation + Number.EPSILON) * 100) / 100;
+    server.decreaseReservation(ns, roundedReservation);
     await updateServer(ns, server);
 }
 export async function getServer(ns, id) {

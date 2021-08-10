@@ -27,6 +27,8 @@ async function initialize(ns: NS) {
 
 	Utils.disableLogging(ns)
 
+	// TODO: Kill all running scripts, as there might be some shit from last session open
+
 	await ServerAPI.initializeServerMap(ns)
 	await JobAPI.initializeJobMap(ns)
 
@@ -36,8 +38,6 @@ async function initialize(ns: NS) {
 }
 
 async function hackLoop(ns: NS): Promise<void> {
-
-	await ControlFlowAPI.launchRunners(ns)
 
 	// Get the potential targets
 	let potentialTargets: HackableServerList = await ServerAPI.getTargetServers(ns)

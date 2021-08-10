@@ -19,6 +19,7 @@ let hackLoopTimeout;
 let runnerInterval;
 async function initialize(ns) {
     Utils.disableLogging(ns);
+    // TODO: Kill all running scripts, as there might be some shit from last session open
     await ServerAPI.initializeServerMap(ns);
     await JobAPI.initializeJobMap(ns);
     await JobAPI.startJobManager(ns);
@@ -26,7 +27,6 @@ async function initialize(ns) {
     await ProgramAPI.startProgramManager(ns);
 }
 async function hackLoop(ns) {
-    await ControlFlowAPI.launchRunners(ns);
     // Get the potential targets
     let potentialTargets = await ServerAPI.getTargetServers(ns);
     // Then evaluate the potential targets afterwards
