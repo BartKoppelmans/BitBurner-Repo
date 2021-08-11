@@ -1,18 +1,39 @@
 import Server          from '/src/classes/Server.js'
 import HackableServer  from '/src/classes/HackableServer.js'
 import PurchasedServer from '/src/classes/PurchasedServer.js'
+import { Heuristics }  from '/src/util/Heuristics.js'
+
+export interface IServer {
+	characteristics: ServerCharacteristics
+	purpose: ServerPurpose
+	reservation: number;
+	files: string[]
+}
+
+export interface IPurchasedServer extends IServer {
+	characteristics: PurchasedServerCharacteristics
+	quarantinedInformation: QuarantinedInformation
+}
+
+export interface IHackableServer extends IServer {
+	status: ServerStatus
+	staticHackingProperties: StaticHackingProperties
+	percentageToSteal: number,
+	serverValue: Heuristics.HeuristicValue
+}
 
 // This only contains the id's
 export interface TreeStructure {
-	connections?: number[];
-	children?: number[];
-	parent?: number;
+	connections: string[];
+	children: string[];
+	parent: string; // NOTE: If the node does not have a parent, this will be the empty string
 }
 
 export interface ServerCharacteristics {
-	id: number;
+	id: string;
 	type: ServerType;
 	host: string;
+	treeStructure: TreeStructure
 }
 
 export interface PurchasedServerCharacteristics extends ServerCharacteristics {

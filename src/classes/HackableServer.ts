@@ -1,29 +1,26 @@
-import type { BitBurner as NS } from 'Bitburner'
-import Server                   from '/src/classes/Server.js'
-import {
-	ServerCharacteristics,
-	ServerPurpose,
-	ServerStatus,
-	StaticHackingProperties,
-	TreeStructure,
-}                               from '/src/interfaces/ServerInterfaces.js'
-import { CONSTANT }             from '/src/lib/constants.js'
-import { Heuristics }           from '/src/util/Heuristics.js'
+import type { BitBurner as NS }                                   from 'Bitburner'
+import Server                                                     from '/src/classes/Server.js'
+import { IHackableServer, ServerStatus, StaticHackingProperties } from '/src/interfaces/ServerInterfaces.js'
+import { CONSTANT }                                               from '/src/lib/constants.js'
+import { Heuristics }                                             from '/src/util/Heuristics.js'
 
 export default class HackableServer extends Server {
 
-	status: ServerStatus = ServerStatus.NONE
+	status: ServerStatus
 
 	staticHackingProperties: StaticHackingProperties
 	percentageToSteal: number
 
-	serverValue?: Heuristics.HeuristicValue
+	serverValue: Heuristics.HeuristicValue
 
-	constructor(ns: NS, characteristics: ServerCharacteristics, treeStructure?: TreeStructure, purpose: ServerPurpose = ServerPurpose.NONE, status: ServerStatus = ServerStatus.NONE) {
-		super(ns, characteristics, treeStructure, purpose)
-		this.status                  = status
+	constructor(ns: NS, server: Partial<IHackableServer>) {
+		super(ns, server)
+
+		this.status                  = (server.status) ? server.status : ServerStatus.NONE
 		this.staticHackingProperties = this.getStaticHackingProperties(ns)
 		this.percentageToSteal       = CONSTANT.DEFAULT_PERCENTAGE_TO_STEAL
+
+		this.serverValue = Heuristics.MainHeuristic(ns, this)
 	}
 
 	private getStaticHackingProperties(ns: NS): StaticHackingProperties {
@@ -68,10 +65,6 @@ export default class HackableServer extends Server {
 
 	public isHackable(ns: NS) {
 		return ns.getServerRequiredHackingLevel(this.characteristics.host) <= ns.getHackingLevel()
-	}
-
-	public setStatus(status: ServerStatus): void {
-		this.status = status
 	}
 
 	public isOptimal(ns: NS): boolean {

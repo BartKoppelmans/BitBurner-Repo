@@ -1,15 +1,15 @@
-import type { BitBurner as NS }                                            from 'Bitburner'
-import HackableServer                                                      from '/src/classes/HackableServer.js'
-import Server                                                              from '/src/classes/Server.js'
-import { ServerCharacteristics, ServerPurpose, ServerType, TreeStructure } from '/src/interfaces/ServerInterfaces.js'
-import { CONSTANT }                                                        from '/src/lib/constants.js'
-import * as ServerUtils                                                    from '/src/util/ServerUtils.js'
-import * as Utils                                                          from '/src/util/Utils.js'
-import { Runner }                                                          from '/src/interfaces/ClassInterfaces.js'
-import PurchasedServer                                                     from '/src/classes/PurchasedServer.js'
-import * as LogAPI                                                         from '/src/api/LogAPI.js'
-import * as ServerAPI                                                      from '/src/api/ServerAPI.js'
-import { LogMessageCode }                                                  from '/src/interfaces/PortMessageInterfaces.js'
+import type { BitBurner as NS }                             from 'Bitburner'
+import HackableServer                                       from '/src/classes/HackableServer.js'
+import Server                                               from '/src/classes/Server.js'
+import { ServerCharacteristics, ServerPurpose, ServerType } from '/src/interfaces/ServerInterfaces.js'
+import { CONSTANT }                                         from '/src/lib/constants.js'
+import * as ServerUtils                                     from '/src/util/ServerUtils.js'
+import * as Utils                                           from '/src/util/Utils.js'
+import { Runner }                                           from '/src/interfaces/ClassInterfaces.js'
+import PurchasedServer                                      from '/src/classes/PurchasedServer.js'
+import * as LogAPI                                          from '/src/api/LogAPI.js'
+import * as ServerAPI                                       from '/src/api/ServerAPI.js'
+import { LogMessageCode }                                   from '/src/interfaces/PortMessageInterfaces.js'
 
 class ServerMapRunner implements Runner {
 
@@ -28,11 +28,11 @@ class ServerMapRunner implements Runner {
 		const serverMap: Server[] = this.spider(ns, CONSTANT.HOME_SERVER_ID, CONSTANT.HOME_SERVER_HOST)
 
 		serverMap.filter((server) => ServerUtils.isHackableServer(server))
-		         .forEach((server) => server.setPurpose(ServerPurpose.PREP))
+		         .forEach((server) => server.purpose = ServerPurpose.PREP)
 
 		const home: Server | undefined = serverMap.find((server) => ServerUtils.isHomeServer(server))
 
-		if (home) home.setPurpose(ServerPurpose.HACK)
+		if (home) home.purpose = ServerPurpose.HACK
 
 		// The prepping servers
 		const preppingServers: Server[] = serverMap.filter((server) => ServerUtils.isPurchasedServer(server))
@@ -41,14 +41,14 @@ class ServerMapRunner implements Runner {
 		// The hacking servers
 		const hackingServers: Server[] = preppingServers.splice(0, CONSTANT.NUM_PURCHASED_HACKING_SERVERS)
 
-		hackingServers.forEach((server) => server.setPurpose(ServerPurpose.HACK))
-		preppingServers.forEach((server) => server.setPurpose(ServerPurpose.PREP))
+		hackingServers.forEach((server) => server.purpose = ServerPurpose.HACK)
+		preppingServers.forEach((server) => server.purpose = ServerPurpose.PREP)
 
 		return serverMap
 	}
 
-	private spider(ns: NS, id: number, nodeName: string, parent?: Server): Server[] {
-		let tempServerMap: Server[] = []
+	private spider(ns: NS, id: string, nodeName: string, parent?: Server): Server[] {
+		const tempServerMap: Server[] = []
 
 		const queue: string[] = ns.scan(nodeName)
 
@@ -56,98 +56,84 @@ class ServerMapRunner implements Runner {
 			const parentIndex: number = queue.indexOf(parent.characteristics.host)
 			queue.splice(parentIndex, 1)
 
-			// The current node is a leaf
-			if (queue.length === 0) {
-
-				let type: ServerType
-
-				// Find the type of the server
-				if (ServerUtils.isPurchased(nodeName)) type = ServerType.PurchasedServer
-				else if (ServerUtils.isDarkweb(nodeName)) type = ServerType.DarkWebServer
-				else type = ServerType.HackableServer
-
-				const serverCharacteristics: ServerCharacteristics = {
-					host: nodeName,
-					type,
-					id,
-				}
-
-				const serverTreeStructure = {
-					connections: [parent.characteristics.id],
-					parent: parent.characteristics.id,
-					children: [],
-				}
-
-				switch (type) {
-					case ServerType.HackableServer:
-						return [new HackableServer(ns, serverCharacteristics, serverTreeStructure)]
-					case ServerType.PurchasedServer:
-						const numberPattern                  = /\d+/g
-						const match: RegExpMatchArray | null = nodeName.match(numberPattern)
-
-						if (!match) throw new Error('Could not get the id of the purchased server')
-						const purchasedServerId: number = parseInt(match[0], 10)
-
-						return [new PurchasedServer(ns, {
-							...serverCharacteristics,
-							purchasedServerId,
-						})]
-					default:
-						return [new Server(ns, serverCharacteristics, serverTreeStructure)]
-				}
-			}
-
+			if (queue.length === 0) return this.createLeafNode(ns, nodeName, id, parent)
 		}
 
-		// TODO: Simplify this part or split in different functions
+		const subtreeNode: Server = this.createSubtreeNode(ns, queue, nodeName, id, parent)
 
-		// The current node is a subtree node
-		let subtreeNode: Server
-		let subtreeCharacteristics: ServerCharacteristics
-		if (parent) {
-			subtreeCharacteristics = { id, type: ServerType.HackableServer, host: nodeName }
-			subtreeNode            = new HackableServer(ns, subtreeCharacteristics, { parent: parent.characteristics.id })
-		} else {
-			subtreeCharacteristics = { id, type: ServerType.HomeServer, host: CONSTANT.HOME_SERVER_HOST }
-			subtreeNode            = new Server(ns, subtreeCharacteristics)
-		}
+		tempServerMap.push(subtreeNode)
 
-		let currentId = id
 		// Loop through the current level
-		queue.forEach((childNodeName: string) => {
-			tempServerMap = [
-				...tempServerMap,
-				...this.spider(ns, currentId + 1, childNodeName, subtreeNode),
-			]
+		queue.forEach((childNodeName: string, index: number) => {
+			const childId: string = subtreeNode.characteristics.treeStructure.children[index]
 
-			currentId = Math.max.apply(Math, tempServerMap.map((server) => server.characteristics.id))
+			const children: Server[] = this.spider(ns, childId, childNodeName, subtreeNode)
+
+			tempServerMap.push(...children)
 		})
 
-		const children: Server[] = tempServerMap.filter(node => queue.includes(node.characteristics.host))
-
-		// Create the subtree structure
-		let subtreeStructure: TreeStructure
-		if (parent) {
-			subtreeStructure = {
-				connections: [...children.map((server) => server.characteristics.id), parent.characteristics.id],
-				children: children.map((server) => server.characteristics.id),
-				parent: parent.characteristics.id,
-			}
-		} else {
-			subtreeStructure = {
-				connections: children.map((server) => server.characteristics.id),
-				children: children.map((server) => server.characteristics.id),
-			}
-		}
-
-		subtreeNode.updateTreeStructure(subtreeStructure)
-
-		return [
-			...tempServerMap,
-			subtreeNode,
-		]
+		return tempServerMap
 	}
 
+	private createLeafNode(ns: NS, nodeName: string, id: string, parent: Server): Server[] {
+		let type: ServerType
+
+		// Find the type of the server
+		if (ServerUtils.isPurchased(nodeName)) type = ServerType.PurchasedServer
+		else if (ServerUtils.isDarkweb(nodeName)) type = ServerType.DarkWebServer
+		else type = ServerType.HackableServer
+
+		const characteristics: ServerCharacteristics = {
+			host: nodeName,
+			type,
+			id,
+			treeStructure: {
+				connections: [parent.characteristics.id],
+				parent: parent.characteristics.id,
+				children: [],
+			},
+		}
+
+		switch (type) {
+			case ServerType.HackableServer:
+				return [new HackableServer(ns, {
+					characteristics,
+				})]
+			case ServerType.PurchasedServer:
+				const numberPattern                  = /\d+/g
+				const match: RegExpMatchArray | null = nodeName.match(numberPattern)
+
+				if (!match) throw new Error('Could not get the id of the purchased server')
+				const purchasedServerId: number = parseInt(match[0], 10)
+
+				return [new PurchasedServer(ns, {
+					characteristics: { ...characteristics, purchasedServerId },
+				})]
+			default:
+				return [new Server(ns, {
+					characteristics,
+				})]
+		}
+	}
+
+	private createSubtreeNode(ns: NS, queue: string[], nodeName: string, id: string, parent?: Server): Server {
+		const children: string[] = Array.from({ length: queue.length }, () => Utils.generateHash())
+
+		const parentId: string = (parent) ? parent.characteristics.id : ''
+
+		const characteristics: ServerCharacteristics = {
+			id,
+			type: (parent) ? ServerType.HackableServer : ServerType.HomeServer,
+			host: nodeName,
+			treeStructure: {
+				connections: [...children, parentId],
+				children,
+				parent: parentId,
+			},
+		}
+
+		return (parent) ? new HackableServer(ns, { characteristics }) : new Server(ns, { characteristics })
+	}
 }
 
 export async function main(ns: NS): Promise<void> {

@@ -61,7 +61,7 @@ export async function updateServer(ns: NS, server: Server): Promise<void> {
 }
 
 export async function setPurpose(ns: NS, server: Server, purpose: ServerPurpose): Promise<void> {
-	server.setPurpose(purpose)
+	server.purpose = purpose
 
 	await updateServer(ns, server)
 }
@@ -69,14 +69,9 @@ export async function setPurpose(ns: NS, server: Server, purpose: ServerPurpose)
 export async function setStatus(ns: NS, server: Server, status: ServerStatus): Promise<void> {
 	if (!ServerUtils.isHackableServer(server)) throw new Error('The server is not a hackable server');
 
-	(server as HackableServer).setStatus(status)
+	(server as HackableServer).status = status
 
 	await updateServer(ns, server)
-}
-
-export async function getNewId(ns: NS): Promise<number> {
-	const idList: number[] = (await getServerMap(ns)).servers.map((s) => s.characteristics.id).sort()
-	return idList[idList.length - 1] + 1
 }
 
 export async function addServer(ns: NS, server: Server): Promise<void> {
@@ -91,7 +86,7 @@ export async function addServer(ns: NS, server: Server): Promise<void> {
 }
 
 export async function quarantine(ns: NS, server: PurchasedServer, ram: number): Promise<void> {
-	server.setPurpose(ServerPurpose.NONE)
+	server.purpose                = ServerPurpose.NONE
 	server.quarantinedInformation = { quarantined: true, ram }
 
 	await updateServer(ns, server)
@@ -115,35 +110,26 @@ export async function upgradeServer(ns: NS, server: PurchasedServer, ram: number
 		await LogAPI.log(ns, `Upgraded server ${boughtServer} with ${ram}GB ram.`, true, LogMessageCode.PURCHASED_SERVER)
 	} else throw new Error('Could not purchase the server again.')
 
-	server.setPurpose(PurchasedServer.determinePurpose(server.characteristics.purchasedServerId))
+	server.purpose                = PurchasedServer.determinePurpose(server.characteristics.purchasedServerId)
 	server.quarantinedInformation = { quarantined: false }
 
 	await updateServer(ns, server)
 }
 
-export async function setReservation(ns: NS, server: Server, reservation: number): Promise<void> {
-	const roundedReservation: number = Math.round((reservation + Number.EPSILON) * 100) / 100
-	server.setReservation(roundedReservation)
-
-	await updateServer(ns, server)
-}
-
 export async function increaseReservation(ns: NS, server: Server, reservation: number): Promise<void> {
-	const roundedReservation: number = Math.round((reservation + Number.EPSILON) * 100) / 100
-	server.increaseReservation(ns, roundedReservation)
+	server.increaseReservation(ns, +reservation.toFixed(2))
 
 	await updateServer(ns, server)
 
 }
 
 export async function decreaseReservation(ns: NS, server: Server, reservation: number): Promise<void> {
-	const roundedReservation: number = Math.round((reservation + Number.EPSILON) * 100) / 100
-	server.decreaseReservation(ns, roundedReservation)
+	server.decreaseReservation(ns, +reservation.toFixed(2))
 
 	await updateServer(ns, server)
 }
 
-export async function getServer(ns: NS, id: number): Promise<Server> {
+export async function getServer(ns: NS, id: string): Promise<Server> {
 	const server: Server | undefined = (await getServerMap(ns)).servers.find(s => s.characteristics.id === id)
 
 	if (!server) throw new Error('Could not find that server.')

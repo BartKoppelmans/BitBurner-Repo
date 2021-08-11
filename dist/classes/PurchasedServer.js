@@ -3,14 +3,13 @@ import Server from '/src/classes/Server.js';
 import { CONSTANT } from '/src/lib/constants.js';
 import * as PlayerUtils from '/src/util/PlayerUtils.js';
 export default class PurchasedServer extends Server {
-    constructor(ns, characteristics, purpose = PurchasedServer.determinePurpose(characteristics.purchasedServerId), quarantinedInformation = { quarantined: false }) {
-        super(ns, characteristics, {
-            connections: [CONSTANT.HOME_SERVER_ID],
-            children: [],
-            parent: CONSTANT.HOME_SERVER_ID,
-        }, purpose);
-        this.characteristics = characteristics;
-        this.quarantinedInformation = quarantinedInformation;
+    constructor(ns, server) {
+        super(ns, server);
+        if (!server.characteristics)
+            throw new Error('Cannot initialize the purchased server without its characteristics');
+        this.characteristics = server.characteristics;
+        this.quarantinedInformation = (server.quarantinedInformation) ? server.quarantinedInformation : { quarantined: false };
+        this.purpose = (this.isQuarantined()) ? ServerPurpose.NONE : PurchasedServer.determinePurpose(server.characteristics.purchasedServerId);
     }
     isQuarantined() {
         return this.quarantinedInformation.quarantined;
@@ -33,6 +32,13 @@ export default class PurchasedServer extends Server {
     }
     static determinePurpose(id) {
         return (id < CONSTANT.NUM_PURCHASED_HACKING_SERVERS) ? ServerPurpose.HACK : ServerPurpose.PREP;
+    }
+    static getDefaultTreeStructure() {
+        return {
+            connections: [CONSTANT.HOME_SERVER_ID],
+            parent: CONSTANT.HOME_SERVER_ID,
+            children: [],
+        };
     }
     toJSON() {
         const json = super.toJSON();

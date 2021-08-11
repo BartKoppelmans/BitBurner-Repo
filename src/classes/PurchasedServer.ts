@@ -1,8 +1,10 @@
 import type { BitBurner as NS, ProcessInfo } from 'Bitburner'
 import {
+	IPurchasedServer,
 	PurchasedServerCharacteristics,
 	QuarantinedInformation,
 	ServerPurpose,
+	TreeStructure,
 }                                            from '/src/interfaces/ServerInterfaces.js'
 import Server                                from '/src/classes/Server.js'
 import { CONSTANT }                          from '/src/lib/constants.js'
@@ -14,15 +16,15 @@ export default class PurchasedServer extends Server {
 
 	quarantinedInformation: QuarantinedInformation
 
-	constructor(ns: NS, characteristics: PurchasedServerCharacteristics, purpose: ServerPurpose = PurchasedServer.determinePurpose(characteristics.purchasedServerId), quarantinedInformation: QuarantinedInformation = { quarantined: false }) {
-		super(ns, characteristics, {
-			connections: [CONSTANT.HOME_SERVER_ID],
-			children: [],
-			parent: CONSTANT.HOME_SERVER_ID,
-		}, purpose)
+	constructor(ns: NS, server: Partial<IPurchasedServer>) {
+		super(ns, server)
 
-		this.characteristics        = characteristics
-		this.quarantinedInformation = quarantinedInformation
+		if (!server.characteristics) throw new Error('Cannot initialize the purchased server without its characteristics')
+
+		this.characteristics        = server.characteristics
+		this.quarantinedInformation = (server.quarantinedInformation) ? server.quarantinedInformation : { quarantined: false }
+
+		this.purpose = (this.isQuarantined()) ? ServerPurpose.NONE : PurchasedServer.determinePurpose(server.characteristics.purchasedServerId)
 	}
 
 	public isQuarantined(): boolean {
@@ -50,6 +52,14 @@ export default class PurchasedServer extends Server {
 
 	public static determinePurpose(id: number): ServerPurpose {
 		return (id < CONSTANT.NUM_PURCHASED_HACKING_SERVERS) ? ServerPurpose.HACK : ServerPurpose.PREP
+	}
+
+	public static getDefaultTreeStructure(): TreeStructure {
+		return {
+			connections: [CONSTANT.HOME_SERVER_ID],
+			parent: CONSTANT.HOME_SERVER_ID,
+			children: [],
+		}
 	}
 
 	public toJSON() {

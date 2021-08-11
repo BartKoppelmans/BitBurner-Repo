@@ -69,11 +69,9 @@ async function printChildren(ns, server, level, isLastChild) {
         prefixes += (isLastChild) ? '└> ' : '├> ';
     }
     tprint(`${prefixes}${getFormattedServerName(ns, server)}`);
-    if (!server.treeStructure || !server.treeStructure.children)
-        throw new Error('We currently do not have the tree structure ready');
-    for (const [index, childId] of server.treeStructure.children.entries()) {
+    for (const [index, childId] of server.characteristics.treeStructure.children.entries()) {
         const child = await ServerAPI.getServer(ns, childId);
-        await printChildren(ns, child, level + 1, (index === server.treeStructure.children.length - 1));
+        await printChildren(ns, child, level + 1, (index === server.characteristics.treeStructure.children.length - 1));
     }
 }
 export async function main(ns) {

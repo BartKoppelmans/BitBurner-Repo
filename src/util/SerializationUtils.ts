@@ -8,13 +8,13 @@ import Job                      from '/src/classes/Job.js'
 export function serverFromJSON(ns: NS, json: any): Server {
 	switch (+json.characteristics.type) {
 		case ServerType.HackableServer:
-			return new HackableServer(ns, json.characteristics, json.treeStructure, json.purpose, json.status)
+			return new HackableServer(ns, json)
 		case ServerType.PurchasedServer:
-			return new PurchasedServer(ns, json.characteristics, json.purpose, json.quarantinedInformation)
+			return new PurchasedServer(ns, json)
 		case ServerType.BasicServer:
 		case ServerType.HomeServer:
 		case ServerType.DarkWebServer:
-			return new Server(ns, json.characteristics, json.treeStructure, json.purpose)
+			return new Server(ns, json)
 		default:
 			throw new Error('Server type not recognized.')
 	}
@@ -32,7 +32,7 @@ export function jobFromJSON(ns: NS, json: any): Job {
 		spreadMap.set(server, threads)
 	})
 
-	const target: HackableServer = new HackableServer(ns, json.target.characteristics, json.target.treeStructure, json.target.purpose)
+	const target: HackableServer = new HackableServer(ns, json.target)
 
 	return new Job(ns, {
 		target,

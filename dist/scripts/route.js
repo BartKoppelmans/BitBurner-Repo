@@ -7,14 +7,7 @@ async function findPath(ns, server) {
     const path = [server];
     let currentServer = server;
     while (currentServer.characteristics.host !== CONSTANT.HOME_SERVER_HOST) {
-        if (!currentServer.treeStructure) {
-            throw new Error('The tree structure was not correctly created');
-        }
-        const parentServerId = currentServer.treeStructure.parent;
-        if (!parentServerId) {
-            // In this case, the server can be found from the home server as well.
-            break;
-        }
+        const parentServerId = currentServer.characteristics.treeStructure.parent;
         currentServer = await ServerAPI.getServer(ns, parentServerId);
         path.unshift(currentServer);
     }
@@ -34,6 +27,6 @@ export async function main(ns) {
     }
     const path = await findPath(ns, server);
     for (const node of path) {
-        const isSuccessful = ns.connect(node.characteristics.host);
+        ns.connect(node.characteristics.host);
     }
 }

@@ -127,6 +127,8 @@ export async function cancelAllJobs(ns: NS): Promise<void> {
 		return cancelJob(ns, job)
 	}))
 
+	// TODO: This does not finish for some reason
+
 	// TODO: Check whether there are still jobs left that are not cancelled
 
 }

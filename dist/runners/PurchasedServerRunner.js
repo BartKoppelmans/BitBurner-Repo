@@ -38,12 +38,13 @@ class PurchasedServerRunner {
             throw new Error('Could not purchase the server');
         await LogAPI.log(ns, `Purchased server ${boughtServer} with ${ram}GB ram.`, true, LogMessageCode.PURCHASED_SERVER);
         const characteristics = {
-            id: await ServerAPI.getNewId(ns),
+            id: Utils.generateHash(),
             type: ServerType.PurchasedServer,
             host,
             purchasedServerId,
+            treeStructure: PurchasedServer.getDefaultTreeStructure(),
         };
-        const server = new PurchasedServer(ns, characteristics);
+        const server = new PurchasedServer(ns, { characteristics });
         await ServerAPI.addServer(ns, server);
         return server;
     }

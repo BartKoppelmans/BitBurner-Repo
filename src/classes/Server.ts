@@ -1,46 +1,27 @@
-import type { BitBurner as NS }                                from 'Bitburner'
-import { ServerCharacteristics, ServerPurpose, TreeStructure } from '/src/interfaces/ServerInterfaces.js'
-import { CONSTANT }                                            from '/src/lib/constants.js'
-import * as ServerUtils                                        from '/src/util/ServerUtils.js'
+import type { BitBurner as NS }                          from 'Bitburner'
+import { IServer, ServerCharacteristics, ServerPurpose } from '/src/interfaces/ServerInterfaces.js'
+import { CONSTANT }                                      from '/src/lib/constants.js'
+import * as ServerUtils                                  from '/src/util/ServerUtils.js'
 
 export default class Server {
 
 	characteristics: ServerCharacteristics
 
 	purpose: ServerPurpose
-
-	reservation: number = 0
-
-	treeStructure?: TreeStructure
+	reservation: number
 	files: string[]
 
 
-	public constructor(ns: NS, characteristics: ServerCharacteristics, treeStructure?: TreeStructure, purpose: ServerPurpose = ServerPurpose.NONE) {
-		this.characteristics = characteristics
-		this.purpose         = purpose
+	public constructor(ns: NS, server: Partial<IServer>) {
+
+		if (!server.characteristics) throw new Error("Cannot initialize the server without its characteristics")
+
+		this.characteristics = server.characteristics
+
+		this.purpose     = (server.purpose) ? server.purpose : ServerPurpose.NONE
+		this.reservation = (server.reservation) ? server.reservation : 0
 
 		this.files = ns.ls(this.characteristics.host)
-
-		if (treeStructure) this.updateTreeStructure(treeStructure)
-	}
-
-	public updateTreeStructure(treeStructure: TreeStructure): void {
-		if (!treeStructure.connections && !treeStructure.children && !treeStructure.parent) {
-			return
-		}
-
-		if (!this.treeStructure) {
-			this.treeStructure = {}
-		}
-
-		if (treeStructure.connections)
-			this.treeStructure.connections = treeStructure.connections
-
-		if (treeStructure.children)
-			this.treeStructure.children = treeStructure.children
-
-		if (treeStructure.parent)
-			this.treeStructure.parent = treeStructure.parent
 	}
 
 	public getAvailableRam(ns: NS): number {
@@ -60,15 +41,6 @@ export default class Server {
 		return ns.hasRootAccess(this.characteristics.host)
 	}
 
-	public setPurpose(purpose: ServerPurpose): void {
-		this.purpose = purpose
-	}
-
-	public setReservation(reservation: number): void {
-		this.reservation = reservation
-
-	}
-
 	public increaseReservation(ns: NS, reservation: number): void {
 		if (reservation > this.getAvailableRam(ns)) throw new Error('Not enough ram available to make a reservation')
 		this.reservation += reservation
@@ -82,7 +54,6 @@ export default class Server {
 	public toJSON() {
 		return {
 			characteristics: this.characteristics,
-			treeStructure: this.treeStructure,
 			purpose: this.purpose,
 			reservation: this.reservation,
 		}

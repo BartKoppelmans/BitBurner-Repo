@@ -1,13 +1,14 @@
 import Server from '/src/classes/Server.js';
-import { ServerPurpose, ServerStatus, } from '/src/interfaces/ServerInterfaces.js';
+import { ServerStatus } from '/src/interfaces/ServerInterfaces.js';
 import { CONSTANT } from '/src/lib/constants.js';
+import { Heuristics } from '/src/util/Heuristics.js';
 export default class HackableServer extends Server {
-    constructor(ns, characteristics, treeStructure, purpose = ServerPurpose.NONE, status = ServerStatus.NONE) {
-        super(ns, characteristics, treeStructure, purpose);
-        this.status = ServerStatus.NONE;
-        this.status = status;
+    constructor(ns, server) {
+        super(ns, server);
+        this.status = (server.status) ? server.status : ServerStatus.NONE;
         this.staticHackingProperties = this.getStaticHackingProperties(ns);
         this.percentageToSteal = CONSTANT.DEFAULT_PERCENTAGE_TO_STEAL;
+        this.serverValue = Heuristics.MainHeuristic(ns, this);
     }
     getStaticHackingProperties(ns) {
         return {
@@ -43,9 +44,6 @@ export default class HackableServer extends Server {
     }
     isHackable(ns) {
         return ns.getServerRequiredHackingLevel(this.characteristics.host) <= ns.getHackingLevel();
-    }
-    setStatus(status) {
-        this.status = status;
     }
     isOptimal(ns) {
         return this.getSecurityLevel(ns) === this.staticHackingProperties.minSecurityLevel &&

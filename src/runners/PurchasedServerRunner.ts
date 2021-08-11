@@ -56,13 +56,14 @@ class PurchasedServerRunner {
 		await LogAPI.log(ns, `Purchased server ${boughtServer} with ${ram}GB ram.`, true, LogMessageCode.PURCHASED_SERVER)
 
 		const characteristics: PurchasedServerCharacteristics = {
-			id: await ServerAPI.getNewId(ns),
+			id: Utils.generateHash(),
 			type: ServerType.PurchasedServer,
 			host,
 			purchasedServerId,
+			treeStructure: PurchasedServer.getDefaultTreeStructure(),
 		}
 
-		const server: PurchasedServer = new PurchasedServer(ns, characteristics)
+		const server: PurchasedServer = new PurchasedServer(ns, { characteristics })
 
 		await ServerAPI.addServer(ns, server)
 

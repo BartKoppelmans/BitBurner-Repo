@@ -13,16 +13,7 @@ async function findPath(ns: NS, server: Server): Promise<Server[]> {
 
 	let currentServer = server
 	while (currentServer.characteristics.host !== CONSTANT.HOME_SERVER_HOST) {
-		if (!currentServer.treeStructure) {
-			throw new Error('The tree structure was not correctly created')
-		}
-
-		const parentServerId: number | undefined = currentServer.treeStructure.parent
-
-		if (!parentServerId) {
-			// In this case, the server can be found from the home server as well.
-			break
-		}
+		const parentServerId: string = currentServer.characteristics.treeStructure.parent
 
 		currentServer = await ServerAPI.getServer(ns, parentServerId)
 		path.unshift(currentServer)
@@ -52,6 +43,6 @@ export async function main(ns: NS) {
 	const path: Server[] = await findPath(ns, server)
 
 	for (const node of path) {
-		const isSuccessful: boolean = ns.connect(node.characteristics.host)
+		ns.connect(node.characteristics.host)
 	}
 }

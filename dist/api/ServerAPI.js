@@ -37,18 +37,14 @@ export async function updateServer(ns, server) {
     await writeServerMap(ns, serverMap);
 }
 export async function setPurpose(ns, server, purpose) {
-    server.setPurpose(purpose);
+    server.purpose = purpose;
     await updateServer(ns, server);
 }
 export async function setStatus(ns, server, status) {
     if (!ServerUtils.isHackableServer(server))
         throw new Error('The server is not a hackable server');
-    server.setStatus(status);
+    server.status = status;
     await updateServer(ns, server);
-}
-export async function getNewId(ns) {
-    const idList = (await getServerMap(ns)).servers.map((s) => s.characteristics.id).sort();
-    return idList[idList.length - 1] + 1;
 }
 export async function addServer(ns, server) {
     const serverMap = await getServerMap(ns);
@@ -59,7 +55,7 @@ export async function addServer(ns, server) {
     await writeServerMap(ns, serverMap);
 }
 export async function quarantine(ns, server, ram) {
-    server.setPurpose(ServerPurpose.NONE);
+    server.purpose = ServerPurpose.NONE;
     server.quarantinedInformation = { quarantined: true, ram };
     await updateServer(ns, server);
     await LogAPI.log(ns, `We put ${server.characteristics.host} into quarantine`, true, LogMessageCode.PURCHASED_SERVER);
@@ -78,23 +74,16 @@ export async function upgradeServer(ns, server, ram) {
     }
     else
         throw new Error('Could not purchase the server again.');
-    server.setPurpose(PurchasedServer.determinePurpose(server.characteristics.purchasedServerId));
+    server.purpose = PurchasedServer.determinePurpose(server.characteristics.purchasedServerId);
     server.quarantinedInformation = { quarantined: false };
     await updateServer(ns, server);
 }
-export async function setReservation(ns, server, reservation) {
-    const roundedReservation = Math.round((reservation + Number.EPSILON) * 100) / 100;
-    server.setReservation(roundedReservation);
-    await updateServer(ns, server);
-}
 export async function increaseReservation(ns, server, reservation) {
-    const roundedReservation = Math.round((reservation + Number.EPSILON) * 100) / 100;
-    server.increaseReservation(ns, roundedReservation);
+    server.increaseReservation(ns, +reservation.toFixed(2));
     await updateServer(ns, server);
 }
 export async function decreaseReservation(ns, server, reservation) {
-    const roundedReservation = Math.round((reservation + Number.EPSILON) * 100) / 100;
-    server.decreaseReservation(ns, roundedReservation);
+    server.decreaseReservation(ns, +reservation.toFixed(2));
     await updateServer(ns, server);
 }
 export async function getServer(ns, id) {

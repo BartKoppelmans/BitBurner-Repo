@@ -81,6 +81,7 @@ export async function cancelAllJobs(ns) {
     await Promise.all(jobMap.jobs.map(async (job) => {
         return cancelJob(ns, job);
     }));
+    // TODO: This does not finish for some reason
     // TODO: Check whether there are still jobs left that are not cancelled
 }
 export async function cancelJob(ns, job) {
