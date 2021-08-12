@@ -5,7 +5,6 @@ import * as ProgramAPI from '/src/api/ProgramAPI.js';
 import * as ServerAPI from '/src/api/ServerAPI.js';
 import BatchJob from '/src/classes/BatchJob.js';
 import Job from '/src/classes/Job.js';
-import { LogMessageCode } from '/src/interfaces/PortMessageInterfaces.js';
 import { ServerStatus } from '/src/interfaces/ServerInterfaces.js';
 import { CONSTANT } from '/src/lib/constants.js';
 import { Tools } from '/src/tools/Tools.js';
@@ -14,6 +13,7 @@ import * as HackUtils from '/src/util/HackUtils.js';
 import * as ToolUtils from '/src/util/ToolUtils.js';
 import { Heuristics } from '/src/util/Heuristics.js';
 import * as Utils from '/src/util/Utils.js';
+import { LogType } from '/src/interfaces/LogInterfaces.js';
 let isHacking = false;
 let hackLoopTimeout;
 let runnerInterval;
@@ -23,7 +23,6 @@ async function initialize(ns) {
     await ServerAPI.initializeServerMap(ns);
     await JobAPI.initializeJobMap(ns);
     await JobAPI.startJobManager(ns);
-    await LogAPI.startLogManager(ns);
     await ProgramAPI.startProgramManager(ns);
 }
 async function hackLoop(ns) {
@@ -57,7 +56,7 @@ async function hackLoop(ns) {
     hackLoopTimeout = setTimeout(hackLoop.bind(null, ns), CONSTANT.HACK_LOOP_DELAY);
 }
 async function hack(ns, target) {
-    // If it is prepping or targetting, leave it
+    // If it is prepping or targeting, leave it
     if (target.status !== ServerStatus.NONE)
         return;
     // The server is not optimal, so we have to prep it first
@@ -81,8 +80,7 @@ async function prepServer(ns, target) {
     const jobs = [];
     let availableThreads = await HackUtils.calculateMaxThreads(ns, Tools.WEAKEN, true);
     if (availableThreads === 0) {
-        if (CONSTANT.DEBUG_HACKING)
-            await LogAPI.log(ns, 'Skipped a prep.', true, LogMessageCode.WARNING);
+        LogAPI.hack(ns, 'Skipped a prep.');
         return;
     }
     // TODO: Ideally we pick the server that can fit all our threads here immediately,
@@ -122,7 +120,6 @@ async function prepServer(ns, target) {
         // this.
         const growthThreads = (threadsFit) ? neededGrowthThreads : Math.floor(neededGrowthThreads * (availableThreads / totalThreads));
         const weakenThreads = (threadsFit) ? compensationWeakenThreads : Math.floor(compensationWeakenThreads * (availableThreads / totalThreads));
-        availableThreads -= growthThreads + weakenThreads;
         if (growthThreads > 0 && weakenThreads > 0) {
             const weakenTime = target.getWeakenTime(ns);
             const growthTime = target.getGrowTime(ns);
@@ -193,8 +190,7 @@ async function attackServer(ns, target) {
     const numCycles = Math.min(numPossibleCycles, CONSTANT.MAX_CYCLE_NUMBER);
     const batchId = Utils.generateHash();
     if (numCycles === 0) {
-        if (CONSTANT.DEBUG_HACKING)
-            await LogAPI.log(ns, 'Skipped an attack.', true, LogMessageCode.WARNING);
+        LogAPI.hack(ns, 'Skipped an attack.');
         return;
     }
     const cycles = [];
@@ -235,15 +231,15 @@ async function optimizePerformance(ns, target) {
     target.percentageToSteal = optimalTarget.percentageToSteal;
     if (originalPercentageToSteal !== optimalTarget.percentageToSteal)
         performanceUpdated = true;
-    if (performanceUpdated && CONSTANT.DEBUG_HACKING) {
-        await LogAPI.log(ns, `Updated percentage to steal for ${target.characteristics.host} to ~${Math.round(target.percentageToSteal * 100)}%`, true, LogMessageCode.HACKING);
+    if (performanceUpdated) {
+        LogAPI.hack(ns, `Updated percentage to steal for ${target.characteristics.host} to ~${Math.round(target.percentageToSteal * 100)}%`);
     }
 }
 export async function destroy(ns) {
     clearTimeout(hackLoopTimeout);
     clearTimeout(runnerInterval);
     // TODO: Wait until it is done executing
-    await LogAPI.log(ns, 'Stopping the daemon', true, LogMessageCode.INFORMATION);
+    LogAPI.log(ns, 'Stopping the daemon', LogType.INFORMATION);
 }
 export async function main(ns) {
     const hostName = ns.getHostname();
@@ -253,7 +249,7 @@ export async function main(ns) {
     // TODO: Make a decision on whether we start the to-be-made early hacking scripts,
     // or whether we want to start hacking using our main hacker
     await initialize(ns);
-    await LogAPI.log(ns, 'Starting the daemon', true, LogMessageCode.INFORMATION);
+    LogAPI.log(ns, 'Starting the daemon', LogType.INFORMATION);
     hackLoopTimeout = setTimeout(hackLoop.bind(null, ns), CONSTANT.HACK_LOOP_DELAY);
     runnerInterval = setInterval(ControlFlowAPI.launchRunners.bind(null, ns), CONSTANT.RUNNER_INTERVAL);
     // TODO: Here we should check whether we are still running the hackloop

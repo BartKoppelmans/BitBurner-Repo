@@ -1,8 +1,8 @@
 import type { BitBurner as NS, PurchaseableProgram } from 'Bitburner'
 import * as LogAPI                                   from '/src/api/LogAPI.js'
 import Server                                        from '/src/classes/Server.js'
-import { LogMessageCode }                            from '/src/interfaces/PortMessageInterfaces.js'
 import * as PlayerUtils                              from '/src/util/PlayerUtils.js'
+import { LogType }                                   from '/src/interfaces/LogInterfaces.js'
 
 export enum ProgramType {
 	Crack,
@@ -33,7 +33,7 @@ export class Program {
 		const isSuccessful: boolean = ns.purchaseProgram(this.toValidString(ns, this.name))
 
 		if (isSuccessful) {
-			await LogAPI.log(ns, `Purchased ${this.name}`, true, LogMessageCode.INFORMATION)
+			LogAPI.log(ns, `Purchased ${this.name}`, LogType.INFORMATION)
 		}
 
 		return isSuccessful

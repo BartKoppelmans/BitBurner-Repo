@@ -1,7 +1,6 @@
 import type { BitBurner as NS, Port }          from 'Bitburner'
 import * as CodingContractAPI                  from '/src/api/CodingContractAPI.js'
 import * as JobAPI                             from '/src/api/JobAPI.js'
-import * as LogAPI                             from '/src/api/LogAPI.js'
 import * as ProgramAPI                         from '/src/api/ProgramAPI.js'
 import { ControlFlowCode, ControlFlowRequest } from '/src/interfaces/PortMessageInterfaces.js'
 import { CONSTANT }                            from '/src/lib/constants.js'
@@ -114,8 +113,7 @@ function areManagersRunning(ns: NS): boolean {
 	return (
 		JobAPI.isJobManagerRunning(ns) ||
 		ProgramAPI.isProgramManagerRunning(ns) || // TODO: Remove this
-		CodingContractAPI.isCodingContractManagerRunning(ns) || // TODO: Remove this
-		LogAPI.isLogManagerRunning(ns) // TODO: Remove this
+		CodingContractAPI.isCodingContractManagerRunning(ns) // TODO: Remove this
 	)
 }
 

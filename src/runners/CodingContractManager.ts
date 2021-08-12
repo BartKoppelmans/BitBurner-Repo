@@ -3,11 +3,11 @@ import * as ControlFlowAPI                      from '/src/api/ControlFlowAPI.js
 import * as LogAPI                              from '/src/api/LogAPI.js'
 import * as ServerAPI                           from '/src/api/ServerAPI.js'
 import { CodingContract, CodingContractAnswer } from '/src/classes/CodingContract.js'
-import { LogMessageCode }                       from '/src/interfaces/PortMessageInterfaces.js'
 import { CONSTANT }                             from '/src/lib/constants.js'
 import * as CodingContractUtils                 from '/src/util/CodingContractUtils.js'
 import * as Utils                               from '/src/util/Utils.js'
 import { ServerMap }                            from '/src/interfaces/ServerInterfaces.js'
+import { LogType }                              from '/src/interfaces/LogInterfaces.js'
 
 class CodingContractManager {
 
@@ -19,7 +19,7 @@ class CodingContractManager {
 	}
 
 	public async start(ns: NS): Promise<void> {
-		await LogAPI.log(ns, `Starting the ContractManager`, true, LogMessageCode.INFORMATION)
+		LogAPI.log(ns, `Starting the ContractManager`, LogType.INFORMATION)
 
 		await this.startCheckingLoop(ns)
 	}
@@ -28,7 +28,7 @@ class CodingContractManager {
 		if (this.contractCheckInterval) {
 			clearInterval(this.contractCheckInterval)
 		}
-		await LogAPI.log(ns, `Stopping the ContractManager`, true, LogMessageCode.INFORMATION)
+		LogAPI.log(ns, `Stopping the ContractManager`, LogType.INFORMATION)
 	}
 
 	private async startCheckingLoop(ns: NS): Promise<void> {
@@ -61,7 +61,7 @@ class CodingContractManager {
 	}
 
 	private async onNewContract(ns: NS, contract: CodingContract) {
-		await LogAPI.log(ns, `We found a contract: ${contract.server.characteristics.host}/${contract.filename}`, true, LogMessageCode.CODING_CONTRACT)
+		LogAPI.log(ns, `We found a contract: ${contract.server.characteristics.host}/${contract.filename}`, LogType.CODING_CONTRACT)
 
 		await this.solveContract(ns, contract)
 	}
@@ -70,7 +70,7 @@ class CodingContractManager {
 		const solution: CodingContractAnswer | null = CodingContractUtils.findSolution(ns, contract)
 
 		if (solution === undefined || solution === null) {
-			await LogAPI.log(ns, `We currently cannot solve contract ${contract.server.characteristics.host}/${contract.filename}: ${contract.type}`, true, LogMessageCode.CODING_CONTRACT)
+			LogAPI.log(ns, `We currently cannot solve contract ${contract.server.characteristics.host}/${contract.filename}: ${contract.type}`, LogType.CODING_CONTRACT)
 			return
 		}
 
@@ -81,11 +81,11 @@ class CodingContractManager {
 	}
 
 	private async onFailedContract(ns: NS, contract: CodingContract) {
-		await LogAPI.log(ns, `Wrong solution for contract ${contract.server.characteristics.host}/${contract.filename}`, true, LogMessageCode.CODING_CONTRACT)
+		LogAPI.log(ns, `Wrong solution for contract ${contract.server.characteristics.host}/${contract.filename}`, LogType.CODING_CONTRACT)
 	}
 
 	private async onSolveContract(ns: NS, contract: CodingContract) {
-		await LogAPI.log(ns, `Solved contract ${contract.server.characteristics.host}/${contract.filename}`, true, LogMessageCode.CODING_CONTRACT)
+		LogAPI.log(ns, `Solved contract ${contract.server.characteristics.host}/${contract.filename}`, LogType.CODING_CONTRACT)
 	}
 
 }

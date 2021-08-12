@@ -3,7 +3,6 @@ import * as LogAPI                            from '/src/api/LogAPI.js'
 import HackableServer                         from '/src/classes/HackableServer.js'
 import Server                                 from '/src/classes/Server.js'
 import { ExecArguments, IJOb, ToolArguments } from '/src/interfaces/JobInterfaces.js'
-import { LogMessageCode }                     from '/src/interfaces/PortMessageInterfaces.js'
 import { CONSTANT }                           from '/src/lib/constants.js'
 import { Tools }                              from '/src/tools/Tools.js'
 import * as ServerUtils                       from '/src/util/ServerUtils.js'
@@ -129,8 +128,6 @@ export default class Job {
 		else if (!this.isPrep && isFinished) verb = 'Finished attacking'
 		else throw new Error('This should logically never happen.')
 
-		if (CONSTANT.DEBUG_HACKING) {
-			await LogAPI.log(ns, `${this.id} ${verb} ${this.target.characteristics.host} - ${ToolUtils.getToolName(this.tool)}`, true, LogMessageCode.WARNING)
-		}
+		LogAPI.hack(ns, `${this.id} ${verb} ${this.target.characteristics.host} - ${ToolUtils.getToolName(this.tool)}`)
 	}
 }

@@ -1,5 +1,4 @@
 import * as LogAPI from '/src/api/LogAPI.js';
-import { LogMessageCode } from '/src/interfaces/PortMessageInterfaces.js';
 import { CONSTANT } from '/src/lib/constants.js';
 import * as ServerUtils from '/src/util/ServerUtils.js';
 import * as ToolUtils from '/src/util/ToolUtils.js';
@@ -101,8 +100,6 @@ export default class Job {
             verb = 'Finished attacking';
         else
             throw new Error('This should logically never happen.');
-        if (CONSTANT.DEBUG_HACKING) {
-            await LogAPI.log(ns, `${this.id} ${verb} ${this.target.characteristics.host} - ${ToolUtils.getToolName(this.tool)}`, true, LogMessageCode.WARNING);
-        }
+        LogAPI.hack(ns, `${this.id} ${verb} ${this.target.characteristics.host} - ${ToolUtils.getToolName(this.tool)}`);
     }
 }

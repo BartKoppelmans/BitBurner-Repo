@@ -1,7 +1,6 @@
 import type { BitBurner as NS } from 'Bitburner'
 import * as LogAPI              from '/src/api/LogAPI.js'
 import * as ServerAPI           from '/src/api/ServerAPI.js'
-import { LogMessageCode }       from '/src/interfaces/PortMessageInterfaces.js'
 import {
 	PurchasedServerCharacteristics,
 	PurchasedServerList,
@@ -13,12 +12,13 @@ import * as Utils               from '/src/util/Utils.js'
 import PurchasedServer          from '/src/classes/PurchasedServer.js'
 import * as PlayerUtils         from '/src/util/PlayerUtils.js'
 import Server                   from '/src/classes/Server.js'
+import { LogType }              from '/src/interfaces/LogInterfaces.js'
 
 
 class PurchasedServerRunner {
 
 	public async run(ns: NS): Promise<void> {
-		await LogAPI.log(ns, `Running the PurchasedServerRunner`, true, LogMessageCode.INFORMATION)
+		LogAPI.log(ns, `Running the PurchasedServerRunner`, LogType.INFORMATION)
 
 		const purchasedServerList: PurchasedServerList = await ServerAPI.getPurchasedServers(ns)
 
@@ -53,7 +53,7 @@ class PurchasedServerRunner {
 
 		if (boughtServer === '') throw new Error('Could not purchase the server')
 
-		await LogAPI.log(ns, `Purchased server ${boughtServer} with ${ram}GB ram.`, true, LogMessageCode.PURCHASED_SERVER)
+		LogAPI.log(ns, `Purchased server ${boughtServer} with ${ram}GB ram.`, LogType.PURCHASED_SERVER)
 
 		const characteristics: PurchasedServerCharacteristics = {
 			id: Utils.generateHash(),

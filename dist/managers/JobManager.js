@@ -1,9 +1,9 @@
 import * as ControlFlowAPI from '/src/api/ControlFlowAPI.js';
 import * as LogAPI from '/src/api/LogAPI.js';
 import * as JobAPI from '/src/api/JobAPI.js';
-import { LogMessageCode } from '/src/interfaces/PortMessageInterfaces.js';
 import { CONSTANT } from '/src/lib/constants.js';
 import * as Utils from '/src/util/Utils.js';
+import { LogType } from '/src/interfaces/LogInterfaces.js';
 class JobManager {
     async initialize(ns) {
         Utils.disableLogging(ns);
@@ -13,7 +13,7 @@ class JobManager {
         }
     }
     async start(ns) {
-        await LogAPI.log(ns, `Starting the JobManager`, true, LogMessageCode.INFORMATION);
+        LogAPI.log(ns, `Starting the JobManager`, LogType.INFORMATION);
         this.managingLoopInterval = setInterval(this.managingLoop.bind(this, ns), CONSTANT.JOB_MANAGING_LOOP_INTERVAL);
     }
     async destroy(ns) {
@@ -21,7 +21,7 @@ class JobManager {
             clearInterval(this.managingLoopInterval);
         await JobAPI.cancelAllJobs(ns);
         await JobAPI.clearJobMap(ns);
-        await LogAPI.log(ns, `Stopping the JobManager`, true, LogMessageCode.INFORMATION);
+        LogAPI.log(ns, `Stopping the JobManager`, LogType.INFORMATION);
     }
     async managingLoop(ns) {
         const jobMap = await JobAPI.getJobMap(ns);

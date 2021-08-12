@@ -1,6 +1,5 @@
 import * as CodingContractAPI from '/src/api/CodingContractAPI.js';
 import * as JobAPI from '/src/api/JobAPI.js';
-import * as LogAPI from '/src/api/LogAPI.js';
 import * as ProgramAPI from '/src/api/ProgramAPI.js';
 import { ControlFlowCode } from '/src/interfaces/PortMessageInterfaces.js';
 import { CONSTANT } from '/src/lib/constants.js';
@@ -84,8 +83,7 @@ function areRunnersRunning(ns) {
 function areManagersRunning(ns) {
     return (JobAPI.isJobManagerRunning(ns) ||
         ProgramAPI.isProgramManagerRunning(ns) || // TODO: Remove this
-        CodingContractAPI.isCodingContractManagerRunning(ns) || // TODO: Remove this
-        LogAPI.isLogManagerRunning(ns) // TODO: Remove this
+        CodingContractAPI.isCodingContractManagerRunning(ns) // TODO: Remove this
     );
 }
 function isDaemonRunning(ns) {

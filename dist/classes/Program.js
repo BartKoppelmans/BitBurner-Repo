@@ -1,6 +1,6 @@
 import * as LogAPI from '/src/api/LogAPI.js';
-import { LogMessageCode } from '/src/interfaces/PortMessageInterfaces.js';
 import * as PlayerUtils from '/src/util/PlayerUtils.js';
+import { LogType } from '/src/interfaces/LogInterfaces.js';
 export var ProgramType;
 (function (ProgramType) {
     ProgramType[ProgramType["Crack"] = 0] = "Crack";
@@ -22,7 +22,7 @@ export class Program {
             return false;
         const isSuccessful = ns.purchaseProgram(this.toValidString(ns, this.name));
         if (isSuccessful) {
-            await LogAPI.log(ns, `Purchased ${this.name}`, true, LogMessageCode.INFORMATION);
+            LogAPI.log(ns, `Purchased ${this.name}`, LogType.INFORMATION);
         }
         return isSuccessful;
     }

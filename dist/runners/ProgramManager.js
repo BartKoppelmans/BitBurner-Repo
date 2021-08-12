@@ -2,12 +2,12 @@ import * as ControlFlowAPI from '/src/api/ControlFlowAPI.js';
 import * as LogAPI from '/src/api/LogAPI.js';
 import * as ServerAPI from '/src/api/ServerAPI.js';
 import { Program, ProgramType } from '/src/classes/Program.js';
-import { LogMessageCode } from '/src/interfaces/PortMessageInterfaces.js';
 import { CONSTANT } from '/src/lib/constants.js';
 import * as ProgramManagerUtils from '/src/util/ProgramManagerUtils.js';
 import * as ServerUtils from '/src/util/ServerUtils.js';
 import * as Utils from '/src/util/Utils.js';
 import * as PlayerUtils from '/src/util/PlayerUtils.js';
+import { LogType } from '/src/interfaces/LogInterfaces.js';
 class ProgramManager {
     constructor() {
         this.programs = [];
@@ -29,7 +29,7 @@ class ProgramManager {
         ];
     }
     async start(ns) {
-        await LogAPI.log(ns, `Starting the ProgramManager`, true, LogMessageCode.INFORMATION);
+        LogAPI.log(ns, `Starting the ProgramManager`, LogType.INFORMATION);
         await this.startCheckingLoop(ns);
         await this.startPurchaseLoop(ns);
         await this.startRootLoop(ns);
@@ -44,7 +44,7 @@ class ProgramManager {
         if (this.rootInterval) {
             clearInterval(this.rootInterval);
         }
-        await LogAPI.log(ns, `Stopping the ProgramManager`, true, LogMessageCode.INFORMATION);
+        LogAPI.log(ns, `Stopping the ProgramManager`, LogType.INFORMATION);
     }
     async startCheckingLoop(ns) {
         this.programCheckInterval = setInterval(this.checkingLoop.bind(this, ns), CONSTANT.PURCHASE_PROGRAM_LOOP_INTERVAL);

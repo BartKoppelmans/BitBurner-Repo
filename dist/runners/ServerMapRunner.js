@@ -7,10 +7,10 @@ import * as Utils from '/src/util/Utils.js';
 import PurchasedServer from '/src/classes/PurchasedServer.js';
 import * as LogAPI from '/src/api/LogAPI.js';
 import * as ServerAPI from '/src/api/ServerAPI.js';
-import { LogMessageCode } from '/src/interfaces/PortMessageInterfaces.js';
+import { LogType } from '/src/interfaces/LogInterfaces.js';
 class ServerMapRunner {
     async run(ns) {
-        await LogAPI.log(ns, `Running the ServerMapRunner`, true, LogMessageCode.INFORMATION);
+        LogAPI.log(ns, `Running the ServerMapRunner`, LogType.INFORMATION);
         await ServerAPI.clearServerMap(ns);
         const servers = this.createServerList(ns);
         await ServerAPI.writeServerMap(ns, { servers, lastUpdated: new Date() });

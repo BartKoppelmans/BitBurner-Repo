@@ -13,8 +13,8 @@ import { CONSTANT }             from '/src/lib/constants.js'
 import * as ServerUtils         from '/src/util/ServerUtils.js'
 import * as SerializationUtils  from '/src/util/SerializationUtils.js'
 import * as LogAPI              from '/src/api/LogAPI.js'
-import { LogMessageCode }       from '/src/interfaces/PortMessageInterfaces.js'
 import PurchasedServer          from '/src/classes/PurchasedServer.js'
+import { LogType }              from '/src/interfaces/LogInterfaces.js'
 
 export async function getServerMap(ns: NS): Promise<ServerMap> {
 	return await readServerMap(ns)
@@ -91,7 +91,7 @@ export async function quarantine(ns: NS, server: PurchasedServer, ram: number): 
 
 	await updateServer(ns, server)
 
-	await LogAPI.log(ns, `We put ${server.characteristics.host} into quarantine`, true, LogMessageCode.PURCHASED_SERVER)
+	LogAPI.log(ns, `We put ${server.characteristics.host} into quarantine`, LogType.PURCHASED_SERVER)
 }
 
 export async function upgradeServer(ns: NS, server: PurchasedServer, ram: number): Promise<void> {
@@ -107,7 +107,7 @@ export async function upgradeServer(ns: NS, server: PurchasedServer, ram: number
 
 	const boughtServer: string = ns.purchaseServer(server.characteristics.host, ram)
 	if (boughtServer) {
-		await LogAPI.log(ns, `Upgraded server ${boughtServer} with ${ram}GB ram.`, true, LogMessageCode.PURCHASED_SERVER)
+		LogAPI.log(ns, `Upgraded server ${boughtServer} with ${ram}GB ram.`, LogType.PURCHASED_SERVER)
 	} else throw new Error('Could not purchase the server again.')
 
 	server.purpose                = PurchasedServer.determinePurpose(server.characteristics.purchasedServerId)

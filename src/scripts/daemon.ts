@@ -9,7 +9,6 @@ import HackableServer                       from '/src/classes/HackableServer.js
 import Job                                  from '/src/classes/Job.js'
 import Server                               from '/src/classes/Server.js'
 import { Cycle }                            from '/src/interfaces/HackInterfaces.js'
-import { LogMessageCode }                   from '/src/interfaces/PortMessageInterfaces.js'
 import { HackableServerList, ServerStatus } from '/src/interfaces/ServerInterfaces.js'
 import { CONSTANT }                         from '/src/lib/constants.js'
 import { Tools }                            from '/src/tools/Tools.js'
@@ -18,6 +17,7 @@ import * as HackUtils                       from '/src/util/HackUtils.js'
 import * as ToolUtils                       from '/src/util/ToolUtils.js'
 import { Heuristics }                       from '/src/util/Heuristics.js'
 import * as Utils                           from '/src/util/Utils.js'
+import { LogType }                          from '/src/interfaces/LogInterfaces.js'
 
 let isHacking: boolean = false
 let hackLoopTimeout: ReturnType<typeof setTimeout>
@@ -33,7 +33,6 @@ async function initialize(ns: NS) {
 	await JobAPI.initializeJobMap(ns)
 
 	await JobAPI.startJobManager(ns)
-	await LogAPI.startLogManager(ns)
 	await ProgramAPI.startProgramManager(ns)
 }
 
@@ -81,7 +80,7 @@ async function hackLoop(ns: NS): Promise<void> {
 }
 
 async function hack(ns: NS, target: HackableServer): Promise<void> {
-	// If it is prepping or targetting, leave it
+	// If it is prepping or targeting, leave it
 	if (target.status !== ServerStatus.NONE) return
 
 	// The server is not optimal, so we have to prep it first
@@ -113,7 +112,7 @@ async function prepServer(ns: NS, target: HackableServer): Promise<void> {
 
 	let availableThreads: number = await HackUtils.calculateMaxThreads(ns, Tools.WEAKEN, true)
 	if (availableThreads === 0) {
-		if (CONSTANT.DEBUG_HACKING) await LogAPI.log(ns, 'Skipped a prep.', true, LogMessageCode.WARNING)
+		LogAPI.hack(ns, 'Skipped a prep.')
 		return
 	}
 
@@ -168,8 +167,6 @@ async function prepServer(ns: NS, target: HackableServer): Promise<void> {
 
 		const growthThreads: number = (threadsFit) ? neededGrowthThreads : Math.floor(neededGrowthThreads * (availableThreads / totalThreads))
 		const weakenThreads: number = (threadsFit) ? compensationWeakenThreads : Math.floor(compensationWeakenThreads * (availableThreads / totalThreads))
-
-		availableThreads -= growthThreads + weakenThreads
 
 		if (growthThreads > 0 && weakenThreads > 0) {
 
@@ -261,7 +258,7 @@ async function attackServer(ns: NS, target: HackableServer): Promise<void> {
 	const batchId: string = Utils.generateHash()
 
 	if (numCycles === 0) {
-		if (CONSTANT.DEBUG_HACKING) await LogAPI.log(ns, 'Skipped an attack.', true, LogMessageCode.WARNING)
+		LogAPI.hack(ns, 'Skipped an attack.')
 		return
 	}
 
@@ -316,8 +313,8 @@ async function optimizePerformance(ns: NS, target: HackableServer): Promise<void
 
 	if (originalPercentageToSteal !== optimalTarget.percentageToSteal) performanceUpdated = true
 
-	if (performanceUpdated && CONSTANT.DEBUG_HACKING) {
-		await LogAPI.log(ns, `Updated percentage to steal for ${target.characteristics.host} to ~${Math.round(target.percentageToSteal * 100)}%`, true, LogMessageCode.HACKING)
+	if (performanceUpdated) {
+		LogAPI.hack(ns, `Updated percentage to steal for ${target.characteristics.host} to ~${Math.round(target.percentageToSteal * 100)}%`)
 	}
 }
 
@@ -327,7 +324,7 @@ export async function destroy(ns: NS) {
 
 	// TODO: Wait until it is done executing
 
-	await LogAPI.log(ns, 'Stopping the daemon', true, LogMessageCode.INFORMATION)
+	LogAPI.log(ns, 'Stopping the daemon', LogType.INFORMATION)
 }
 
 export async function main(ns: NS) {
@@ -342,7 +339,7 @@ export async function main(ns: NS) {
 
 	await initialize(ns)
 
-	await LogAPI.log(ns, 'Starting the daemon', true, LogMessageCode.INFORMATION)
+	LogAPI.log(ns, 'Starting the daemon', LogType.INFORMATION)
 
 	hackLoopTimeout = setTimeout(hackLoop.bind(null, ns), CONSTANT.HACK_LOOP_DELAY)
 	runnerInterval  = setInterval(ControlFlowAPI.launchRunners.bind(null, ns), CONSTANT.RUNNER_INTERVAL)

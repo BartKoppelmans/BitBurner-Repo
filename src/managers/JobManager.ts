@@ -2,11 +2,11 @@ import type { BitBurner as NS, ProcessInfo } from 'Bitburner'
 import * as ControlFlowAPI                   from '/src/api/ControlFlowAPI.js'
 import * as LogAPI                           from '/src/api/LogAPI.js'
 import * as JobAPI                           from '/src/api/JobAPI.js'
-import { LogMessageCode }                    from '/src/interfaces/PortMessageInterfaces.js'
 import { CONSTANT }                          from '/src/lib/constants.js'
 import * as Utils                            from '/src/util/Utils.js'
 import { Manager }                           from '/src/interfaces/ClassInterfaces.js'
 import { JobList, JobMap }                   from '/src/interfaces/JobInterfaces.js'
+import { LogType }                           from '/src/interfaces/LogInterfaces.js'
 
 class JobManager implements Manager {
 
@@ -24,7 +24,7 @@ class JobManager implements Manager {
 	}
 
 	public async start(ns: NS): Promise<void> {
-		await LogAPI.log(ns, `Starting the JobManager`, true, LogMessageCode.INFORMATION)
+		LogAPI.log(ns, `Starting the JobManager`, LogType.INFORMATION)
 
 		this.managingLoopInterval = setInterval(this.managingLoop.bind(this, ns), CONSTANT.JOB_MANAGING_LOOP_INTERVAL)
 	}
@@ -36,7 +36,7 @@ class JobManager implements Manager {
 
 		await JobAPI.clearJobMap(ns)
 
-		await LogAPI.log(ns, `Stopping the JobManager`, true, LogMessageCode.INFORMATION)
+		LogAPI.log(ns, `Stopping the JobManager`, LogType.INFORMATION)
 	}
 
 	private async managingLoop(ns: NS): Promise<void> {

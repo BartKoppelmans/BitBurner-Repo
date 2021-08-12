@@ -1,7 +1,7 @@
 import type { BitBurner as NS } from 'Bitburner'
 
 export function formatTime(date: Date = new Date()): string {
-	return `[${date.toLocaleTimeString()}]`
+	return `[${date.toLocaleTimeString('nl-NL')}]`
 }
 
 export function generateHash(): string {

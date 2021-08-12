@@ -1,14 +1,14 @@
 import * as LogAPI from '/src/api/LogAPI.js';
 import * as ServerAPI from '/src/api/ServerAPI.js';
-import { LogMessageCode } from '/src/interfaces/PortMessageInterfaces.js';
 import { ServerPurpose, ServerType, } from '/src/interfaces/ServerInterfaces.js';
 import { CONSTANT } from '/src/lib/constants.js';
 import * as Utils from '/src/util/Utils.js';
 import PurchasedServer from '/src/classes/PurchasedServer.js';
 import * as PlayerUtils from '/src/util/PlayerUtils.js';
+import { LogType } from '/src/interfaces/LogInterfaces.js';
 class PurchasedServerRunner {
     async run(ns) {
-        await LogAPI.log(ns, `Running the PurchasedServerRunner`, true, LogMessageCode.INFORMATION);
+        LogAPI.log(ns, `Running the PurchasedServerRunner`, LogType.INFORMATION);
         const purchasedServerList = await ServerAPI.getPurchasedServers(ns);
         if (purchasedServerList.length < CONSTANT.MAX_PURCHASED_SERVERS) {
             await this.purchaseServers(ns, purchasedServerList);
@@ -36,7 +36,7 @@ class PurchasedServerRunner {
         const boughtServer = ns.purchaseServer(host, ram);
         if (boughtServer === '')
             throw new Error('Could not purchase the server');
-        await LogAPI.log(ns, `Purchased server ${boughtServer} with ${ram}GB ram.`, true, LogMessageCode.PURCHASED_SERVER);
+        LogAPI.log(ns, `Purchased server ${boughtServer} with ${ram}GB ram.`, LogType.PURCHASED_SERVER);
         const characteristics = {
             id: Utils.generateHash(),
             type: ServerType.PurchasedServer,
