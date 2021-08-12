@@ -146,6 +146,8 @@ async function prepServer(ns: NS, target: HackableServer): Promise<void> {
 
 		jobs.push(initialWeakenJob)
 
+		availableThreads -= weakenThreads
+
 		for await (const [server, threads] of weakenThreadSpread) {
 			await ServerAPI.increaseReservation(ns, server, threads * ToolUtils.getToolCost(ns, Tools.WEAKEN))
 		}

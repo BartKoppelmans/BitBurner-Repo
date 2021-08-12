@@ -105,6 +105,7 @@ async function prepServer(ns, target) {
             isPrep: true,
         });
         jobs.push(initialWeakenJob);
+        availableThreads -= weakenThreads;
         for await (const [server, threads] of weakenThreadSpread) {
             await ServerAPI.increaseReservation(ns, server, threads * ToolUtils.getToolCost(ns, Tools.WEAKEN));
         }

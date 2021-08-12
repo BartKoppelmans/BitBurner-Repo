@@ -8,7 +8,7 @@ import * as Utils from '/src/util/Utils.js';
 export async function computeCycles(ns, target) {
     const serverMap = await ServerAPI.getHackingServers(ns);
     const cycleCost = getOptimalCycleCost(ns, target);
-    return Math.min(CONSTANT.MAX_CYCLE_NUMBER, serverMap.reduce((threads, server) => threads + Math.floor(server.getAvailableRam(ns) / cycleCost), 0));
+    return Math.max(0, Math.min(CONSTANT.MAX_CYCLE_NUMBER, serverMap.reduce((threads, server) => threads + Math.floor(server.getAvailableRam(ns) / cycleCost), 0)));
 }
 export async function determineCycleThreadSpreads(ns, target, cycleThreads) {
     const serverList = await ServerAPI.getHackingServers(ns);

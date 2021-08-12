@@ -16,7 +16,7 @@ export async function computeCycles(ns: NS, target: HackableServer): Promise<num
 	const serverMap: Server[] = await ServerAPI.getHackingServers(ns)
 	const cycleCost: number   = getOptimalCycleCost(ns, target)
 
-	return Math.min(CONSTANT.MAX_CYCLE_NUMBER, serverMap.reduce((threads, server) => threads + Math.floor(server.getAvailableRam(ns) / cycleCost), 0))
+	return Math.max(0, Math.min(CONSTANT.MAX_CYCLE_NUMBER, serverMap.reduce((threads, server) => threads + Math.floor(server.getAvailableRam(ns) / cycleCost), 0)))
 }
 
 export async function determineCycleThreadSpreads(ns: NS, target: HackableServer, cycleThreads: CycleThreads): Promise<CycleThreadSpreads> {

@@ -78,7 +78,7 @@ export async function getRunningProcesses(ns) {
 }
 export async function cancelAllJobs(ns) {
     const jobMap = await getJobMap(ns);
-    await Promise.all(jobMap.jobs.map(async (job) => {
+    await Promise.allSettled(jobMap.jobs.map(async (job) => {
         return cancelJob(ns, job);
     }));
     // TODO: This does not finish for some reason

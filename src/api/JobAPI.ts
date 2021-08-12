@@ -123,7 +123,7 @@ export async function cancelAllJobs(ns: NS): Promise<void> {
 
 	const jobMap: JobMap = await getJobMap(ns)
 
-	await Promise.all(jobMap.jobs.map(async (job) => {
+	await Promise.allSettled(jobMap.jobs.map(async (job) => {
 		return cancelJob(ns, job)
 	}))
 
