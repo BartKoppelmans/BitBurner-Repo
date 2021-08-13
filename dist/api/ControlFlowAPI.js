@@ -1,14 +1,13 @@
-import * as CodingContractAPI from '/src/api/CodingContractAPI.js';
 import * as JobAPI from '/src/api/JobAPI.js';
-import * as ProgramAPI from '/src/api/ProgramAPI.js';
 import { ControlFlowCode } from '/src/interfaces/PortMessageInterfaces.js';
 import { CONSTANT } from '/src/lib/constants.js';
 import * as Utils from '/src/util/Utils.js';
 export async function launchRunners(ns) {
     // TODO: Check if we have enough ram available to run
     // TODO: Launch the coding contract runner
-    // TODO: Launch the program runner
     const purchasedServerRunnerPid = ns.run('/src/runners/PurchasedServerRunner.js');
+    const programRunnerPid = ns.run('/src/runners/ProgramRunner.js');
+    const codingContractRunnerPid = ns.run('/src/runners/CodingContractRunner.js');
     // TODO: Wait until everything is finished
 }
 export async function hasDaemonKillRequest(ns) {
@@ -76,15 +75,8 @@ export async function killAllManagers(ns) {
         await ns.sleep(CONSTANT.RESPONSE_RETRY_DELAY);
     }
 }
-function areRunnersRunning(ns) {
-    // TODO: Implement this
-    return false;
-}
 function areManagersRunning(ns) {
-    return (JobAPI.isJobManagerRunning(ns) ||
-        ProgramAPI.isProgramManagerRunning(ns) || // TODO: Remove this
-        CodingContractAPI.isCodingContractManagerRunning(ns) // TODO: Remove this
-    );
+    return (JobAPI.isJobManagerRunning(ns));
 }
 function isDaemonRunning(ns) {
     return ns.isRunning('/src/scripts/daemon.js', CONSTANT.HOME_SERVER_HOST);

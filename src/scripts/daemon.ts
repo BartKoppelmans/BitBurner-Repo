@@ -2,7 +2,6 @@ import type { BitBurner as NS }             from 'Bitburner'
 import * as ControlFlowAPI                  from '/src/api/ControlFlowAPI.js'
 import * as JobAPI                          from '/src/api/JobAPI.js'
 import * as LogAPI                          from '/src/api/LogAPI.js'
-import * as ProgramAPI                      from '/src/api/ProgramAPI.js'
 import * as ServerAPI                       from '/src/api/ServerAPI.js'
 import BatchJob                             from '/src/classes/BatchJob.js'
 import HackableServer                       from '/src/classes/HackableServer.js'
@@ -33,7 +32,6 @@ async function initialize(ns: NS) {
 	await JobAPI.initializeJobMap(ns)
 
 	await JobAPI.startJobManager(ns)
-	await ProgramAPI.startProgramManager(ns)
 }
 
 async function hackLoop(ns: NS): Promise<void> {

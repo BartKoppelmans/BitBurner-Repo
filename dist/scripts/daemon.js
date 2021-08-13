@@ -1,7 +1,6 @@
 import * as ControlFlowAPI from '/src/api/ControlFlowAPI.js';
 import * as JobAPI from '/src/api/JobAPI.js';
 import * as LogAPI from '/src/api/LogAPI.js';
-import * as ProgramAPI from '/src/api/ProgramAPI.js';
 import * as ServerAPI from '/src/api/ServerAPI.js';
 import BatchJob from '/src/classes/BatchJob.js';
 import Job from '/src/classes/Job.js';
@@ -23,7 +22,6 @@ async function initialize(ns) {
     await ServerAPI.initializeServerMap(ns);
     await JobAPI.initializeJobMap(ns);
     await JobAPI.startJobManager(ns);
-    await ProgramAPI.startProgramManager(ns);
 }
 async function hackLoop(ns) {
     // Get the potential targets

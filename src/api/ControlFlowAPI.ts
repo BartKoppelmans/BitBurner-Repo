@@ -1,7 +1,5 @@
 import type { BitBurner as NS, Port }          from 'Bitburner'
-import * as CodingContractAPI                  from '/src/api/CodingContractAPI.js'
 import * as JobAPI                             from '/src/api/JobAPI.js'
-import * as ProgramAPI                         from '/src/api/ProgramAPI.js'
 import { ControlFlowCode, ControlFlowRequest } from '/src/interfaces/PortMessageInterfaces.js'
 import { CONSTANT }                            from '/src/lib/constants.js'
 import * as Utils                              from '/src/util/Utils.js'
@@ -11,9 +9,10 @@ export async function launchRunners(ns: NS): Promise<void> {
 	// TODO: Check if we have enough ram available to run
 
 	// TODO: Launch the coding contract runner
-	// TODO: Launch the program runner
 
 	const purchasedServerRunnerPid: number = ns.run('/src/runners/PurchasedServerRunner.js')
+	const programRunnerPid: number         = ns.run('/src/runners/ProgramRunner.js')
+	const codingContractRunnerPid: number  = ns.run('/src/runners/CodingContractRunner.js')
 
 	// TODO: Wait until everything is finished
 }
@@ -97,23 +96,15 @@ export async function killAllManagers(ns: NS): Promise<void> {
 	// TODO: Make sure that there is a way to stop this, time-based doesn't work in the long run
 
 	while (true) {
-
 		if (!areManagersRunning(ns)) return
 
 		await ns.sleep(CONSTANT.RESPONSE_RETRY_DELAY)
 	}
 }
 
-function areRunnersRunning(ns: NS): boolean {
-	// TODO: Implement this
-	return false
-}
-
 function areManagersRunning(ns: NS): boolean {
 	return (
-		JobAPI.isJobManagerRunning(ns) ||
-		ProgramAPI.isProgramManagerRunning(ns) || // TODO: Remove this
-		CodingContractAPI.isCodingContractManagerRunning(ns) // TODO: Remove this
+		JobAPI.isJobManagerRunning(ns)
 	)
 }
 
