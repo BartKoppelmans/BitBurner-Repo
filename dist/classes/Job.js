@@ -18,6 +18,8 @@ export default class Job {
             this.batchId = job.batchId;
         if (job.pid)
             this.pid = job.pid;
+        if (this.threads <= 0)
+            throw new Error('Cannot create a job with less than 1 thread');
     }
     async execute(ns) {
         /*

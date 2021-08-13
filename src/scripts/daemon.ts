@@ -111,7 +111,7 @@ async function prepServer(ns: NS, target: HackableServer): Promise<void> {
 	const jobs: Job[] = []
 
 	let availableThreads: number = await HackUtils.calculateMaxThreads(ns, Tools.WEAKEN, true)
-	if (availableThreads === 0) {
+	if (availableThreads <= 0) {
 		LogAPI.hack(ns, 'Skipped a prep.')
 		return
 	}

@@ -36,6 +36,9 @@ export default class Job {
 		if (job.batchId) this.batchId = job.batchId
 
 		if (job.pid) this.pid = job.pid
+
+		if (this.threads <= 0) throw new Error('Cannot create a job with less than 1 thread')
+
 	}
 
 	public async execute(ns: NS): Promise<void> {

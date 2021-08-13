@@ -79,7 +79,7 @@ async function prepServer(ns, target) {
     const batchId = Utils.generateHash();
     const jobs = [];
     let availableThreads = await HackUtils.calculateMaxThreads(ns, Tools.WEAKEN, true);
-    if (availableThreads === 0) {
+    if (availableThreads <= 0) {
         LogAPI.hack(ns, 'Skipped a prep.');
         return;
     }
