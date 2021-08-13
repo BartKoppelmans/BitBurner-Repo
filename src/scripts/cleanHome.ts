@@ -19,15 +19,15 @@ export async function main(ns: NS) {
 		throw new Error('Execute script from home.')
 	}
 
-	let files: string[] = ns.ls(host)
-	                        .filter(file => !excludedFiles.includes(file))
-	                        .filter(file => {
-		                        const extension = file.split('.').pop()
-		                        if (!extension) {
-			                        return true
-		                        }
-		                        return !excludedExtensions.includes(extension)
-	                        })
+	const files: string[] = ns.ls(host)
+	                          .filter(file => !excludedFiles.includes(file))
+	                          .filter(file => {
+		                          const extension = file.split('.').pop()
+		                          if (!extension) {
+			                          return true
+		                          }
+		                          return !excludedExtensions.includes(extension)
+	                          })
 
 	files.forEach(file => ns.rm(file))
 }

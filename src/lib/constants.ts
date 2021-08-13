@@ -7,7 +7,8 @@ export const CONSTANT = {
 
 	SMALL_DELAY: 20,
 
-	DEBUG_HACKING: false,
+	LOG_DEBUG_HACKING: false,
+	LOG_DEBUG: false,
 	LOGGING_ENABLED: true,
 
 	COLOR_WARNING: 'red',

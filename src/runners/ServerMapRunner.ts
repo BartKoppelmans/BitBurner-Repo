@@ -9,13 +9,12 @@ import { Runner }                                           from '/src/interface
 import PurchasedServer                                      from '/src/classes/PurchasedServer.js'
 import * as LogAPI                                          from '/src/api/LogAPI.js'
 import * as ServerAPI                                       from '/src/api/ServerAPI.js'
-import { LogType }                                          from '/src/interfaces/LogInterfaces.js'
 
 class ServerMapRunner implements Runner {
 
 	public async run(ns: NS): Promise<void> {
 
-		LogAPI.log(ns, `Running the ServerMapRunner`, LogType.INFORMATION)
+		LogAPI.debug(ns, `Running the ServerMapRunner`)
 
 		await ServerAPI.clearServerMap(ns)
 

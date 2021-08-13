@@ -11,7 +11,7 @@ import { Runner }                               from '/src/interfaces/ClassInter
 class CodingContractRunner implements Runner {
 
 	public async run(ns: NS): Promise<void> {
-		LogAPI.log(ns, `Running the CodingContractRunner`, LogType.INFORMATION)
+		LogAPI.debug(ns, `Running the CodingContractRunner`)
 
 		const serverMap: ServerMap = await ServerAPI.getServerMap(ns)
 
@@ -31,7 +31,7 @@ class CodingContractRunner implements Runner {
 		const solution: CodingContractAnswer | null = CodingContractUtils.findSolution(ns, contract)
 
 		if (solution === undefined || solution === null) {
-			LogAPI.log(ns, `We currently cannot solve contract ${contract.server.characteristics.host}/${contract.filename}: ${contract.type}`, LogType.CODING_CONTRACT)
+			LogAPI.error(ns, `We currently cannot solve contract ${contract.server.characteristics.host}/${contract.filename}: ${contract.type}`)
 			return
 		}
 

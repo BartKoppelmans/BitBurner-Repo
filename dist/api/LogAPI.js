@@ -5,8 +5,13 @@ export function error(ns, message) {
     throw new Error('Not implemented');
     // NOT IMPLEMENTED
 }
+export function debug(ns, message) {
+    if (CONSTANT.LOG_DEBUG) {
+        printColored(ns, message, LogType.INFORMATION);
+    }
+}
 export function hack(ns, message) {
-    if (CONSTANT.DEBUG_HACKING) {
+    if (CONSTANT.LOG_DEBUG_HACKING) {
         printColored(ns, message, LogType.HACKING);
     }
 }

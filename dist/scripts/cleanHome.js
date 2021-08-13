@@ -13,7 +13,7 @@ export async function main(ns) {
     if (host !== 'home') {
         throw new Error('Execute script from home.');
     }
-    let files = ns.ls(host)
+    const files = ns.ls(host)
         .filter(file => !excludedFiles.includes(file))
         .filter(file => {
         const extension = file.split('.').pop();

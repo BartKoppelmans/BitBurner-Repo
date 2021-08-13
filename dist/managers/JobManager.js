@@ -3,7 +3,6 @@ import * as LogAPI from '/src/api/LogAPI.js';
 import * as JobAPI from '/src/api/JobAPI.js';
 import { CONSTANT } from '/src/lib/constants.js';
 import * as Utils from '/src/util/Utils.js';
-import { LogType } from '/src/interfaces/LogInterfaces.js';
 class JobManager {
     async initialize(ns) {
         Utils.disableLogging(ns);
@@ -13,7 +12,7 @@ class JobManager {
         }
     }
     async start(ns) {
-        LogAPI.log(ns, `Starting the JobManager`, LogType.INFORMATION);
+        LogAPI.debug(ns, `Starting the JobManager`);
         this.managingLoopInterval = setInterval(this.managingLoop.bind(this, ns), CONSTANT.JOB_MANAGING_LOOP_INTERVAL);
     }
     async destroy(ns) {
@@ -21,7 +20,7 @@ class JobManager {
             clearInterval(this.managingLoopInterval);
         await JobAPI.cancelAllJobs(ns);
         await JobAPI.clearJobMap(ns);
-        LogAPI.log(ns, `Stopping the JobManager`, LogType.INFORMATION);
+        LogAPI.debug(ns, `Stopping the JobManager`);
     }
     async managingLoop(ns) {
         const jobMap = await JobAPI.getJobMap(ns);

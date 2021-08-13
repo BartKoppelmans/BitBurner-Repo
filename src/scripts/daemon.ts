@@ -16,7 +16,6 @@ import * as HackUtils                       from '/src/util/HackUtils.js'
 import * as ToolUtils                       from '/src/util/ToolUtils.js'
 import { Heuristics }                       from '/src/util/Heuristics.js'
 import * as Utils                           from '/src/util/Utils.js'
-import { LogType }                          from '/src/interfaces/LogInterfaces.js'
 
 let isHacking: boolean = false
 let hackLoopTimeout: ReturnType<typeof setTimeout>
@@ -326,7 +325,7 @@ export async function destroy(ns: NS) {
 
 	// TODO: Wait until it is done executing
 
-	LogAPI.log(ns, 'Stopping the daemon', LogType.INFORMATION)
+	LogAPI.debug(ns, 'Stopping the daemon')
 }
 
 export async function main(ns: NS) {
@@ -341,7 +340,7 @@ export async function main(ns: NS) {
 
 	await initialize(ns)
 
-	LogAPI.log(ns, 'Starting the daemon', LogType.INFORMATION)
+	LogAPI.debug(ns, 'Starting the daemon')
 
 	hackLoopTimeout = setTimeout(hackLoop.bind(null, ns), CONSTANT.HACK_LOOP_DELAY)
 	runnerInterval  = setInterval(ControlFlowAPI.launchRunners.bind(null, ns), CONSTANT.RUNNER_INTERVAL)

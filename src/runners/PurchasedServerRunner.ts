@@ -18,7 +18,7 @@ import { LogType }              from '/src/interfaces/LogInterfaces.js'
 class PurchasedServerRunner {
 
 	public async run(ns: NS): Promise<void> {
-		LogAPI.log(ns, `Running the PurchasedServerRunner`, LogType.INFORMATION)
+		LogAPI.debug(ns, `Running the PurchasedServerRunner`)
 
 		const purchasedServerList: PurchasedServerList = await ServerAPI.getPurchasedServers(ns)
 

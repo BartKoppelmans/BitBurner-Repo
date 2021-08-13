@@ -8,8 +8,14 @@ export function error(ns: NS, message: string): void {
 	// NOT IMPLEMENTED
 }
 
+export function debug(ns: NS, message: string): void {
+	if (CONSTANT.LOG_DEBUG) {
+		printColored(ns, message, LogType.INFORMATION)
+	}
+}
+
 export function hack(ns: NS, message: string): void {
-	if (CONSTANT.DEBUG_HACKING) {
+	if (CONSTANT.LOG_DEBUG_HACKING) {
 		printColored(ns, message, LogType.HACKING)
 	}
 }

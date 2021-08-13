@@ -4,7 +4,8 @@ export const CONSTANT = {
      */
     MILLISECONDS_IN_SECOND: 1000,
     SMALL_DELAY: 20,
-    DEBUG_HACKING: false,
+    LOG_DEBUG_HACKING: false,
+    LOG_DEBUG: false,
     LOGGING_ENABLED: true,
     COLOR_WARNING: 'red',
     COLOR_HACKING: 'white',

@@ -38,7 +38,7 @@ class ProgramRunner {
         return ProgramRunner.getNumCrackScripts(ns) >= hackableServer.staticHackingProperties.ports;
     }
     async run(ns) {
-        LogAPI.log(ns, `Running the ProgramRunner`, LogType.INFORMATION);
+        LogAPI.debug(ns, `Running the ProgramRunner`);
         const money = PlayerUtils.getMoney(ns);
         if (!ProgramRunner.hasTor(ns)) {
             if (money < CONSTANT.TOR_ROUTER_COST)
@@ -93,7 +93,5 @@ class ProgramRunner {
 }
 export async function main(ns) {
     Utils.disableLogging(ns);
-    if (ProgramRunner.hasAllPrograms(ns))
-        return;
     await (new ProgramRunner()).run(ns);
 }

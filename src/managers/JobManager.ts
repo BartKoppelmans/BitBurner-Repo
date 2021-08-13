@@ -6,7 +6,6 @@ import { CONSTANT }                          from '/src/lib/constants.js'
 import * as Utils                            from '/src/util/Utils.js'
 import { Manager }                           from '/src/interfaces/ClassInterfaces.js'
 import { JobList, JobMap }                   from '/src/interfaces/JobInterfaces.js'
-import { LogType }                           from '/src/interfaces/LogInterfaces.js'
 
 class JobManager implements Manager {
 
@@ -24,7 +23,7 @@ class JobManager implements Manager {
 	}
 
 	public async start(ns: NS): Promise<void> {
-		LogAPI.log(ns, `Starting the JobManager`, LogType.INFORMATION)
+		LogAPI.debug(ns, `Starting the JobManager`)
 
 		this.managingLoopInterval = setInterval(this.managingLoop.bind(this, ns), CONSTANT.JOB_MANAGING_LOOP_INTERVAL)
 	}
@@ -36,7 +35,7 @@ class JobManager implements Manager {
 
 		await JobAPI.clearJobMap(ns)
 
-		LogAPI.log(ns, `Stopping the JobManager`, LogType.INFORMATION)
+		LogAPI.debug(ns, `Stopping the JobManager`)
 	}
 
 	private async managingLoop(ns: NS): Promise<void> {

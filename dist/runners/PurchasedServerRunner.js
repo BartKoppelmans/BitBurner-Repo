@@ -8,7 +8,7 @@ import * as PlayerUtils from '/src/util/PlayerUtils.js';
 import { LogType } from '/src/interfaces/LogInterfaces.js';
 class PurchasedServerRunner {
     async run(ns) {
-        LogAPI.log(ns, `Running the PurchasedServerRunner`, LogType.INFORMATION);
+        LogAPI.debug(ns, `Running the PurchasedServerRunner`);
         const purchasedServerList = await ServerAPI.getPurchasedServers(ns);
         if (purchasedServerList.length < CONSTANT.MAX_PURCHASED_SERVERS) {
             await this.purchaseServers(ns, purchasedServerList);

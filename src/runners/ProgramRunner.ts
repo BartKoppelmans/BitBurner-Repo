@@ -51,7 +51,7 @@ class ProgramRunner implements Runner {
 	}
 
 	public async run(ns: NS): Promise<void> {
-		LogAPI.log(ns, `Running the ProgramRunner`, LogType.INFORMATION)
+		LogAPI.debug(ns, `Running the ProgramRunner`)
 
 		const money: number = PlayerUtils.getMoney(ns)
 
@@ -121,8 +121,5 @@ class ProgramRunner implements Runner {
 
 export async function main(ns: NS) {
 	Utils.disableLogging(ns)
-
-	if (ProgramRunner.hasAllPrograms(ns)) return
-
 	await (new ProgramRunner()).run(ns)
 }

@@ -8,7 +8,7 @@ import { LogType }              from '/src/interfaces/LogInterfaces.js'
 export async function main(ns: NS) {
 
 	if (ns.isBusy()) {
-		LogAPI.log(ns, 'Cannot execute crimes, we are currently busy.', LogType.WARNING)
+		LogAPI.warn(ns, 'Cannot execute crimes, we are currently busy.')
 		return
 	}
 
@@ -41,7 +41,7 @@ export async function main(ns: NS) {
 
 		crime.commit(ns)
 
-		const cancelButton = document.getElementById('work-in-progress-cancel-button')
+		const cancelButton = eval('document').getElementById('work-in-progress-cancel-button')
 
 		if (cancelButton) {
 			cancelButton.addEventListener('click', () => {

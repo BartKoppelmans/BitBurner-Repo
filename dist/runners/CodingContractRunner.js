@@ -6,7 +6,7 @@ import * as Utils from '/src/util/Utils.js';
 import { LogType } from '/src/interfaces/LogInterfaces.js';
 class CodingContractRunner {
     async run(ns) {
-        LogAPI.log(ns, `Running the CodingContractRunner`, LogType.INFORMATION);
+        LogAPI.debug(ns, `Running the CodingContractRunner`);
         const serverMap = await ServerAPI.getServerMap(ns);
         for (const server of serverMap.servers) {
             const serverContracts = server.files.filter((file) => file.includes('.cct'));
@@ -21,7 +21,7 @@ class CodingContractRunner {
     static solveContract(ns, contract) {
         const solution = CodingContractUtils.findSolution(ns, contract);
         if (solution === undefined || solution === null) {
-            LogAPI.log(ns, `We currently cannot solve contract ${contract.server.characteristics.host}/${contract.filename}: ${contract.type}`, LogType.CODING_CONTRACT);
+            LogAPI.error(ns, `We currently cannot solve contract ${contract.server.characteristics.host}/${contract.filename}: ${contract.type}`);
             return;
         }
         const isSuccessful = contract.attempt(ns, solution);
