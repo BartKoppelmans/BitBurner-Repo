@@ -36,7 +36,7 @@ export function jobFromJSON(ns: NS, json: any): Job {
 
 	return new Job(ns, {
 		target,
-		pid: json.pid,
+		pids: json.pids,
 		id: json.id,
 		cycleId: json.cycleId,
 		batchId: json.batchId,

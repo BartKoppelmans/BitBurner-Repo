@@ -22,6 +22,7 @@ async function initialize(ns) {
     await ServerAPI.initializeServerMap(ns);
     await JobAPI.initializeJobMap(ns);
     await JobAPI.startJobManager(ns);
+    await ControlFlowAPI.launchRunners(ns);
 }
 async function hackLoop(ns) {
     // Get the potential targets

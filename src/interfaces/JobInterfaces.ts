@@ -16,7 +16,7 @@ export interface ToolArguments {
 
 export interface IJOb {
 
-	pid?: number;
+	pids?: number[];
 
 	id: string;
 

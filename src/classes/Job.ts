@@ -12,7 +12,7 @@ export default class Job {
 	id: string
 	cycleId?: string
 	batchId?: string
-	pid?: number
+	pids: number[]
 
 	target: HackableServer
 	threads: number
@@ -32,10 +32,10 @@ export default class Job {
 		this.end          = job.end
 		this.threadSpread = job.threadSpread
 
+		this.pids = (job.pids) ? job.pids : []
+
 		if (job.cycleId) this.cycleId = job.cycleId
 		if (job.batchId) this.batchId = job.batchId
-
-		if (job.pid) this.pid = job.pid
 
 		if (this.threads <= 0) throw new Error('Cannot create a job with less than 1 thread')
 
@@ -79,7 +79,8 @@ export default class Job {
 
 			const args: ToolArguments = { ...commonArgs, threads, server }
 
-			this.pid = ns.exec.apply(null, Job.createArgumentArray(ns, args))
+			const pid = ns.exec.apply(null, Job.createArgumentArray(ns, args))
+			this.pids.push(pid)
 		}
 	}
 
@@ -107,7 +108,7 @@ export default class Job {
 
 	public toJSON() {
 		return {
-			pid: this.pid,
+			pids: this.pids,
 			id: this.id,
 			cycleId: this.cycleId,
 			batchId: this.batchId,

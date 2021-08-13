@@ -45,9 +45,9 @@ export async function startBatchJob(ns: NS, batchJob: BatchJob): Promise<void> {
 	const isPrep: boolean = batchJob.jobs[0].isPrep
 	await ServerAPI.setStatus(ns, batchJob.target, (isPrep) ? ServerStatus.PREPPING : ServerStatus.TARGETING)
 
-	await Promise.all(batchJob.jobs.map(async (job) => {
-		return startJob(ns, job)
-	}))
+	for (const job of batchJob.jobs) {
+		await startJob(ns, job)
+	}
 
 }
 
@@ -123,11 +123,9 @@ export async function cancelAllJobs(ns: NS): Promise<void> {
 
 	const jobMap: JobMap = await getJobMap(ns)
 
-	await Promise.allSettled(jobMap.jobs.map(async (job) => {
-		return cancelJob(ns, job)
-	}))
-
-	// TODO: This does not finish for some reason
+	for (const job of jobMap.jobs) {
+		await cancelJob(ns, job)
+	}
 
 	// TODO: Check whether there are still jobs left that are not cancelled
 
@@ -136,12 +134,17 @@ export async function cancelAllJobs(ns: NS): Promise<void> {
 export async function cancelJob(ns: NS, job: Job): Promise<void> {
 	// TODO: We should do some checking here
 
-	if (!job.pid) throw new Error('Cannot cancel a job without the pid')
+	if (job.pids.length === 0) throw new Error('Cannot cancel a job without the pids')
 
-	const isKilled: boolean = ns.kill(job.pid)
-	if (!isKilled) throw new Error('Failed to cancel the job')
+	let allKilled: boolean = true
+	for (const pid of job.pids) {
+		const processKilled: boolean = ns.kill(pid)
+		allKilled                    = allKilled && processKilled
+	}
 
 	await job.onCancel(ns)
+
+	if (!allKilled) throw new Error('Failed to cancel all processes')
 }
 
 export async function isJobMapInitialized(ns: NS): Promise<boolean> {

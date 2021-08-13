@@ -28,7 +28,7 @@ export function jobFromJSON(ns, json) {
     const target = new HackableServer(ns, json.target);
     return new Job(ns, {
         target,
-        pid: json.pid,
+        pids: json.pids,
         id: json.id,
         cycleId: json.cycleId,
         batchId: json.batchId,

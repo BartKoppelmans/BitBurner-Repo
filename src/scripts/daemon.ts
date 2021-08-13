@@ -32,6 +32,8 @@ async function initialize(ns: NS) {
 	await JobAPI.initializeJobMap(ns)
 
 	await JobAPI.startJobManager(ns)
+
+	await ControlFlowAPI.launchRunners(ns)
 }
 
 async function hackLoop(ns: NS): Promise<void> {

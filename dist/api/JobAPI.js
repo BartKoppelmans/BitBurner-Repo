@@ -29,9 +29,9 @@ export async function startBatchJob(ns, batchJob) {
     // TODO: We should do some checking in here
     const isPrep = batchJob.jobs[0].isPrep;
     await ServerAPI.setStatus(ns, batchJob.target, (isPrep) ? ServerStatus.PREPPING : ServerStatus.TARGETING);
-    await Promise.all(batchJob.jobs.map(async (job) => {
-        return startJob(ns, job);
-    }));
+    for (const job of batchJob.jobs) {
+        await startJob(ns, job);
+    }
 }
 async function startJob(ns, job) {
     // TODO: We should do some checking in here
@@ -78,20 +78,23 @@ export async function getRunningProcesses(ns) {
 }
 export async function cancelAllJobs(ns) {
     const jobMap = await getJobMap(ns);
-    await Promise.allSettled(jobMap.jobs.map(async (job) => {
-        return cancelJob(ns, job);
-    }));
-    // TODO: This does not finish for some reason
+    for (const job of jobMap.jobs) {
+        await cancelJob(ns, job);
+    }
     // TODO: Check whether there are still jobs left that are not cancelled
 }
 export async function cancelJob(ns, job) {
     // TODO: We should do some checking here
-    if (!job.pid)
-        throw new Error('Cannot cancel a job without the pid');
-    const isKilled = ns.kill(job.pid);
-    if (!isKilled)
-        throw new Error('Failed to cancel the job');
+    if (job.pids.length === 0)
+        throw new Error('Cannot cancel a job without the pids');
+    let allKilled = true;
+    for (const pid of job.pids) {
+        const processKilled = ns.kill(pid);
+        allKilled = allKilled && processKilled;
+    }
     await job.onCancel(ns);
+    if (!allKilled)
+        throw new Error('Failed to cancel all processes');
 }
 export async function isJobMapInitialized(ns) {
     // TODO: Change the restrictions here, as we have to reset the job map more often

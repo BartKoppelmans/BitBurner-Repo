@@ -12,12 +12,11 @@ export default class Job {
         this.start = job.start;
         this.end = job.end;
         this.threadSpread = job.threadSpread;
+        this.pids = (job.pids) ? job.pids : [];
         if (job.cycleId)
             this.cycleId = job.cycleId;
         if (job.batchId)
             this.batchId = job.batchId;
-        if (job.pid)
-            this.pid = job.pid;
         if (this.threads <= 0)
             throw new Error('Cannot create a job with less than 1 thread');
     }
@@ -52,7 +51,8 @@ export default class Job {
                 ns.scp(this.tool, CONSTANT.HOME_SERVER_HOST, server.characteristics.host);
             }
             const args = { ...commonArgs, threads, server };
-            this.pid = ns.exec.apply(null, Job.createArgumentArray(ns, args));
+            const pid = ns.exec.apply(null, Job.createArgumentArray(ns, args));
+            this.pids.push(pid);
         }
     }
     async onStart(ns) {
@@ -75,7 +75,7 @@ export default class Job {
     }
     toJSON() {
         return {
-            pid: this.pid,
+            pids: this.pids,
             id: this.id,
             cycleId: this.cycleId,
             batchId: this.batchId,
