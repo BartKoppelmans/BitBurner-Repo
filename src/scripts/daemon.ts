@@ -1,8 +1,10 @@
-import type { BitBurner as NS }             from 'Bitburner'
+import type { BitBurner as NS, Flag }       from 'Bitburner'
 import * as ControlFlowAPI                  from '/src/api/ControlFlowAPI.js'
 import * as JobAPI                          from '/src/api/JobAPI.js'
 import * as LogAPI                          from '/src/api/LogAPI.js'
 import * as ServerAPI                       from '/src/api/ServerAPI.js'
+import * as JobManager                      from '/src/managers/JobManager.js'
+import * as BladeBurnerManager              from '/src/managers/BladeBurnerManager.js'
 import BatchJob                             from '/src/classes/Job/BatchJob.js'
 import HackableServer                       from '/src/classes/Server/HackableServer.js'
 import Job                                  from '/src/classes/Job/Job.js'
@@ -25,12 +27,18 @@ async function initialize(ns: NS) {
 
 	Utils.disableLogging(ns)
 
+	const flags: Flag = ns.flags([
+		['BB', false],
+	])
+
 	// TODO: Kill all running scripts, as there might be some shit from last session open
 
 	await ServerAPI.initializeServerMap(ns)
 	await JobAPI.initializeJobMap(ns)
 
-	await JobAPI.startJobManager(ns)
+	await JobManager.start(ns)
+
+	if (flags.BB) await BladeBurnerManager.start(ns)
 
 	await ControlFlowAPI.launchRunners(ns)
 }

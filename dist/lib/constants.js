@@ -12,6 +12,7 @@ export const CONSTANT = {
     COLOR_INFORMATION: 'blue',
     COLOR_PURCHASED_SERVER_INFORMATION: 'green',
     COLOR_CODING_CONTRACT_INFORMATION: 'yellow',
+    COLOR_BLADEBURNER: 'pink',
     /*
      * Import script constants
      */

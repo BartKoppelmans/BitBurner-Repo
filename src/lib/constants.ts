@@ -16,6 +16,7 @@ export const CONSTANT = {
 	COLOR_INFORMATION: 'blue',
 	COLOR_PURCHASED_SERVER_INFORMATION: 'green',
 	COLOR_CODING_CONTRACT_INFORMATION: 'yellow',
+	COLOR_BLADEBURNER: 'pink',
 
 	/*
 	 * Import script constants
@@ -79,7 +80,6 @@ export const CONSTANT = {
 	PURCHASE_PURCHASED_SERVER_LOOP_INTERVAL: 15 * 1000,
 
 	PORT_FULL_RETRY_TIME: 100,
-
 	// Check if we can upgrade servers every 3 minutes
 	UPGRADE_PURCHASED_SERVER_LOOP_INTERVAL: 15 * 1000,
 

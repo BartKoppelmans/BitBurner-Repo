@@ -1,5 +1,7 @@
 declare module 'Bitburner' {
 
+	export type Flag = { [key: string]: string | string[] | number | boolean }
+
 	export type Host = string;
 	export type Script = string;
 	export type StockSymbol =
@@ -1209,7 +1211,7 @@ declare module 'Bitburner' {
 		 * @param {string} posType Specifies whether the order is a “Long” or “Short” position.
 		 * @returns {number} Cost to buy a given number of shares of a stock.
 		 */
-		getStockPurchaseCost(sym: StockSymbol, shares: Number, posType: OrderPos): number;
+		getStockPurchaseCost(sym: StockSymbol, shares: number, posType: OrderPos): number;
 
 		/**
 		 * Calculates and returns how much you would gain from selling a given number of shares of a stock.
@@ -1221,7 +1223,7 @@ declare module 'Bitburner' {
 		 * @param {string} posType Specifies whether the order is a “Long” or “Short” position.
 		 * @returns {number} Gain from selling a given number of shares of a stock.
 		 */
-		getStockSaleGain(sym: StockSymbol, shares: Number, posType: OrderPos): number;
+		getStockSaleGain(sym: StockSymbol, shares: number, posType: OrderPos): number;
 
 
 		/**
@@ -2454,7 +2456,7 @@ declare module 'Bitburner' {
 		getActionRepGain(
 			type: BladeburnerActTypes,
 			name: BladeburnerGenActions | BladeburnerContracts | BladeburnerOperations | BladeburnerBlackOps,
-			level: number,
+			level?: number,
 		): number;
 
 		/**
@@ -3334,6 +3336,8 @@ declare module 'Bitburner' {
 		readonly args: any[];
 
 		getPlayer(): any;
+
+		flags(flags: any[]): Flag
 
 		/**
 		 * Function that is used to try and hack servers to steal money and gain hacking experience.

@@ -12,6 +12,7 @@ export var LogType;
     LogType[LogType["HACKING"] = 3] = "HACKING";
     LogType[LogType["PURCHASED_SERVER"] = 4] = "PURCHASED_SERVER";
     LogType[LogType["CODING_CONTRACT"] = 5] = "CODING_CONTRACT";
+    LogType[LogType["BLADEBURNER"] = 6] = "BLADEBURNER";
 })(LogType || (LogType = {}));
 export function debug(ns, message) {
     if (CONSTANT.LOG_DEBUG) {
@@ -27,7 +28,7 @@ export function warn(ns, message) {
     printColored(ns, message, LogType.WARNING);
 }
 export function log(ns, message, logType) {
-    if (logType !== LogType.NONE && logType !== LogType.INFORMATION && logType !== LogType.PURCHASED_SERVER && logType !== LogType.CODING_CONTRACT) {
+    if (logType !== LogType.NONE && logType !== LogType.INFORMATION && logType !== LogType.PURCHASED_SERVER && logType !== LogType.CODING_CONTRACT && logType !== LogType.BLADEBURNER) {
         throw new Error('Incorrect log type');
     }
     printColored(ns, message, logType);
@@ -44,6 +45,8 @@ function getColorFromLogType(ns, logType) {
             return CONSTANT.COLOR_PURCHASED_SERVER_INFORMATION;
         case LogType.CODING_CONTRACT:
             return CONSTANT.COLOR_CODING_CONTRACT_INFORMATION;
+        case LogType.BLADEBURNER:
+            return CONSTANT.COLOR_BLADEBURNER;
         case LogType.NONE:
         default:
             return 'var(--my-font-color)';

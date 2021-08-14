@@ -1,7 +1,8 @@
 import type { BitBurner as NS, Port } from 'Bitburner'
-import * as JobAPI                    from '/src/api/JobAPI.js'
 import { CONSTANT }                   from '/src/lib/constants.js'
 import * as Utils                     from '/src/util/Utils.js'
+
+const MANAGER_KILL_DELAY: number = 2500 as const
 
 export enum ControlFlowCode {
 	KILL_MANAGERS,
@@ -105,17 +106,7 @@ export async function killAllManagers(ns: NS): Promise<void> {
 
 	// TODO: Make sure that there is a way to stop this, time-based doesn't work in the long run
 
-	while (true) {
-		if (!areManagersRunning(ns)) return
-
-		await ns.sleep(CONSTANT.RESPONSE_RETRY_DELAY)
-	}
-}
-
-function areManagersRunning(ns: NS): boolean {
-	return (
-		JobAPI.isJobManagerRunning(ns)
-	)
+	await ns.sleep(MANAGER_KILL_DELAY)
 }
 
 function isDaemonRunning(ns: NS): boolean {

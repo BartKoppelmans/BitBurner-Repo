@@ -1,6 +1,6 @@
-import * as JobAPI from '/src/api/JobAPI.js';
 import { CONSTANT } from '/src/lib/constants.js';
 import * as Utils from '/src/util/Utils.js';
+const MANAGER_KILL_DELAY = 2500;
 export var ControlFlowCode;
 (function (ControlFlowCode) {
     ControlFlowCode[ControlFlowCode["KILL_MANAGERS"] = 0] = "KILL_MANAGERS";
@@ -73,14 +73,7 @@ export async function killAllManagers(ns) {
         id,
     }));
     // TODO: Make sure that there is a way to stop this, time-based doesn't work in the long run
-    while (true) {
-        if (!areManagersRunning(ns))
-            return;
-        await ns.sleep(CONSTANT.RESPONSE_RETRY_DELAY);
-    }
-}
-function areManagersRunning(ns) {
-    return (JobAPI.isJobManagerRunning(ns));
+    await ns.sleep(MANAGER_KILL_DELAY);
 }
 function isDaemonRunning(ns) {
     return ns.isRunning('/src/scripts/daemon.js', CONSTANT.HOME_SERVER_HOST);
