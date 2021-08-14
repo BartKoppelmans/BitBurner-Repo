@@ -1,16 +1,16 @@
 import type { BitBurner as NS } from 'Bitburner'
 import * as LogAPI              from '/src/api/LogAPI.js'
+import { LogType }              from '/src/api/LogAPI.js'
 import * as ServerAPI           from '/src/api/ServerAPI.js'
-import HackableServer           from '/src/classes/HackableServer.js'
-import { Program, ProgramType } from '/src/classes/Program.js'
-import Server                   from '/src/classes/Server.js'
+import HackableServer           from '/src/classes/Server/HackableServer.js'
+import { Program, ProgramType } from '/src/classes/Misc/Program.js'
+import Server                   from '/src/classes/Server/Server.js'
 import { CONSTANT }             from '/src/lib/constants.js'
 import * as ServerUtils         from '/src/util/ServerUtils.js'
 import * as Utils               from '/src/util/Utils.js'
 import * as PlayerUtils         from '/src/util/PlayerUtils.js'
-import { ServerMap }            from '/src/interfaces/ServerInterfaces.js'
-import { LogType }              from '/src/interfaces/LogInterfaces.js'
-import { Runner }               from '/src/interfaces/ClassInterfaces.js'
+import { ServerMap }            from '/src/classes/Server/ServerInterfaces.js'
+import { Runner }               from '/src/classes/Misc/ScriptInterfaces.js'
 
 class ProgramRunner implements Runner {
 

@@ -1,8 +1,8 @@
-import Server from '/src/classes/Server.js';
-import { ServerType } from '/src/interfaces/ServerInterfaces.js';
-import HackableServer from '/src/classes/HackableServer.js';
-import PurchasedServer from '/src/classes/PurchasedServer.js';
-import Job from '/src/classes/Job.js';
+import Server from '/src/classes/Server/Server.js';
+import { ServerType } from '/src/classes/Server/ServerInterfaces.js';
+import HackableServer from '/src/classes/Server/HackableServer.js';
+import PurchasedServer from '/src/classes/Server/PurchasedServer.js';
+import Job from '/src/classes/Job/Job.js';
 export function serverFromJSON(ns, json) {
     switch (+json.characteristics.type) {
         case ServerType.HackableServer:

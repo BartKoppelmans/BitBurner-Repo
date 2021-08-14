@@ -1,4 +1,4 @@
-import { ServerPurpose } from '/src/interfaces/ServerInterfaces.js';
+import { ServerPurpose } from '/src/classes/Server/ServerInterfaces.js';
 import { CONSTANT } from '/src/lib/constants.js';
 import * as ServerUtils from '/src/util/ServerUtils.js';
 export default class Server {

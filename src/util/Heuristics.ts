@@ -1,5 +1,5 @@
 import type { BitBurner as NS } from 'Bitburner'
-import HackableServer           from '/src/classes/HackableServer.js'
+import HackableServer           from '/src/classes/Server/HackableServer.js'
 
 export namespace Heuristics {
 

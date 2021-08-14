@@ -1,6 +1,6 @@
 import type { BitBurner as NS } from 'Bitburner'
-import HackableServer           from '/src/classes/HackableServer.js'
-import Server                   from '/src/classes/Server.js'
+import HackableServer           from '/src/classes/Server/HackableServer.js'
+import Server                   from '/src/classes/Server/Server.js'
 import {
 	HackableServerList,
 	PurchasedServerList,
@@ -8,13 +8,13 @@ import {
 	ServerMap,
 	ServerPurpose,
 	ServerStatus,
-}                               from '/src/interfaces/ServerInterfaces.js'
+}                               from '/src/classes/Server/ServerInterfaces.js'
 import { CONSTANT }             from '/src/lib/constants.js'
 import * as ServerUtils         from '/src/util/ServerUtils.js'
 import * as SerializationUtils  from '/src/util/SerializationUtils.js'
 import * as LogAPI              from '/src/api/LogAPI.js'
-import PurchasedServer          from '/src/classes/PurchasedServer.js'
-import { LogType }              from '/src/interfaces/LogInterfaces.js'
+import PurchasedServer          from '/src/classes/Server/PurchasedServer.js'
+import { LogType }              from '/src/api/LogAPI.js'
 
 export async function getServerMap(ns: NS): Promise<ServerMap> {
 	return await readServerMap(ns)

@@ -1,5 +1,5 @@
 import type { BitBurner as NS, CodingContractTypes } from 'Bitburner'
-import Server                                        from '/src/classes/Server.js'
+import Server                                        from '/src/classes/Server/Server.js'
 
 export type CodingContractAnswer = string | string[] | number;
 

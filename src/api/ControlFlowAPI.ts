@@ -1,8 +1,18 @@
-import type { BitBurner as NS, Port }          from 'Bitburner'
-import * as JobAPI                             from '/src/api/JobAPI.js'
-import { ControlFlowCode, ControlFlowRequest } from '/src/interfaces/PortMessageInterfaces.js'
-import { CONSTANT }                            from '/src/lib/constants.js'
-import * as Utils                              from '/src/util/Utils.js'
+import type { BitBurner as NS, Port } from 'Bitburner'
+import * as JobAPI                    from '/src/api/JobAPI.js'
+import { CONSTANT }                   from '/src/lib/constants.js'
+import * as Utils                     from '/src/util/Utils.js'
+
+export enum ControlFlowCode {
+	KILL_MANAGERS,
+	KILL_DAEMON,
+}
+
+export interface ControlFlowRequest extends Request {
+	id: string;
+	code: ControlFlowCode;
+}
+
 
 export async function launchRunners(ns: NS): Promise<void> {
 

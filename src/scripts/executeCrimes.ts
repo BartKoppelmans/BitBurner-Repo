@@ -1,9 +1,9 @@
 import type { BitBurner as NS } from 'Bitburner'
-import Crime                    from '/src/classes/Crime.js'
+import Crime                    from '/src/classes/Misc/Crime.js'
 import { CONSTANT }             from '/src/lib/constants.js'
 import * as CrimeUtils          from '/src/util/CrimeUtils.js'
 import * as LogAPI              from '/src/api/LogAPI.js'
-import { LogType }              from '/src/interfaces/LogInterfaces.js'
+import { LogType }              from '/src/api/LogAPI.js'
 
 export async function main(ns: NS) {
 

@@ -1,6 +1,6 @@
-import Server          from '/src/classes/Server.js'
-import HackableServer  from '/src/classes/HackableServer.js'
-import PurchasedServer from '/src/classes/PurchasedServer.js'
+import Server          from '/src/classes/Server/Server.js'
+import HackableServer  from '/src/classes/Server/HackableServer.js'
+import PurchasedServer from '/src/classes/Server/PurchasedServer.js'
 import { Heuristics }  from '/src/util/Heuristics.js'
 
 export interface IServer {

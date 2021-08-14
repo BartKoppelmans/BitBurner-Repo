@@ -6,13 +6,13 @@ import {
 	PurchasedServerList,
 	ServerPurpose,
 	ServerType,
-}                               from '/src/interfaces/ServerInterfaces.js'
+}                               from '/src/classes/Server/ServerInterfaces.js'
 import { CONSTANT }             from '/src/lib/constants.js'
 import * as Utils               from '/src/util/Utils.js'
-import PurchasedServer          from '/src/classes/PurchasedServer.js'
+import PurchasedServer          from '/src/classes/Server/PurchasedServer.js'
 import * as PlayerUtils         from '/src/util/PlayerUtils.js'
-import Server                   from '/src/classes/Server.js'
-import { LogType }              from '/src/interfaces/LogInterfaces.js'
+import Server                   from '/src/classes/Server/Server.js'
+import { LogType }              from '/src/api/LogAPI.js'
 
 
 class PurchasedServerRunner {

@@ -1,5 +1,5 @@
-import Server from '/src/classes/Server.js';
-import { ServerStatus } from '/src/interfaces/ServerInterfaces.js';
+import Server from '/src/classes/Server/Server.js';
+import { ServerStatus } from '/src/classes/Server/ServerInterfaces.js';
 import { CONSTANT } from '/src/lib/constants.js';
 import { Heuristics } from '/src/util/Heuristics.js';
 export default class HackableServer extends Server {

@@ -1,5 +1,5 @@
 import * as ServerAPI from '/src/api/ServerAPI.js';
-import Job from '/src/classes/Job.js';
+import Job from '/src/classes/Job/Job.js';
 import { CONSTANT } from '/src/lib/constants.js';
 import { Tools } from '/src/tools/Tools.js';
 import * as HackUtils from '/src/util/HackUtils.js';

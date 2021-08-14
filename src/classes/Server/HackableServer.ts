@@ -1,6 +1,6 @@
 import type { BitBurner as NS }                                   from 'Bitburner'
-import Server                                                     from '/src/classes/Server.js'
-import { IHackableServer, ServerStatus, StaticHackingProperties } from '/src/interfaces/ServerInterfaces.js'
+import Server                                                     from '/src/classes/Server/Server.js'
+import { IHackableServer, ServerStatus, StaticHackingProperties } from '/src/classes/Server/ServerInterfaces.js'
 import { CONSTANT }                                               from '/src/lib/constants.js'
 import { Heuristics }                                             from '/src/util/Heuristics.js'
 

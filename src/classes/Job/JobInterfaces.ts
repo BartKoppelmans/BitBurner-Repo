@@ -1,6 +1,6 @@
-import HackableServer from '/src/classes/HackableServer.js'
-import Job            from '/src/classes/Job.js'
-import Server         from '/src/classes/Server.js'
+import HackableServer from '/src/classes/Server/HackableServer.js'
+import Job            from '/src/classes/Job/Job.js'
+import Server         from '/src/classes/Server/Server.js'
 import { Tools }      from '/src/tools/Tools.js'
 
 export type ExecArguments = [script: string, host: string, numThreads?: number, ...args: string[]];

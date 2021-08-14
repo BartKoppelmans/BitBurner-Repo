@@ -1,9 +1,9 @@
 import * as LogAPI from '/src/api/LogAPI.js';
+import { LogType } from '/src/api/LogAPI.js';
 import * as ServerAPI from '/src/api/ServerAPI.js';
-import { CodingContract } from '/src/classes/CodingContract.js';
+import { CodingContract } from '/src/classes/Misc/CodingContract.js';
 import * as CodingContractUtils from '/src/util/CodingContractUtils.js';
 import * as Utils from '/src/util/Utils.js';
-import { LogType } from '/src/interfaces/LogInterfaces.js';
 class CodingContractRunner {
     async run(ns) {
         LogAPI.debug(ns, `Running the CodingContractRunner`);

@@ -1,15 +1,15 @@
 import type { BitBurner as NS }                                  from 'Bitburner'
 import * as ServerAPI                                            from '/src/api/ServerAPI.js'
-import HackableServer                                            from '/src/classes/HackableServer.js'
-import Job                                                       from '/src/classes/Job.js'
-import Server                                                    from '/src/classes/Server.js'
-import { Cycle, CycleThreads, CycleThreadSpreads, CycleTimings } from '/src/interfaces/HackInterfaces.js'
+import HackableServer                                            from '/src/classes/Server/HackableServer.js'
+import Job                                                       from '/src/classes/Job/Job.js'
+import Server                                                    from '/src/classes/Server/Server.js'
+import { Cycle, CycleThreads, CycleThreadSpreads, CycleTimings } from '/src/classes/Misc/HackInterfaces.js'
 import { CONSTANT }                                              from '/src/lib/constants.js'
 import { Tools }                                                 from '/src/tools/Tools.js'
 import * as HackUtils                                            from '/src/util/HackUtils.js'
 import * as ToolUtils                                            from '/src/util/ToolUtils.js'
 import * as Utils                                                from '/src/util/Utils.js'
-import { ServerList }                                            from '/src/interfaces/ServerInterfaces.js'
+import { ServerList }                                            from '/src/classes/Server/ServerInterfaces.js'
 
 export async function computeCycles(ns: NS, target: HackableServer): Promise<number> {
 

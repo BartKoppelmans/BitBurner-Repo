@@ -1,5 +1,5 @@
-import Server         from '/src/classes/Server.js'
-import { ServerType } from '/src/interfaces/ServerInterfaces.js'
+import Server         from '/src/classes/Server/Server.js'
+import { ServerType } from '/src/classes/Server/ServerInterfaces.js'
 import { CONSTANT }   from '/src/lib/constants.js'
 
 export function isHomeServer(server: Server): boolean {

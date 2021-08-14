@@ -1,12 +1,12 @@
 import type { BitBurner as NS }                 from 'Bitburner'
 import * as LogAPI                              from '/src/api/LogAPI.js'
+import { LogType }                              from '/src/api/LogAPI.js'
 import * as ServerAPI                           from '/src/api/ServerAPI.js'
-import { CodingContract, CodingContractAnswer } from '/src/classes/CodingContract.js'
+import { CodingContract, CodingContractAnswer } from '/src/classes/Misc/CodingContract.js'
 import * as CodingContractUtils                 from '/src/util/CodingContractUtils.js'
 import * as Utils                               from '/src/util/Utils.js'
-import { ServerMap }                            from '/src/interfaces/ServerInterfaces.js'
-import { LogType }                              from '/src/interfaces/LogInterfaces.js'
-import { Runner }                               from '/src/interfaces/ClassInterfaces'
+import { ServerMap }                            from '/src/classes/Server/ServerInterfaces.js'
+import { Runner }                               from '/src/classes/Misc/ScriptInterfaces'
 
 class CodingContractRunner implements Runner {
 

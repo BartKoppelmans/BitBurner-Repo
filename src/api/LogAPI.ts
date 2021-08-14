@@ -1,11 +1,20 @@
 import type { BitBurner as NS } from 'Bitburner'
 import * as Utils               from '/src/util/Utils.js'
-import { LogType }              from '/src/interfaces/LogInterfaces.js'
 import { CONSTANT }             from '/src/lib/constants.js'
+
 
 export function error(ns: NS, message: string): void {
 	throw new Error('Not implemented')
 	// NOT IMPLEMENTED
+}
+
+export enum LogType {
+	NONE,
+	INFORMATION,
+	WARNING,
+	HACKING,
+	PURCHASED_SERVER,
+	CODING_CONTRACT
 }
 
 export function debug(ns: NS, message: string): void {

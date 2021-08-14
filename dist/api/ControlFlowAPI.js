@@ -1,7 +1,11 @@
 import * as JobAPI from '/src/api/JobAPI.js';
-import { ControlFlowCode } from '/src/interfaces/PortMessageInterfaces.js';
 import { CONSTANT } from '/src/lib/constants.js';
 import * as Utils from '/src/util/Utils.js';
+export var ControlFlowCode;
+(function (ControlFlowCode) {
+    ControlFlowCode[ControlFlowCode["KILL_MANAGERS"] = 0] = "KILL_MANAGERS";
+    ControlFlowCode[ControlFlowCode["KILL_DAEMON"] = 1] = "KILL_DAEMON";
+})(ControlFlowCode || (ControlFlowCode = {}));
 export async function launchRunners(ns) {
     // TODO: Check if we have enough ram available to run
     // TODO: Launch the coding contract runner

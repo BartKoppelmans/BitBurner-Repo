@@ -1,9 +1,9 @@
 import type { BitBurner as NS } from 'Bitburner'
 import * as ServerAPI           from '/src/api/ServerAPI.js'
 import * as LogAPI              from '/src/api/LogAPI.js'
-import Server                   from '/src/classes/Server.js'
+import Server                   from '/src/classes/Server/Server.js'
 import { CONSTANT }             from '/src/lib/constants.js'
-import { ServerMap }            from '/src/interfaces/ServerInterfaces.js'
+import { ServerMap }            from '/src/classes/Server/ServerInterfaces.js'
 
 async function findPath(ns: NS, server: Server): Promise<Server[]> {
 

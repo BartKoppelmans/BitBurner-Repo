@@ -1,8 +1,8 @@
 import type { BitBurner as NS, PurchaseableProgram } from 'Bitburner'
 import * as LogAPI                                   from '/src/api/LogAPI.js'
-import Server                                        from '/src/classes/Server.js'
+import Server                                        from '/src/classes/Server/Server.js'
 import * as PlayerUtils                              from '/src/util/PlayerUtils.js'
-import { LogType }                                   from '/src/interfaces/LogInterfaces.js'
+import { LogType }                                   from '/src/api/LogAPI.js'
 
 export enum ProgramType {
 	Crack,

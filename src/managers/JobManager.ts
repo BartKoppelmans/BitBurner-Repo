@@ -4,8 +4,10 @@ import * as LogAPI                           from '/src/api/LogAPI.js'
 import * as JobAPI                           from '/src/api/JobAPI.js'
 import { CONSTANT }                          from '/src/lib/constants.js'
 import * as Utils                            from '/src/util/Utils.js'
-import { Manager }                           from '/src/interfaces/ClassInterfaces.js'
-import { JobList, JobMap }                   from '/src/interfaces/JobInterfaces.js'
+import { Manager }                           from '/src/classes/Misc/ScriptInterfaces.js'
+import { JobList, JobMap }                   from '/src/classes/Job/JobInterfaces.js'
+
+const JOB_MANAGING_LOOP_INTERVAL = 500 as const
 
 class JobManager implements Manager {
 
@@ -25,7 +27,7 @@ class JobManager implements Manager {
 	public async start(ns: NS): Promise<void> {
 		LogAPI.debug(ns, `Starting the JobManager`)
 
-		this.managingLoopInterval = setInterval(this.managingLoop.bind(this, ns), CONSTANT.JOB_MANAGING_LOOP_INTERVAL)
+		this.managingLoopInterval = setInterval(this.managingLoop.bind(this, ns), JOB_MANAGING_LOOP_INTERVAL)
 	}
 
 	public async destroy(ns: NS): Promise<void> {

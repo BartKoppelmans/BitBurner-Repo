@@ -2,7 +2,7 @@ import { CONSTANT } from '/src/lib/constants.js';
 import * as ServerAPI from '/src/api/ServerAPI.js';
 import * as ToolUtils from '/src/util/ToolUtils.js';
 import * as SerializationUtils from '/src/util/SerializationUtils.js';
-import { ServerStatus } from '/src/interfaces/ServerInterfaces.js';
+import { ServerStatus } from '/src/classes/Server/ServerInterfaces.js';
 export async function getJobMap(ns) {
     return await readJobMap(ns);
 }

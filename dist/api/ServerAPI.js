@@ -1,10 +1,10 @@
-import { ServerPurpose, ServerStatus, } from '/src/interfaces/ServerInterfaces.js';
+import { ServerPurpose, ServerStatus, } from '/src/classes/Server/ServerInterfaces.js';
 import { CONSTANT } from '/src/lib/constants.js';
 import * as ServerUtils from '/src/util/ServerUtils.js';
 import * as SerializationUtils from '/src/util/SerializationUtils.js';
 import * as LogAPI from '/src/api/LogAPI.js';
-import PurchasedServer from '/src/classes/PurchasedServer.js';
-import { LogType } from '/src/interfaces/LogInterfaces.js';
+import PurchasedServer from '/src/classes/Server/PurchasedServer.js';
+import { LogType } from '/src/api/LogAPI.js';
 export async function getServerMap(ns) {
     return await readServerMap(ns);
 }

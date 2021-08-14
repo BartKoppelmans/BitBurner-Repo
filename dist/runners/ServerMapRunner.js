@@ -1,10 +1,10 @@
-import HackableServer from '/src/classes/HackableServer.js';
-import Server from '/src/classes/Server.js';
-import { ServerPurpose, ServerType } from '/src/interfaces/ServerInterfaces.js';
+import HackableServer from '/src/classes/Server/HackableServer.js';
+import Server from '/src/classes/Server/Server.js';
+import { ServerPurpose, ServerType } from '/src/classes/Server/ServerInterfaces.js';
 import { CONSTANT } from '/src/lib/constants.js';
 import * as ServerUtils from '/src/util/ServerUtils.js';
 import * as Utils from '/src/util/Utils.js';
-import PurchasedServer from '/src/classes/PurchasedServer.js';
+import PurchasedServer from '/src/classes/Server/PurchasedServer.js';
 import * as LogAPI from '/src/api/LogAPI.js';
 import * as ServerAPI from '/src/api/ServerAPI.js';
 class ServerMapRunner {

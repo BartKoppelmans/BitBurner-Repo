@@ -1,10 +1,18 @@
 import * as Utils from '/src/util/Utils.js';
-import { LogType } from '/src/interfaces/LogInterfaces.js';
 import { CONSTANT } from '/src/lib/constants.js';
 export function error(ns, message) {
     throw new Error('Not implemented');
     // NOT IMPLEMENTED
 }
+export var LogType;
+(function (LogType) {
+    LogType[LogType["NONE"] = 0] = "NONE";
+    LogType[LogType["INFORMATION"] = 1] = "INFORMATION";
+    LogType[LogType["WARNING"] = 2] = "WARNING";
+    LogType[LogType["HACKING"] = 3] = "HACKING";
+    LogType[LogType["PURCHASED_SERVER"] = 4] = "PURCHASED_SERVER";
+    LogType[LogType["CODING_CONTRACT"] = 5] = "CODING_CONTRACT";
+})(LogType || (LogType = {}));
 export function debug(ns, message) {
     if (CONSTANT.LOG_DEBUG) {
         printColored(ns, message, LogType.INFORMATION);

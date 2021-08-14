@@ -1,6 +1,6 @@
 import * as LogAPI from '/src/api/LogAPI.js';
 import * as PlayerUtils from '/src/util/PlayerUtils.js';
-import { LogType } from '/src/interfaces/LogInterfaces.js';
+import { LogType } from '/src/api/LogAPI.js';
 export var ProgramType;
 (function (ProgramType) {
     ProgramType[ProgramType["Crack"] = 0] = "Crack";

@@ -1,8 +1,8 @@
 import type { BitBurner as NS } from 'Bitburner'
 import * as ServerAPI           from '/src/api/ServerAPI.js'
-import Server                   from '/src/classes/Server.js'
+import Server                   from '/src/classes/Server/Server.js'
 import * as ServerUtils         from '/src/util/ServerUtils.js'
-import HackableServer           from '/src/classes/HackableServer.js'
+import HackableServer           from '/src/classes/Server/HackableServer.js'
 import { CONSTANT }             from '/src/lib/constants.js'
 
 enum PrintColor {

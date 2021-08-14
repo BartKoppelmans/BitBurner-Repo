@@ -1,7 +1,7 @@
 import { CONSTANT } from '/src/lib/constants.js';
 import * as CrimeUtils from '/src/util/CrimeUtils.js';
 import * as LogAPI from '/src/api/LogAPI.js';
-import { LogType } from '/src/interfaces/LogInterfaces.js';
+import { LogType } from '/src/api/LogAPI.js';
 export async function main(ns) {
     if (ns.isBusy()) {
         LogAPI.warn(ns, 'Cannot execute crimes, we are currently busy.');

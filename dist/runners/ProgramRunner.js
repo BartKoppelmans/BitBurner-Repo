@@ -1,11 +1,11 @@
 import * as LogAPI from '/src/api/LogAPI.js';
+import { LogType } from '/src/api/LogAPI.js';
 import * as ServerAPI from '/src/api/ServerAPI.js';
-import { Program, ProgramType } from '/src/classes/Program.js';
+import { Program, ProgramType } from '/src/classes/Misc/Program.js';
 import { CONSTANT } from '/src/lib/constants.js';
 import * as ServerUtils from '/src/util/ServerUtils.js';
 import * as Utils from '/src/util/Utils.js';
 import * as PlayerUtils from '/src/util/PlayerUtils.js';
-import { LogType } from '/src/interfaces/LogInterfaces.js';
 class ProgramRunner {
     static hasAllPrograms(ns) {
         return ProgramRunner.getRemainingPrograms(ns).length === 0;

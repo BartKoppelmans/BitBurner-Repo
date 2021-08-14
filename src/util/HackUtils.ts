@@ -1,12 +1,12 @@
 import type { BitBurner as NS } from 'Bitburner'
 import * as ServerAPI           from '/src/api/ServerAPI.js'
-import HackableServer           from '/src/classes/HackableServer.js'
-import Server                   from '/src/classes/Server.js'
+import HackableServer           from '/src/classes/Server/HackableServer.js'
+import Server                   from '/src/classes/Server/Server.js'
 import { CONSTANT }             from '/src/lib/constants.js'
 import { Tools }                from '/src/tools/Tools.js'
 import * as PlayerUtils         from '/src/util/PlayerUtils.js'
 import * as ToolUtils           from '/src/util/ToolUtils.js'
-import { ServerList }           from '/src/interfaces/ServerInterfaces.js'
+import { ServerList }           from '/src/classes/Server/ServerInterfaces.js'
 
 export async function computeThreadSpread(ns: NS, tool: Tools, threads: number, isPrep: boolean): Promise<Map<Server, number>> {
 	const maxThreadsAvailable = await calculateMaxThreads(ns, tool, isPrep)

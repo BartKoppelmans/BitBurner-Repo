@@ -5,8 +5,8 @@ import {
 	QuarantinedInformation,
 	ServerPurpose,
 	TreeStructure,
-}                                            from '/src/interfaces/ServerInterfaces.js'
-import Server                                from '/src/classes/Server.js'
+}                                            from '/src/classes/Server/ServerInterfaces.js'
+import Server                                from '/src/classes/Server/Server.js'
 import { CONSTANT }                          from '/src/lib/constants.js'
 import * as PlayerUtils                      from '/src/util/PlayerUtils.js'
 

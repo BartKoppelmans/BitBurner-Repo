@@ -1,5 +1,5 @@
-import Job    from '/src/classes/Job.js'
-import Server from '/src/classes/Server.js'
+import Job    from '/src/classes/Job/Job.js'
+import Server from '/src/classes/Server/Server.js'
 
 export interface HackSnapshot {
 	optimalBatchCost: number;

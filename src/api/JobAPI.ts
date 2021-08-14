@@ -1,13 +1,13 @@
 import type { BitBurner as NS, ProcessInfo } from 'Bitburner'
-import BatchJob                              from '/src/classes/BatchJob.js'
-import Job                                   from '/src/classes/Job.js'
+import BatchJob                              from '/src/classes/Job/BatchJob.js'
+import Job                                   from '/src/classes/Job/Job.js'
 import { CONSTANT }                          from '/src/lib/constants.js'
-import { JobList, JobMap }                   from '/src/interfaces/JobInterfaces.js'
+import { JobList, JobMap }                   from '/src/classes/Job/JobInterfaces.js'
 import * as ServerAPI                        from '/src/api/ServerAPI.js'
 import * as ToolUtils                        from '/src/util/ToolUtils.js'
 import * as SerializationUtils               from '/src/util/SerializationUtils.js'
-import { ServerMap, ServerStatus }           from '/src/interfaces/ServerInterfaces.js'
-import Server                                from '/src/classes/Server.js'
+import { ServerMap, ServerStatus }           from '/src/classes/Server/ServerInterfaces.js'
+import Server                                from '/src/classes/Server/Server.js'
 
 export async function getJobMap(ns: NS): Promise<JobMap> {
 	return await readJobMap(ns)

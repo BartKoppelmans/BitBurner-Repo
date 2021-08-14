@@ -1,6 +1,9 @@
 const excludedFiles = [
     '/src/lib/constants.js',
     'import.js',
+    'augmenthelper.js',
+    'buyNeuroFLux.js',
+    'karma.js',
 ];
 const excludedExtensions = [
     'lit',
