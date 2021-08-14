@@ -17,7 +17,6 @@ export interface Request extends Message {
 export enum ControlFlowCode {
 	KILL_MANAGERS,
 	KILL_DAEMON,
-	KILL_LOGMANAGER,
 }
 
 

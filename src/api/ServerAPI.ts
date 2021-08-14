@@ -117,15 +117,15 @@ export async function upgradeServer(ns: NS, server: PurchasedServer, ram: number
 }
 
 export async function increaseReservation(ns: NS, server: Server, reservation: number): Promise<void> {
-	server.increaseReservation(ns, +reservation.toFixed(2))
-
+	reservation = +reservation.toFixed(2)
+	server.increaseReservation(ns, reservation)
 	await updateServer(ns, server)
 
 }
 
 export async function decreaseReservation(ns: NS, server: Server, reservation: number): Promise<void> {
-	server.decreaseReservation(ns, +reservation.toFixed(2))
-
+	reservation = +reservation.toFixed(2)
+	server.decreaseReservation(ns, reservation)
 	await updateServer(ns, server)
 }
 

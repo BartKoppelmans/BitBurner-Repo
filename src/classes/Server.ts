@@ -13,20 +13,19 @@ export default class Server {
 
 
 	public constructor(ns: NS, server: Partial<IServer>) {
-
-		if (!server.characteristics) throw new Error("Cannot initialize the server without its characteristics")
+		if (!server.characteristics) throw new Error('Cannot initialize the server without its characteristics')
 
 		this.characteristics = server.characteristics
 
 		this.purpose     = (server.purpose) ? server.purpose : ServerPurpose.NONE
-		this.reservation = (server.reservation) ? server.reservation : 0
+		this.reservation = (server.reservation) ? +server.reservation.toFixed(2) : 0
 
 		this.files = ns.ls(this.characteristics.host)
 	}
 
 	public getAvailableRam(ns: NS): number {
 		const [total, used] = ns.getServerRam(this.characteristics.host)
-		return total - used - this.reservation - ((ServerUtils.isHomeServer(this)) ? CONSTANT.DESIRED_HOME_FREE_RAM : 0)
+		return total - used - (+this.reservation.toFixed(2)) - ((ServerUtils.isHomeServer(this)) ? CONSTANT.DESIRED_HOME_FREE_RAM : 0)
 	}
 
 	public getTotalRam(ns: NS): number {
@@ -47,6 +46,10 @@ export default class Server {
 	}
 
 	public decreaseReservation(ns: NS, reservation: number): void {
+
+		// NOTE: This should fix rounding issues
+		this.reservation = +this.reservation.toFixed(2)
+
 		if (reservation > this.reservation) throw new Error('No reservation of that size has been made yet')
 		this.reservation -= reservation
 	}
@@ -55,7 +58,7 @@ export default class Server {
 		return {
 			characteristics: this.characteristics,
 			purpose: this.purpose,
-			reservation: this.reservation,
+			reservation: +this.reservation.toFixed(2),
 		}
 	}
 }
