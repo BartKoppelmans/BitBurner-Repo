@@ -5,20 +5,21 @@ SetWorkingDir %A_ScriptDir%  ; Ensures a consistent starting directory.
 
 ^i::
 
-; MouseGetPos, xpos, ypos 
-; MsgBox, The cursor is at X%xpos% Y%ypos%.
+;MouseGetPos, xpos, ypos
+;MsgBox, The cursor is at X%xpos% Y%ypos%.
+;return
 
 While (true) {
 
 Send, !w
 Click, 330 559 ; Go to mega corp
 Click, 339 429 ; Go to the infiltration screen
-Click, 54 666 ; Click start
+Click, 73 768 ; Click start
 
 Sleep, 60000 ; Sleep for a minute, we infiltrate here
 
 Click, 149 437
-    
+
 }
 
 return
