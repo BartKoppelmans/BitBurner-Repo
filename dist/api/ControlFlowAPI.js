@@ -8,11 +8,12 @@ export var ControlFlowCode;
 })(ControlFlowCode || (ControlFlowCode = {}));
 export async function launchRunners(ns) {
     // TODO: Check if we have enough ram available to run
-    // TODO: Launch the coding contract runner
     const purchasedServerRunnerPid = ns.run('/src/runners/PurchasedServerRunner.js');
     const programRunnerPid = ns.run('/src/runners/ProgramRunner.js');
     const codingContractRunnerPid = ns.run('/src/runners/CodingContractRunner.js');
-    // TODO: Wait until everything is finished
+    while (ns.isRunning(purchasedServerRunnerPid) || ns.isRunning(programRunnerPid) || ns.isRunning(codingContractRunnerPid)) {
+        await ns.sleep(CONSTANT.SMALL_DELAY);
+    }
 }
 export async function hasDaemonKillRequest(ns) {
     const requestPortHandle = ns.getPortHandle(CONSTANT.CONTROL_FLOW_PORT);

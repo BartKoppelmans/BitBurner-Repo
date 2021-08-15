@@ -13,8 +13,8 @@ import { CONSTANT }             from '/src/lib/constants.js'
 import * as ServerUtils         from '/src/util/ServerUtils.js'
 import * as SerializationUtils  from '/src/util/SerializationUtils.js'
 import * as LogAPI              from '/src/api/LogAPI.js'
-import PurchasedServer          from '/src/classes/Server/PurchasedServer.js'
 import { LogType }              from '/src/api/LogAPI.js'
+import PurchasedServer          from '/src/classes/Server/PurchasedServer.js'
 
 export async function getServerMap(ns: NS): Promise<ServerMap> {
 	return await readServerMap(ns)
@@ -131,6 +131,14 @@ export async function decreaseReservation(ns: NS, server: Server, reservation: n
 
 export async function getServer(ns: NS, id: string): Promise<Server> {
 	const server: Server | undefined = (await getServerMap(ns)).servers.find(s => s.characteristics.id === id)
+
+	if (!server) throw new Error('Could not find that server.')
+
+	return server
+}
+
+export async function getServerByName(ns: NS, host: string): Promise<Server> {
+	const server: Server | undefined = (await getServerMap(ns)).servers.find(s => s.characteristics.host === host)
 
 	if (!server) throw new Error('Could not find that server.')
 

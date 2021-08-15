@@ -19,13 +19,13 @@ export async function launchRunners(ns: NS): Promise<void> {
 
 	// TODO: Check if we have enough ram available to run
 
-	// TODO: Launch the coding contract runner
-
 	const purchasedServerRunnerPid: number = ns.run('/src/runners/PurchasedServerRunner.js')
 	const programRunnerPid: number         = ns.run('/src/runners/ProgramRunner.js')
 	const codingContractRunnerPid: number  = ns.run('/src/runners/CodingContractRunner.js')
 
-	// TODO: Wait until everything is finished
+	while (ns.isRunning(purchasedServerRunnerPid) || ns.isRunning(programRunnerPid) || ns.isRunning(codingContractRunnerPid)) {
+		await ns.sleep(CONSTANT.SMALL_DELAY)
+	}
 }
 
 export async function hasDaemonKillRequest(ns: NS): Promise<boolean> {

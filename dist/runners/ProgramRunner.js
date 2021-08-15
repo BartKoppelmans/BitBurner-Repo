@@ -39,6 +39,7 @@ class ProgramRunner {
     }
     async run(ns) {
         LogAPI.debug(ns, `Running the ProgramRunner`);
+        const isFirstRun = await ProgramRunner.isFirstRun(ns);
         const money = PlayerUtils.getMoney(ns);
         if (!ProgramRunner.hasTor(ns)) {
             if (money < CONSTANT.TOR_ROUTER_COST)
@@ -54,8 +55,12 @@ class ProgramRunner {
             const isSuccessful = await program.attemptPurchase(ns);
             hasUpdated = hasUpdated || isSuccessful;
         }
-        if (hasUpdated)
+        if (hasUpdated || isFirstRun)
             await this.rootAllServers(ns);
+    }
+    static async isFirstRun(ns) {
+        const noodles = await ServerAPI.getServerByName(ns, 'n00dles');
+        return noodles.isRooted(ns);
     }
     async root(ns, server) {
         if (server.isRooted(ns)) {

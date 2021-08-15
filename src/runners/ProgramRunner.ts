@@ -53,6 +53,8 @@ class ProgramRunner implements Runner {
 	public async run(ns: NS): Promise<void> {
 		LogAPI.debug(ns, `Running the ProgramRunner`)
 
+		const isFirstRun: boolean = await ProgramRunner.isFirstRun(ns)
+
 		const money: number = PlayerUtils.getMoney(ns)
 
 		if (!ProgramRunner.hasTor(ns)) {
@@ -66,14 +68,18 @@ class ProgramRunner implements Runner {
 		const remainingPrograms: Program[] = ProgramRunner.getRemainingPrograms(ns)
 
 		let hasUpdated = false
-
 		for (const program of remainingPrograms) {
 			const isSuccessful: boolean = await program.attemptPurchase(ns)
 			hasUpdated                  = hasUpdated || isSuccessful
 		}
 
-		if (hasUpdated) await this.rootAllServers(ns)
+		if (hasUpdated || isFirstRun) await this.rootAllServers(ns)
 
+	}
+
+	private static async isFirstRun(ns: NS): Promise<boolean> {
+		const noodles: Server = await ServerAPI.getServerByName(ns, 'n00dles')
+		return noodles.isRooted(ns)
 	}
 
 	private async root(ns: NS, server: Server): Promise<void> {
