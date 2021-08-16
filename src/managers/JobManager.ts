@@ -7,7 +7,7 @@ import * as Utils                            from '/src/util/Utils.js'
 import { Manager }                           from '/src/classes/Misc/ScriptInterfaces.js'
 import { JobList, JobMap }                   from '/src/classes/Job/JobInterfaces.js'
 
-const JOB_MANAGING_LOOP_INTERVAL = 500 as const
+const JOB_MANAGING_LOOP_INTERVAL = 2500 as const
 
 class JobManager implements Manager {
 

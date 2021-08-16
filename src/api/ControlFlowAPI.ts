@@ -2,7 +2,7 @@ import type { BitBurner as NS, Port } from 'Bitburner'
 import { CONSTANT }                   from '/src/lib/constants.js'
 import * as Utils                     from '/src/util/Utils.js'
 
-const MANAGER_KILL_DELAY: number = 2500 as const
+const MANAGER_KILL_DELAY: number = 5000 as const
 
 export enum ControlFlowCode {
 	KILL_MANAGERS,

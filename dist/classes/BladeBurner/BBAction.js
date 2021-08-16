@@ -42,9 +42,13 @@ export default class BBAction {
             throw new Error('Cannot get the BlackOps rank for other actions');
         return ns.bladeburner.getBlackOpRank(this.name);
     }
-    async execute(ns) {
+    async continue(ns, iteration) {
+        LogAPI.log(ns, `${ns.nFormat(iteration, '000')} - Executing ${this.type} action '${this.name}'`, LogType.BLADEBURNER);
+        await ns.sleep(this.getDuration(ns));
+    }
+    async execute(ns, iteration) {
         ns.bladeburner.startAction(this.type, this.name);
-        LogAPI.log(ns, `Executing ${this.type} action '${this.name}'`, LogType.BLADEBURNER);
+        LogAPI.log(ns, `${ns.nFormat(iteration, '000')} - Executing ${this.type} action '${this.name}'`, LogType.BLADEBURNER);
         await ns.sleep(this.getDuration(ns));
     }
 }

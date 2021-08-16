@@ -1,23 +1,27 @@
-import type { BitBurner as NS } from 'Bitburner'
-import * as ControlFlowAPI      from '/src/api/ControlFlowAPI.js'
-import * as LogAPI              from '/src/api/LogAPI.js'
-import { LogType }              from '/src/api/LogAPI.js'
-import * as Utils               from '/src/util/Utils.js'
-import { Manager }              from '/src/classes/Misc/ScriptInterfaces.js'
-import { CONSTANT }             from '/src/lib/constants.js'
-import BBAction                 from '/src/classes/BladeBurner/BBAction.js'
-import { BBSkill }              from '/src/classes/BladeBurner/BBSkill.js'
-import * as BladeBurnerUtils    from '/src/util/BladeBurnerUtils.js'
-import * as PlayerUtils         from '/src/util/PlayerUtils.js'
-import { BBSkillPriority }      from '/src/classes/BladeBurner/BBInterfaces.js'
-import { BBCity }               from '/src/classes/BladeBurner/BBCity.js'
+import type { BitBurner as NS, BladeburnerCurAction } from 'Bitburner'
+import * as ControlFlowAPI                            from '/src/api/ControlFlowAPI.js'
+import * as LogAPI                                    from '/src/api/LogAPI.js'
+import { LogType }                                    from '/src/api/LogAPI.js'
+import * as Utils                                     from '/src/util/Utils.js'
+import { Manager }                                    from '/src/classes/Misc/ScriptInterfaces.js'
+import { CONSTANT }                                   from '/src/lib/constants.js'
+import BBAction                                       from '/src/classes/BladeBurner/BBAction.js'
+import { BBSkill }                                    from '/src/classes/BladeBurner/BBSkill.js'
+import * as BladeBurnerUtils                          from '/src/util/BladeBurnerUtils.js'
+import * as PlayerUtils                               from '/src/util/PlayerUtils.js'
+import { BBSkillPriority }                            from '/src/classes/BladeBurner/BBInterfaces.js'
+import { BBCity }                                     from '/src/classes/BladeBurner/BBCity.js'
 
-const JOIN_DELAY: number          = 60000 as const
-const MANAGING_LOOP_DELAY: number = 100 as const
-const BUSY_RETRY_DELAY: number    = 1000 as const
-const SYNTH_THRESHOLD: number     = 100000 as const
+const JOIN_DELAY: number                = 60000 as const
+const MANAGING_LOOP_DELAY: number       = 100 as const
+const BUSY_RETRY_DELAY: number          = 1000 as const
+const SYNTH_THRESHOLD: number           = 100000 as const
+const FIELD_ANALYSIS_INTERVAL: number   = 75 as const
+const FIELD_ANALYSIS_ITERATIONS: number = 25 as const
 
 class BladeBurnerManager implements Manager {
+
+	private iterationCounter: number = 0
 
 	private managingLoopTimeout?: ReturnType<typeof setTimeout>
 
@@ -47,28 +51,33 @@ class BladeBurnerManager implements Manager {
 	public async destroy(ns: NS): Promise<void> {
 		if (this.managingLoopTimeout) clearTimeout(this.managingLoopTimeout)
 
+		ns.bladeburner.stopBladeburnerAction()
+
 		LogAPI.debug(ns, `Stopping the BladeBurnerManager`)
 	}
 
 	private async managingLoop(ns: NS): Promise<void> {
 
-		const nextLoop = () => {
+		const nextLoop = (isIteration: boolean) => {
+			if (isIteration) this.iterationCounter++
 			this.managingLoopTimeout = setTimeout(this.managingLoop.bind(this, ns), MANAGING_LOOP_DELAY)
 			return
 		}
+
+		const iteration: number = (this.iterationCounter % (FIELD_ANALYSIS_INTERVAL + FIELD_ANALYSIS_ITERATIONS)) + 1
 
 		this.upgradeSkills(ns)
 
 		// NOTE: This might still have some problems
 		if (!BladeBurnerManager.hasSimulacrum(ns) && ns.isBusy()) {
 			await ns.sleep(BUSY_RETRY_DELAY)
-			return nextLoop()
+			return nextLoop(false)
 		}
 
 		// We start our regen if we are tired
 		if (BladeBurnerManager.isTired(ns)) {
 			const regenAction: BBAction = BladeBurnerUtils.getAction(ns, this.actions, 'Hyperbolic Regeneration Chamber')
-			return regenAction.execute(ns).then(nextLoop)
+			return regenAction.execute(ns, iteration).then(nextLoop.bind(this, false))
 		}
 
 		// Check whether we have enough Synths, otherwise move or search for new ones
@@ -82,47 +91,67 @@ class BladeBurnerManager implements Manager {
 			else {
 				const intelActions: BBAction[] = BladeBurnerUtils.getAchievableIntelActions(ns, this.actions)
 				if (intelActions.length > 0) {
-					return intelActions[0].execute(ns).then(nextLoop)
+					return intelActions[0].execute(ns, iteration).then(nextLoop.bind(this, true))
 				}
 
 				const fieldAnalysisAction: BBAction = BladeBurnerUtils.getAction(ns, this.actions, 'Field Analysis')
-				return fieldAnalysisAction.execute(ns).then(nextLoop)
+				return fieldAnalysisAction.execute(ns, iteration).then(nextLoop.bind(this, false))
 			}
 		}
+
+		const currentAction: BBAction | undefined = this.getCurrentAction(ns)
+		const nextAction: BBAction                = this.findOptimalAction(ns)
+
+		// This makes sure that we don't unnecessarily stop our current action to start the same one
+		if (currentAction && currentAction.name === nextAction.name) {
+			return nextAction.continue(ns, iteration).then(nextLoop.bind(this, true))
+		} else return nextAction.execute(ns, iteration).then(nextLoop.bind(this, true))
+	}
+
+	private getCurrentAction(ns: NS): BBAction | undefined {
+		const currentAction: BladeburnerCurAction = ns.bladeburner.getCurrentAction()
+		if (currentAction.type === 'Idle') return undefined
+
+		return BladeBurnerUtils.getAction(ns, this.actions, currentAction.name)
+	}
+
+	private findOptimalAction(ns: NS): BBAction {
+
+		const currentCity: BBCity = this.cities.find((city) => city.isCurrent(ns)) as BBCity
+
+		const shouldDoFieldAnalysis: boolean = ((this.iterationCounter % (FIELD_ANALYSIS_INTERVAL + FIELD_ANALYSIS_ITERATIONS)) < FIELD_ANALYSIS_ITERATIONS)
+		if (shouldDoFieldAnalysis) return BladeBurnerUtils.getAction(ns, this.actions, 'Field Analysis')
 
 		// We try to do the next BlackOp if possible
 		const achievableBlackOps: BBAction[] | undefined = BladeBurnerUtils.getAchievableBlackOps(ns, this.actions)
 		if (achievableBlackOps.length > 0) {
-			return achievableBlackOps[0].execute(ns).then(nextLoop)
+			return achievableBlackOps[0]
 		}
 
 		// We try to do operations if possible
 		const achievableOperations: BBAction[] | undefined = BladeBurnerUtils.getAchievableActions(ns, this.actions, 'operations')
 		if (achievableOperations.length > 0) {
-			return achievableOperations[0].execute(ns).then(nextLoop)
+			return achievableOperations[0]
 		}
 
 		// We try to do contracts if possible
 		const achievableContracts: BBAction[] | undefined = BladeBurnerUtils.getAchievableActions(ns, this.actions, 'contracts')
 		if (achievableContracts.length > 0) {
-			return achievableContracts[0].execute(ns).then(nextLoop)
+			return achievableContracts[0]
 		}
 
 		// NOTE: Now we have figured out that there is basically nothing to do...
 		if (currentCity.getChaos(ns) > ns.bladeburner.getRank() * 1000) {
-			const diplomacyAction: BBAction = BladeBurnerUtils.getAction(ns, this.actions, 'Diplomacy')
-			return diplomacyAction.execute(ns).then(nextLoop)
+			return BladeBurnerUtils.getAction(ns, this.actions, 'Diplomacy')
 		}
 
 		// Check whether we should train more
 		if (BladeBurnerManager.shouldTrain(ns)) {
-			const trainingAction: BBAction = BladeBurnerUtils.getAction(ns, this.actions, 'Training')
-			return trainingAction.execute(ns).then(nextLoop)
+			return BladeBurnerUtils.getAction(ns, this.actions, 'Training')
 		}
 
 		// Our final resort is to just do some analyses
-		const fieldAnalysisAction: BBAction = BladeBurnerUtils.getAction(ns, this.actions, 'Field Analysis')
-		return fieldAnalysisAction.execute(ns).then(nextLoop)
+		return BladeBurnerUtils.getAction(ns, this.actions, 'Field Analysis')
 	}
 
 	private static getStaminaPercentage(ns: NS): number {

@@ -58,9 +58,14 @@ export default class BBAction {
 		return ns.bladeburner.getBlackOpRank(this.name as BladeburnerBlackOps)
 	}
 
-	public async execute(ns: NS): Promise<void> {
+	public async continue(ns: NS, iteration: number): Promise<void> {
+		LogAPI.log(ns, `${ns.nFormat(iteration, '000')} - Executing ${this.type} action '${this.name}'`, LogType.BLADEBURNER)
+		await ns.sleep(this.getDuration(ns))
+	}
+
+	public async execute(ns: NS, iteration: number): Promise<void> {
 		ns.bladeburner.startAction(this.type, this.name)
-		LogAPI.log(ns, `Executing ${this.type} action '${this.name}'`, LogType.BLADEBURNER)
+		LogAPI.log(ns, `${ns.nFormat(iteration, '000')} - Executing ${this.type} action '${this.name}'`, LogType.BLADEBURNER)
 		await ns.sleep(this.getDuration(ns))
 	}
 }

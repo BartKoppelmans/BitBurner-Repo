@@ -1,6 +1,6 @@
 import { CONSTANT } from '/src/lib/constants.js';
 import * as Utils from '/src/util/Utils.js';
-const MANAGER_KILL_DELAY = 2500;
+const MANAGER_KILL_DELAY = 5000;
 export var ControlFlowCode;
 (function (ControlFlowCode) {
     ControlFlowCode[ControlFlowCode["KILL_MANAGERS"] = 0] = "KILL_MANAGERS";
