@@ -11,6 +11,16 @@ export default class PurchasedServer extends Server {
         this.quarantinedInformation = (server.quarantinedInformation) ? server.quarantinedInformation : { quarantined: false };
         this.purpose = (this.isQuarantined()) ? ServerPurpose.NONE : PurchasedServer.determinePurpose(server.characteristics.purchasedServerId);
     }
+    static determinePurpose(id) {
+        return (id < CONSTANT.NUM_PURCHASED_HACKING_SERVERS) ? ServerPurpose.HACK : ServerPurpose.PREP;
+    }
+    static getDefaultTreeStructure() {
+        return {
+            connections: [CONSTANT.HOME_SERVER_ID],
+            parent: CONSTANT.HOME_SERVER_ID,
+            children: [],
+        };
+    }
     isQuarantined() {
         return this.quarantinedInformation.quarantined;
     }
@@ -29,16 +39,6 @@ export default class PurchasedServer extends Server {
         if (processes.length !== 0)
             return false;
         return true;
-    }
-    static determinePurpose(id) {
-        return (id < CONSTANT.NUM_PURCHASED_HACKING_SERVERS) ? ServerPurpose.HACK : ServerPurpose.PREP;
-    }
-    static getDefaultTreeStructure() {
-        return {
-            connections: [CONSTANT.HOME_SERVER_ID],
-            parent: CONSTANT.HOME_SERVER_ID,
-            children: [],
-        };
     }
     toJSON() {
         const json = super.toJSON();

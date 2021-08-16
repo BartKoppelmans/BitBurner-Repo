@@ -16,6 +16,25 @@ class BladeBurnerManager {
     constructor() {
         this.iterationCounter = 0;
     }
+    static getStaminaPercentage(ns) {
+        const [current, total] = ns.bladeburner.getStamina();
+        return (current / total) * 100;
+    }
+    static isTired(ns) {
+        return BladeBurnerManager.getStaminaPercentage(ns) <= 50;
+    }
+    static shouldTrain(ns) {
+        const player = PlayerUtils.getPlayer(ns);
+        return ns.bladeburner.getRank() > 1000 ||
+            player.agility < 100 ||
+            player.defense < 100 ||
+            player.dexterity < 100 ||
+            player.strength < 100;
+    }
+    static hasSimulacrum(ns) {
+        const augs = ns.getOwnedAugmentations();
+        return augs.includes('The Blade\'s Simulacrum');
+    }
     async initialize(ns) {
         Utils.disableLogging(ns);
         while (!ns.bladeburner.joinBladeburnerDivision()) {
@@ -117,25 +136,6 @@ class BladeBurnerManager {
         }
         // Our final resort is to just do some analyses
         return BladeBurnerUtils.getAction(ns, this.actions, 'Field Analysis');
-    }
-    static getStaminaPercentage(ns) {
-        const [current, total] = ns.bladeburner.getStamina();
-        return (current / total) * 100;
-    }
-    static isTired(ns) {
-        return BladeBurnerManager.getStaminaPercentage(ns) <= 50;
-    }
-    static shouldTrain(ns) {
-        const player = PlayerUtils.getPlayer(ns);
-        return ns.bladeburner.getRank() > 1000 ||
-            player.agility < 100 ||
-            player.defense < 100 ||
-            player.dexterity < 100 ||
-            player.strength < 100;
-    }
-    static hasSimulacrum(ns) {
-        const augs = ns.getOwnedAugmentations();
-        return augs.includes('The Blade\'s Simulacrum');
     }
     upgradeSkills(ns) {
         const highPrioritySkills = BladeBurnerUtils.filterSkills(ns, this.skills, BBSkillPriority.HIGH);

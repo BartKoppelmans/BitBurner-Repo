@@ -10,23 +10,6 @@ import { Runner }                               from '/src/classes/Misc/ScriptIn
 
 class CodingContractRunner implements Runner {
 
-	public async run(ns: NS): Promise<void> {
-		LogAPI.debug(ns, `Running the CodingContractRunner`)
-
-		const serverMap: ServerMap = await ServerAPI.getServerMap(ns)
-
-		for (const server of serverMap.servers) {
-			const serverContracts: string[] = server.files.filter((file) => file.includes('.cct'))
-
-			if (serverContracts.length === 0) continue
-
-			for (const serverContract of serverContracts) {
-				const contract = new CodingContract(ns, serverContract, server)
-				CodingContractRunner.solveContract(ns, contract)
-			}
-		}
-	}
-
 	private static solveContract(ns: NS, contract: CodingContract) {
 		const solution: CodingContractAnswer | null = CodingContractUtils.findSolution(ns, contract)
 
@@ -47,6 +30,23 @@ class CodingContractRunner implements Runner {
 
 	private static onSolvedContract(ns: NS, contract: CodingContract) {
 		LogAPI.log(ns, `Solved contract ${contract.server.characteristics.host}/${contract.filename}`, LogType.CODING_CONTRACT)
+	}
+
+	public async run(ns: NS): Promise<void> {
+		LogAPI.debug(ns, `Running the CodingContractRunner`)
+
+		const serverMap: ServerMap = await ServerAPI.getServerMap(ns)
+
+		for (const server of serverMap.servers) {
+			const serverContracts: string[] = server.files.filter((file) => file.includes('.cct'))
+
+			if (serverContracts.length === 0) continue
+
+			for (const serverContract of serverContracts) {
+				const contract = new CodingContract(ns, serverContract, server)
+				CodingContractRunner.solveContract(ns, contract)
+			}
+		}
 	}
 
 }

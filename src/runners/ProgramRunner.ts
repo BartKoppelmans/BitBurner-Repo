@@ -50,6 +50,11 @@ class ProgramRunner implements Runner {
 		return ProgramRunner.getNumCrackScripts(ns) >= hackableServer.staticHackingProperties.ports
 	}
 
+	private static async isFirstRun(ns: NS): Promise<boolean> {
+		const noodles: Server = await ServerAPI.getServerByName(ns, 'n00dles')
+		return noodles.isRooted(ns)
+	}
+
 	public async run(ns: NS): Promise<void> {
 		LogAPI.debug(ns, `Running the ProgramRunner`)
 
@@ -75,11 +80,6 @@ class ProgramRunner implements Runner {
 
 		if (hasUpdated || isFirstRun) await this.rootAllServers(ns)
 
-	}
-
-	private static async isFirstRun(ns: NS): Promise<boolean> {
-		const noodles: Server = await ServerAPI.getServerByName(ns, 'n00dles')
-		return noodles.isRooted(ns)
 	}
 
 	private async root(ns: NS, server: Server): Promise<void> {

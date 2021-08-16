@@ -10,16 +10,6 @@ export default class HackableServer extends Server {
         this.percentageToSteal = CONSTANT.DEFAULT_PERCENTAGE_TO_STEAL;
         this.serverValue = Heuristics.MainHeuristic(ns, this);
     }
-    getStaticHackingProperties(ns) {
-        return {
-            ports: ns.getServerNumPortsRequired(this.characteristics.host),
-            hackingLevel: ns.getServerRequiredHackingLevel(this.characteristics.host),
-            maxMoney: ns.getServerMaxMoney(this.characteristics.host),
-            growth: ns.getServerGrowth(this.characteristics.host),
-            minSecurityLevel: ns.getServerMinSecurityLevel(this.characteristics.host),
-            baseSecurityLevel: ns.getServerBaseSecurityLevel(this.characteristics.host),
-        };
-    }
     getServer(ns) {
         return ns.getServer();
     }
@@ -60,6 +50,16 @@ export default class HackableServer extends Server {
         return {
             ...json,
             status: this.status,
+        };
+    }
+    getStaticHackingProperties(ns) {
+        return {
+            ports: ns.getServerNumPortsRequired(this.characteristics.host),
+            hackingLevel: ns.getServerRequiredHackingLevel(this.characteristics.host),
+            maxMoney: ns.getServerMaxMoney(this.characteristics.host),
+            growth: ns.getServerGrowth(this.characteristics.host),
+            minSecurityLevel: ns.getServerMinSecurityLevel(this.characteristics.host),
+            baseSecurityLevel: ns.getServerBaseSecurityLevel(this.characteristics.host),
         };
     }
 }

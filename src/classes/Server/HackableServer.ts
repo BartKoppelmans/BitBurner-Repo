@@ -23,17 +23,6 @@ export default class HackableServer extends Server {
 		this.serverValue = Heuristics.MainHeuristic(ns, this)
 	}
 
-	private getStaticHackingProperties(ns: NS): StaticHackingProperties {
-		return {
-			ports: ns.getServerNumPortsRequired(this.characteristics.host),
-			hackingLevel: ns.getServerRequiredHackingLevel(this.characteristics.host),
-			maxMoney: ns.getServerMaxMoney(this.characteristics.host),
-			growth: ns.getServerGrowth(this.characteristics.host),
-			minSecurityLevel: ns.getServerMinSecurityLevel(this.characteristics.host),
-			baseSecurityLevel: ns.getServerBaseSecurityLevel(this.characteristics.host),
-		}
-	}
-
 	public getServer(ns: NS) {
 		return (ns as any).getServer()
 	}
@@ -88,5 +77,16 @@ export default class HackableServer extends Server {
 			status: this.status,
 		}
 
+	}
+
+	private getStaticHackingProperties(ns: NS): StaticHackingProperties {
+		return {
+			ports: ns.getServerNumPortsRequired(this.characteristics.host),
+			hackingLevel: ns.getServerRequiredHackingLevel(this.characteristics.host),
+			maxMoney: ns.getServerMaxMoney(this.characteristics.host),
+			growth: ns.getServerGrowth(this.characteristics.host),
+			minSecurityLevel: ns.getServerMinSecurityLevel(this.characteristics.host),
+			baseSecurityLevel: ns.getServerBaseSecurityLevel(this.characteristics.host),
+		}
 	}
 }

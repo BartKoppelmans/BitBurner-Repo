@@ -20,6 +20,15 @@ export default class Job {
         if (this.threads <= 0)
             throw new Error('Cannot create a job with less than 1 thread');
     }
+    static createArgumentArray(ns, args) {
+        return [
+            args.script,
+            args.server.characteristics.host,
+            args.threads,
+            args.target.characteristics.host,
+            args.start.getTime().toString(),
+        ];
+    }
     async execute(ns) {
         /*
          TODO: Find a solution on how to check this first, perhaps in JobAPI.startJob?
@@ -63,15 +72,6 @@ export default class Job {
     }
     async onCancel(ns) {
         await this.print(ns, false, true);
-    }
-    static createArgumentArray(ns, args) {
-        return [
-            args.script,
-            args.server.characteristics.host,
-            args.threads,
-            args.target.characteristics.host,
-            args.start.getTime().toString(),
-        ];
     }
     toJSON() {
         return {

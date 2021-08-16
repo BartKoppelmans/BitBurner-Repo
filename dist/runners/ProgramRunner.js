@@ -37,6 +37,10 @@ class ProgramRunner {
         const hackableServer = server;
         return ProgramRunner.getNumCrackScripts(ns) >= hackableServer.staticHackingProperties.ports;
     }
+    static async isFirstRun(ns) {
+        const noodles = await ServerAPI.getServerByName(ns, 'n00dles');
+        return noodles.isRooted(ns);
+    }
     async run(ns) {
         LogAPI.debug(ns, `Running the ProgramRunner`);
         const isFirstRun = await ProgramRunner.isFirstRun(ns);
@@ -57,10 +61,6 @@ class ProgramRunner {
         }
         if (hasUpdated || isFirstRun)
             await this.rootAllServers(ns);
-    }
-    static async isFirstRun(ns) {
-        const noodles = await ServerAPI.getServerByName(ns, 'n00dles');
-        return noodles.isRooted(ns);
     }
     async root(ns, server) {
         if (server.isRooted(ns)) {

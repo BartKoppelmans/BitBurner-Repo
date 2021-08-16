@@ -5,23 +5,6 @@ export class BBSkill {
         this.name = name;
         this.priority = BBSkill.determinePriority(this.name);
     }
-    getCost(ns) {
-        return ns.bladeburner.getSkillUpgradeCost(this.name);
-    }
-    getLevel(ns) {
-        return ns.bladeburner.getSkillLevel(this.name);
-    }
-    canUpgrade(ns) {
-        if (this.name === 'Overclock' && this.getLevel(ns) === 90)
-            return false;
-        return this.getCost(ns) <= ns.bladeburner.getSkillPoints();
-    }
-    upgrade(ns) {
-        if (!this.canUpgrade(ns))
-            throw new Error('Cannot upgrade this skill');
-        else
-            ns.bladeburner.upgradeSkill(this.name);
-    }
     static determinePriority(name) {
         switch (name) {
             case 'Overclock':
@@ -43,5 +26,22 @@ export class BBSkill {
             default:
                 return BBSkillPriority.LOW;
         }
+    }
+    getCost(ns) {
+        return ns.bladeburner.getSkillUpgradeCost(this.name);
+    }
+    getLevel(ns) {
+        return ns.bladeburner.getSkillLevel(this.name);
+    }
+    canUpgrade(ns) {
+        if (this.name === 'Overclock' && this.getLevel(ns) === 90)
+            return false;
+        return this.getCost(ns) <= ns.bladeburner.getSkillPoints();
+    }
+    upgrade(ns) {
+        if (!this.canUpgrade(ns))
+            throw new Error('Cannot upgrade this skill');
+        else
+            ns.bladeburner.upgradeSkill(this.name);
     }
 }

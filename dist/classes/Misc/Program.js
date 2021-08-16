@@ -1,6 +1,6 @@
 import * as LogAPI from '/src/api/LogAPI.js';
-import * as PlayerUtils from '/src/util/PlayerUtils.js';
 import { LogType } from '/src/api/LogAPI.js';
+import * as PlayerUtils from '/src/util/PlayerUtils.js';
 export var ProgramType;
 (function (ProgramType) {
     ProgramType[ProgramType["Crack"] = 0] = "Crack";
@@ -26,9 +26,6 @@ export class Program {
         }
         return isSuccessful;
     }
-    toValidString(ns, name) {
-        return name.toLowerCase();
-    }
     run(ns, server) {
         switch (this.name) {
             case 'BruteSSH.exe':
@@ -44,5 +41,8 @@ export class Program {
             default:
                 throw new Error(`Program "${this.name}" not found.`);
         }
+    }
+    toValidString(ns, name) {
+        return name.toLowerCase();
     }
 }

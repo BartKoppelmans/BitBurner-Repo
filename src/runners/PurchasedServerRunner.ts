@@ -1,5 +1,6 @@
 import type { BitBurner as NS } from 'Bitburner'
 import * as LogAPI              from '/src/api/LogAPI.js'
+import { LogType }              from '/src/api/LogAPI.js'
 import * as ServerAPI           from '/src/api/ServerAPI.js'
 import {
 	PurchasedServerCharacteristics,
@@ -12,7 +13,6 @@ import * as Utils               from '/src/util/Utils.js'
 import PurchasedServer          from '/src/classes/Server/PurchasedServer.js'
 import * as PlayerUtils         from '/src/util/PlayerUtils.js'
 import Server                   from '/src/classes/Server/Server.js'
-import { LogType }              from '/src/api/LogAPI.js'
 
 
 class PurchasedServerRunner {

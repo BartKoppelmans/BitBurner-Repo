@@ -29,6 +29,29 @@ class BladeBurnerManager implements Manager {
 	private skills!: BBSkill[]
 	private cities!: BBCity[]
 
+	private static getStaminaPercentage(ns: NS): number {
+		const [current, total] = ns.bladeburner.getStamina()
+		return (current / total) * 100
+	}
+
+	private static isTired(ns: NS): boolean {
+		return BladeBurnerManager.getStaminaPercentage(ns) <= 50
+	}
+
+	private static shouldTrain(ns: NS): boolean {
+		const player: any = PlayerUtils.getPlayer(ns)
+		return ns.bladeburner.getRank() > 1000 ||
+			player.agility < 100 ||
+			player.defense < 100 ||
+			player.dexterity < 100 ||
+			player.strength < 100
+	}
+
+	private static hasSimulacrum(ns: NS) {
+		const augs = ns.getOwnedAugmentations()
+		return augs.includes('The Blade\'s Simulacrum')
+	}
+
 	public async initialize(ns: NS) {
 		Utils.disableLogging(ns)
 
@@ -152,29 +175,6 @@ class BladeBurnerManager implements Manager {
 
 		// Our final resort is to just do some analyses
 		return BladeBurnerUtils.getAction(ns, this.actions, 'Field Analysis')
-	}
-
-	private static getStaminaPercentage(ns: NS): number {
-		const [current, total] = ns.bladeburner.getStamina()
-		return (current / total) * 100
-	}
-
-	private static isTired(ns: NS): boolean {
-		return BladeBurnerManager.getStaminaPercentage(ns) <= 50
-	}
-
-	private static shouldTrain(ns: NS): boolean {
-		const player: any = PlayerUtils.getPlayer(ns)
-		return ns.bladeburner.getRank() > 1000 ||
-			player.agility < 100 ||
-			player.defense < 100 ||
-			player.dexterity < 100 ||
-			player.strength < 100
-	}
-
-	private static hasSimulacrum(ns: NS) {
-		const augs = ns.getOwnedAugmentations()
-		return augs.includes('The Blade\'s Simulacrum')
 	}
 
 	private upgradeSkills(ns: NS): void {

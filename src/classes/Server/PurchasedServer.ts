@@ -27,10 +27,21 @@ export default class PurchasedServer extends Server {
 		this.purpose = (this.isQuarantined()) ? ServerPurpose.NONE : PurchasedServer.determinePurpose(server.characteristics.purchasedServerId)
 	}
 
+	public static determinePurpose(id: number): ServerPurpose {
+		return (id < CONSTANT.NUM_PURCHASED_HACKING_SERVERS) ? ServerPurpose.HACK : ServerPurpose.PREP
+	}
+
+	public static getDefaultTreeStructure(): TreeStructure {
+		return {
+			connections: [CONSTANT.HOME_SERVER_ID],
+			parent: CONSTANT.HOME_SERVER_ID,
+			children: [],
+		}
+	}
+
 	public isQuarantined(): boolean {
 		return this.quarantinedInformation.quarantined
 	}
-
 
 	// TODO: We might want to move this outside of this class
 	public canUpgrade(ns: NS, ram: number): boolean {
@@ -48,18 +59,6 @@ export default class PurchasedServer extends Server {
 		if (processes.length !== 0) return false
 
 		return true
-	}
-
-	public static determinePurpose(id: number): ServerPurpose {
-		return (id < CONSTANT.NUM_PURCHASED_HACKING_SERVERS) ? ServerPurpose.HACK : ServerPurpose.PREP
-	}
-
-	public static getDefaultTreeStructure(): TreeStructure {
-		return {
-			connections: [CONSTANT.HOME_SERVER_ID],
-			parent: CONSTANT.HOME_SERVER_ID,
-			children: [],
-		}
 	}
 
 	public toJSON() {

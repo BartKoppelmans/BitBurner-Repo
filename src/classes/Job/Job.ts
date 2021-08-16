@@ -41,6 +41,16 @@ export default class Job {
 
 	}
 
+	private static createArgumentArray(ns: NS, args: ToolArguments): ExecArguments {
+		return [
+			args.script,
+			args.server.characteristics.host,
+			args.threads,
+			args.target.characteristics.host,
+			args.start.getTime().toString(),
+		]
+	}
+
 	public async execute(ns: NS): Promise<void> {
 
 		/*
@@ -94,16 +104,6 @@ export default class Job {
 
 	public async onCancel(ns: NS) {
 		await this.print(ns, false, true)
-	}
-
-	private static createArgumentArray(ns: NS, args: ToolArguments): ExecArguments {
-		return [
-			args.script,
-			args.server.characteristics.host,
-			args.threads,
-			args.target.characteristics.host,
-			args.start.getTime().toString(),
-		]
 	}
 
 	public toJSON() {
