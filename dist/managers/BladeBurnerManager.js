@@ -10,8 +10,8 @@ const JOIN_DELAY = 60000;
 const MANAGING_LOOP_DELAY = 100;
 const BUSY_RETRY_DELAY = 1000;
 const SYNTH_THRESHOLD = 100000;
-const FIELD_ANALYSIS_INTERVAL = 75;
-const FIELD_ANALYSIS_ITERATIONS = 25;
+const FIELD_ANALYSIS_INTERVAL = 30;
+const FIELD_ANALYSIS_ITERATIONS = 20;
 class BladeBurnerManager {
     constructor() {
         this.iterationCounter = 0;

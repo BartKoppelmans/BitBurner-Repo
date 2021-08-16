@@ -12,7 +12,6 @@ import { Tools } from '/src/tools/Tools.js';
 import * as CycleUtils from '/src/util/CycleUtils.js';
 import * as HackUtils from '/src/util/HackUtils.js';
 import * as ToolUtils from '/src/util/ToolUtils.js';
-import { Heuristics } from '/src/util/Heuristics.js';
 import * as Utils from '/src/util/Utils.js';
 let isHacking = false;
 let hackLoopTimeout;
@@ -33,10 +32,6 @@ async function initialize(ns) {
 async function hackLoop(ns) {
     // Get the potential targets
     let potentialTargets = await ServerAPI.getTargetServers(ns);
-    // Then evaluate the potential targets afterwards
-    await Promise.all(potentialTargets.map(async (target) => {
-        return target.evaluate(ns, Heuristics.DiscordHeuristic);
-    }));
     // We would have a problem if there are no targets
     if (potentialTargets.length === 0) {
         throw new Error('No potential targets found.');

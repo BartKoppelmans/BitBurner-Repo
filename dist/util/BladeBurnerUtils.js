@@ -42,7 +42,7 @@ export function getAchievableActions(ns, actions, type) {
         .sort((a, b) => {
         return b.getReputationGain(ns) - a.getReputationGain(ns);
     })
-        .filter((action) => action.getCount(ns) > 1)
+        .filter((action) => action.getCount(ns) >= 1)
         .filter((action) => action.isAchievable(ns));
 }
 export function createSkills(ns) {

@@ -16,8 +16,8 @@ const JOIN_DELAY: number                = 60000 as const
 const MANAGING_LOOP_DELAY: number       = 100 as const
 const BUSY_RETRY_DELAY: number          = 1000 as const
 const SYNTH_THRESHOLD: number           = 100000 as const
-const FIELD_ANALYSIS_INTERVAL: number   = 75 as const
-const FIELD_ANALYSIS_ITERATIONS: number = 25 as const
+const FIELD_ANALYSIS_INTERVAL: number   = 30 as const
+const FIELD_ANALYSIS_ITERATIONS: number = 20 as const
 
 class BladeBurnerManager implements Manager {
 

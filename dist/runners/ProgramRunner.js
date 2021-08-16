@@ -39,7 +39,7 @@ class ProgramRunner {
     }
     static async isFirstRun(ns) {
         const noodles = await ServerAPI.getServerByName(ns, 'n00dles');
-        return noodles.isRooted(ns);
+        return !noodles.isRooted(ns);
     }
     async run(ns) {
         LogAPI.debug(ns, `Running the ProgramRunner`);

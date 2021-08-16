@@ -65,7 +65,7 @@ export function getAchievableActions(ns: NS, actions: BBAction[], type?: BBActio
 		.sort((a, b) => {
 			return b.getReputationGain(ns) - a.getReputationGain(ns)
 		})
-		.filter((action) => action.getCount(ns) > 1)
+		.filter((action) => action.getCount(ns) >= 1)
 		.filter((action) => action.isAchievable(ns))
 }
 

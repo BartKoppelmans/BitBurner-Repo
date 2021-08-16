@@ -52,7 +52,7 @@ class ProgramRunner implements Runner {
 
 	private static async isFirstRun(ns: NS): Promise<boolean> {
 		const noodles: Server = await ServerAPI.getServerByName(ns, 'n00dles')
-		return noodles.isRooted(ns)
+		return !noodles.isRooted(ns)
 	}
 
 	public async run(ns: NS): Promise<void> {
