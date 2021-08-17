@@ -20,7 +20,7 @@ export default class HackableServer extends Server {
 		this.staticHackingProperties = this.getStaticHackingProperties(ns)
 		this.percentageToSteal       = CONSTANT.DEFAULT_PERCENTAGE_TO_STEAL
 
-		this.serverValue = Heuristics.MainHeuristic(ns, this)
+		this.serverValue = Heuristics.DiscordHeuristic(ns, this)
 	}
 
 	public getSecurityLevel(ns: NS): number {
@@ -41,11 +41,6 @@ export default class HackableServer extends Server {
 
 	public getGrowTime(ns: NS) {
 		return ns.getGrowTime(this.characteristics.host)
-	}
-
-	// Setter for server Value
-	async evaluate(ns: NS, heuristic: Heuristics.ServerHeuristic): Promise<Heuristics.HeuristicValue> {
-		return this.serverValue = heuristic(ns, this)
 	}
 
 	public isHackable(ns: NS) {

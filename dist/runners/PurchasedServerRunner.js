@@ -2,15 +2,32 @@ import * as LogAPI from '/src/api/LogAPI.js';
 import { LogType } from '/src/api/LogAPI.js';
 import * as ServerAPI from '/src/api/ServerAPI.js';
 import { ServerPurpose, ServerType, } from '/src/classes/Server/ServerInterfaces.js';
-import { CONSTANT } from '/src/lib/constants.js';
 import * as Utils from '/src/util/Utils.js';
 import PurchasedServer from '/src/classes/Server/PurchasedServer.js';
 import * as PlayerUtils from '/src/util/PlayerUtils.js';
+import { CONSTANT } from '/src/lib/constants.js';
+const MIN_RAM_EXPONENT = 4;
+const UTILIZATION_THRESHOLD = 0.8;
 class PurchasedServerRunner {
+    static getMaxRam(ns) {
+        return ns.getPurchasedServerMaxRam();
+    }
+    static getMaxRamExponent(ns) {
+        return this.ramToExponent(this.getMaxRam(ns));
+    }
+    static exponentToRam(exponent) {
+        return Math.pow(2, exponent);
+    }
+    static ramToExponent(ram) {
+        return Math.log2(ram);
+    }
+    static getCost(ns, ram) {
+        return ns.getPurchasedServerCost(ram);
+    }
     async run(ns) {
         LogAPI.debug(ns, `Running the PurchasedServerRunner`);
         const purchasedServerList = await ServerAPI.getPurchasedServers(ns);
-        if (purchasedServerList.length < CONSTANT.MAX_PURCHASED_SERVERS) {
+        if (purchasedServerList.length < ns.getPurchasedServerLimit()) {
             await this.purchaseServers(ns, purchasedServerList);
         }
         else {
@@ -18,7 +35,7 @@ class PurchasedServerRunner {
         }
     }
     async purchaseServers(ns, purchasedServerList) {
-        const numServersLeft = CONSTANT.MAX_PURCHASED_SERVERS - purchasedServerList.length;
+        const numServersLeft = ns.getPurchasedServerLimit() - purchasedServerList.length;
         for (let i = 0; i < numServersLeft; i++) {
             const ram = await this.computeMaxRamPossible(ns);
             // We stop if we cannot purchase any more servers
@@ -71,21 +88,21 @@ class PurchasedServerRunner {
         }
     }
     async computeMaxRamPossible(ns) {
-        const canPurchase = await this.canAfford(ns, Math.pow(2, CONSTANT.MIN_PURCHASED_SERVER_RAM_EXPONENT));
+        const canPurchase = await this.canAfford(ns, PurchasedServerRunner.exponentToRam(MIN_RAM_EXPONENT));
         if (!canPurchase)
             return -1;
         // We want to start at 8 gigabytes, cause otherwise it's not worth it
-        let exponent = CONSTANT.MIN_PURCHASED_SERVER_RAM_EXPONENT - 1;
-        for (exponent; exponent < CONSTANT.MAX_PURCHASED_SERVER_RAM_EXPONENT; exponent++) {
+        let exponent = MIN_RAM_EXPONENT - 1;
+        for (exponent; exponent < PurchasedServerRunner.getMaxRamExponent(ns); exponent++) {
             // Stop if we can't afford a next upgrade
             const canAfford = await this.canAfford(ns, Math.pow(2, exponent + 1));
             if (!canAfford)
                 break;
         }
-        return Math.min(Math.pow(2, exponent), ns.getPurchasedServerMaxRam());
+        return Math.min(PurchasedServerRunner.exponentToRam(exponent), ns.getPurchasedServerMaxRam());
     }
     async canAfford(ns, ram) {
-        const cost = ram * CONSTANT.PURCHASED_SERVER_COST_PER_RAM;
+        const cost = PurchasedServerRunner.getCost(ns, ram);
         const reservedMoney = await this.getReservedMoney(ns);
         const money = PlayerUtils.getMoney(ns) * CONSTANT.PURCHASED_SERVER_ALLOWANCE_PERCENTAGE - reservedMoney;
         return cost <= money;
@@ -94,12 +111,12 @@ class PurchasedServerRunner {
         const serverMap = (purpose === ServerPurpose.HACK) ? await ServerAPI.getHackingServers(ns) : await ServerAPI.getPreppingServers(ns);
         const utilized = serverMap.reduce((subtotal, server) => subtotal + server.getUsedRam(ns), 0);
         const total = serverMap.reduce((subtotal, server) => subtotal + server.getTotalRam(ns), 0);
-        return ((utilized / total) > CONSTANT.PURCHASED_SERVER_UPGRADE_UTILIZATION_THRESHOLD);
+        return ((utilized / total) > UTILIZATION_THRESHOLD);
     }
     async getReservedMoney(ns) {
         const purchasedServerList = await ServerAPI.getPurchasedServers(ns);
         const quarantinedServerList = purchasedServerList.filter((s) => s.isQuarantined());
-        return quarantinedServerList.reduce((reservedMoney, server) => reservedMoney + (server.quarantinedInformation.ram * CONSTANT.PURCHASED_SERVER_COST_PER_RAM), 0);
+        return quarantinedServerList.reduce((reservedMoney, server) => reservedMoney + PurchasedServerRunner.getCost(ns, server.quarantinedInformation.ram), 0);
     }
 }
 export async function main(ns) {

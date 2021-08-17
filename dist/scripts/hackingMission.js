@@ -290,14 +290,14 @@ class Node {
         this.connection = null;
         this.update();
     }
-    click() {
-        this.element.click();
-    }
     get element() {
         return document.getElementById(this.id);
     }
     get text() {
         return document.getElementById(this.id + '-txt').innerText;
+    }
+    click() {
+        this.element.click();
     }
     disconnect() {
         if (this.connection)

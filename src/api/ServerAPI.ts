@@ -110,7 +110,7 @@ export async function upgradeServer(ns: NS, server: PurchasedServer, ram: number
 		LogAPI.log(ns, `Upgraded server ${boughtServer} with ${ram}GB ram.`, LogType.PURCHASED_SERVER)
 	} else throw new Error('Could not purchase the server again.')
 
-	server.purpose                = PurchasedServer.determinePurpose(server.characteristics.purchasedServerId)
+	server.purpose                = PurchasedServer.determinePurpose(ns, server.characteristics.purchasedServerId)
 	server.quarantinedInformation = { quarantined: false }
 
 	await updateServer(ns, server)

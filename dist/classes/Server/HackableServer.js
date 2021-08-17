@@ -8,7 +8,7 @@ export default class HackableServer extends Server {
         this.status = (server.status) ? server.status : ServerStatus.NONE;
         this.staticHackingProperties = this.getStaticHackingProperties(ns);
         this.percentageToSteal = CONSTANT.DEFAULT_PERCENTAGE_TO_STEAL;
-        this.serverValue = Heuristics.MainHeuristic(ns, this);
+        this.serverValue = Heuristics.DiscordHeuristic(ns, this);
     }
     getSecurityLevel(ns) {
         return ns.getServerSecurityLevel(this.characteristics.host);
@@ -24,10 +24,6 @@ export default class HackableServer extends Server {
     }
     getGrowTime(ns) {
         return ns.getGrowTime(this.characteristics.host);
-    }
-    // Setter for server Value
-    async evaluate(ns, heuristic) {
-        return this.serverValue = heuristic(ns, this);
     }
     isHackable(ns) {
         return ns.getServerRequiredHackingLevel(this.characteristics.host) <= ns.getHackingLevel();

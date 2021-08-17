@@ -34,14 +34,9 @@ class ServerMapRunner implements Runner {
 		if (home) home.purpose = ServerPurpose.HACK
 
 		// The prepping servers
-		const preppingServers: Server[] = serverMap.filter((server) => ServerUtils.isPurchasedServer(server))
-		                                           .sort((a, b) => a.characteristics.host.localeCompare(b.characteristics.host, 'en', { numeric: true }))
+		const purchasedServers: PurchasedServer[] = serverMap.filter((server) => ServerUtils.isPurchasedServer(server)) as PurchasedServer[]
 
-		// The hacking servers
-		const hackingServers: Server[] = preppingServers.splice(0, CONSTANT.NUM_PURCHASED_HACKING_SERVERS)
-
-		hackingServers.forEach((server) => server.purpose = ServerPurpose.HACK)
-		preppingServers.forEach((server) => server.purpose = ServerPurpose.PREP)
+		purchasedServers.forEach((server) => server.purpose = PurchasedServer.determinePurpose(ns, server.characteristics.purchasedServerId))
 
 		return serverMap
 	}

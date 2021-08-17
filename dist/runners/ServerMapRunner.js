@@ -22,12 +22,8 @@ class ServerMapRunner {
         if (home)
             home.purpose = ServerPurpose.HACK;
         // The prepping servers
-        const preppingServers = serverMap.filter((server) => ServerUtils.isPurchasedServer(server))
-            .sort((a, b) => a.characteristics.host.localeCompare(b.characteristics.host, 'en', { numeric: true }));
-        // The hacking servers
-        const hackingServers = preppingServers.splice(0, CONSTANT.NUM_PURCHASED_HACKING_SERVERS);
-        hackingServers.forEach((server) => server.purpose = ServerPurpose.HACK);
-        preppingServers.forEach((server) => server.purpose = ServerPurpose.PREP);
+        const purchasedServers = serverMap.filter((server) => ServerUtils.isPurchasedServer(server));
+        purchasedServers.forEach((server) => server.purpose = PurchasedServer.determinePurpose(ns, server.characteristics.purchasedServerId));
         return serverMap;
     }
     spider(ns, id, nodeName, parent) {
