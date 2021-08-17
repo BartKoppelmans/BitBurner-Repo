@@ -12,12 +12,16 @@ import * as PlayerUtils                               from '/src/util/PlayerUtil
 import { BBSkillPriority }                            from '/src/classes/BladeBurner/BBInterfaces.js'
 import { BBCity }                                     from '/src/classes/BladeBurner/BBCity.js'
 
-const JOIN_DELAY: number                = 60000 as const
-const MANAGING_LOOP_DELAY: number       = 100 as const
-const BUSY_RETRY_DELAY: number          = 1000 as const
-const SYNTH_THRESHOLD: number           = 100000 as const
-const FIELD_ANALYSIS_INTERVAL: number   = 30 as const
-const FIELD_ANALYSIS_ITERATIONS: number = 20 as const
+const MONEY_THRESHOLD: number                 = 1e9 as const // 1 billion
+const JOIN_DELAY: number                      = 60000 as const
+const MANAGING_LOOP_DELAY: number             = 100 as const
+const BUSY_RETRY_DELAY: number                = 1000 as const
+const SYNTH_POPULATION_THRESHOLD: number      = 1e8 as const
+const SYNTH_COMMUNITY_THRESHOLD: number       = 5 as const
+const FIELD_ANALYSIS_INTERVAL: number         = 30 as const
+const FIELD_ANALYSIS_ITERATIONS: number       = 20 as const
+const CHAOS_THRESHOLD: number                 = 100 as const
+const FINAL_BLACK_OP_WARNING_INTERVAL: number = 10 as const
 
 class BladeBurnerManager implements Manager {
 
@@ -38,13 +42,23 @@ class BladeBurnerManager implements Manager {
 		return BladeBurnerManager.getStaminaPercentage(ns) <= 50
 	}
 
+	private static hasLittleMoney(ns: NS): boolean {
+		return PlayerUtils.getMoney(ns) < MONEY_THRESHOLD
+	}
+
+	private static shouldMove(ns: NS, currentCity: BBCity): boolean {
+		return currentCity.getPopulation(ns) < SYNTH_POPULATION_THRESHOLD ||
+			currentCity.getCommunities(ns) < SYNTH_COMMUNITY_THRESHOLD
+	}
+
 	private static shouldTrain(ns: NS): boolean {
 		const player: any = PlayerUtils.getPlayer(ns)
-		return ns.bladeburner.getRank() > 1000 ||
+		return ns.bladeburner.getRank() > 1000 && (
 			player.agility < 100 ||
 			player.defense < 100 ||
 			player.dexterity < 100 ||
 			player.strength < 100
+		)
 	}
 
 	private static hasSimulacrum(ns: NS) {
@@ -79,6 +93,16 @@ class BladeBurnerManager implements Manager {
 		LogAPI.debug(ns, `Stopping the BladeBurnerManager`)
 	}
 
+	private canFinishBitNode(ns: NS): boolean {
+		// We try to do the next BlackOp if possible
+		const achievableBlackOps: BBAction[] | undefined = BladeBurnerUtils.getAchievableBlackOps(ns, this.actions)
+		if (achievableBlackOps.length > 0) {
+			const nextBlackOp: BBAction = achievableBlackOps[0]
+			if (nextBlackOp.name === 'Operation Daedalus') return true
+		}
+		return false
+	}
+
 	private async managingLoop(ns: NS): Promise<void> {
 
 		const nextLoop = (isIteration: boolean) => {
@@ -97,6 +121,10 @@ class BladeBurnerManager implements Manager {
 			return nextLoop(false)
 		}
 
+		if (this.canFinishBitNode(ns) && ((iteration - 1) % FINAL_BLACK_OP_WARNING_INTERVAL === 0)) {
+			LogAPI.warn(ns, `We are ready to finish the final BlackOp`)
+		}
+
 		// We start our regen if we are tired
 		if (BladeBurnerManager.isTired(ns)) {
 			const regenAction: BBAction = BladeBurnerUtils.getAction(ns, this.actions, 'Hyperbolic Regeneration Chamber')
@@ -105,7 +133,7 @@ class BladeBurnerManager implements Manager {
 
 		// Check whether we have enough Synths, otherwise move or search for new ones
 		const currentCity: BBCity = this.cities.find((city) => city.isCurrent(ns)) as BBCity
-		if (currentCity.getPopulation(ns) < SYNTH_THRESHOLD) {
+		if (BladeBurnerManager.shouldMove(ns, currentCity)) {
 			this.cities = this.cities.sort((a, b) => {
 				return b.getPopulation(ns) - a.getPopulation(ns)
 			})
@@ -145,26 +173,8 @@ class BladeBurnerManager implements Manager {
 		const shouldDoFieldAnalysis: boolean = ((this.iterationCounter % (FIELD_ANALYSIS_INTERVAL + FIELD_ANALYSIS_ITERATIONS)) < FIELD_ANALYSIS_ITERATIONS)
 		if (shouldDoFieldAnalysis) return BladeBurnerUtils.getAction(ns, this.actions, 'Field Analysis')
 
-		// We try to do the next BlackOp if possible
-		const achievableBlackOps: BBAction[] | undefined = BladeBurnerUtils.getAchievableBlackOps(ns, this.actions)
-		if (achievableBlackOps.length > 0) {
-			return achievableBlackOps[0]
-		}
-
-		// We try to do operations if possible
-		const achievableOperations: BBAction[] | undefined = BladeBurnerUtils.getAchievableActions(ns, this.actions, 'operations')
-		if (achievableOperations.length > 0) {
-			return achievableOperations[0]
-		}
-
-		// We try to do contracts if possible
-		const achievableContracts: BBAction[] | undefined = BladeBurnerUtils.getAchievableActions(ns, this.actions, 'contracts')
-		if (achievableContracts.length > 0) {
-			return achievableContracts[0]
-		}
-
 		// NOTE: Now we have figured out that there is basically nothing to do...
-		if (currentCity.getChaos(ns) > ns.bladeburner.getRank() * 1000) {
+		if (currentCity.getChaos(ns) > CHAOS_THRESHOLD) {
 			return BladeBurnerUtils.getAction(ns, this.actions, 'Diplomacy')
 		}
 
@@ -173,8 +183,35 @@ class BladeBurnerManager implements Manager {
 			return BladeBurnerUtils.getAction(ns, this.actions, 'Training')
 		}
 
-		// Our final resort is to just do some analyses
-		return BladeBurnerUtils.getAction(ns, this.actions, 'Field Analysis')
+		// We try to do the next BlackOp if possible
+		const achievableBlackOps: BBAction[] | undefined = BladeBurnerUtils.getAchievableBlackOps(ns, this.actions)
+		if (achievableBlackOps.length > 0) {
+			const nextBlackOp: BBAction = achievableBlackOps[0]
+			if (nextBlackOp.name !== 'Operation Daedalus') return nextBlackOp
+		}
+
+		// We try to do operations if possible
+		const achievableOperations: BBAction[] | undefined = BladeBurnerUtils.getAchievableActions(ns, this.actions, 'operations')
+		const achievableContracts: BBAction[] | undefined  = BladeBurnerUtils.getAchievableActions(ns, this.actions, 'contracts')
+
+		// If we have little money, prefer contracts over operations
+		if (achievableOperations.length > 0 && achievableContracts.length > 0) {
+			return (BladeBurnerManager.hasLittleMoney(ns)) ? achievableContracts[0] : achievableOperations[0]
+		}
+
+		// Otherwise, do whatever we can
+
+		if (achievableOperations.length > 0) {
+			return achievableOperations[0]
+		}
+
+		// We try to do contracts if possible
+		if (achievableContracts.length > 0) {
+			return achievableContracts[0]
+		}
+
+		// Our final resort is to just do some training
+		return BladeBurnerUtils.getAction(ns, this.actions, 'Training')
 	}
 
 	private upgradeSkills(ns: NS): void {

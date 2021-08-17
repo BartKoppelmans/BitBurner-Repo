@@ -1,5 +1,6 @@
 import { CONSTANT } from '/src/lib/constants.js';
 import * as Utils from '/src/util/Utils.js';
+import * as ServerAPI from '/src/api/ServerAPI.js';
 const MANAGER_KILL_DELAY = 5000;
 export var ControlFlowCode;
 (function (ControlFlowCode) {
@@ -75,6 +76,15 @@ export async function killAllManagers(ns) {
     }));
     // TODO: Make sure that there is a way to stop this, time-based doesn't work in the long run
     await ns.sleep(MANAGER_KILL_DELAY);
+}
+export async function killAllScripts(ns) {
+    const serverMap = await ServerAPI.getServerMap(ns);
+    for (const server of serverMap.servers) {
+        if (server.characteristics.host === CONSTANT.HOME_SERVER_HOST)
+            continue;
+        ns.killall(server.characteristics.host);
+    }
+    ns.killall(CONSTANT.HOME_SERVER_HOST);
 }
 function isDaemonRunning(ns) {
     return ns.isRunning('/src/scripts/daemon.js', CONSTANT.HOME_SERVER_HOST);

@@ -1,6 +1,8 @@
 import type { BitBurner as NS, Port } from 'Bitburner'
 import { CONSTANT }                   from '/src/lib/constants.js'
 import * as Utils                     from '/src/util/Utils.js'
+import * as ServerAPI                 from '/src/api/ServerAPI.js'
+import { ServerMap }                  from '/src/classes/Server/ServerInterfaces.js'
 
 const MANAGER_KILL_DELAY: number = 5000 as const
 
@@ -107,6 +109,18 @@ export async function killAllManagers(ns: NS): Promise<void> {
 	// TODO: Make sure that there is a way to stop this, time-based doesn't work in the long run
 
 	await ns.sleep(MANAGER_KILL_DELAY)
+}
+
+export async function killAllScripts(ns: NS): Promise<void> {
+	const serverMap: ServerMap = await ServerAPI.getServerMap(ns)
+
+	for (const server of serverMap.servers) {
+		if (server.characteristics.host === CONSTANT.HOME_SERVER_HOST) continue
+
+		ns.killall(server.characteristics.host)
+	}
+
+	ns.killall(CONSTANT.HOME_SERVER_HOST)
 }
 
 function isDaemonRunning(ns: NS): boolean {
