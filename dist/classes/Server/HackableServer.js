@@ -10,9 +10,6 @@ export default class HackableServer extends Server {
         this.percentageToSteal = CONSTANT.DEFAULT_PERCENTAGE_TO_STEAL;
         this.serverValue = Heuristics.MainHeuristic(ns, this);
     }
-    getServer(ns) {
-        return ns.getServer();
-    }
     getSecurityLevel(ns) {
         return ns.getServerSecurityLevel(this.characteristics.host);
     }

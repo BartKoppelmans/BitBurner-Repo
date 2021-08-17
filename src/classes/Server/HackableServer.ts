@@ -23,10 +23,6 @@ export default class HackableServer extends Server {
 		this.serverValue = Heuristics.MainHeuristic(ns, this)
 	}
 
-	public getServer(ns: NS) {
-		return (ns as any).getServer()
-	}
-
 	public getSecurityLevel(ns: NS): number {
 		return ns.getServerSecurityLevel(this.characteristics.host)
 	}
