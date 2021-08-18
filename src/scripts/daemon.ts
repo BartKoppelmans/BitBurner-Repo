@@ -291,6 +291,9 @@ async function attackServer(ns: NS, target: HackableServer): Promise<void> {
 }
 
 async function optimizePerformance(ns: NS, target: HackableServer): Promise<void> {
+
+	// PERFORMANCE: This is a very expensive function call
+
 	let performanceUpdated: boolean = false
 
 	const originalPercentageToSteal: number                                     = target.percentageToSteal

@@ -79,12 +79,12 @@ export async function upgradeServer(ns, server, ram) {
     await updateServer(ns, server);
 }
 export async function increaseReservation(ns, server, reservation) {
-    reservation = +reservation.toFixed(2);
+    reservation = Math.round(reservation * 100) / 100;
     server.increaseReservation(ns, reservation);
     await updateServer(ns, server);
 }
 export async function decreaseReservation(ns, server, reservation) {
-    reservation = +reservation.toFixed(2);
+    reservation = Math.round(reservation * 100) / 100;
     server.decreaseReservation(ns, reservation);
     await updateServer(ns, server);
 }

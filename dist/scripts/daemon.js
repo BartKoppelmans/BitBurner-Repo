@@ -213,6 +213,7 @@ async function attackServer(ns, target) {
     await JobAPI.startBatchJob(ns, batchJob);
 }
 async function optimizePerformance(ns, target) {
+    // PERFORMANCE: This is a very expensive function call
     let performanceUpdated = false;
     const originalPercentageToSteal = target.percentageToSteal;
     let optimalTarget = {

@@ -117,14 +117,14 @@ export async function upgradeServer(ns: NS, server: PurchasedServer, ram: number
 }
 
 export async function increaseReservation(ns: NS, server: Server, reservation: number): Promise<void> {
-	reservation = +reservation.toFixed(2)
+	reservation = Math.round(reservation * 100) / 100
 	server.increaseReservation(ns, reservation)
 	await updateServer(ns, server)
 
 }
 
 export async function decreaseReservation(ns: NS, server: Server, reservation: number): Promise<void> {
-	reservation = +reservation.toFixed(2)
+	reservation = Math.round(reservation * 100) / 100
 	server.decreaseReservation(ns, reservation)
 	await updateServer(ns, server)
 }

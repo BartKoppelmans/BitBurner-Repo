@@ -6,9 +6,9 @@ export default class HackableServer extends Server {
     constructor(ns, server) {
         super(ns, server);
         this.status = (server.status) ? server.status : ServerStatus.NONE;
-        this.staticHackingProperties = this.getStaticHackingProperties(ns);
+        this.staticHackingProperties = (server.staticHackingProperties) ? server.staticHackingProperties : this.getStaticHackingProperties(ns);
+        this.serverValue = (server.serverValue) ? server.serverValue : Heuristics.DiscordHeuristic(ns, this);
         this.percentageToSteal = CONSTANT.DEFAULT_PERCENTAGE_TO_STEAL;
-        this.serverValue = Heuristics.DiscordHeuristic(ns, this);
     }
     getSecurityLevel(ns) {
         return ns.getServerSecurityLevel(this.characteristics.host);
@@ -43,6 +43,8 @@ export default class HackableServer extends Server {
         return {
             ...json,
             status: this.status,
+            staticHackingProperties: this.staticHackingProperties,
+            serverValue: this.serverValue
         };
     }
     getStaticHackingProperties(ns) {

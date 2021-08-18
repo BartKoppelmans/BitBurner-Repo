@@ -46,10 +46,7 @@ class JobManager implements Manager {
 		const runningProcesses: ProcessInfo[] = await JobAPI.getRunningProcesses(ns)
 		const finishedJobs: JobList           = jobMap.jobs.filter((job) => !runningProcesses.some((process) => job.pids.includes(process.pid)))
 
-		for (const finishedJob of finishedJobs) {
-			await JobAPI.finishJob(ns, finishedJob)
-		}
-
+		await JobAPI.finishJobs(ns, finishedJobs)
 	}
 }
 

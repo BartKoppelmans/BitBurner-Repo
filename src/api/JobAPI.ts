@@ -70,37 +70,39 @@ async function startJob(ns: NS, job: Job): Promise<void> {
 	}
 }
 
-export async function finishJob(ns: NS, job: Job): Promise<void> {
-	await removeJob(ns, job)
-
-	await job.onFinish(ns)
-
-	// Checking whether the batch is finished
+export async function finishJobs(ns: NS, jobs: Job[]): Promise<void> {
+	// NOTE: This function manually removes the jobs instead of using removeJob (for performance reasons)
 	const jobMap: JobMap = await getJobMap(ns)
 
-	const isBatchFinished: boolean = !jobMap.jobs.some((j) => j.batchId === job.batchId)
-	if (isBatchFinished) {
-		await ServerAPI.setStatus(ns, job.target, ServerStatus.NONE)
+	for (const job of jobs) {
+		const index: number = jobMap.jobs.findIndex((j) => j.id === job.id)
+
+		if (index === -1) throw new Error('Could not find the job') // NOTE: This should not crash the script
+
+		jobMap.jobs.splice(index, 1)
+
+		await job.onFinish(ns)
 	}
 
+	const batches: { target: Server, batchId: string }[] = [...new Map(jobs.map(job => [job.batchId, job])).values()]
+		.map((job) => {
+			return { target: job.target, batchId: job.batchId! }
+		})
+
+	for (const batch of batches) {
+		const isBatchFinished: boolean = !jobMap.jobs.some((job) => job.batchId === batch.batchId)
+		if (isBatchFinished) {
+			await ServerAPI.setStatus(ns, batch.target, ServerStatus.NONE)
+		}
+	}
+
+	await writeJobMap(ns, jobMap)
 }
 
 export async function writeJob(ns: NS, job: Job): Promise<void> {
 	const jobMap: JobMap = await getJobMap(ns)
 
 	jobMap.jobs.push(job)
-
-	await writeJobMap(ns, jobMap)
-}
-
-export async function removeJob(ns: NS, job: Job): Promise<void> {
-	const jobMap: JobMap = await getJobMap(ns)
-
-	const index: number = jobMap.jobs.findIndex((j) => j.id === job.id)
-
-	if (index === -1) throw new Error('Could not find the job')
-
-	jobMap.jobs.splice(index, 1)
 
 	await writeJobMap(ns, jobMap)
 }

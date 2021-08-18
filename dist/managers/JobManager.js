@@ -27,9 +27,7 @@ class JobManager {
         const jobMap = await JobAPI.getJobMap(ns);
         const runningProcesses = await JobAPI.getRunningProcesses(ns);
         const finishedJobs = jobMap.jobs.filter((job) => !runningProcesses.some((process) => job.pids.includes(process.pid)));
-        for (const finishedJob of finishedJobs) {
-            await JobAPI.finishJob(ns, finishedJob);
-        }
+        await JobAPI.finishJobs(ns, finishedJobs);
     }
 }
 export async function start(ns) {
