@@ -4,6 +4,7 @@ import Job                                   from '/src/classes/Job/Job.js'
 import { CONSTANT }                          from '/src/lib/constants.js'
 import { JobList, JobMap }                   from '/src/classes/Job/JobInterfaces.js'
 import * as ServerAPI                        from '/src/api/ServerAPI.js'
+import * as LogAPI                           from '/src/api/LogAPI.js'
 import * as ToolUtils                        from '/src/util/ToolUtils.js'
 import * as SerializationUtils               from '/src/util/SerializationUtils.js'
 import { ServerMap, ServerStatus }           from '/src/classes/Server/ServerInterfaces.js'
@@ -146,7 +147,7 @@ export async function cancelJob(ns: NS, job: Job): Promise<void> {
 
 	await job.onCancel(ns)
 
-	if (!allKilled) throw new Error('Failed to cancel all processes')
+	if (!allKilled) LogAPI.warn(ns, 'Failed to cancel all jobs')
 }
 
 export async function isJobMapInitialized(ns: NS): Promise<boolean> {

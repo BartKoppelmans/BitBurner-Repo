@@ -1,5 +1,6 @@
 import { CONSTANT } from '/src/lib/constants.js';
 import * as ServerAPI from '/src/api/ServerAPI.js';
+import * as LogAPI from '/src/api/LogAPI.js';
 import * as ToolUtils from '/src/util/ToolUtils.js';
 import * as SerializationUtils from '/src/util/SerializationUtils.js';
 import { ServerStatus } from '/src/classes/Server/ServerInterfaces.js';
@@ -98,7 +99,7 @@ export async function cancelJob(ns, job) {
     }
     await job.onCancel(ns);
     if (!allKilled)
-        throw new Error('Failed to cancel all processes');
+        LogAPI.warn(ns, 'Failed to cancel all jobs');
 }
 export async function isJobMapInitialized(ns) {
     // TODO: Change the restrictions here, as we have to reset the job map more often
