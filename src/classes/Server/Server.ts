@@ -9,8 +9,6 @@ export default class Server {
 
 	purpose: ServerPurpose
 	reservation: number
-	files: string[]
-
 
 	public constructor(ns: NS, server: Partial<IServer>) {
 		if (!server.characteristics) throw new Error('Cannot initialize the server without its characteristics')
@@ -19,8 +17,6 @@ export default class Server {
 
 		this.purpose     = (server.purpose) ? server.purpose : ServerPurpose.NONE
 		this.reservation = (server.reservation) ? server.reservation : 0
-
-		this.files = ns.ls(this.characteristics.host)
 	}
 
 	public getAvailableRam(ns: NS): number {

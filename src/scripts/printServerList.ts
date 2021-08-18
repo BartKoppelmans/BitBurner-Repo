@@ -30,7 +30,7 @@ function getServerColor(ns: NS, server: Server): string {
 function getFormattedServerName(ns: NS, server: Server): string {
 	const serverColor: string   = getServerColor(ns, server)
 	const pipColor: string      = (server.isRooted(ns)) ? PrintColor.ROOTED_PIP : PrintColor.NOT_ROOTED_PIP
-	const hasContracts: boolean = (server.files.filter((file) => file.includes('.cct'))).length > 0
+	const hasContracts: boolean = ns.ls(server.characteristics.host, '.cct').length > 0
 	const clickFunction         = `
         const terminal = document.getElementById('terminal-input-text-box');
         terminal.value='home; run src/scripts/route.js ${server.characteristics.host}';

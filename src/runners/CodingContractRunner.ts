@@ -38,7 +38,7 @@ class CodingContractRunner implements Runner {
 		const serverMap: ServerMap = await ServerAPI.getServerMap(ns)
 
 		for (const server of serverMap.servers) {
-			const serverContracts: string[] = server.files.filter((file) => file.includes('.cct'))
+			const serverContracts: string[] = ns.ls(server.characteristics.host, '.cct')
 
 			if (serverContracts.length === 0) continue
 

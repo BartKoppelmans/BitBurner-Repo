@@ -27,7 +27,7 @@ class CodingContractRunner {
         LogAPI.debug(ns, `Running the CodingContractRunner`);
         const serverMap = await ServerAPI.getServerMap(ns);
         for (const server of serverMap.servers) {
-            const serverContracts = server.files.filter((file) => file.includes('.cct'));
+            const serverContracts = ns.ls(server.characteristics.host, '.cct');
             if (serverContracts.length === 0)
                 continue;
             for (const serverContract of serverContracts) {

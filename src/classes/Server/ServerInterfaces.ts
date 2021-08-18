@@ -7,7 +7,6 @@ export interface IServer {
 	characteristics: ServerCharacteristics
 	purpose: ServerPurpose
 	reservation: number;
-	files: string[]
 }
 
 export interface IPurchasedServer extends IServer {

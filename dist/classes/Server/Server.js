@@ -8,7 +8,6 @@ export default class Server {
         this.characteristics = server.characteristics;
         this.purpose = (server.purpose) ? server.purpose : ServerPurpose.NONE;
         this.reservation = (server.reservation) ? server.reservation : 0;
-        this.files = ns.ls(this.characteristics.host);
     }
     getAvailableRam(ns) {
         const [total, used] = ns.getServerRam(this.characteristics.host);
