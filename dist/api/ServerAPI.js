@@ -1,14 +1,14 @@
-import { ServerPurpose, ServerStatus, } from '/src/classes/Server/ServerInterfaces.js';
+import { ServerPurpose, ServerStatus } from '/src/classes/Server/ServerInterfaces.js';
 import { CONSTANT } from '/src/lib/constants.js';
 import * as ServerUtils from '/src/util/ServerUtils.js';
 import * as SerializationUtils from '/src/util/SerializationUtils.js';
 import * as LogAPI from '/src/api/LogAPI.js';
 import { LogType } from '/src/api/LogAPI.js';
 import PurchasedServer from '/src/classes/Server/PurchasedServer.js';
-export async function getServerMap(ns) {
-    return await readServerMap(ns);
+export function getServerMap(ns) {
+    return readServerMap(ns);
 }
-async function readServerMap(ns) {
+function readServerMap(ns) {
     // TODO: Build in more robustness checks here
     const serverMapString = ns.read(CONSTANT.SERVER_MAP_FILENAME).toString();
     const serverMap = JSON.parse(serverMapString);
@@ -20,47 +20,47 @@ async function readServerMap(ns) {
     }
     return serverMap;
 }
-export async function clearServerMap(ns) {
+export function clearServerMap(ns) {
     ns.clear(CONSTANT.SERVER_MAP_FILENAME);
 }
-export async function writeServerMap(ns, serverMap) {
+export function writeServerMap(ns, serverMap) {
     // NOTE: Do we want to do this?
     serverMap.lastUpdated = new Date();
     ns.write(CONSTANT.SERVER_MAP_FILENAME, JSON.stringify(serverMap), 'w');
 }
-export async function updateServer(ns, server) {
-    const serverMap = await getServerMap(ns);
+export function updateServer(ns, server) {
+    const serverMap = getServerMap(ns);
     const index = serverMap.servers.findIndex((s) => s.characteristics.host === server.characteristics.host);
     if (index === -1)
         throw new Error('Could not find the server.');
     serverMap.servers[index] = server;
-    await writeServerMap(ns, serverMap);
+    writeServerMap(ns, serverMap);
 }
-export async function setPurpose(ns, server, purpose) {
+export function setPurpose(ns, server, purpose) {
     server.purpose = purpose;
-    await updateServer(ns, server);
+    updateServer(ns, server);
 }
-export async function setStatus(ns, server, status) {
+export function setStatus(ns, server, status) {
     if (!ServerUtils.isHackableServer(server))
         throw new Error('The server is not a hackable server');
     server.status = status;
-    await updateServer(ns, server);
+    updateServer(ns, server);
 }
-export async function addServer(ns, server) {
-    const serverMap = await getServerMap(ns);
+export function addServer(ns, server) {
+    const serverMap = getServerMap(ns);
     const serverAlreadyExists = serverMap.servers.some((s) => s.characteristics.host === server.characteristics.host);
     if (serverAlreadyExists)
         throw new Error('Cannot add a server that already exists in the list');
     serverMap.servers.push(server);
-    await writeServerMap(ns, serverMap);
+    writeServerMap(ns, serverMap);
 }
-export async function quarantine(ns, server, ram) {
+export function quarantine(ns, server, ram) {
     server.purpose = ServerPurpose.NONE;
     server.quarantinedInformation = { quarantined: true, ram };
-    await updateServer(ns, server);
+    updateServer(ns, server);
     LogAPI.log(ns, `We put ${server.characteristics.host} into quarantine`, LogType.PURCHASED_SERVER);
 }
-export async function upgradeServer(ns, server, ram) {
+export function upgradeServer(ns, server, ram) {
     // TODO: Do some checks here
     if (!server.canUpgrade(ns, ram))
         throw new Error('Cannot upgrade the server.');
@@ -76,66 +76,66 @@ export async function upgradeServer(ns, server, ram) {
         throw new Error('Could not purchase the server again.');
     server.purpose = PurchasedServer.determinePurpose(ns, server.characteristics.purchasedServerId);
     server.quarantinedInformation = { quarantined: false };
-    await updateServer(ns, server);
+    updateServer(ns, server);
 }
-export async function increaseReservation(ns, server, reservation) {
+export function increaseReservation(ns, server, reservation) {
     reservation = Math.round(reservation * 100) / 100;
     server.increaseReservation(ns, reservation);
-    await updateServer(ns, server);
+    updateServer(ns, server);
 }
-export async function decreaseReservation(ns, server, reservation) {
+export function decreaseReservation(ns, server, reservation) {
     reservation = Math.round(reservation * 100) / 100;
     server.decreaseReservation(ns, reservation);
-    await updateServer(ns, server);
+    updateServer(ns, server);
 }
-export async function getServer(ns, id) {
-    const server = (await getServerMap(ns)).servers.find(s => s.characteristics.id === id);
+export function getServer(ns, id) {
+    const server = getServerMap(ns).servers.find(s => s.characteristics.id === id);
     if (!server)
         throw new Error('Could not find that server.');
     return server;
 }
-export async function getServerByName(ns, host) {
-    const server = (await getServerMap(ns)).servers.find(s => s.characteristics.host === host);
+export function getServerByName(ns, host) {
+    const server = getServerMap(ns).servers.find(s => s.characteristics.host === host);
     if (!server)
         throw new Error('Could not find that server.');
     return server;
 }
-export async function getHackableServers(ns) {
-    return (await getServerMap(ns)).servers.filter(server => ServerUtils.isHackableServer(server));
+export function getHackableServers(ns) {
+    return getServerMap(ns).servers.filter(server => ServerUtils.isHackableServer(server));
 }
-export async function getCurrentTargets(ns) {
-    return (await getHackableServers(ns))
+export function getCurrentTargets(ns) {
+    return getHackableServers(ns)
         .filter(server => server.status === ServerStatus.PREPPING || server.status === ServerStatus.TARGETING);
 }
-export async function getTargetServers(ns) {
-    return (await getHackableServers(ns))
+export function getTargetServers(ns) {
+    return getHackableServers(ns)
         .filter(server => server.isHackable(ns))
         .filter(server => server.isRooted(ns))
         .filter(server => server.staticHackingProperties.maxMoney > 0);
 }
 // We sort this descending
-export async function getPreppingServers(ns) {
-    return (await getServerMap(ns)).servers
+export function getPreppingServers(ns) {
+    return getServerMap(ns).servers
         .filter((server) => server.isRooted(ns))
         .filter((server) => server.purpose === ServerPurpose.PREP)
         .sort((a, b) => b.getAvailableRam(ns) - a.getAvailableRam(ns));
 }
 // We sort this descending
-export async function getHackingServers(ns) {
-    return (await getServerMap(ns)).servers
+export function getHackingServers(ns) {
+    return getServerMap(ns).servers
         .filter((server) => server.isRooted(ns))
         .filter((server) => server.purpose === ServerPurpose.HACK)
         .sort((a, b) => b.getAvailableRam(ns) - a.getAvailableRam(ns));
 }
 // We sort this ascending
-export async function getPurchasedServers(ns) {
-    return (await getServerMap(ns)).servers
-        .filter((server) => ServerUtils.isPurchasedServer(server))
-        .sort((a, b) => a.getAvailableRam(ns) - b.getAvailableRam(ns));
+export function getPurchasedServers(ns) {
+    const purchasedServers = getServerMap(ns).servers
+        .filter((server) => ServerUtils.isPurchasedServer(server));
+    return purchasedServers.sort((a, b) => a.getAvailableRam(ns) - b.getAvailableRam(ns));
 }
-export async function isServerMapInitialized(ns) {
+export function isServerMapInitialized(ns) {
     try {
-        const currentServerMap = await readServerMap(ns);
+        const currentServerMap = readServerMap(ns);
         const lastAugTime = new Date(Date.now() - ns.getTimeSinceLastAug());
         // We have updated the server map file already, so we can stop now
         return (lastAugTime <= currentServerMap.lastUpdated);

@@ -10,9 +10,9 @@ import * as ServerAPI from '/src/api/ServerAPI.js';
 class ServerMapRunner {
     async run(ns) {
         LogAPI.debug(ns, `Running the ServerMapRunner`);
-        await ServerAPI.clearServerMap(ns);
+        ServerAPI.clearServerMap(ns);
         const servers = this.createServerList(ns);
-        await ServerAPI.writeServerMap(ns, { servers, lastUpdated: new Date() });
+        ServerAPI.writeServerMap(ns, { servers, lastUpdated: new Date() });
     }
     createServerList(ns) {
         const serverMap = this.spider(ns, CONSTANT.HOME_SERVER_ID, CONSTANT.HOME_SERVER_HOST);

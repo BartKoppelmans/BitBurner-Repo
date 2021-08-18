@@ -51,18 +51,7 @@ export default class Job {
 		]
 	}
 
-	public async execute(ns: NS): Promise<void> {
-
-		/*
-		 TODO: Find a solution on how to check this first, perhaps in JobAPI.startJob?
-
-		 const availableThreads: number = await HackUtils.calculateMaxThreads(ns, Tools.WEAKEN, true)
-
-		 if (this.threads > availableThreads) {
-		 throw new Error('Not enough RAM available')
-		 }
-
-		 */
+	public execute(ns: NS): void {
 
 		const commonArgs = {
 			script: this.tool,
@@ -72,16 +61,6 @@ export default class Job {
 
 		for (const [server, threads] of this.threadSpread) {
 
-			/*
-			 NOTE: This is not needed anymore, since the cost is included in the reservation
-
-			 // Validate the threadspread before running (for hacking)
-			 if (cost > server.getAvailableRam(ns)) {
-			 throw new Error('Not enough RAM available on the server.')
-			 }
-
-			 */
-
 			// We have to copy the tool to the server if it is not available yet
 			if (!ServerUtils.isHomeServer(server)) {
 				ns.scp(this.tool, CONSTANT.HOME_SERVER_HOST, server.characteristics.host)
@@ -90,20 +69,21 @@ export default class Job {
 			const args: ToolArguments = { ...commonArgs, threads, server }
 
 			const pid = ns.exec.apply(null, Job.createArgumentArray(ns, args))
-			this.pids.push(pid)
+			if (pid === 0) LogAPI.warn(ns, 'Could not successfully start the process')
+			else this.pids.push(pid)
 		}
 	}
 
-	public async onStart(ns: NS) {
-		await this.print(ns, false, false)
+	public onStart(ns: NS) {
+		this.print(ns, false, false)
 	}
 
-	public async onFinish(ns: NS) {
-		await this.print(ns, true, false)
+	public onFinish(ns: NS) {
+		this.print(ns, true, false)
 	}
 
-	public async onCancel(ns: NS) {
-		await this.print(ns, false, true)
+	public onCancel(ns: NS) {
+		this.print(ns, false, true)
 	}
 
 	public toJSON() {
@@ -122,7 +102,7 @@ export default class Job {
 		}
 	}
 
-	private async print(ns: NS, isFinished: boolean, isCanceled: boolean): Promise<void> {
+	private print(ns: NS, isFinished: boolean, isCanceled: boolean): void {
 		let verb: string
 
 		if (isCanceled) verb = (this.isPrep) ? 'Cancelled prep on' : 'Cancelled attack on'

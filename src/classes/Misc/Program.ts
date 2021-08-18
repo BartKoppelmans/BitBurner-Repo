@@ -20,17 +20,21 @@ export class Program {
 		this.type  = type
 	}
 
+	private static toValidString(name: string): PurchaseableProgram {
+		return (name.toLowerCase() as PurchaseableProgram)
+	}
+
 	public hasProgram(ns: NS) {
 		return ns.fileExists(this.name, 'home')
 	}
 
 	// Returns whether it was successful
-	public async attemptPurchase(ns: NS): Promise<boolean> {
+	public attemptPurchase(ns: NS): boolean {
 		const money: number = PlayerUtils.getMoney(ns)
 
 		if (this.price > money) return false
 
-		const isSuccessful: boolean = ns.purchaseProgram(this.toValidString(ns, this.name))
+		const isSuccessful: boolean = ns.purchaseProgram(Program.toValidString(this.name))
 
 		if (isSuccessful) {
 			LogAPI.log(ns, `Purchased ${this.name}`, LogType.INFORMATION)
@@ -54,9 +58,5 @@ export class Program {
 			default:
 				throw new Error(`Program "${this.name}" not found.`)
 		}
-	}
-
-	private toValidString(ns: NS, name: string): PurchaseableProgram {
-		return (name.toLowerCase() as PurchaseableProgram)
 	}
 }

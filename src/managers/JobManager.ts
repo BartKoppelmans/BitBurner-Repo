@@ -5,7 +5,8 @@ import * as JobAPI                           from '/src/api/JobAPI.js'
 import { CONSTANT }                          from '/src/lib/constants.js'
 import * as Utils                            from '/src/util/Utils.js'
 import { Manager }                           from '/src/classes/Misc/ScriptInterfaces.js'
-import { JobList, JobMap }                   from '/src/classes/Job/JobInterfaces.js'
+import { JobMap }                            from '/src/classes/Job/JobInterfaces.js'
+import Job                                   from '/src/classes/Job/Job.js'
 
 const JOB_MANAGING_LOOP_INTERVAL = 2500 as const
 
@@ -42,11 +43,11 @@ class JobManager implements Manager {
 
 	private async managingLoop(ns: NS): Promise<void> {
 
-		const jobMap: JobMap                  = await JobAPI.getJobMap(ns)
-		const runningProcesses: ProcessInfo[] = await JobAPI.getRunningProcesses(ns)
-		const finishedJobs: JobList           = jobMap.jobs.filter((job) => !runningProcesses.some((process) => job.pids.includes(process.pid)))
+		const jobMap: JobMap                  = JobAPI.getJobMap(ns)
+		const runningProcesses: ProcessInfo[] = JobAPI.getRunningProcesses(ns)
+		const finishedJobs: Job[]             = jobMap.jobs.filter((job) => !runningProcesses.some((process) => job.pids.includes(process.pid)))
 
-		await JobAPI.finishJobs(ns, finishedJobs)
+		JobAPI.finishJobs(ns, finishedJobs)
 	}
 }
 
@@ -76,15 +77,9 @@ export async function main(ns: NS) {
 	await instance.initialize(ns)
 	await instance.start(ns)
 
-	while (true) {
-		const shouldKill: boolean = await ControlFlowAPI.hasManagerKillRequest(ns)
-
-		if (shouldKill) {
-			await instance.destroy(ns)
-			ns.exit()
-			return
-		}
-
+	while (!ControlFlowAPI.hasManagerKillRequest(ns)) {
 		await ns.sleep(CONSTANT.CONTROL_FLOW_CHECK_INTERVAL)
 	}
+
+	await instance.destroy(ns)
 }

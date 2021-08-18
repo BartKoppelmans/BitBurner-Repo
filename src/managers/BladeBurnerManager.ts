@@ -272,15 +272,9 @@ export async function main(ns: NS) {
 	await instance.initialize(ns)
 	await instance.start(ns)
 
-	while (true) {
-		const shouldKill: boolean = await ControlFlowAPI.hasManagerKillRequest(ns)
-
-		if (shouldKill) {
-			await instance.destroy(ns)
-			ns.exit()
-			return
-		}
-
+	while (!ControlFlowAPI.hasManagerKillRequest(ns)) {
 		await ns.sleep(CONSTANT.CONTROL_FLOW_CHECK_INTERVAL)
 	}
+
+	await instance.destroy(ns)
 }

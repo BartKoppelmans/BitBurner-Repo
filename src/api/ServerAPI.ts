@@ -1,26 +1,19 @@
-import type { BitBurner as NS } from 'Bitburner'
-import HackableServer           from '/src/classes/Server/HackableServer.js'
-import Server                   from '/src/classes/Server/Server.js'
-import {
-	HackableServerList,
-	PurchasedServerList,
-	ServerList,
-	ServerMap,
-	ServerPurpose,
-	ServerStatus,
-}                               from '/src/classes/Server/ServerInterfaces.js'
-import { CONSTANT }             from '/src/lib/constants.js'
-import * as ServerUtils         from '/src/util/ServerUtils.js'
-import * as SerializationUtils  from '/src/util/SerializationUtils.js'
-import * as LogAPI              from '/src/api/LogAPI.js'
-import { LogType }              from '/src/api/LogAPI.js'
-import PurchasedServer          from '/src/classes/Server/PurchasedServer.js'
+import type { BitBurner as NS }                   from 'Bitburner'
+import HackableServer                             from '/src/classes/Server/HackableServer.js'
+import Server                                     from '/src/classes/Server/Server.js'
+import { ServerMap, ServerPurpose, ServerStatus } from '/src/classes/Server/ServerInterfaces.js'
+import { CONSTANT }                               from '/src/lib/constants.js'
+import * as ServerUtils                           from '/src/util/ServerUtils.js'
+import * as SerializationUtils                    from '/src/util/SerializationUtils.js'
+import * as LogAPI                                from '/src/api/LogAPI.js'
+import { LogType }                                from '/src/api/LogAPI.js'
+import PurchasedServer                            from '/src/classes/Server/PurchasedServer.js'
 
-export async function getServerMap(ns: NS): Promise<ServerMap> {
-	return await readServerMap(ns)
+export function getServerMap(ns: NS): ServerMap {
+	return readServerMap(ns)
 }
 
-async function readServerMap(ns: NS): Promise<ServerMap> {
+function readServerMap(ns: NS): ServerMap {
 
 	// TODO: Build in more robustness checks here
 
@@ -39,62 +32,60 @@ async function readServerMap(ns: NS): Promise<ServerMap> {
 	return serverMap
 }
 
-export async function clearServerMap(ns: NS): Promise<void> {
+export function clearServerMap(ns: NS): void {
 	ns.clear(CONSTANT.SERVER_MAP_FILENAME)
 }
 
-export async function writeServerMap(ns: NS, serverMap: ServerMap): Promise<void> {
+export function writeServerMap(ns: NS, serverMap: ServerMap): void {
 	// NOTE: Do we want to do this?
 	serverMap.lastUpdated = new Date()
 	ns.write(CONSTANT.SERVER_MAP_FILENAME, JSON.stringify(serverMap), 'w')
 }
 
-export async function updateServer(ns: NS, server: Server): Promise<void> {
-	const serverMap: ServerMap = await getServerMap(ns)
+export function updateServer(ns: NS, server: Server): void {
+	const serverMap: ServerMap = getServerMap(ns)
 	const index: number        = serverMap.servers.findIndex((s) => s.characteristics.host === server.characteristics.host)
 
 	if (index === -1) throw new Error('Could not find the server.')
 
 	serverMap.servers[index] = server
 
-	await writeServerMap(ns, serverMap)
+	writeServerMap(ns, serverMap)
 }
 
-export async function setPurpose(ns: NS, server: Server, purpose: ServerPurpose): Promise<void> {
+export function setPurpose(ns: NS, server: Server, purpose: ServerPurpose): void {
 	server.purpose = purpose
 
-	await updateServer(ns, server)
+	updateServer(ns, server)
 }
 
-export async function setStatus(ns: NS, server: Server, status: ServerStatus): Promise<void> {
+export function setStatus(ns: NS, server: Server, status: ServerStatus): void {
 	if (!ServerUtils.isHackableServer(server)) throw new Error('The server is not a hackable server');
-
 	(server as HackableServer).status = status
-
-	await updateServer(ns, server)
+	updateServer(ns, server)
 }
 
-export async function addServer(ns: NS, server: Server): Promise<void> {
-	const serverMap: ServerMap = await getServerMap(ns)
+export function addServer(ns: NS, server: Server): void {
+	const serverMap: ServerMap = getServerMap(ns)
 
 	const serverAlreadyExists: boolean = serverMap.servers.some((s) => s.characteristics.host === server.characteristics.host)
 	if (serverAlreadyExists) throw new Error('Cannot add a server that already exists in the list')
 
 	serverMap.servers.push(server)
 
-	await writeServerMap(ns, serverMap)
+	writeServerMap(ns, serverMap)
 }
 
-export async function quarantine(ns: NS, server: PurchasedServer, ram: number): Promise<void> {
+export function quarantine(ns: NS, server: PurchasedServer, ram: number): void {
 	server.purpose                = ServerPurpose.NONE
 	server.quarantinedInformation = { quarantined: true, ram }
 
-	await updateServer(ns, server)
+	updateServer(ns, server)
 
 	LogAPI.log(ns, `We put ${server.characteristics.host} into quarantine`, LogType.PURCHASED_SERVER)
 }
 
-export async function upgradeServer(ns: NS, server: PurchasedServer, ram: number): Promise<void> {
+export function upgradeServer(ns: NS, server: PurchasedServer, ram: number): void {
 
 	// TODO: Do some checks here
 
@@ -113,80 +104,75 @@ export async function upgradeServer(ns: NS, server: PurchasedServer, ram: number
 	server.purpose                = PurchasedServer.determinePurpose(ns, server.characteristics.purchasedServerId)
 	server.quarantinedInformation = { quarantined: false }
 
-	await updateServer(ns, server)
+	updateServer(ns, server)
 }
 
-export async function increaseReservation(ns: NS, server: Server, reservation: number): Promise<void> {
+export function increaseReservation(ns: NS, server: Server, reservation: number): void {
 	reservation = Math.round(reservation * 100) / 100
 	server.increaseReservation(ns, reservation)
-	await updateServer(ns, server)
-
+	updateServer(ns, server)
 }
 
-export async function decreaseReservation(ns: NS, server: Server, reservation: number): Promise<void> {
+export function decreaseReservation(ns: NS, server: Server, reservation: number): void {
 	reservation = Math.round(reservation * 100) / 100
 	server.decreaseReservation(ns, reservation)
-	await updateServer(ns, server)
+	updateServer(ns, server)
 }
 
-export async function getServer(ns: NS, id: string): Promise<Server> {
-	const server: Server | undefined = (await getServerMap(ns)).servers.find(s => s.characteristics.id === id)
-
+export function getServer(ns: NS, id: string): Server {
+	const server: Server | undefined = getServerMap(ns).servers.find(s => s.characteristics.id === id)
 	if (!server) throw new Error('Could not find that server.')
-
 	return server
 }
 
-export async function getServerByName(ns: NS, host: string): Promise<Server> {
-	const server: Server | undefined = (await getServerMap(ns)).servers.find(s => s.characteristics.host === host)
-
+export function getServerByName(ns: NS, host: string): Server {
+	const server: Server | undefined = getServerMap(ns).servers.find(s => s.characteristics.host === host)
 	if (!server) throw new Error('Could not find that server.')
-
 	return server
 }
 
-export async function getHackableServers(ns: NS): Promise<HackableServerList> {
-	return ((await getServerMap(ns)).servers.filter(server => ServerUtils.isHackableServer(server)) as HackableServerList)
+export function getHackableServers(ns: NS): HackableServer[] {
+	return (getServerMap(ns).servers.filter(server => ServerUtils.isHackableServer(server)) as HackableServer[])
 }
 
-export async function getCurrentTargets(ns: NS): Promise<HackableServerList> {
-	return (await getHackableServers(ns))
+export function getCurrentTargets(ns: NS): HackableServer[] {
+	return getHackableServers(ns)
 		.filter(server => server.status === ServerStatus.PREPPING || server.status === ServerStatus.TARGETING)
 }
 
-export async function getTargetServers(ns: NS): Promise<HackableServerList> {
-	return (await getHackableServers(ns))
+export function getTargetServers(ns: NS): HackableServer[] {
+	return getHackableServers(ns)
 		.filter(server => server.isHackable(ns))
 		.filter(server => server.isRooted(ns))
 		.filter(server => server.staticHackingProperties.maxMoney > 0)
 }
 
 // We sort this descending
-export async function getPreppingServers(ns: NS): Promise<ServerList> {
-	return (await getServerMap(ns)).servers
-	                               .filter((server: Server) => server.isRooted(ns))
-	                               .filter((server: Server) => server.purpose === ServerPurpose.PREP)
-	                               .sort((a, b) => b.getAvailableRam(ns) - a.getAvailableRam(ns))
+export function getPreppingServers(ns: NS): Server[] {
+	return getServerMap(ns).servers
+	                       .filter((server: Server) => server.isRooted(ns))
+	                       .filter((server: Server) => server.purpose === ServerPurpose.PREP)
+	                       .sort((a, b) => b.getAvailableRam(ns) - a.getAvailableRam(ns))
 }
 
 // We sort this descending
-export async function getHackingServers(ns: NS): Promise<ServerList> {
-	return (await getServerMap(ns)).servers
-	                               .filter((server: Server) => server.isRooted(ns))
-	                               .filter((server: Server) => server.purpose === ServerPurpose.HACK)
-	                               .sort((a, b) => b.getAvailableRam(ns) - a.getAvailableRam(ns))
+export function getHackingServers(ns: NS): Server[] {
+	return getServerMap(ns).servers
+	                       .filter((server: Server) => server.isRooted(ns))
+	                       .filter((server: Server) => server.purpose === ServerPurpose.HACK)
+	                       .sort((a, b) => b.getAvailableRam(ns) - a.getAvailableRam(ns))
 }
 
 // We sort this ascending
-export async function getPurchasedServers(ns: NS): Promise<PurchasedServerList> {
-	return ((await getServerMap(ns)).servers
-	                                .filter((server: Server) => ServerUtils.isPurchasedServer(server)) as PurchasedServerList)
-		.sort((a, b) => a.getAvailableRam(ns) - b.getAvailableRam(ns))
+export function getPurchasedServers(ns: NS): PurchasedServer[] {
+	const purchasedServers: PurchasedServer[] = getServerMap(ns).servers
+	                                                            .filter((server: Server) => ServerUtils.isPurchasedServer(server)) as PurchasedServer[]
+	return purchasedServers.sort((a, b) => a.getAvailableRam(ns) - b.getAvailableRam(ns))
 }
 
-export async function isServerMapInitialized(ns: NS): Promise<boolean> {
+export function isServerMapInitialized(ns: NS): boolean {
 	try {
-		const currentServerMap: ServerMap = await readServerMap(ns)
+		const currentServerMap: ServerMap = readServerMap(ns)
 
 		const lastAugTime: Date = new Date(Date.now() - ns.getTimeSinceLastAug())
 

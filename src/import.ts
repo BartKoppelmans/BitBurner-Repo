@@ -4,11 +4,9 @@ import { CONSTANT }             from '/src/lib/constants.js'
 const files: string[] = [
 	'Bitburner.t.js',
 	'import.js',
-	'api/CodingContractAPI.js',
 	'api/ControlFlowAPI.js',
 	'api/JobAPI.js',
 	'api/LogAPI.js',
-	'api/ProgramAPI.js',
 	'api/ServerAPI.js',
 	'classes/BladeBurner/BBAction.js',
 	'classes/BladeBurner/BBCity.js',

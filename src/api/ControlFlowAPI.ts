@@ -18,19 +18,25 @@ export interface ControlFlowRequest extends Request {
 
 
 export async function launchRunners(ns: NS): Promise<void> {
+	const purchasedServerRunner: Promise<void> = launchRunner(ns, '/src/runners/PurchasedServerRunner.js')
+	const programRunner: Promise<void>         = launchRunner(ns, '/src/runners/ProgramRunner.js')
+	const codingContractRunner: Promise<void>  = launchRunner(ns, '/src/runners/CodingContractRunner.js')
+
+	await Promise.allSettled([purchasedServerRunner, programRunner, codingContractRunner])
+}
+
+export async function launchRunner(ns: NS, script: string): Promise<void> {
 
 	// TODO: Check if we have enough ram available to run
 
-	const purchasedServerRunnerPid: number = ns.run('/src/runners/PurchasedServerRunner.js')
-	const programRunnerPid: number         = ns.run('/src/runners/ProgramRunner.js')
-	const codingContractRunnerPid: number  = ns.run('/src/runners/CodingContractRunner.js')
+	const pid: number = ns.run(script)
 
-	while (ns.isRunning(purchasedServerRunnerPid) || ns.isRunning(programRunnerPid) || ns.isRunning(codingContractRunnerPid)) {
+	while (ns.isRunning(pid)) {
 		await ns.sleep(CONSTANT.SMALL_DELAY)
 	}
 }
 
-export async function hasDaemonKillRequest(ns: NS): Promise<boolean> {
+export function hasDaemonKillRequest(ns: NS): boolean {
 	const requestPortHandle = ns.getPortHandle(CONSTANT.CONTROL_FLOW_PORT)
 	if (requestPortHandle.empty()) return false
 
@@ -46,7 +52,7 @@ export async function hasDaemonKillRequest(ns: NS): Promise<boolean> {
 	} else return false
 }
 
-export async function hasManagerKillRequest(ns: NS): Promise<boolean> {
+export function hasManagerKillRequest(ns: NS): boolean {
 	const requestPortHandle = ns.getPortHandle(CONSTANT.CONTROL_FLOW_PORT)
 	if (requestPortHandle.empty()) return false
 
@@ -80,10 +86,7 @@ export async function killDaemon(ns: NS): Promise<void> {
 
 	// TODO: Make sure that there is a way to stop this, time-based doesn't work in the long run
 
-	while (true) {
-
-		if (!isDaemonRunning(ns)) return
-
+	while (isDaemonRunning(ns)) {
 		await ns.sleep(CONSTANT.RESPONSE_RETRY_DELAY)
 	}
 }
@@ -106,17 +109,16 @@ export async function killAllManagers(ns: NS): Promise<void> {
 		id,
 	}))
 
-	// TODO: Make sure that there is a way to stop this, time-based doesn't work in the long run
+	// TODO: We just add a delay and pray that it has finished by then
 
 	await ns.sleep(MANAGER_KILL_DELAY)
 }
 
-export async function killAllScripts(ns: NS): Promise<void> {
-	const serverMap: ServerMap = await ServerAPI.getServerMap(ns)
+export function killAllScripts(ns: NS): void {
+	const serverMap: ServerMap = ServerAPI.getServerMap(ns)
 
 	for (const server of serverMap.servers) {
 		if (server.characteristics.host === CONSTANT.HOME_SERVER_HOST) continue
-
 		ns.killall(server.characteristics.host)
 	}
 

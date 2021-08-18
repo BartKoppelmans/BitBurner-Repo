@@ -35,8 +35,4 @@ export default class BatchJob {
 		}
 	}
 
-	public async addJobs(ns: NS, jobs: Job[]): Promise<void> {
-		// TODO: Implement if necessary
-	}
-
 }

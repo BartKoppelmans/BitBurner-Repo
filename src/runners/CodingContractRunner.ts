@@ -35,7 +35,7 @@ class CodingContractRunner implements Runner {
 	public async run(ns: NS): Promise<void> {
 		LogAPI.debug(ns, `Running the CodingContractRunner`)
 
-		const serverMap: ServerMap = await ServerAPI.getServerMap(ns)
+		const serverMap: ServerMap = ServerAPI.getServerMap(ns)
 
 		for (const server of serverMap.servers) {
 			const serverContracts: string[] = ns.ls(server.characteristics.host, '.cct')

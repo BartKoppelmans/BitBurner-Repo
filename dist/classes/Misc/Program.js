@@ -12,15 +12,18 @@ export class Program {
         this.price = price;
         this.type = type;
     }
+    static toValidString(name) {
+        return name.toLowerCase();
+    }
     hasProgram(ns) {
         return ns.fileExists(this.name, 'home');
     }
     // Returns whether it was successful
-    async attemptPurchase(ns) {
+    attemptPurchase(ns) {
         const money = PlayerUtils.getMoney(ns);
         if (this.price > money)
             return false;
-        const isSuccessful = ns.purchaseProgram(this.toValidString(ns, this.name));
+        const isSuccessful = ns.purchaseProgram(Program.toValidString(this.name));
         if (isSuccessful) {
             LogAPI.log(ns, `Purchased ${this.name}`, LogType.INFORMATION);
         }
@@ -41,8 +44,5 @@ export class Program {
             default:
                 throw new Error(`Program "${this.name}" not found.`);
         }
-    }
-    toValidString(ns, name) {
-        return name.toLowerCase();
     }
 }

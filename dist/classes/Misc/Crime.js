@@ -1,3 +1,4 @@
+const SUCCESS_THRESHOLD = 0.6;
 export default class Crime {
     constructor(ns, name) {
         this.name = name;
@@ -10,9 +11,9 @@ export default class Crime {
     updateCrimeChance(ns) {
         this.crimeChance = ns.getCrimeChance(this.name);
     }
-    async evaluate(ns) {
+    evaluate(ns) {
         this.updateCrimeChance(ns);
-        if (this.crimeChance < 0.6)
+        if (this.crimeChance < SUCCESS_THRESHOLD)
             return 0;
         return this.crimeValue = this.crimeChance *
             (this.crimeStats.money / this.crimeStats.time) *

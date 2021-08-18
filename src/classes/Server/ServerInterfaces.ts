@@ -1,7 +1,5 @@
-import Server          from '/src/classes/Server/Server.js'
-import HackableServer  from '/src/classes/Server/HackableServer.js'
-import PurchasedServer from '/src/classes/Server/PurchasedServer.js'
-import { Heuristics }  from '/src/util/Heuristics.js'
+import Server         from '/src/classes/Server/Server.js'
+import { Heuristics } from '/src/util/Heuristics.js'
 
 export interface IServer {
 	characteristics: ServerCharacteristics
@@ -77,7 +75,3 @@ export interface ServerMap {
 	lastUpdated: Date;
 	servers: Server[];
 }
-
-export type ServerList = Server[]
-export type HackableServerList = HackableServer[]
-export type PurchasedServerList = PurchasedServer[]

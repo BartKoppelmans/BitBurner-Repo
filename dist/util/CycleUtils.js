@@ -5,13 +5,13 @@ import { Tools } from '/src/tools/Tools.js';
 import * as HackUtils from '/src/util/HackUtils.js';
 import * as ToolUtils from '/src/util/ToolUtils.js';
 import * as Utils from '/src/util/Utils.js';
-export async function computeCycles(ns, target) {
-    const serverMap = await ServerAPI.getHackingServers(ns);
+export function computeCycles(ns, target) {
+    const serverMap = ServerAPI.getHackingServers(ns);
     const cycleCost = getOptimalCycleCost(ns, target);
     return Math.max(0, Math.min(CONSTANT.MAX_CYCLE_NUMBER, serverMap.reduce((threads, server) => threads + Math.floor(server.getAvailableRam(ns) / cycleCost), 0)));
 }
-export async function determineCycleThreadSpreads(ns, target, cycleThreads) {
-    const serverList = await ServerAPI.getHackingServers(ns);
+function determineCycleThreadSpreads(ns, target, cycleThreads) {
+    const serverList = ServerAPI.getHackingServers(ns);
     // Get the server with the most available RAM
     const server = serverList[0];
     const cost = getOptimalCycleCost(ns, target);
@@ -26,7 +26,7 @@ export async function determineCycleThreadSpreads(ns, target, cycleThreads) {
     growthSpreadMap.set(server, cycleThreads.growth);
     weaken1SpreadMap.set(server, cycleThreads.weaken1);
     weaken2SpreadMap.set(server, cycleThreads.weaken2);
-    await ServerAPI.increaseReservation(ns, server, cost);
+    ServerAPI.increaseReservation(ns, server, cost);
     return {
         hack: hackSpreadMap,
         weaken1: weaken1SpreadMap,
@@ -57,10 +57,10 @@ export function getOptimalCycleCost(ns, target) {
     const weakenCost = weakenThreads * ToolUtils.getToolCost(ns, Tools.WEAKEN);
     return hackCost + growCost + weakenCost;
 }
-export async function scheduleCycle(ns, target, batchId, previousCycle) {
+export function scheduleCycle(ns, target, batchId, previousCycle) {
     const cycleTimings = determineCycleTimings(ns, target, previousCycle);
     const cycleThreads = determineCycleThreads(ns, target);
-    const cycleThreadSpreads = await determineCycleThreadSpreads(ns, target, cycleThreads);
+    const cycleThreadSpreads = determineCycleThreadSpreads(ns, target, cycleThreads);
     const cycleId = Utils.generateHash();
     const hackJob = new Job(ns, {
         batchId,

@@ -29,49 +29,33 @@ export default class Job {
             args.start.getTime().toString(),
         ];
     }
-    async execute(ns) {
-        /*
-         TODO: Find a solution on how to check this first, perhaps in JobAPI.startJob?
-
-         const availableThreads: number = await HackUtils.calculateMaxThreads(ns, Tools.WEAKEN, true)
-
-         if (this.threads > availableThreads) {
-         throw new Error('Not enough RAM available')
-         }
-
-         */
+    execute(ns) {
         const commonArgs = {
             script: this.tool,
             target: this.target,
             start: this.start,
         };
         for (const [server, threads] of this.threadSpread) {
-            /*
-             NOTE: This is not needed anymore, since the cost is included in the reservation
-
-             // Validate the threadspread before running (for hacking)
-             if (cost > server.getAvailableRam(ns)) {
-             throw new Error('Not enough RAM available on the server.')
-             }
-
-             */
             // We have to copy the tool to the server if it is not available yet
             if (!ServerUtils.isHomeServer(server)) {
                 ns.scp(this.tool, CONSTANT.HOME_SERVER_HOST, server.characteristics.host);
             }
             const args = { ...commonArgs, threads, server };
             const pid = ns.exec.apply(null, Job.createArgumentArray(ns, args));
-            this.pids.push(pid);
+            if (pid === 0)
+                LogAPI.warn(ns, 'Could not successfully start the process');
+            else
+                this.pids.push(pid);
         }
     }
-    async onStart(ns) {
-        await this.print(ns, false, false);
+    onStart(ns) {
+        this.print(ns, false, false);
     }
-    async onFinish(ns) {
-        await this.print(ns, true, false);
+    onFinish(ns) {
+        this.print(ns, true, false);
     }
-    async onCancel(ns) {
-        await this.print(ns, false, true);
+    onCancel(ns) {
+        this.print(ns, false, true);
     }
     toJSON() {
         return {
@@ -88,7 +72,7 @@ export default class Job {
             threadSpread: Array.from(this.threadSpread.entries()),
         };
     }
-    async print(ns, isFinished, isCanceled) {
+    print(ns, isFinished, isCanceled) {
         let verb;
         if (isCanceled)
             verb = (this.isPrep) ? 'Cancelled prep on' : 'Cancelled attack on';

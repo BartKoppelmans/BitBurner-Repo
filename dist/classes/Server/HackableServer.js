@@ -44,7 +44,7 @@ export default class HackableServer extends Server {
             ...json,
             status: this.status,
             staticHackingProperties: this.staticHackingProperties,
-            serverValue: this.serverValue
+            serverValue: this.serverValue,
         };
     }
     getStaticHackingProperties(ns) {

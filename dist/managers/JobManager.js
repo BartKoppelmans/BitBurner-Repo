@@ -24,10 +24,10 @@ class JobManager {
         LogAPI.debug(ns, `Stopping the JobManager`);
     }
     async managingLoop(ns) {
-        const jobMap = await JobAPI.getJobMap(ns);
-        const runningProcesses = await JobAPI.getRunningProcesses(ns);
+        const jobMap = JobAPI.getJobMap(ns);
+        const runningProcesses = JobAPI.getRunningProcesses(ns);
         const finishedJobs = jobMap.jobs.filter((job) => !runningProcesses.some((process) => job.pids.includes(process.pid)));
-        await JobAPI.finishJobs(ns, finishedJobs);
+        JobAPI.finishJobs(ns, finishedJobs);
     }
 }
 export async function start(ns) {
@@ -49,13 +49,8 @@ export async function main(ns) {
     const instance = new JobManager();
     await instance.initialize(ns);
     await instance.start(ns);
-    while (true) {
-        const shouldKill = await ControlFlowAPI.hasManagerKillRequest(ns);
-        if (shouldKill) {
-            await instance.destroy(ns);
-            ns.exit();
-            return;
-        }
+    while (!ControlFlowAPI.hasManagerKillRequest(ns)) {
         await ns.sleep(CONSTANT.CONTROL_FLOW_CHECK_INTERVAL);
     }
+    await instance.destroy(ns);
 }

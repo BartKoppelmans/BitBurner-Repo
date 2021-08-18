@@ -50,7 +50,7 @@ export interface IBatchJob {
 
 	target: HackableServer;
 
-	jobs?: JobList;
+	jobs?: Job[];
 
 	start?: Date;
 
@@ -59,7 +59,5 @@ export interface IBatchJob {
 
 export interface JobMap {
 	lastUpdated: Date;
-	jobs: JobList;
+	jobs: Job[];
 }
-
-export type JobList = Job[]

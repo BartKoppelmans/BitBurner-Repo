@@ -16,11 +16,11 @@ class ServerMapRunner implements Runner {
 
 		LogAPI.debug(ns, `Running the ServerMapRunner`)
 
-		await ServerAPI.clearServerMap(ns)
+		ServerAPI.clearServerMap(ns)
 
 		const servers: Server[] = this.createServerList(ns)
 
-		await ServerAPI.writeServerMap(ns, { servers, lastUpdated: new Date() })
+		ServerAPI.writeServerMap(ns, { servers, lastUpdated: new Date() })
 	}
 
 	private createServerList(ns: NS): Server[] {

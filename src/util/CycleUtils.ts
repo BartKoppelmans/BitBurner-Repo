@@ -9,19 +9,18 @@ import { Tools }                                                 from '/src/tool
 import * as HackUtils                                            from '/src/util/HackUtils.js'
 import * as ToolUtils                                            from '/src/util/ToolUtils.js'
 import * as Utils                                                from '/src/util/Utils.js'
-import { ServerList }                                            from '/src/classes/Server/ServerInterfaces.js'
 
-export async function computeCycles(ns: NS, target: HackableServer): Promise<number> {
+export function computeCycles(ns: NS, target: HackableServer): number {
 
-	const serverMap: Server[] = await ServerAPI.getHackingServers(ns)
+	const serverMap: Server[] = ServerAPI.getHackingServers(ns)
 	const cycleCost: number   = getOptimalCycleCost(ns, target)
 
 	return Math.max(0, Math.min(CONSTANT.MAX_CYCLE_NUMBER, serverMap.reduce((threads, server) => threads + Math.floor(server.getAvailableRam(ns) / cycleCost), 0)))
 }
 
-export async function determineCycleThreadSpreads(ns: NS, target: HackableServer, cycleThreads: CycleThreads): Promise<CycleThreadSpreads> {
+function determineCycleThreadSpreads(ns: NS, target: HackableServer, cycleThreads: CycleThreads): CycleThreadSpreads {
 
-	const serverList: ServerList = await ServerAPI.getHackingServers(ns)
+	const serverList: Server[] = ServerAPI.getHackingServers(ns)
 
 	// Get the server with the most available RAM
 	const server = serverList[0]
@@ -41,7 +40,7 @@ export async function determineCycleThreadSpreads(ns: NS, target: HackableServer
 	weaken1SpreadMap.set(server, cycleThreads.weaken1)
 	weaken2SpreadMap.set(server, cycleThreads.weaken2)
 
-	await ServerAPI.increaseReservation(ns, server, cost)
+	ServerAPI.increaseReservation(ns, server, cost)
 
 	return {
 		hack: hackSpreadMap,
@@ -81,11 +80,11 @@ export function getOptimalCycleCost(ns: NS, target: HackableServer): number {
 }
 
 
-export async function scheduleCycle(ns: NS, target: HackableServer, batchId: string, previousCycle?: Cycle): Promise<Cycle> {
+export function scheduleCycle(ns: NS, target: HackableServer, batchId: string, previousCycle?: Cycle): Cycle {
 
 	const cycleTimings: CycleTimings             = determineCycleTimings(ns, target, previousCycle)
 	const cycleThreads: CycleThreads             = determineCycleThreads(ns, target)
-	const cycleThreadSpreads: CycleThreadSpreads = await determineCycleThreadSpreads(ns, target, cycleThreads)
+	const cycleThreadSpreads: CycleThreadSpreads = determineCycleThreadSpreads(ns, target, cycleThreads)
 	const cycleId: string                        = Utils.generateHash()
 
 	const hackJob = new Job(ns, {

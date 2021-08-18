@@ -1,5 +1,7 @@
 import type { BitBurner as NS, Crime as CrimeName, CrimeStats } from 'Bitburner'
 
+const SUCCESS_THRESHOLD: number = 0.6 as const
+
 export default class Crime {
 
 	name: CrimeName
@@ -21,10 +23,10 @@ export default class Crime {
 		this.crimeChance = ns.getCrimeChance(this.name)
 	}
 
-	public async evaluate(ns: NS): Promise<number> {
+	public evaluate(ns: NS): number {
 		this.updateCrimeChance(ns)
 
-		if (this.crimeChance < 0.6) return 0
+		if (this.crimeChance < SUCCESS_THRESHOLD) return 0
 
 		return this.crimeValue = this.crimeChance *
 			(this.crimeStats.money / this.crimeStats.time) *

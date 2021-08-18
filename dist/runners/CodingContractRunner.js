@@ -25,7 +25,7 @@ class CodingContractRunner {
     }
     async run(ns) {
         LogAPI.debug(ns, `Running the CodingContractRunner`);
-        const serverMap = await ServerAPI.getServerMap(ns);
+        const serverMap = ServerAPI.getServerMap(ns);
         for (const server of serverMap.servers) {
             const serverContracts = ns.ls(server.characteristics.host, '.cct');
             if (serverContracts.length === 0)

@@ -8,15 +8,19 @@ export var ControlFlowCode;
     ControlFlowCode[ControlFlowCode["KILL_DAEMON"] = 1] = "KILL_DAEMON";
 })(ControlFlowCode || (ControlFlowCode = {}));
 export async function launchRunners(ns) {
+    const purchasedServerRunner = launchRunner(ns, '/src/runners/PurchasedServerRunner.js');
+    const programRunner = launchRunner(ns, '/src/runners/ProgramRunner.js');
+    const codingContractRunner = launchRunner(ns, '/src/runners/CodingContractRunner.js');
+    await Promise.allSettled([purchasedServerRunner, programRunner, codingContractRunner]);
+}
+export async function launchRunner(ns, script) {
     // TODO: Check if we have enough ram available to run
-    const purchasedServerRunnerPid = ns.run('/src/runners/PurchasedServerRunner.js');
-    const programRunnerPid = ns.run('/src/runners/ProgramRunner.js');
-    const codingContractRunnerPid = ns.run('/src/runners/CodingContractRunner.js');
-    while (ns.isRunning(purchasedServerRunnerPid) || ns.isRunning(programRunnerPid) || ns.isRunning(codingContractRunnerPid)) {
+    const pid = ns.run(script);
+    while (ns.isRunning(pid)) {
         await ns.sleep(CONSTANT.SMALL_DELAY);
     }
 }
-export async function hasDaemonKillRequest(ns) {
+export function hasDaemonKillRequest(ns) {
     const requestPortHandle = ns.getPortHandle(CONSTANT.CONTROL_FLOW_PORT);
     if (requestPortHandle.empty())
         return false;
@@ -30,7 +34,7 @@ export async function hasDaemonKillRequest(ns) {
     else
         return false;
 }
-export async function hasManagerKillRequest(ns) {
+export function hasManagerKillRequest(ns) {
     const requestPortHandle = ns.getPortHandle(CONSTANT.CONTROL_FLOW_PORT);
     if (requestPortHandle.empty())
         return false;
@@ -56,9 +60,7 @@ export async function killDaemon(ns) {
         id,
     }));
     // TODO: Make sure that there is a way to stop this, time-based doesn't work in the long run
-    while (true) {
-        if (!isDaemonRunning(ns))
-            return;
+    while (isDaemonRunning(ns)) {
         await ns.sleep(CONSTANT.RESPONSE_RETRY_DELAY);
     }
 }
@@ -74,11 +76,11 @@ export async function killAllManagers(ns) {
         type: 'Request',
         id,
     }));
-    // TODO: Make sure that there is a way to stop this, time-based doesn't work in the long run
+    // TODO: We just add a delay and pray that it has finished by then
     await ns.sleep(MANAGER_KILL_DELAY);
 }
-export async function killAllScripts(ns) {
-    const serverMap = await ServerAPI.getServerMap(ns);
+export function killAllScripts(ns) {
+    const serverMap = ServerAPI.getServerMap(ns);
     for (const server of serverMap.servers) {
         if (server.characteristics.host === CONSTANT.HOME_SERVER_HOST)
             continue;

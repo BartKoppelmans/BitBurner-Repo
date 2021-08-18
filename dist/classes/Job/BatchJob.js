@@ -21,7 +21,4 @@ export default class BatchJob {
             this.end = (batchJob.end) ? batchJob.end : new Date();
         }
     }
-    async addJobs(ns, jobs) {
-        // TODO: Implement if necessary
-    }
 }

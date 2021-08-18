@@ -1,22 +1,22 @@
-import type { BitBurner as NS, Flag }       from 'Bitburner'
-import * as ControlFlowAPI                  from '/src/api/ControlFlowAPI.js'
-import * as JobAPI                          from '/src/api/JobAPI.js'
-import * as LogAPI                          from '/src/api/LogAPI.js'
-import * as ServerAPI                       from '/src/api/ServerAPI.js'
-import * as JobManager                      from '/src/managers/JobManager.js'
-import * as BladeBurnerManager              from '/src/managers/BladeBurnerManager.js'
-import BatchJob                             from '/src/classes/Job/BatchJob.js'
-import HackableServer                       from '/src/classes/Server/HackableServer.js'
-import Job                                  from '/src/classes/Job/Job.js'
-import Server                               from '/src/classes/Server/Server.js'
-import { Cycle }                            from '/src/classes/Misc/HackInterfaces.js'
-import { HackableServerList, ServerStatus } from '/src/classes/Server/ServerInterfaces.js'
-import { CONSTANT }                         from '/src/lib/constants.js'
-import { Tools }                            from '/src/tools/Tools.js'
-import * as CycleUtils                      from '/src/util/CycleUtils.js'
-import * as HackUtils                       from '/src/util/HackUtils.js'
-import * as ToolUtils                       from '/src/util/ToolUtils.js'
-import * as Utils                           from '/src/util/Utils.js'
+import type { BitBurner as NS, Flag } from 'Bitburner'
+import * as ControlFlowAPI            from '/src/api/ControlFlowAPI.js'
+import * as JobAPI                    from '/src/api/JobAPI.js'
+import * as LogAPI                    from '/src/api/LogAPI.js'
+import * as ServerAPI                 from '/src/api/ServerAPI.js'
+import * as JobManager                from '/src/managers/JobManager.js'
+import * as BladeBurnerManager        from '/src/managers/BladeBurnerManager.js'
+import BatchJob                       from '/src/classes/Job/BatchJob.js'
+import HackableServer                 from '/src/classes/Server/HackableServer.js'
+import Job                            from '/src/classes/Job/Job.js'
+import Server                         from '/src/classes/Server/Server.js'
+import { Cycle }                      from '/src/classes/Misc/HackInterfaces.js'
+import { ServerStatus }               from '/src/classes/Server/ServerInterfaces.js'
+import { CONSTANT }                   from '/src/lib/constants.js'
+import { Tools }                      from '/src/tools/Tools.js'
+import * as CycleUtils                from '/src/util/CycleUtils.js'
+import * as HackUtils                 from '/src/util/HackUtils.js'
+import * as ToolUtils                 from '/src/util/ToolUtils.js'
+import * as Utils                     from '/src/util/Utils.js'
 
 let isHacking: boolean = false
 let hackLoopTimeout: ReturnType<typeof setTimeout>
@@ -35,17 +35,22 @@ async function initialize(ns: NS) {
 	await ServerAPI.initializeServerMap(ns)
 	await JobAPI.initializeJobMap(ns)
 
-	await JobManager.start(ns)
+	const tasks: Promise<void>[] = []
 
-	if (flags.BB) await BladeBurnerManager.start(ns)
+	// Managers
+	tasks.push(JobManager.start(ns))
+	if (flags.BB) tasks.push(BladeBurnerManager.start(ns))
 
-	await ControlFlowAPI.launchRunners(ns)
+	// Runners
+	tasks.push(ControlFlowAPI.launchRunners(ns))
+
+	await Promise.allSettled(tasks)
 }
 
 async function hackLoop(ns: NS): Promise<void> {
 
 	// Get the potential targets
-	let potentialTargets: HackableServerList = await ServerAPI.getTargetServers(ns)
+	let potentialTargets: HackableServer[] = ServerAPI.getTargetServers(ns)
 
 	// We would have a problem if there are no targets
 	if (potentialTargets.length === 0) {
@@ -56,7 +61,7 @@ async function hackLoop(ns: NS): Promise<void> {
 	potentialTargets = potentialTargets.sort((a, b) => a.serverValue! - b.serverValue!)
 
 	// Attack each of the targets
-	for await (const target of potentialTargets) {
+	for (const target of potentialTargets) {
 
 		while (isHacking) {
 			await ns.sleep(CONSTANT.SMALL_DELAY)
@@ -64,7 +69,7 @@ async function hackLoop(ns: NS): Promise<void> {
 
 		isHacking = true
 
-		const currentTargets: HackableServer[] = await ServerAPI.getCurrentTargets(ns)
+		const currentTargets: HackableServer[] = ServerAPI.getCurrentTargets(ns)
 
 		// Can't have too many targets at the same time
 		if (currentTargets.length >= CONSTANT.MAX_TARGET_COUNT) {
@@ -80,25 +85,25 @@ async function hackLoop(ns: NS): Promise<void> {
 	hackLoopTimeout = setTimeout(hackLoop.bind(null, ns), CONSTANT.HACK_LOOP_DELAY)
 }
 
-async function hack(ns: NS, target: HackableServer): Promise<void> {
+function hack(ns: NS, target: HackableServer): void {
 	// If it is prepping or targeting, leave it
 	if (target.status !== ServerStatus.NONE) return
 
 	// The server is not optimal, so we have to prep it first
 	if (!target.isOptimal(ns)) {
-		await prepServer(ns, target)
+		prepServer(ns, target)
 		return
 	}
 
 	// Make sure that the percentage that we steal is optimal
-	await optimizePerformance(ns, target)
+	optimizePerformance(ns, target)
 
-	await attackServer(ns, target)
+	attackServer(ns, target)
 
 	return
 }
 
-async function prepServer(ns: NS, target: HackableServer): Promise<void> {
+function prepServer(ns: NS, target: HackableServer): void {
 
 	// If the server is optimal, we are done I guess
 	if (target.isOptimal(ns)) return
@@ -111,7 +116,7 @@ async function prepServer(ns: NS, target: HackableServer): Promise<void> {
 
 	const jobs: Job[] = []
 
-	let availableThreads: number = await HackUtils.calculateMaxThreads(ns, Tools.WEAKEN, true)
+	let availableThreads: number = HackUtils.calculateMaxThreads(ns, Tools.WEAKEN, true)
 	if (availableThreads <= 0) {
 		LogAPI.hack(ns, 'Skipped a prep.')
 		return
@@ -126,7 +131,7 @@ async function prepServer(ns: NS, target: HackableServer): Promise<void> {
 		const neededWeakenThreads: number = HackUtils.calculateWeakenThreads(ns, target)
 
 		const weakenThreads: number                   = Math.min(neededWeakenThreads, availableThreads)
-		const weakenThreadSpread: Map<Server, number> = await HackUtils.computeThreadSpread(ns, Tools.WEAKEN, weakenThreads, true)
+		const weakenThreadSpread: Map<Server, number> = HackUtils.computeThreadSpread(ns, Tools.WEAKEN, weakenThreads, true)
 
 		const weakenTime: number = target.getWeakenTime(ns)
 
@@ -149,8 +154,8 @@ async function prepServer(ns: NS, target: HackableServer): Promise<void> {
 
 		availableThreads -= weakenThreads
 
-		for await (const [server, threads] of weakenThreadSpread) {
-			await ServerAPI.increaseReservation(ns, server, threads * ToolUtils.getToolCost(ns, Tools.WEAKEN))
+		for (const [server, threads] of weakenThreadSpread) {
+			ServerAPI.increaseReservation(ns, server, threads * ToolUtils.getToolCost(ns, Tools.WEAKEN))
 		}
 	}
 
@@ -197,7 +202,7 @@ async function prepServer(ns: NS, target: HackableServer): Promise<void> {
 				growthStartTime = new Date(growthEndTime.getTime() - growthTime)
 			}
 
-			const growthThreadSpread: Map<Server, number> = await HackUtils.computeThreadSpread(ns, Tools.GROW, growthThreads, true)
+			const growthThreadSpread: Map<Server, number> = HackUtils.computeThreadSpread(ns, Tools.GROW, growthThreads, true)
 
 			growJob = new Job(ns, {
 				id: Utils.generateHash(),
@@ -214,10 +219,10 @@ async function prepServer(ns: NS, target: HackableServer): Promise<void> {
 			jobs.push(growJob)
 
 			for (const [server, threads] of growthThreadSpread) {
-				await ServerAPI.increaseReservation(ns, server, threads * ToolUtils.getToolCost(ns, Tools.GROW))
+				ServerAPI.increaseReservation(ns, server, threads * ToolUtils.getToolCost(ns, Tools.GROW))
 			}
 
-			const compensationWeakenThreadSpread: Map<Server, number> = await HackUtils.computeThreadSpread(ns, Tools.WEAKEN, weakenThreads, true)
+			const compensationWeakenThreadSpread: Map<Server, number> = HackUtils.computeThreadSpread(ns, Tools.WEAKEN, weakenThreads, true)
 
 			compensationWeakenJob = new Job(ns, {
 				id: Utils.generateHash(),
@@ -234,7 +239,7 @@ async function prepServer(ns: NS, target: HackableServer): Promise<void> {
 			jobs.push(compensationWeakenJob)
 
 			for (const [server, threads] of compensationWeakenThreadSpread) {
-				await ServerAPI.increaseReservation(ns, server, threads * ToolUtils.getToolCost(ns, Tools.WEAKEN))
+				ServerAPI.increaseReservation(ns, server, threads * ToolUtils.getToolCost(ns, Tools.WEAKEN))
 			}
 		}
 	}
@@ -249,12 +254,12 @@ async function prepServer(ns: NS, target: HackableServer): Promise<void> {
 		jobs,
 	})
 
-	await JobAPI.startBatchJob(ns, batchJob)
+	JobAPI.startBatchJob(ns, batchJob)
 }
 
-async function attackServer(ns: NS, target: HackableServer): Promise<void> {
+function attackServer(ns: NS, target: HackableServer): void {
 
-	const numPossibleCycles: number = await CycleUtils.computeCycles(ns, target)
+	const numPossibleCycles: number = CycleUtils.computeCycles(ns, target)
 
 	const numCycles: number = Math.min(numPossibleCycles, CONSTANT.MAX_CYCLE_NUMBER)
 
@@ -268,10 +273,8 @@ async function attackServer(ns: NS, target: HackableServer): Promise<void> {
 	const cycles: Cycle[] = []
 
 	for (let i = 0; i < numCycles; i++) {
-		const cycle: Cycle = await CycleUtils.scheduleCycle(ns, target, batchId, cycles[cycles.length - 1])
+		const cycle: Cycle = CycleUtils.scheduleCycle(ns, target, batchId, cycles[cycles.length - 1])
 		cycles.push(cycle)
-
-		await ns.sleep(CONSTANT.SMALL_DELAY)
 	}
 
 	if (cycles.length === 0) {
@@ -287,10 +290,10 @@ async function attackServer(ns: NS, target: HackableServer): Promise<void> {
 		jobs,
 	})
 
-	await JobAPI.startBatchJob(ns, batchJob)
+	JobAPI.startBatchJob(ns, batchJob)
 }
 
-async function optimizePerformance(ns: NS, target: HackableServer): Promise<void> {
+function optimizePerformance(ns: NS, target: HackableServer): void {
 
 	// PERFORMANCE: This is a very expensive function call
 
@@ -303,7 +306,7 @@ async function optimizePerformance(ns: NS, target: HackableServer): Promise<void
 	}
 	for (let n = CONSTANT.MIN_PERCENTAGE_TO_STEAL; n <= CONSTANT.MAX_PERCENTAGE_TO_STEAL; n += CONSTANT.DELTA_PERCENTAGE_TO_STEAL) {
 		target.percentageToSteal = n
-		const cycles: number     = await CycleUtils.computeCycles(ns, target)
+		const cycles: number     = CycleUtils.computeCycles(ns, target)
 		const profit: number     = target.staticHackingProperties.maxMoney * target.percentageToSteal * cycles
 
 		const totalTime: number = CycleUtils.calculateTotalBatchTime(ns, target, cycles)
@@ -324,7 +327,7 @@ async function optimizePerformance(ns: NS, target: HackableServer): Promise<void
 	}
 }
 
-export async function destroy(ns: NS) {
+export function destroy(ns: NS): void {
 	clearTimeout(hackLoopTimeout)
 	clearTimeout(runnerInterval)
 
@@ -351,15 +354,9 @@ export async function main(ns: NS) {
 	runnerInterval  = setInterval(ControlFlowAPI.launchRunners.bind(null, ns), CONSTANT.RUNNER_INTERVAL)
 
 	// TODO: Here we should check whether we are still running the hackloop
-	while (true) {
-		const shouldKill: boolean = await ControlFlowAPI.hasDaemonKillRequest(ns)
-
-		if (shouldKill) {
-			await destroy(ns)
-			ns.exit()
-			return
-		}
-
+	while (!ControlFlowAPI.hasDaemonKillRequest(ns)) {
 		await ns.sleep(CONSTANT.CONTROL_FLOW_CHECK_INTERVAL)
 	}
+
+	destroy(ns)
 }

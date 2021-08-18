@@ -37,17 +37,21 @@ class ProgramRunner {
         const hackableServer = server;
         return ProgramRunner.getNumCrackScripts(ns) >= hackableServer.staticHackingProperties.ports;
     }
-    static async isFirstRun(ns) {
-        const noodles = await ServerAPI.getServerByName(ns, 'n00dles');
+    static isFirstRun(ns) {
+        const noodles = ServerAPI.getServerByName(ns, 'n00dles');
         return !noodles.isRooted(ns);
     }
     async run(ns) {
         LogAPI.debug(ns, `Running the ProgramRunner`);
-        const isFirstRun = await ProgramRunner.isFirstRun(ns);
+        const isFirstRun = ProgramRunner.isFirstRun(ns);
         const money = PlayerUtils.getMoney(ns);
         if (!ProgramRunner.hasTor(ns)) {
-            if (money < CONSTANT.TOR_ROUTER_COST)
-                return;
+            if (money < CONSTANT.TOR_ROUTER_COST) {
+                if (isFirstRun)
+                    this.rootAllServers(ns);
+                else
+                    return;
+            }
             else {
                 ns.purchaseTor();
                 LogAPI.log(ns, `Purchased TOR Router`, LogType.INFORMATION);
@@ -56,13 +60,13 @@ class ProgramRunner {
         const remainingPrograms = ProgramRunner.getRemainingPrograms(ns);
         let hasUpdated = false;
         for (const program of remainingPrograms) {
-            const isSuccessful = await program.attemptPurchase(ns);
+            const isSuccessful = program.attemptPurchase(ns);
             hasUpdated = hasUpdated || isSuccessful;
         }
         if (hasUpdated || isFirstRun)
-            await this.rootAllServers(ns);
+            this.rootAllServers(ns);
     }
-    async root(ns, server) {
+    root(ns, server) {
         if (server.isRooted(ns)) {
             throw new Error('Server is already rooted.');
         }
@@ -75,14 +79,14 @@ class ProgramRunner {
         crackingScripts.forEach(program => program.run(ns, server));
         ns.nuke(server.characteristics.host);
     }
-    async rootAllServers(ns) {
-        const serverMap = await ServerAPI.getServerMap(ns);
+    rootAllServers(ns) {
+        const serverMap = ServerAPI.getServerMap(ns);
         // Root all servers
-        await Promise.allSettled(serverMap.servers.map(async (server) => {
+        for (const server of serverMap.servers) {
             if (!server.isRooted(ns) && ProgramRunner.canRoot(ns, server)) {
-                return this.root(ns, server);
+                this.root(ns, server);
             }
-        }));
+        }
     }
     ;
     // Returns a sorted list of cracking scripts that can be used to root

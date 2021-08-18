@@ -6,10 +6,9 @@ import { CONSTANT }             from '/src/lib/constants.js'
 import { Tools }                from '/src/tools/Tools.js'
 import * as PlayerUtils         from '/src/util/PlayerUtils.js'
 import * as ToolUtils           from '/src/util/ToolUtils.js'
-import { ServerList }           from '/src/classes/Server/ServerInterfaces.js'
 
-export async function computeThreadSpread(ns: NS, tool: Tools, threads: number, isPrep: boolean): Promise<Map<Server, number>> {
-	const maxThreadsAvailable = await calculateMaxThreads(ns, tool, isPrep)
+export function computeThreadSpread(ns: NS, tool: Tools, threads: number, isPrep: boolean): Map<Server, number> {
+	const maxThreadsAvailable = calculateMaxThreads(ns, tool, isPrep)
 
 	if (threads > maxThreadsAvailable) {
 		throw new Error('We don\'t have that much threads available.')
@@ -20,7 +19,7 @@ export async function computeThreadSpread(ns: NS, tool: Tools, threads: number, 
 	let threadsLeft: number              = threads
 	const spreadMap: Map<Server, number> = new Map<Server, number>()
 
-	const serverList: ServerList = (isPrep) ? await ServerAPI.getPreppingServers(ns) : await ServerAPI.getHackingServers(ns)
+	const serverList: Server[] = (isPrep) ? ServerAPI.getPreppingServers(ns) : ServerAPI.getHackingServers(ns)
 
 
 	for (const server of serverList) {
@@ -42,9 +41,9 @@ export async function computeThreadSpread(ns: NS, tool: Tools, threads: number, 
 }
 
 // Here we allow thread spreading over multiple servers
-export async function calculateMaxThreads(ns: NS, tool: Tools, isPrep: boolean): Promise<number> {
+export function calculateMaxThreads(ns: NS, tool: Tools, isPrep: boolean): number {
 
-	const serverList: ServerList = (isPrep) ? await ServerAPI.getPreppingServers(ns) : await ServerAPI.getHackingServers(ns)
+	const serverList: Server[] = (isPrep) ? ServerAPI.getPreppingServers(ns) : ServerAPI.getHackingServers(ns)
 
 	const cost: number = ToolUtils.getToolCost(ns, tool)
 
