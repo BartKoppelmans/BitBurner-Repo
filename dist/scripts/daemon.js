@@ -218,6 +218,7 @@ function attackServer(ns, target) {
 function optimizePerformance(ns, target) {
     // PERFORMANCE: This is a very expensive function call
     let performanceUpdated = false;
+    const hackingServers = ServerAPI.getHackingServers(ns);
     const originalPercentageToSteal = target.percentageToSteal;
     let optimalTarget = {
         percentageToSteal: CONSTANT.MIN_PERCENTAGE_TO_STEAL,
@@ -225,7 +226,7 @@ function optimizePerformance(ns, target) {
     };
     for (let n = CONSTANT.MIN_PERCENTAGE_TO_STEAL; n <= CONSTANT.MAX_PERCENTAGE_TO_STEAL; n += CONSTANT.DELTA_PERCENTAGE_TO_STEAL) {
         target.percentageToSteal = n;
-        const cycles = CycleUtils.computeCycles(ns, target);
+        const cycles = CycleUtils.computeCycles(ns, target, hackingServers);
         const profit = target.staticHackingProperties.maxMoney * target.percentageToSteal * cycles;
         const totalTime = CycleUtils.calculateTotalBatchTime(ns, target, cycles);
         const profitsPerSecond = profit / totalTime;

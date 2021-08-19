@@ -5,10 +5,11 @@ import { Tools } from '/src/tools/Tools.js';
 import * as HackUtils from '/src/util/HackUtils.js';
 import * as ToolUtils from '/src/util/ToolUtils.js';
 import * as Utils from '/src/util/Utils.js';
-export function computeCycles(ns, target) {
-    const serverMap = ServerAPI.getHackingServers(ns);
+export function computeCycles(ns, target, servers) {
+    if (!servers)
+        servers = ServerAPI.getHackingServers(ns);
     const cycleCost = getOptimalCycleCost(ns, target);
-    return Math.max(0, Math.min(CONSTANT.MAX_CYCLE_NUMBER, serverMap.reduce((threads, server) => threads + Math.floor(server.getAvailableRam(ns) / cycleCost), 0)));
+    return Math.max(0, Math.min(CONSTANT.MAX_CYCLE_NUMBER, servers.reduce((threads, server) => threads + Math.floor(server.getAvailableRam(ns) / cycleCost), 0)));
 }
 function determineCycleThreadSpreads(ns, target, cycleThreads) {
     const serverList = ServerAPI.getHackingServers(ns);
