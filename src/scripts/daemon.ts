@@ -5,7 +5,7 @@ import * as LogAPI                    from '/src/api/LogAPI.js'
 import * as ServerAPI                 from '/src/api/ServerAPI.js'
 import * as JobManager                from '/src/managers/JobManager.js'
 import * as BladeBurnerManager        from '/src/managers/BladeBurnerManager.js'
-import BatchJob                       from '/src/classes/Job/BatchJob.js'
+import Batch                          from '/src/classes/Job/Batch.js'
 import HackableServer                 from '/src/classes/Server/HackableServer.js'
 import Job                            from '/src/classes/Job/Job.js'
 import Server                         from '/src/classes/Server/Server.js'
@@ -113,6 +113,8 @@ function prepServer(ns: NS, target: HackableServer): void {
 	let compensationWeakenJob: Job | undefined
 
 	const batchId: string = Utils.generateHash()
+	let start: Date | undefined
+	let end: Date | undefined
 
 	const jobs: Job[] = []
 
@@ -137,6 +139,9 @@ function prepServer(ns: NS, target: HackableServer): void {
 
 		const weakenStart: Date = new Date(Date.now() + CONSTANT.INITIAL_JOB_DELAY)
 		const weakenEnd: Date   = new Date(weakenStart.getTime() + weakenTime)
+
+		start = weakenStart
+		end   = weakenEnd
 
 		initialWeakenJob = new Job(ns, {
 			id: Utils.generateHash(),
@@ -194,6 +199,8 @@ function prepServer(ns: NS, target: HackableServer): void {
 
 				compensationWeakenEndTime   = new Date(growthEndTime.getTime() + CONSTANT.JOB_DELAY)
 				compensationWeakenStartTime = new Date(compensationWeakenEndTime.getTime() - weakenTime)
+
+
 			} else {
 				compensationWeakenStartTime = new Date(firstStartTime.getTime())
 				compensationWeakenEndTime   = new Date(compensationWeakenStartTime.getTime() + growthTime)
@@ -201,6 +208,9 @@ function prepServer(ns: NS, target: HackableServer): void {
 				growthEndTime   = new Date(compensationWeakenEndTime.getTime() - CONSTANT.JOB_DELAY)
 				growthStartTime = new Date(growthEndTime.getTime() - growthTime)
 			}
+
+			start = firstStartTime
+			end   = compensationWeakenEndTime
 
 			const growthThreadSpread: Map<Server, number> = HackUtils.computeThreadSpread(ns, Tools.GROW, growthThreads, true)
 
@@ -248,13 +258,17 @@ function prepServer(ns: NS, target: HackableServer): void {
 	// TODO: Filter this at the start, if we cannot start any threads, we should not even go here
 	if (jobs.length === 0) return
 
-	const batchJob: BatchJob = new BatchJob(ns, {
+	if (!start || !end) throw new Error('How the fuck do we not have timings available?')
+
+	const batchJob: Batch = new Batch(ns, {
 		batchId,
 		target,
 		jobs,
+		start,
+		end,
 	})
 
-	JobAPI.startBatchJob(ns, batchJob)
+	JobAPI.startBatch(ns, batchJob)
 }
 
 function attackServer(ns: NS, target: HackableServer): void {
@@ -281,16 +295,21 @@ function attackServer(ns: NS, target: HackableServer): void {
 		throw new Error('No cycles created')
 	}
 
+	const start: Date = cycles[0].weaken1.start
+	const end: Date   = cycles[cycles.length - 1].weaken2.end
+
 	const jobs: Job[] = cycles.reduce((array: Job[], cycle: Cycle) => [...array, cycle.hack, cycle.weaken1, cycle.growth, cycle.weaken2], [])
 
 	// Create the batch object
-	const batchJob: BatchJob = new BatchJob(ns, {
-		batchId: Utils.generateHash(),
+	const batchJob: Batch = new Batch(ns, {
+		batchId,
 		target,
 		jobs,
+		start,
+		end,
 	})
 
-	JobAPI.startBatchJob(ns, batchJob)
+	JobAPI.startBatch(ns, batchJob)
 }
 
 function optimizePerformance(ns: NS, target: HackableServer): void {

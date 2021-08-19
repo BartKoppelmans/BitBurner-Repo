@@ -4,7 +4,7 @@ import * as LogAPI from '/src/api/LogAPI.js';
 import * as ServerAPI from '/src/api/ServerAPI.js';
 import * as JobManager from '/src/managers/JobManager.js';
 import * as BladeBurnerManager from '/src/managers/BladeBurnerManager.js';
-import BatchJob from '/src/classes/Job/BatchJob.js';
+import Batch from '/src/classes/Job/Batch.js';
 import Job from '/src/classes/Job/Job.js';
 import { ServerStatus } from '/src/classes/Server/ServerInterfaces.js';
 import { CONSTANT } from '/src/lib/constants.js';
@@ -81,6 +81,8 @@ function prepServer(ns, target) {
     let growJob;
     let compensationWeakenJob;
     const batchId = Utils.generateHash();
+    let start;
+    let end;
     const jobs = [];
     let availableThreads = HackUtils.calculateMaxThreads(ns, Tools.WEAKEN, true);
     if (availableThreads <= 0) {
@@ -97,6 +99,8 @@ function prepServer(ns, target) {
         const weakenTime = target.getWeakenTime(ns);
         const weakenStart = new Date(Date.now() + CONSTANT.INITIAL_JOB_DELAY);
         const weakenEnd = new Date(weakenStart.getTime() + weakenTime);
+        start = weakenStart;
+        end = weakenEnd;
         initialWeakenJob = new Job(ns, {
             id: Utils.generateHash(),
             batchId,
@@ -145,6 +149,8 @@ function prepServer(ns, target) {
                 growthEndTime = new Date(compensationWeakenEndTime.getTime() - CONSTANT.JOB_DELAY);
                 growthStartTime = new Date(growthEndTime.getTime() - growthTime);
             }
+            start = firstStartTime;
+            end = compensationWeakenEndTime;
             const growthThreadSpread = HackUtils.computeThreadSpread(ns, Tools.GROW, growthThreads, true);
             growJob = new Job(ns, {
                 id: Utils.generateHash(),
@@ -183,12 +189,16 @@ function prepServer(ns, target) {
     // TODO: Filter this at the start, if we cannot start any threads, we should not even go here
     if (jobs.length === 0)
         return;
-    const batchJob = new BatchJob(ns, {
+    if (!start || !end)
+        throw new Error('How the fuck do we not have timings available?');
+    const batchJob = new Batch(ns, {
         batchId,
         target,
         jobs,
+        start,
+        end,
     });
-    JobAPI.startBatchJob(ns, batchJob);
+    JobAPI.startBatch(ns, batchJob);
 }
 function attackServer(ns, target) {
     const numPossibleCycles = CycleUtils.computeCycles(ns, target);
@@ -206,14 +216,18 @@ function attackServer(ns, target) {
     if (cycles.length === 0) {
         throw new Error('No cycles created');
     }
+    const start = cycles[0].weaken1.start;
+    const end = cycles[cycles.length - 1].weaken2.end;
     const jobs = cycles.reduce((array, cycle) => [...array, cycle.hack, cycle.weaken1, cycle.growth, cycle.weaken2], []);
     // Create the batch object
-    const batchJob = new BatchJob(ns, {
-        batchId: Utils.generateHash(),
+    const batchJob = new Batch(ns, {
+        batchId,
         target,
         jobs,
+        start,
+        end,
     });
-    JobAPI.startBatchJob(ns, batchJob);
+    JobAPI.startBatch(ns, batchJob);
 }
 function optimizePerformance(ns, target) {
     // PERFORMANCE: This is a very expensive function call

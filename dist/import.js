@@ -10,7 +10,7 @@ const files = [
     'classes/BladeBurner/BBCity.js',
     'classes/BladeBurner/BBInterfaces.js',
     'classes/BladeBurner/BBSkill.js',
-    'classes/Job/BatchJob.js',
+    'classes/Job/Batch.js',
     'classes/Job/Job.js',
     'classes/Job/JobInterfaces.js',
     'classes/Misc/CodingContract.js',

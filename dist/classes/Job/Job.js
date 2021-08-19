@@ -12,11 +12,11 @@ export default class Job {
         this.start = job.start;
         this.end = job.end;
         this.threadSpread = job.threadSpread;
+        this.batchId = job.batchId;
+        this.finished = (job.finished) ? job.finished : false;
         this.pids = (job.pids) ? job.pids : [];
         if (job.cycleId)
             this.cycleId = job.cycleId;
-        if (job.batchId)
-            this.batchId = job.batchId;
         if (this.threads <= 0)
             throw new Error('Cannot create a job with less than 1 thread');
     }
@@ -60,9 +60,9 @@ export default class Job {
     toJSON() {
         return {
             pids: this.pids,
+            batchId: this.batchId,
             id: this.id,
             cycleId: this.cycleId,
-            batchId: this.batchId,
             target: this.target,
             threads: this.threads,
             tool: this.tool,
@@ -70,6 +70,7 @@ export default class Job {
             start: this.start.getTime(),
             end: this.end.getTime(),
             threadSpread: Array.from(this.threadSpread.entries()),
+            finished: this.finished,
         };
     }
     print(ns, isFinished, isCanceled) {

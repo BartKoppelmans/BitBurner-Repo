@@ -3,12 +3,12 @@ import * as LogAPI from '/src/api/LogAPI.js';
 import * as JobAPI from '/src/api/JobAPI.js';
 import { CONSTANT } from '/src/lib/constants.js';
 import * as Utils from '/src/util/Utils.js';
-const JOB_MANAGING_LOOP_INTERVAL = 2500;
+const JOB_MANAGING_LOOP_INTERVAL = 1000;
 class JobManager {
     async initialize(ns) {
         Utils.disableLogging(ns);
         const jobMap = await JobAPI.getJobMap(ns);
-        if (jobMap.jobs.length > 0) {
+        if (jobMap.batches.length > 0) {
             await JobAPI.cancelAllJobs(ns);
         }
     }
@@ -26,8 +26,14 @@ class JobManager {
     async managingLoop(ns) {
         const jobMap = JobAPI.getJobMap(ns);
         const runningProcesses = JobAPI.getRunningProcesses(ns);
-        const finishedJobs = jobMap.jobs.filter((job) => !runningProcesses.some((process) => job.pids.includes(process.pid)));
-        JobAPI.finishJobs(ns, finishedJobs);
+        // NOTE: It might be better to provide the batch id to the api and kill that way
+        const finishedJobs = [];
+        for (const batch of jobMap.batches) {
+            const jobs = batch.jobs.filter((job) => !job.pids.some((pid) => runningProcesses.some((process) => process.pid === pid)));
+            finishedJobs.push(...jobs);
+        }
+        if (finishedJobs.length > 0)
+            JobAPI.finishJobs(ns, finishedJobs);
     }
 }
 export async function start(ns) {

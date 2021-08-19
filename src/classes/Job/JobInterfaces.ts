@@ -2,6 +2,7 @@ import HackableServer from '/src/classes/Server/HackableServer.js'
 import Job            from '/src/classes/Job/Job.js'
 import Server         from '/src/classes/Server/Server.js'
 import { Tools }      from '/src/tools/Tools.js'
+import Batch          from '/src/classes/Job/Batch.js'
 
 export type ExecArguments = [script: string, host: string, numThreads?: number, ...args: string[]];
 
@@ -18,11 +19,10 @@ export interface IJOb {
 
 	pids?: number[];
 
-	id: string;
-
+	batchId: string;
 	cycleId?: string;
 
-	batchId?: string
+	id: string;
 
 	// The target of the hack
 	target: HackableServer;
@@ -42,22 +42,24 @@ export interface IJOb {
 	isPrep: boolean;
 
 	threadSpread: Map<Server, number>;
+
+	finished?: boolean;
 }
 
 // A Batch object contains a list of cycles that should be executed on a specific server
-export interface IBatchJob {
+export interface IBatch {
 	batchId: string;
 
 	target: HackableServer;
 
-	jobs?: Job[];
+	jobs: Job[];
 
-	start?: Date;
+	start: Date;
 
-	end?: Date;
+	end: Date;
 }
 
 export interface JobMap {
 	lastUpdated: Date;
-	jobs: Job[];
+	batches: Batch[];
 }

@@ -11,10 +11,10 @@ function readJobMap(ns) {
     const jobMapString = ns.read(CONSTANT.JOB_MAP_FILENAME).toString();
     const jobMap = JSON.parse(jobMapString);
     jobMap.lastUpdated = new Date(jobMap.lastUpdated);
-    const jobObjects = Array.from(jobMap.jobs);
-    jobMap.jobs = [];
-    for (const job of jobObjects) {
-        jobMap.jobs.push(SerializationUtils.jobFromJSON(ns, job));
+    const batches = Array.from(jobMap.batches);
+    jobMap.batches = [];
+    for (const batch of batches) {
+        jobMap.batches.push(SerializationUtils.batchFromJSON(ns, batch));
     }
     return jobMap;
 }
@@ -26,20 +26,19 @@ export function writeJobMap(ns, jobMap) {
     jobMap.lastUpdated = new Date();
     ns.write(CONSTANT.JOB_MAP_FILENAME, JSON.stringify(jobMap), 'w');
 }
-export function startBatchJob(ns, batchJob) {
+export function startBatch(ns, batch) {
     // TODO: We should do some checking in here
-    const isPrep = batchJob.jobs[0].isPrep;
-    ServerAPI.setStatus(ns, batchJob.target, (isPrep) ? ServerStatus.PREPPING : ServerStatus.TARGETING);
-    for (const job of batchJob.jobs) {
+    const isPrep = batch.jobs[0].isPrep;
+    ServerAPI.setStatus(ns, batch.target, (isPrep) ? ServerStatus.PREPPING : ServerStatus.TARGETING);
+    for (const job of batch.jobs) {
         startJob(ns, job);
     }
+    writeBatch(ns, batch);
 }
 function startJob(ns, job) {
     // TODO: We should do some checking in here
-    // TODO: If we didn't start at startBatchJob, then we don't set the server status
     job.execute(ns);
     job.onStart(ns);
-    writeJob(ns, job);
     const threadSpread = job.threadSpread;
     for (const [server, threads] of threadSpread) {
         const reservation = threads * ToolUtils.getToolCost(ns, job.tool);
@@ -49,27 +48,32 @@ function startJob(ns, job) {
 export function finishJobs(ns, jobs) {
     // NOTE: This function manually removes the jobs instead of using removeJob (for performance reasons)
     const jobMap = getJobMap(ns);
-    for (const job of jobs) {
-        const index = jobMap.jobs.findIndex((j) => j.id === job.id);
-        if (index === -1)
-            throw new Error('Could not find the job'); // NOTE: This should not crash the script
-        jobMap.jobs.splice(index, 1);
-        job.onFinish(ns);
+    for (const finishedJob of jobs) {
+        const batchIndex = jobMap.batches.findIndex((b) => b.batchId === finishedJob.batchId);
+        if (batchIndex === -1)
+            throw new Error(`Could not find the batch`);
+        const jobIndex = jobMap.batches[batchIndex].jobs.findIndex((j) => j.id === finishedJob.id);
+        if (jobIndex === -1)
+            throw new Error('Could not find the job');
+        jobMap.batches[batchIndex].jobs[jobIndex].finished = true;
+        finishedJob.onFinish(ns);
     }
-    const batches = [...new Map(jobs.map(job => [job.batchId, job])).values()]
-        .map((job) => {
-        return { target: job.target, batchId: job.batchId };
-    });
-    for (const batch of batches) {
-        const isBatchFinished = !jobMap.jobs.some((job) => job.batchId === batch.batchId);
-        if (isBatchFinished)
+    const finishedBatchIndices = [];
+    for (const [index, batch] of jobMap.batches.entries()) {
+        const isBatchFinished = batch.jobs.every((j) => j.finished);
+        if (isBatchFinished) {
             ServerAPI.setStatus(ns, batch.target, ServerStatus.NONE);
+            finishedBatchIndices.push(index);
+        }
+    }
+    for (const index of finishedBatchIndices.reverse()) {
+        jobMap.batches.splice(index, 1);
     }
     writeJobMap(ns, jobMap);
 }
-export function writeJob(ns, job) {
+export function writeBatch(ns, batch) {
     const jobMap = getJobMap(ns);
-    jobMap.jobs.push(job);
+    jobMap.batches.push(batch);
     writeJobMap(ns, jobMap);
 }
 export function getRunningProcesses(ns) {
@@ -82,13 +86,17 @@ export function getRunningProcesses(ns) {
 }
 export function cancelAllJobs(ns) {
     const jobMap = getJobMap(ns);
-    for (const job of jobMap.jobs) {
-        cancelJob(ns, job);
+    for (const batch of jobMap.batches) {
+        for (const job of batch.jobs) {
+            cancelJob(ns, job);
+        }
     }
     // TODO: Check whether there are still jobs left that are not cancelled
 }
 export function cancelJob(ns, job) {
     // TODO: We should do some checking here
+    if (job.finished)
+        return; // The job has already finished so meh
     if (job.pids.length === 0)
         throw new Error('Cannot cancel a job without the pids');
     let allKilled = true;
@@ -101,6 +109,6 @@ export function cancelJob(ns, job) {
         LogAPI.warn(ns, 'Failed to cancel all jobs');
 }
 export function initializeJobMap(ns) {
-    const jobMap = { lastUpdated: new Date(), jobs: [] };
+    const jobMap = { lastUpdated: new Date(), batches: [] };
     writeJobMap(ns, jobMap);
 }

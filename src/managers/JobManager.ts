@@ -8,7 +8,7 @@ import { Manager }                           from '/src/classes/Misc/ScriptInter
 import { JobMap }                            from '/src/classes/Job/JobInterfaces.js'
 import Job                                   from '/src/classes/Job/Job.js'
 
-const JOB_MANAGING_LOOP_INTERVAL = 2500 as const
+const JOB_MANAGING_LOOP_INTERVAL = 1000 as const
 
 class JobManager implements Manager {
 
@@ -19,7 +19,7 @@ class JobManager implements Manager {
 
 		const jobMap: JobMap = await JobAPI.getJobMap(ns)
 
-		if (jobMap.jobs.length > 0) {
+		if (jobMap.batches.length > 0) {
 			await JobAPI.cancelAllJobs(ns)
 		}
 
@@ -42,12 +42,18 @@ class JobManager implements Manager {
 	}
 
 	private async managingLoop(ns: NS): Promise<void> {
-
 		const jobMap: JobMap                  = JobAPI.getJobMap(ns)
 		const runningProcesses: ProcessInfo[] = JobAPI.getRunningProcesses(ns)
-		const finishedJobs: Job[]             = jobMap.jobs.filter((job) => !runningProcesses.some((process) => job.pids.includes(process.pid)))
 
-		JobAPI.finishJobs(ns, finishedJobs)
+		// NOTE: It might be better to provide the batch id to the api and kill that way
+
+		const finishedJobs: Job[] = []
+		for (const batch of jobMap.batches) {
+			const jobs: Job[] = batch.jobs.filter((job) => !job.pids.some((pid) => runningProcesses.some((process) => process.pid === pid)))
+			finishedJobs.push(...jobs)
+		}
+
+		if (finishedJobs.length > 0) JobAPI.finishJobs(ns, finishedJobs)
 	}
 }
 

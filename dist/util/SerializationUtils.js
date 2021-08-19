@@ -3,6 +3,7 @@ import { ServerType } from '/src/classes/Server/ServerInterfaces.js';
 import HackableServer from '/src/classes/Server/HackableServer.js';
 import PurchasedServer from '/src/classes/Server/PurchasedServer.js';
 import Job from '/src/classes/Job/Job.js';
+import Batch from '/src/classes/Job/Batch.js';
 export function serverFromJSON(ns, json) {
     switch (+json.characteristics.type) {
         case ServerType.HackableServer:
@@ -29,14 +30,25 @@ export function jobFromJSON(ns, json) {
     return new Job(ns, {
         target,
         pids: json.pids,
+        batchId: json.batchId,
         id: json.id,
         cycleId: json.cycleId,
-        batchId: json.batchId,
         threads: json.threads,
         threadSpread: spreadMap,
         tool: json.tool,
         start: new Date(json.start),
         end: new Date(json.end),
         isPrep: json.isPrep,
+        finished: json.finished,
+    });
+}
+export function batchFromJSON(ns, json) {
+    const jobs = json.jobs.map((job) => jobFromJSON(ns, job));
+    return new Batch(ns, {
+        batchId: json.batchId,
+        target: serverFromJSON(ns, json.target),
+        jobs,
+        start: new Date(json.start),
+        end: new Date(json.end),
     });
 }
