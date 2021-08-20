@@ -32,15 +32,15 @@ export default class HackableServer extends Server {
 	}
 
 	public getWeakenTime(ns: NS) {
-		return ns.getWeakenTime(this.characteristics.host)
+		return ns.getWeakenTime(this.characteristics.host) * 1000
 	}
 
 	public getHackTime(ns: NS) {
-		return ns.getHackTime(this.characteristics.host)
+		return ns.getHackTime(this.characteristics.host) * 1000
 	}
 
 	public getGrowTime(ns: NS) {
-		return ns.getGrowTime(this.characteristics.host)
+		return ns.getGrowTime(this.characteristics.host) * 1000
 	}
 
 	public isHackable(ns: NS) {

@@ -17,13 +17,13 @@ export default class HackableServer extends Server {
         return ns.getServerMoneyAvailable(this.characteristics.host);
     }
     getWeakenTime(ns) {
-        return ns.getWeakenTime(this.characteristics.host);
+        return ns.getWeakenTime(this.characteristics.host) * 1000;
     }
     getHackTime(ns) {
-        return ns.getHackTime(this.characteristics.host);
+        return ns.getHackTime(this.characteristics.host) * 1000;
     }
     getGrowTime(ns) {
-        return ns.getGrowTime(this.characteristics.host);
+        return ns.getGrowTime(this.characteristics.host) * 1000;
     }
     isHackable(ns) {
         return ns.getServerRequiredHackingLevel(this.characteristics.host) <= ns.getHackingLevel();
