@@ -58,10 +58,6 @@ export function finishJobs(ns, jobs) {
         jobMap.batches[batchIndex].jobs[jobIndex].finished = true;
         finishedJob.onFinish(ns);
     }
-    writeJobMap(ns, jobMap);
-}
-export function removeFinishedBatches(ns) {
-    const jobMap = getJobMap(ns);
     const finishedBatchIndices = [];
     for (const [index, batch] of jobMap.batches.entries()) {
         const isBatchFinished = batch.jobs.every((j) => j.finished);

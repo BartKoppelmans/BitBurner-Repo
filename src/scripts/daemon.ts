@@ -28,7 +28,6 @@ async function initialize(ns: NS) {
 
 	const flags: Flag = ns.flags([
 		['bladeburner', false],
-		['validate', false],
 	])
 
 	// TODO: Kill all running scripts, as there might be some shit from last session open
@@ -39,7 +38,7 @@ async function initialize(ns: NS) {
 	const tasks: Promise<void>[] = []
 
 	// Managers
-	tasks.push(JobManager.start(ns, flags.validate as boolean))
+	tasks.push(JobManager.start(ns))
 	if (flags.bladeburner) tasks.push(BladeBurnerManager.start(ns))
 
 	// Runners
