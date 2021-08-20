@@ -21,10 +21,7 @@ export function serverFromJSON(ns, json) {
 export function jobFromJSON(ns, json) {
     const spreadMap = new Map();
     json.threadSpread.forEach((pair) => {
-        const parsedServer = pair[0];
-        const threads = pair[1];
-        const server = serverFromJSON(ns, parsedServer);
-        spreadMap.set(server, threads);
+        spreadMap.set(pair[0], pair[1]);
     });
     const target = new HackableServer(ns, json.target);
     return new Job(ns, {

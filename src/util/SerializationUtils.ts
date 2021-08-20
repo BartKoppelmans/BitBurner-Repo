@@ -5,6 +5,7 @@ import HackableServer           from '/src/classes/Server/HackableServer.js'
 import PurchasedServer          from '/src/classes/Server/PurchasedServer.js'
 import Job                      from '/src/classes/Job/Job.js'
 import Batch                    from '/src/classes/Job/Batch.js'
+import { ThreadSpread }         from '/src/classes/Misc/HackInterfaces'
 
 export function serverFromJSON(ns: NS, json: any): Server {
 	switch (+json.characteristics.type) {
@@ -22,15 +23,10 @@ export function serverFromJSON(ns: NS, json: any): Server {
 }
 
 export function jobFromJSON(ns: NS, json: any): Job {
-	const spreadMap: Map<Server, number> = new Map<Server, number>()
+	const spreadMap: ThreadSpread = new Map<string, number>()
 
 	json.threadSpread.forEach((pair: any[]) => {
-		const parsedServer: any = pair[0]
-		const threads: number   = pair[1]
-
-		const server: Server = serverFromJSON(ns, parsedServer)
-
-		spreadMap.set(server, threads)
+		spreadMap.set(pair[0], pair[1])
 	})
 
 	const target: HackableServer = new HackableServer(ns, json.target)

@@ -29,7 +29,7 @@ export function writeJobMap(ns, jobMap) {
 export function startBatch(ns, batch) {
     // TODO: We should do some checking in here
     const isPrep = batch.jobs[0].isPrep;
-    ServerAPI.setStatus(ns, batch.target, (isPrep) ? ServerStatus.PREPPING : ServerStatus.TARGETING);
+    ServerAPI.setStatus(ns, batch.target.characteristics.host, (isPrep) ? ServerStatus.PREPPING : ServerStatus.TARGETING);
     for (const job of batch.jobs) {
         startJob(ns, job);
     }
@@ -66,7 +66,7 @@ export function removeFinishedBatches(ns) {
     for (const [index, batch] of jobMap.batches.entries()) {
         const isBatchFinished = batch.jobs.every((j) => j.finished);
         if (isBatchFinished) {
-            ServerAPI.setStatus(ns, batch.target, ServerStatus.NONE);
+            ServerAPI.setStatus(ns, batch.target.characteristics.host, ServerStatus.NONE);
             finishedBatchIndices.push(index);
         }
     }

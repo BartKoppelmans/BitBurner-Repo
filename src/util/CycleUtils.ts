@@ -1,14 +1,20 @@
-import type { BitBurner as NS }                                  from 'Bitburner'
-import * as ServerAPI                                            from '/src/api/ServerAPI.js'
-import HackableServer                                            from '/src/classes/Server/HackableServer.js'
-import Job                                                       from '/src/classes/Job/Job.js'
-import Server                                                    from '/src/classes/Server/Server.js'
-import { Cycle, CycleThreads, CycleThreadSpreads, CycleTimings } from '/src/classes/Misc/HackInterfaces.js'
-import { CONSTANT }                                              from '/src/lib/constants.js'
-import { Tools }                                                 from '/src/tools/Tools.js'
-import * as HackUtils                                            from '/src/util/HackUtils.js'
-import * as ToolUtils                                            from '/src/util/ToolUtils.js'
-import * as Utils                                                from '/src/util/Utils.js'
+import type { BitBurner as NS } from 'Bitburner'
+import * as ServerAPI           from '/src/api/ServerAPI.js'
+import HackableServer           from '/src/classes/Server/HackableServer.js'
+import Job                      from '/src/classes/Job/Job.js'
+import Server                   from '/src/classes/Server/Server.js'
+import {
+	Cycle,
+	CycleThreads,
+	CycleThreadSpreads,
+	CycleTimings,
+	ThreadSpread,
+}                               from '/src/classes/Misc/HackInterfaces.js'
+import { CONSTANT }             from '/src/lib/constants.js'
+import { Tools }                from '/src/tools/Tools.js'
+import * as HackUtils           from '/src/util/HackUtils.js'
+import * as ToolUtils           from '/src/util/ToolUtils.js'
+import * as Utils               from '/src/util/Utils.js'
 
 export function computeCycles(ns: NS, target: HackableServer, servers?: Server[]): number {
 
@@ -30,17 +36,17 @@ function determineCycleThreadSpreads(ns: NS, target: HackableServer, cycleThread
 		throw new Error('Not enough RAM available to create a cycle (on one server)')
 	}
 
-	const hackSpreadMap: Map<Server, number>    = new Map<Server, number>()
-	const growthSpreadMap: Map<Server, number>  = new Map<Server, number>()
-	const weaken1SpreadMap: Map<Server, number> = new Map<Server, number>()
-	const weaken2SpreadMap: Map<Server, number> = new Map<Server, number>()
+	ServerAPI.increaseReservation(ns, server.characteristics.host, cost)
 
-	hackSpreadMap.set(server, cycleThreads.hack)
-	growthSpreadMap.set(server, cycleThreads.growth)
-	weaken1SpreadMap.set(server, cycleThreads.weaken1)
-	weaken2SpreadMap.set(server, cycleThreads.weaken2)
+	const hackSpreadMap: ThreadSpread    = new Map<string, number>()
+	const growthSpreadMap: ThreadSpread  = new Map<string, number>()
+	const weaken1SpreadMap: ThreadSpread = new Map<string, number>()
+	const weaken2SpreadMap: ThreadSpread = new Map<string, number>()
 
-	ServerAPI.increaseReservation(ns, server, cost)
+	hackSpreadMap.set(server.characteristics.host, cycleThreads.hack)
+	growthSpreadMap.set(server.characteristics.host, cycleThreads.growth)
+	weaken1SpreadMap.set(server.characteristics.host, cycleThreads.weaken1)
+	weaken2SpreadMap.set(server.characteristics.host, cycleThreads.weaken2)
 
 	return {
 		hack: hackSpreadMap,

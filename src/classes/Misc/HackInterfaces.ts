@@ -1,10 +1,11 @@
-import Job    from '/src/classes/Job/Job.js'
-import Server from '/src/classes/Server/Server.js'
+import Job from '/src/classes/Job/Job.js'
 
 export interface HackSnapshot {
 	optimalBatchCost: number;
 	maxCycles: number;
 }
+
+export type ThreadSpread = Map<string, number>;
 
 export interface Cycle {
 	hack: Job;
@@ -40,9 +41,9 @@ export interface CycleThreads {
 }
 
 export interface CycleThreadSpreads {
-	hack: Map<Server, number>;
-	weaken1: Map<Server, number>;
-	growth: Map<Server, number>;
-	weaken2: Map<Server, number>;
+	hack: ThreadSpread
+	weaken1: ThreadSpread
+	growth: ThreadSpread
+	weaken2: ThreadSpread
 
 }

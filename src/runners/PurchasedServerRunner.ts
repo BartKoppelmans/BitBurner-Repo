@@ -93,7 +93,7 @@ class PurchasedServerRunner {
 		for (const server of quarantinedServers) {
 			const ram: number = server.quarantinedInformation.ram!
 			if (server.canUpgrade(ns, ram)) {
-				ServerAPI.upgradeServer(ns, server, ram)
+				ServerAPI.upgradeServer(ns, server.characteristics.host, ram)
 			}
 		}
 
@@ -105,7 +105,7 @@ class PurchasedServerRunner {
 
 			const maxRam: number = this.computeMaxRamPossible(ns)
 			if (maxRam > server.getTotalRam(ns)) {
-				ServerAPI.quarantine(ns, server, maxRam)
+				ServerAPI.quarantine(ns, server.characteristics.host, maxRam)
 			} else break
 		}
 	}

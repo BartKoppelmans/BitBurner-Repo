@@ -19,10 +19,10 @@ export function computeThreadSpread(ns, tool, threads, isPrep) {
             continue;
         // We can fit all our threads in here!
         if (serverThreads >= threadsLeft) {
-            spreadMap.set(server, threadsLeft);
+            spreadMap.set(server.characteristics.host, threadsLeft);
             break;
         }
-        spreadMap.set(server, serverThreads);
+        spreadMap.set(server.characteristics.host, serverThreads);
         threadsLeft -= serverThreads;
     }
     return spreadMap;

@@ -1,14 +1,14 @@
-import HackableServer from '/src/classes/Server/HackableServer.js'
-import Job            from '/src/classes/Job/Job.js'
-import Server         from '/src/classes/Server/Server.js'
-import { Tools }      from '/src/tools/Tools.js'
-import Batch          from '/src/classes/Job/Batch.js'
+import HackableServer   from '/src/classes/Server/HackableServer.js'
+import Job              from '/src/classes/Job/Job.js'
+import { Tools }        from '/src/tools/Tools.js'
+import Batch            from '/src/classes/Job/Batch.js'
+import { ThreadSpread } from '/src/classes/Misc/HackInterfaces'
 
 export type ExecArguments = [script: string, host: string, numThreads?: number, ...args: string[]];
 
 export interface ToolArguments {
 	script: Tools;
-	server: Server;
+	server: string;
 	threads: number;
 
 	target: HackableServer; // ns.args[0]
@@ -41,7 +41,7 @@ export interface IJOb {
 
 	isPrep: boolean;
 
-	threadSpread: Map<Server, number>;
+	threadSpread: ThreadSpread
 
 	finished?: boolean;
 }

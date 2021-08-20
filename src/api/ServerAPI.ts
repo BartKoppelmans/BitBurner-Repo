@@ -53,15 +53,16 @@ export function updateServer(ns: NS, server: Server): void {
 	writeServerMap(ns, serverMap)
 }
 
-export function setPurpose(ns: NS, server: Server, purpose: ServerPurpose): void {
-	server.purpose = purpose
-
+export function setPurpose(ns: NS, host: string, purpose: ServerPurpose): void {
+	const server: Server = getServerByName(ns, host)
+	server.purpose       = purpose
 	updateServer(ns, server)
 }
 
-export function setStatus(ns: NS, server: Server, status: ServerStatus): void {
-	if (!ServerUtils.isHackableServer(server)) throw new Error('The server is not a hackable server');
-	(server as HackableServer).status = status
+export function setStatus(ns: NS, host: string, status: ServerStatus): void {
+	const server: Server = getServerByName(ns, host)
+	if (!ServerUtils.isHackableServer(server)) throw new Error('The server is not a hackable server')
+	server.status = status
 	updateServer(ns, server)
 }
 
@@ -76,7 +77,11 @@ export function addServer(ns: NS, server: Server): void {
 	writeServerMap(ns, serverMap)
 }
 
-export function quarantine(ns: NS, server: PurchasedServer, ram: number): void {
+export function quarantine(ns: NS, host: string, ram: number): void {
+	const server: Server = getServerByName(ns, host)
+
+	if (!ServerUtils.isPurchasedServer(server)) throw new Error('Cannot quarantine a normal server')
+
 	server.purpose                = ServerPurpose.NONE
 	server.quarantinedInformation = { quarantined: true, ram }
 
@@ -85,7 +90,10 @@ export function quarantine(ns: NS, server: PurchasedServer, ram: number): void {
 	LogAPI.log(ns, `We put ${server.characteristics.host} into quarantine`, LogType.PURCHASED_SERVER)
 }
 
-export function upgradeServer(ns: NS, server: PurchasedServer, ram: number): void {
+export function upgradeServer(ns: NS, host: string, ram: number): void {
+	const server: Server = getServerByName(ns, host)
+
+	if (!ServerUtils.isPurchasedServer(server)) throw new Error('Cannot quarantine a normal server')
 
 	// TODO: Do some checks here
 
@@ -93,10 +101,10 @@ export function upgradeServer(ns: NS, server: PurchasedServer, ram: number): voi
 
 	// TODO: Perhaps we should check here again how much we can actually purchase
 
-	const deletedServer: boolean = ns.deleteServer(server.characteristics.host)
-	if (!deletedServer) throw new Error(`Could not delete server ${server.characteristics.host}`)
+	const deletedServer: boolean = ns.deleteServer(host)
+	if (!deletedServer) throw new Error(`Could not delete server ${host}`)
 
-	const boughtServer: string = ns.purchaseServer(server.characteristics.host, ram)
+	const boughtServer: string = ns.purchaseServer(host, ram)
 	if (boughtServer) {
 		LogAPI.log(ns, `Upgraded server ${boughtServer} with ${ram}GB ram.`, LogType.PURCHASED_SERVER)
 	} else throw new Error('Could not purchase the server again.')
@@ -107,14 +115,16 @@ export function upgradeServer(ns: NS, server: PurchasedServer, ram: number): voi
 	updateServer(ns, server)
 }
 
-export function increaseReservation(ns: NS, server: Server, reservation: number): void {
-	reservation = Math.round(reservation * 100) / 100
+export function increaseReservation(ns: NS, host: string, reservation: number): void {
+	const server: Server = getServerByName(ns, host)
+	reservation          = Math.round(reservation * 100) / 100
 	server.increaseReservation(ns, reservation)
 	updateServer(ns, server)
 }
 
-export function decreaseReservation(ns: NS, server: Server, reservation: number): void {
-	reservation = Math.round(reservation * 100) / 100
+export function decreaseReservation(ns: NS, host: string, reservation: number): void {
+	const server: Server = getServerByName(ns, host)
+	reservation          = Math.round(reservation * 100) / 100
 	server.decreaseReservation(ns, reservation)
 	updateServer(ns, server)
 }

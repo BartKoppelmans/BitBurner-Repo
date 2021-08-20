@@ -6,8 +6,9 @@ import { CONSTANT }             from '/src/lib/constants.js'
 import { Tools }                from '/src/tools/Tools.js'
 import * as PlayerUtils         from '/src/util/PlayerUtils.js'
 import * as ToolUtils           from '/src/util/ToolUtils.js'
+import { ThreadSpread }         from '/src/classes/Misc/HackInterfaces'
 
-export function computeThreadSpread(ns: NS, tool: Tools, threads: number, isPrep: boolean): Map<Server, number> {
+export function computeThreadSpread(ns: NS, tool: Tools, threads: number, isPrep: boolean): ThreadSpread {
 	const maxThreadsAvailable = calculateMaxThreads(ns, tool, isPrep)
 
 	if (threads > maxThreadsAvailable) {
@@ -16,11 +17,11 @@ export function computeThreadSpread(ns: NS, tool: Tools, threads: number, isPrep
 
 	const cost: number = ToolUtils.getToolCost(ns, tool)
 
-	let threadsLeft: number              = threads
-	const spreadMap: Map<Server, number> = new Map<Server, number>()
+	let threadsLeft: number = threads
+
+	const spreadMap: ThreadSpread = new Map<string, number>()
 
 	const serverList: Server[] = (isPrep) ? ServerAPI.getPreppingServers(ns) : ServerAPI.getHackingServers(ns)
-
 
 	for (const server of serverList) {
 		const serverThreads: number = Math.floor(server.getAvailableRam(ns) / cost)
@@ -30,11 +31,11 @@ export function computeThreadSpread(ns: NS, tool: Tools, threads: number, isPrep
 
 		// We can fit all our threads in here!
 		if (serverThreads >= threadsLeft) {
-			spreadMap.set(server, threadsLeft)
+			spreadMap.set(server.characteristics.host, threadsLeft)
 			break
 		}
 
-		spreadMap.set(server, serverThreads)
+		spreadMap.set(server.characteristics.host, serverThreads)
 		threadsLeft -= serverThreads
 	}
 	return spreadMap

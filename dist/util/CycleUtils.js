@@ -19,15 +19,15 @@ function determineCycleThreadSpreads(ns, target, cycleThreads) {
     if (cost > server.getAvailableRam(ns)) {
         throw new Error('Not enough RAM available to create a cycle (on one server)');
     }
+    ServerAPI.increaseReservation(ns, server.characteristics.host, cost);
     const hackSpreadMap = new Map();
     const growthSpreadMap = new Map();
     const weaken1SpreadMap = new Map();
     const weaken2SpreadMap = new Map();
-    hackSpreadMap.set(server, cycleThreads.hack);
-    growthSpreadMap.set(server, cycleThreads.growth);
-    weaken1SpreadMap.set(server, cycleThreads.weaken1);
-    weaken2SpreadMap.set(server, cycleThreads.weaken2);
-    ServerAPI.increaseReservation(ns, server, cost);
+    hackSpreadMap.set(server.characteristics.host, cycleThreads.hack);
+    growthSpreadMap.set(server.characteristics.host, cycleThreads.growth);
+    weaken1SpreadMap.set(server.characteristics.host, cycleThreads.weaken1);
+    weaken2SpreadMap.set(server.characteristics.host, cycleThreads.weaken2);
     return {
         hack: hackSpreadMap,
         weaken1: weaken1SpreadMap,

@@ -36,11 +36,13 @@ export function updateServer(ns, server) {
     serverMap.servers[index] = server;
     writeServerMap(ns, serverMap);
 }
-export function setPurpose(ns, server, purpose) {
+export function setPurpose(ns, host, purpose) {
+    const server = getServerByName(ns, host);
     server.purpose = purpose;
     updateServer(ns, server);
 }
-export function setStatus(ns, server, status) {
+export function setStatus(ns, host, status) {
+    const server = getServerByName(ns, host);
     if (!ServerUtils.isHackableServer(server))
         throw new Error('The server is not a hackable server');
     server.status = status;
@@ -54,21 +56,27 @@ export function addServer(ns, server) {
     serverMap.servers.push(server);
     writeServerMap(ns, serverMap);
 }
-export function quarantine(ns, server, ram) {
+export function quarantine(ns, host, ram) {
+    const server = getServerByName(ns, host);
+    if (!ServerUtils.isPurchasedServer(server))
+        throw new Error('Cannot quarantine a normal server');
     server.purpose = ServerPurpose.NONE;
     server.quarantinedInformation = { quarantined: true, ram };
     updateServer(ns, server);
     LogAPI.log(ns, `We put ${server.characteristics.host} into quarantine`, LogType.PURCHASED_SERVER);
 }
-export function upgradeServer(ns, server, ram) {
+export function upgradeServer(ns, host, ram) {
+    const server = getServerByName(ns, host);
+    if (!ServerUtils.isPurchasedServer(server))
+        throw new Error('Cannot quarantine a normal server');
     // TODO: Do some checks here
     if (!server.canUpgrade(ns, ram))
         throw new Error('Cannot upgrade the server.');
     // TODO: Perhaps we should check here again how much we can actually purchase
-    const deletedServer = ns.deleteServer(server.characteristics.host);
+    const deletedServer = ns.deleteServer(host);
     if (!deletedServer)
-        throw new Error(`Could not delete server ${server.characteristics.host}`);
-    const boughtServer = ns.purchaseServer(server.characteristics.host, ram);
+        throw new Error(`Could not delete server ${host}`);
+    const boughtServer = ns.purchaseServer(host, ram);
     if (boughtServer) {
         LogAPI.log(ns, `Upgraded server ${boughtServer} with ${ram}GB ram.`, LogType.PURCHASED_SERVER);
     }
@@ -78,12 +86,14 @@ export function upgradeServer(ns, server, ram) {
     server.quarantinedInformation = { quarantined: false };
     updateServer(ns, server);
 }
-export function increaseReservation(ns, server, reservation) {
+export function increaseReservation(ns, host, reservation) {
+    const server = getServerByName(ns, host);
     reservation = Math.round(reservation * 100) / 100;
     server.increaseReservation(ns, reservation);
     updateServer(ns, server);
 }
-export function decreaseReservation(ns, server, reservation) {
+export function decreaseReservation(ns, host, reservation) {
+    const server = getServerByName(ns, host);
     reservation = Math.round(reservation * 100) / 100;
     server.decreaseReservation(ns, reservation);
     updateServer(ns, server);

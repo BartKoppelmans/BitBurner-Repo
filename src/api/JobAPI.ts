@@ -8,7 +8,7 @@ import * as LogAPI                           from '/src/api/LogAPI.js'
 import * as ToolUtils                        from '/src/util/ToolUtils.js'
 import * as SerializationUtils               from '/src/util/SerializationUtils.js'
 import { ServerMap, ServerStatus }           from '/src/classes/Server/ServerInterfaces.js'
-import Server                                from '/src/classes/Server/Server.js'
+import { ThreadSpread }                      from '/src/classes/Misc/HackInterfaces.js'
 
 export function getJobMap(ns: NS): JobMap {
 	return readJobMap(ns)
@@ -45,7 +45,7 @@ export function startBatch(ns: NS, batch: Batch): void {
 
 	const isPrep: boolean = batch.jobs[0].isPrep
 
-	ServerAPI.setStatus(ns, batch.target, (isPrep) ? ServerStatus.PREPPING : ServerStatus.TARGETING)
+	ServerAPI.setStatus(ns, batch.target.characteristics.host, (isPrep) ? ServerStatus.PREPPING : ServerStatus.TARGETING)
 
 	for (const job of batch.jobs) {
 		startJob(ns, job)
@@ -62,7 +62,7 @@ function startJob(ns: NS, job: Job): void {
 
 	job.onStart(ns)
 
-	const threadSpread: Map<Server, number> = job.threadSpread
+	const threadSpread: ThreadSpread = job.threadSpread
 	for (const [server, threads] of threadSpread) {
 		const reservation: number = threads * ToolUtils.getToolCost(ns, job.tool)
 		ServerAPI.decreaseReservation(ns, server, reservation)
@@ -95,7 +95,7 @@ export function removeFinishedBatches(ns: NS): void {
 	for (const [index, batch] of jobMap.batches.entries()) {
 		const isBatchFinished: boolean = batch.jobs.every((j) => j.finished)
 		if (isBatchFinished) {
-			ServerAPI.setStatus(ns, batch.target, ServerStatus.NONE)
+			ServerAPI.setStatus(ns, batch.target.characteristics.host, ServerStatus.NONE)
 			finishedBatchIndices.push(index)
 		}
 	}

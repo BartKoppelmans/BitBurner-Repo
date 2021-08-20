@@ -1,20 +1,22 @@
-import Server         from '/src/classes/Server/Server.js'
-import { ServerType } from '/src/classes/Server/ServerInterfaces.js'
-import { CONSTANT }   from '/src/lib/constants.js'
+import Server          from '/src/classes/Server/Server.js'
+import { ServerType }  from '/src/classes/Server/ServerInterfaces.js'
+import { CONSTANT }    from '/src/lib/constants.js'
+import PurchasedServer from '/src/classes/Server/PurchasedServer.js'
+import HackableServer  from '/src/classes/Server/HackableServer.js'
 
 export function isHomeServer(server: Server): boolean {
 	return server.characteristics.type === ServerType.HomeServer
 }
 
-export function isPurchasedServer(server: Server): boolean {
+export function isPurchasedServer(server: Server): server is PurchasedServer {
 	return server.characteristics.type === ServerType.PurchasedServer
 }
 
-export function isHackableServer(server: Server): boolean {
+export function isHackableServer(server: Server): server is HackableServer {
 	return (server.characteristics.type === ServerType.HackableServer)
 }
 
-export function isDarkwebServer(server: Server) {
+export function isDarkwebServer(server: Server): boolean {
 	return server.characteristics.type === ServerType.DarkWebServer
 }
 

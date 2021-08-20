@@ -9,7 +9,7 @@ import Batch                          from '/src/classes/Job/Batch.js'
 import HackableServer                 from '/src/classes/Server/HackableServer.js'
 import Job                            from '/src/classes/Job/Job.js'
 import Server                         from '/src/classes/Server/Server.js'
-import { Cycle }                      from '/src/classes/Misc/HackInterfaces.js'
+import { Cycle, ThreadSpread }        from '/src/classes/Misc/HackInterfaces.js'
 import { ServerStatus }               from '/src/classes/Server/ServerInterfaces.js'
 import { CONSTANT }                   from '/src/lib/constants.js'
 import { Tools }                      from '/src/tools/Tools.js'
@@ -133,8 +133,8 @@ function prepServer(ns: NS, target: HackableServer): void {
 	if (target.needsWeaken(ns)) {
 		const neededWeakenThreads: number = HackUtils.calculateWeakenThreads(ns, target)
 
-		const weakenThreads: number                   = Math.min(neededWeakenThreads, availableThreads)
-		const weakenThreadSpread: Map<Server, number> = HackUtils.computeThreadSpread(ns, Tools.WEAKEN, weakenThreads, true)
+		const weakenThreads: number            = Math.min(neededWeakenThreads, availableThreads)
+		const weakenThreadSpread: ThreadSpread = HackUtils.computeThreadSpread(ns, Tools.WEAKEN, weakenThreads, true)
 
 		const weakenTime: number = target.getWeakenTime(ns)
 
@@ -213,7 +213,7 @@ function prepServer(ns: NS, target: HackableServer): void {
 			start = firstStartTime
 			end   = compensationWeakenEndTime
 
-			const growthThreadSpread: Map<Server, number> = HackUtils.computeThreadSpread(ns, Tools.GROW, growthThreads, true)
+			const growthThreadSpread: ThreadSpread = HackUtils.computeThreadSpread(ns, Tools.GROW, growthThreads, true)
 
 			growJob = new Job(ns, {
 				id: Utils.generateHash(),
@@ -233,7 +233,7 @@ function prepServer(ns: NS, target: HackableServer): void {
 				ServerAPI.increaseReservation(ns, server, threads * ToolUtils.getToolCost(ns, Tools.GROW))
 			}
 
-			const compensationWeakenThreadSpread: Map<Server, number> = HackUtils.computeThreadSpread(ns, Tools.WEAKEN, weakenThreads, true)
+			const compensationWeakenThreadSpread: ThreadSpread = HackUtils.computeThreadSpread(ns, Tools.WEAKEN, weakenThreads, true)
 
 			compensationWeakenJob = new Job(ns, {
 				id: Utils.generateHash(),
