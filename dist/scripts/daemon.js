@@ -27,7 +27,7 @@ async function initialize(ns) {
     await JobAPI.initializeJobMap(ns);
     const tasks = [];
     // Managers
-    tasks.push(JobManager.start(ns));
+    tasks.push(JobManager.start(ns, flags.validate));
     if (flags.bladeburner)
         tasks.push(BladeBurnerManager.start(ns));
     // Runners

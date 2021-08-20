@@ -1,11 +1,10 @@
 export default class Batch {
     constructor(ns, batch) {
-        this.jobs = [];
         this.target = batch.target;
         this.batchId = batch.batchId;
         this.start = batch.start;
         this.end = batch.end;
-        this.jobs = batch.jobs;
+        this.jobs = batch.jobs.sort((a, b) => a.end.getTime() - b.end.getTime());
     }
     toJSON() {
         return {

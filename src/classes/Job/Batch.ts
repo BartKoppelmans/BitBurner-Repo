@@ -7,7 +7,7 @@ export default class Batch {
 
 	batchId: string
 	target: HackableServer
-	jobs: Job[] = []
+	jobs: Job[]
 	start: Date
 	end: Date
 
@@ -16,7 +16,7 @@ export default class Batch {
 		this.batchId = batch.batchId
 		this.start   = batch.start
 		this.end     = batch.end
-		this.jobs    = batch.jobs
+		this.jobs    = batch.jobs.sort((a, b) => a.end.getTime() - b.end.getTime())
 	}
 
 	public toJSON() {

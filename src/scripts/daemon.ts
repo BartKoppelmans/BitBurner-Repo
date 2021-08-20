@@ -39,7 +39,7 @@ async function initialize(ns: NS) {
 	const tasks: Promise<void>[] = []
 
 	// Managers
-	tasks.push(JobManager.start(ns))
+	tasks.push(JobManager.start(ns, flags.validate as boolean))
 	if (flags.bladeburner) tasks.push(BladeBurnerManager.start(ns))
 
 	// Runners
