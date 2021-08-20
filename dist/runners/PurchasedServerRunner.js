@@ -73,11 +73,16 @@ class PurchasedServerRunner {
                 ServerAPI.upgradeServer(ns, server.characteristics.host, ram);
             }
         }
+        const shouldUpgradePrep = this.shouldUpgrade(ns, ServerPurpose.PREP);
+        const shouldUpgradeHack = this.shouldUpgrade(ns, ServerPurpose.HACK);
+        if (!shouldUpgradeHack && !shouldUpgradePrep)
+            return;
         for (const server of purchasedServerList) {
             if (server.isQuarantined())
                 continue;
-            const shouldUpgrade = this.shouldUpgrade(ns, server.purpose);
-            if (!shouldUpgrade)
+            if (server.purpose === ServerPurpose.HACK && !shouldUpgradeHack)
+                continue;
+            else if (server.purpose === ServerPurpose.PREP && !shouldUpgradePrep)
                 continue;
             const maxRam = this.computeMaxRamPossible(ns);
             if (maxRam > server.getTotalRam(ns)) {
@@ -104,7 +109,7 @@ class PurchasedServerRunner {
     canAfford(ns, ram) {
         const cost = PurchasedServerRunner.getCost(ns, ram);
         const reservedMoney = this.getReservedMoney(ns);
-        const money = PlayerUtils.getMoney(ns) * CONSTANT.PURCHASED_SERVER_ALLOWANCE_PERCENTAGE - reservedMoney;
+        const money = (PlayerUtils.getMoney(ns) - reservedMoney) * CONSTANT.PURCHASED_SERVER_ALLOWANCE_PERCENTAGE;
         return cost <= money;
     }
     shouldUpgrade(ns, purpose) {
