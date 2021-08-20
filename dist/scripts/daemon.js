@@ -19,7 +19,8 @@ let runnerInterval;
 async function initialize(ns) {
     Utils.disableLogging(ns);
     const flags = ns.flags([
-        ['BB', false],
+        ['bladeburner', false],
+        ['validate', false],
     ]);
     // TODO: Kill all running scripts, as there might be some shit from last session open
     await ServerAPI.initializeServerMap(ns);
@@ -27,7 +28,7 @@ async function initialize(ns) {
     const tasks = [];
     // Managers
     tasks.push(JobManager.start(ns));
-    if (flags.BB)
+    if (flags.bladeburner)
         tasks.push(BladeBurnerManager.start(ns));
     // Runners
     tasks.push(ControlFlowAPI.launchRunners(ns));

@@ -1,4 +1,5 @@
 import type { BitBurner as NS } from 'Bitburner'
+import { Flag }                 from 'Bitburner'
 import Crime                    from '/src/classes/Misc/Crime.js'
 import { CONSTANT }             from '/src/lib/constants.js'
 import * as CrimeUtils          from '/src/util/CrimeUtils.js'
@@ -12,7 +13,12 @@ export async function main(ns: NS) {
 		return
 	}
 
-	const useHomicide: boolean = (ns.args[0] === 'true' || ns.args[0] === 'True')
+	const flags: Flag = ns.flags([
+		['h', false],
+		['homicide', false],
+	])
+
+	const useHomicide: boolean = (flags.h || flags.homicide) as boolean
 
 	let crimes: Crime[]      = CrimeUtils.getCrimes(ns)
 	let isCancelled: boolean = false

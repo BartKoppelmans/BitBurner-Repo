@@ -8,7 +8,10 @@ export async function main(ns: NS) {
 
 	const flags: Flag = ns.flags([
 		['force', false],
+		['f', false],
 	])
+
+	flags.force = flags.force || flags.f
 
 	await ControlFlowAPI.killDaemon(ns)
 

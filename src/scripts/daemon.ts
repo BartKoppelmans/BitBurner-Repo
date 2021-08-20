@@ -27,7 +27,8 @@ async function initialize(ns: NS) {
 	Utils.disableLogging(ns)
 
 	const flags: Flag = ns.flags([
-		['BB', false],
+		['bladeburner', false],
+		['validate', false],
 	])
 
 	// TODO: Kill all running scripts, as there might be some shit from last session open
@@ -39,7 +40,7 @@ async function initialize(ns: NS) {
 
 	// Managers
 	tasks.push(JobManager.start(ns))
-	if (flags.BB) tasks.push(BladeBurnerManager.start(ns))
+	if (flags.bladeburner) tasks.push(BladeBurnerManager.start(ns))
 
 	// Runners
 	tasks.push(ControlFlowAPI.launchRunners(ns))

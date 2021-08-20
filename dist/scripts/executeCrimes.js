@@ -7,7 +7,11 @@ export async function main(ns) {
         LogAPI.warn(ns, 'Cannot execute crimes, we are currently busy.');
         return;
     }
-    const useHomicide = (ns.args[0] === 'true' || ns.args[0] === 'True');
+    const flags = ns.flags([
+        ['h', false],
+        ['homicide', false],
+    ]);
+    const useHomicide = (flags.h || flags.homicide);
     let crimes = CrimeUtils.getCrimes(ns);
     let isCancelled = false;
     LogAPI.log(ns, 'Executing crimes', LogType.INFORMATION);
