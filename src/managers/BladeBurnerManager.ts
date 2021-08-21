@@ -18,15 +18,13 @@ const MANAGING_LOOP_DELAY: number             = 100 as const
 const BUSY_RETRY_DELAY: number                = 1000 as const
 const SYNTH_POPULATION_THRESHOLD: number      = 1e8 as const
 const SYNTH_COMMUNITY_THRESHOLD: number       = 5 as const
-const FIELD_ANALYSIS_INTERVAL: number         = 30 as const
-const FIELD_ANALYSIS_ITERATIONS: number       = 20 as const
 const CHAOS_THRESHOLD: number                 = 100 as const
 const FINAL_BLACK_OP_WARNING_INTERVAL: number = 10 as const
 const MAX_ACTION_CHANCE_DELTA: number         = 0.1 as const
 
 class BladeBurnerManager implements Manager {
 
-	private iterationCounter: number = 0
+	private iterationCounter: number = 1
 
 	private managingLoopTimeout?: ReturnType<typeof setTimeout>
 
@@ -119,8 +117,6 @@ class BladeBurnerManager implements Manager {
 			return
 		}
 
-		const iteration: number = (this.iterationCounter % (FIELD_ANALYSIS_INTERVAL + FIELD_ANALYSIS_ITERATIONS)) + 1
-
 		this.upgradeSkills(ns)
 
 		// NOTE: This might still have some problems
@@ -129,14 +125,14 @@ class BladeBurnerManager implements Manager {
 			return nextLoop(false)
 		}
 
-		if (this.canFinishBitNode(ns) && ((iteration - 1) % FINAL_BLACK_OP_WARNING_INTERVAL === 0)) {
+		if (this.canFinishBitNode(ns) && ((this.iterationCounter) % FINAL_BLACK_OP_WARNING_INTERVAL === 0)) {
 			LogAPI.warn(ns, `We are ready to finish the final BlackOp`)
 		}
 
 		// We start our regen if we are tired
 		if (BladeBurnerManager.isTired(ns)) {
 			const regenAction: BBAction = BladeBurnerUtils.getAction(ns, this.actions, 'Hyperbolic Regeneration Chamber')
-			return regenAction.execute(ns, iteration).then(nextLoop.bind(this, false))
+			return regenAction.execute(ns, this.iterationCounter).then(nextLoop.bind(this, false))
 		}
 
 		// Check whether we have enough Synths, otherwise move or search for new ones
@@ -150,11 +146,11 @@ class BladeBurnerManager implements Manager {
 			else {
 				const intelActions: BBAction[] = BladeBurnerUtils.getAchievableIntelActions(ns, this.actions)
 				if (intelActions.length > 0) {
-					return intelActions[0].execute(ns, iteration).then(nextLoop.bind(this, true))
+					return intelActions[0].execute(ns, this.iterationCounter).then(nextLoop.bind(this, true))
 				}
 
 				const fieldAnalysisAction: BBAction = BladeBurnerUtils.getAction(ns, this.actions, 'Field Analysis')
-				return fieldAnalysisAction.execute(ns, iteration).then(nextLoop.bind(this, false))
+				return fieldAnalysisAction.execute(ns, this.iterationCounter).then(nextLoop.bind(this, false))
 			}
 		}
 
@@ -163,8 +159,8 @@ class BladeBurnerManager implements Manager {
 
 		// This makes sure that we don't unnecessarily stop our current action to start the same one
 		if (currentAction && currentAction.name === nextAction.name) {
-			return nextAction.continue(ns, iteration).then(nextLoop.bind(this, true))
-		} else return nextAction.execute(ns, iteration).then(nextLoop.bind(this, true))
+			return nextAction.continue(ns, this.iterationCounter).then(nextLoop.bind(this, true))
+		} else return nextAction.execute(ns, this.iterationCounter).then(nextLoop.bind(this, true))
 	}
 
 	private getCurrentAction(ns: NS): BBAction | undefined {

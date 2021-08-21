@@ -12,14 +12,12 @@ const MANAGING_LOOP_DELAY = 100;
 const BUSY_RETRY_DELAY = 1000;
 const SYNTH_POPULATION_THRESHOLD = 1e8;
 const SYNTH_COMMUNITY_THRESHOLD = 5;
-const FIELD_ANALYSIS_INTERVAL = 30;
-const FIELD_ANALYSIS_ITERATIONS = 20;
 const CHAOS_THRESHOLD = 100;
 const FINAL_BLACK_OP_WARNING_INTERVAL = 10;
 const MAX_ACTION_CHANCE_DELTA = 0.1;
 class BladeBurnerManager {
     constructor() {
-        this.iterationCounter = 0;
+        this.iterationCounter = 1;
     }
     static getStaminaPercentage(ns) {
         const [current, total] = ns.bladeburner.getStamina();
@@ -89,20 +87,19 @@ class BladeBurnerManager {
             this.managingLoopTimeout = setTimeout(this.managingLoop.bind(this, ns), MANAGING_LOOP_DELAY);
             return;
         };
-        const iteration = (this.iterationCounter % (FIELD_ANALYSIS_INTERVAL + FIELD_ANALYSIS_ITERATIONS)) + 1;
         this.upgradeSkills(ns);
         // NOTE: This might still have some problems
         if (!BladeBurnerManager.hasSimulacrum(ns) && ns.isBusy()) {
             await ns.sleep(BUSY_RETRY_DELAY);
             return nextLoop(false);
         }
-        if (this.canFinishBitNode(ns) && ((iteration - 1) % FINAL_BLACK_OP_WARNING_INTERVAL === 0)) {
+        if (this.canFinishBitNode(ns) && ((this.iterationCounter) % FINAL_BLACK_OP_WARNING_INTERVAL === 0)) {
             LogAPI.warn(ns, `We are ready to finish the final BlackOp`);
         }
         // We start our regen if we are tired
         if (BladeBurnerManager.isTired(ns)) {
             const regenAction = BladeBurnerUtils.getAction(ns, this.actions, 'Hyperbolic Regeneration Chamber');
-            return regenAction.execute(ns, iteration).then(nextLoop.bind(this, false));
+            return regenAction.execute(ns, this.iterationCounter).then(nextLoop.bind(this, false));
         }
         // Check whether we have enough Synths, otherwise move or search for new ones
         const currentCity = this.cities.find((city) => city.isCurrent(ns));
@@ -115,20 +112,20 @@ class BladeBurnerManager {
             else {
                 const intelActions = BladeBurnerUtils.getAchievableIntelActions(ns, this.actions);
                 if (intelActions.length > 0) {
-                    return intelActions[0].execute(ns, iteration).then(nextLoop.bind(this, true));
+                    return intelActions[0].execute(ns, this.iterationCounter).then(nextLoop.bind(this, true));
                 }
                 const fieldAnalysisAction = BladeBurnerUtils.getAction(ns, this.actions, 'Field Analysis');
-                return fieldAnalysisAction.execute(ns, iteration).then(nextLoop.bind(this, false));
+                return fieldAnalysisAction.execute(ns, this.iterationCounter).then(nextLoop.bind(this, false));
             }
         }
         const currentAction = this.getCurrentAction(ns);
         const nextAction = this.findOptimalAction(ns);
         // This makes sure that we don't unnecessarily stop our current action to start the same one
         if (currentAction && currentAction.name === nextAction.name) {
-            return nextAction.continue(ns, iteration).then(nextLoop.bind(this, true));
+            return nextAction.continue(ns, this.iterationCounter).then(nextLoop.bind(this, true));
         }
         else
-            return nextAction.execute(ns, iteration).then(nextLoop.bind(this, true));
+            return nextAction.execute(ns, this.iterationCounter).then(nextLoop.bind(this, true));
     }
     getCurrentAction(ns) {
         const currentAction = ns.bladeburner.getCurrentAction();
