@@ -20,19 +20,16 @@ const classToObject = (event) => {
     }, {});
 };
 const getEventHandler = (element) => {
-    console.dir(element);
     const handlers = Object.keys(element).filter((item) => {
         return item.indexOf('__reactEventHandlers') >= 0;
     });
     // @ts-ignore
-    console.log(element[handlers[0]].onKeyDown);
-    // @ts-ignore
     return element[handlers[0]].onKeyDown;
 };
-const pressKey = async (ns, key) => {
-    const element = eval('document').activeElement;
-    while (element.tagName === 'BODY')
-        await ns.sleep(10);
+const pressKey = (ns, container, key) => {
+    const element = container.querySelector('[tabindex = "1"]');
+    if (!element)
+        return;
     const handler = getEventHandler(element);
     const event = classToObject(new KeyboardEvent('keydown', {
         'key': key,
@@ -42,13 +39,12 @@ const pressKey = async (ns, key) => {
     event.preventDefault = () => {
         // Do nothing
     };
-    console.log(event);
     handler(event);
 };
-const pressKeyCode = async (ns, keyCode, hasShift) => {
-    const element = eval('document').activeElement;
-    while (element.tagName === 'BODY')
-        await ns.sleep(10);
+const pressKeyCode = (ns, container, keyCode, hasShift) => {
+    const element = container.querySelector('[tabindex = "1"]');
+    if (!element)
+        return;
     const handler = getEventHandler(element);
     const event = classToObject(new KeyboardEvent('keydown', {
         keyCode,
@@ -143,16 +139,16 @@ export const main = async (ns) => {
                         await ns.sleep(50);
                     while (getGameText() === 'Mark all the mines!') {
                         if (matrix[currentLocation.y][currentLocation.x]) {
-                            await pressKeyCode(ns, 32, false);
+                            pressKeyCode(ns, infilContainer, 32, false);
                         }
                         if (currentLocation.x === rowLength - 1) {
-                            await pressKeyCode(ns, 39, false);
-                            await pressKeyCode(ns, 40, false);
+                            pressKeyCode(ns, infilContainer, 39, false);
+                            pressKeyCode(ns, infilContainer, 40, false);
                             currentLocation.x = 0;
                             currentLocation.y++;
                         }
                         else {
-                            await pressKeyCode(ns, 39, false);
+                            pressKeyCode(ns, infilContainer, 39, false);
                             currentLocation.x++;
                         }
                     }
@@ -162,7 +158,7 @@ export const main = async (ns) => {
                     changeContent(`Game: Type Backwards`);
                     const keys = fullTypingChallenge.toLowerCase().split('');
                     for (const key of keys) {
-                        await pressKey(ns, key);
+                        pressKey(ns, infilContainer, key);
                     }
                     while (getGameText() === 'Type it backward') {
                         await ns.sleep(100);
@@ -178,10 +174,10 @@ export const main = async (ns) => {
                         const isNice = (niceWords.includes(infilContainer.querySelectorAll(`h2[style="font-size: 2em;"]`)[1].innerText));
                         changeContent(`Game: Say Something Nice`);
                         if (!isNice) {
-                            await pressKeyCode(ns, 40, false);
+                            pressKeyCode(ns, infilContainer, 40, false);
                         }
                         else {
-                            await pressKeyCode(ns, 32, false);
+                            pressKeyCode(ns, infilContainer, 32, false);
                         }
                     }
                     break;
@@ -213,24 +209,24 @@ export const main = async (ns) => {
                             if (horizontalDifference === 0)
                                 break;
                             else if (horizontalDifference > 0) {
-                                await pressKeyCode(ns, 39, false);
+                                pressKeyCode(ns, infilContainer, 39, false);
                             }
                             else if (horizontalDifference < 0) {
-                                await pressKeyCode(ns, 37, false);
+                                pressKeyCode(ns, infilContainer, 37, false);
                             }
                         }
                         for (let deltaY = 0; deltaY < Math.abs(verticalDifference); deltaY++) {
                             if (verticalDifference === 0)
                                 break;
                             else if (verticalDifference > 0) {
-                                await pressKeyCode(ns, 40, false);
+                                pressKeyCode(ns, infilContainer, 40, false);
                             }
                             else if (verticalDifference < 0) {
-                                await pressKeyCode(ns, 38, false);
+                                pressKeyCode(ns, infilContainer, 38, false);
                             }
                         }
                         location = target;
-                        await pressKeyCode(ns, 32, false);
+                        pressKeyCode(ns, infilContainer, 32, false);
                     }
                     break;
                 case 'Cut the wires with the following properties! (keyboard 1 to 9)':
@@ -266,7 +262,7 @@ export const main = async (ns) => {
                         }
                     }
                     for (const n of numberTargets) {
-                        await pressKey(ns, n.toString());
+                        pressKey(ns, infilContainer, n.toString());
                     }
                     changeContent('Game: Wire Cutting');
                     while (getGameText() === 'Cut the wires with the following properties! (keyboard 1 to 9)')
@@ -279,16 +275,16 @@ export const main = async (ns) => {
                         const arrow = codeContainer.innerText;
                         switch (arrow) {
                             case '←':
-                                await pressKeyCode(ns, 37, false);
+                                pressKeyCode(ns, infilContainer, 37, false);
                                 break;
                             case '→':
-                                await pressKeyCode(ns, 39, false);
+                                pressKeyCode(ns, infilContainer, 39, false);
                                 break;
                             case '↑':
-                                await pressKeyCode(ns, 38, false);
+                                pressKeyCode(ns, infilContainer, 38, false);
                                 break;
                             case '↓':
-                                await pressKeyCode(ns, 40, false);
+                                pressKeyCode(ns, infilContainer, 40, false);
                                 break;
                         }
                     }
@@ -300,16 +296,16 @@ export const main = async (ns) => {
                     for (const bracket of openingBrackets.reverse()) {
                         switch (bracket) {
                             case '(':
-                                await pressKeyCode(ns, 48, true);
+                                pressKeyCode(ns, infilContainer, 48, true);
                                 break;
                             case '[':
-                                await pressKeyCode(ns, 221, false);
+                                pressKeyCode(ns, infilContainer, 221, false);
                                 break;
                             case '{':
-                                await pressKeyCode(ns, 221, true);
+                                pressKeyCode(ns, infilContainer, 221, true);
                                 break;
                             case '<':
-                                await pressKeyCode(ns, 190, true);
+                                pressKeyCode(ns, infilContainer, 190, true);
                                 break;
                         }
                     }
@@ -325,7 +321,7 @@ export const main = async (ns) => {
                         if (element.innerText === '!Guarding!')
                             await ns.sleep(10);
                         else {
-                            await pressKeyCode(ns, 32, false);
+                            pressKeyCode(ns, infilContainer, 32, false);
                         }
                     }
                     break;
