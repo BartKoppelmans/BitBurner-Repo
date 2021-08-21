@@ -16,6 +16,7 @@ const FIELD_ANALYSIS_INTERVAL = 30;
 const FIELD_ANALYSIS_ITERATIONS = 20;
 const CHAOS_THRESHOLD = 100;
 const FINAL_BLACK_OP_WARNING_INTERVAL = 10;
+const MAX_ACTION_CHANCE_DELTA = 0.1;
 class BladeBurnerManager {
     constructor() {
         this.iterationCounter = 0;
@@ -27,8 +28,8 @@ class BladeBurnerManager {
     static isTired(ns) {
         return BladeBurnerManager.getStaminaPercentage(ns) <= 50;
     }
-    static hasLittleMoney(ns) {
-        return PlayerUtils.getMoney(ns) < MONEY_THRESHOLD;
+    shouldPreferContracts(ns) {
+        return this.canFinishBitNode(ns) || PlayerUtils.getMoney(ns) < MONEY_THRESHOLD;
     }
     static shouldMove(ns, currentCity) {
         return currentCity.getPopulation(ns) < SYNTH_POPULATION_THRESHOLD ||
@@ -40,6 +41,12 @@ class BladeBurnerManager {
             player.defense < 100 ||
             player.dexterity < 100 ||
             player.strength < 100);
+    }
+    static shouldAnalyze(ns, actions) {
+        return actions.some((action) => {
+            const chance = action.getChance(ns);
+            return (chance.upper - chance.lower > MAX_ACTION_CHANCE_DELTA);
+        });
     }
     static hasSimulacrum(ns) {
         const augs = ns.getOwnedAugmentations();
@@ -131,8 +138,7 @@ class BladeBurnerManager {
     }
     findOptimalAction(ns) {
         const currentCity = this.cities.find((city) => city.isCurrent(ns));
-        const shouldDoFieldAnalysis = ((this.iterationCounter % (FIELD_ANALYSIS_INTERVAL + FIELD_ANALYSIS_ITERATIONS)) < FIELD_ANALYSIS_ITERATIONS);
-        if (shouldDoFieldAnalysis)
+        if (BladeBurnerManager.shouldAnalyze(ns, this.actions))
             return BladeBurnerUtils.getAction(ns, this.actions, 'Field Analysis');
         // NOTE: Now we have figured out that there is basically nothing to do...
         if (currentCity.getChaos(ns) > CHAOS_THRESHOLD) {
@@ -154,7 +160,7 @@ class BladeBurnerManager {
         const achievableContracts = BladeBurnerUtils.getAchievableActions(ns, this.actions, 'contracts');
         // If we have little money, prefer contracts over operations
         if (achievableOperations.length > 0 && achievableContracts.length > 0) {
-            return (BladeBurnerManager.hasLittleMoney(ns)) ? achievableContracts[0] : achievableOperations[0];
+            return (this.shouldPreferContracts(ns)) ? achievableContracts[0] : achievableOperations[0];
         }
         // Otherwise, do whatever we can
         if (achievableOperations.length > 0) {

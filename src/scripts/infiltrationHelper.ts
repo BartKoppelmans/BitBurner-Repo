@@ -14,13 +14,59 @@ const enableEdgeDetection = async (el: HTMLDivElement) => {
 		await sleep(100)
 	}
 }
-const pressKey            = (key: string) => {
-	const event: KeyboardEvent = new KeyboardEvent('keydown', { 'key': key, bubbles: true })
-	eval('document').activeElement!.dispatchEvent(event)
+const classToObject       = (event: KeyboardEvent) => {
+	const originalClass = event || {}
+	const keys          = Object.getOwnPropertyNames(Object.getPrototypeOf(originalClass))
+	return keys.reduce((object: any, key: string) => {
+		// @ts-ignore
+		object[key] = event[key]
+		return object
+	}, {})
 }
-const pressKeyCode        = (keyCode: number, hasShift: boolean) => {
-	const event: KeyboardEvent = new KeyboardEvent('keydown', { keyCode, shiftKey: hasShift, bubbles: true })
-	eval('document').activeElement!.dispatchEvent(event)
+const getEventHandler     = (element: HTMLDivElement): ((event: KeyboardEvent) => void) => {
+	console.dir(element)
+	const handlers = Object.keys(element).filter((item) => {
+		return item.indexOf('__reactEventHandlers') >= 0
+	})
+
+	// @ts-ignore
+	console.log(element[handlers[0]].onKeyDown)
+	// @ts-ignore
+	return element[handlers[0]].onKeyDown
+}
+const pressKey            = async (ns: NS, key: string) => {
+	const element: HTMLDivElement = eval('document').activeElement!
+
+	while (element.tagName === 'BODY') await ns.sleep(10)
+
+	const handler        = getEventHandler(element)
+	const event          = classToObject(new KeyboardEvent('keydown', {
+		'key': key,
+		bubbles: true,
+	}))
+	event.isTrusted      = true
+	event.preventDefault = () => {
+		// Do nothing
+	}
+	console.log(event)
+	handler(event)
+}
+const pressKeyCode        = async (ns: NS, keyCode: number, hasShift: boolean) => {
+	const element: HTMLDivElement = eval('document').activeElement!
+
+	while (element.tagName === 'BODY') await ns.sleep(10)
+
+	const handler        = getEventHandler(element)
+	const event          = classToObject(new KeyboardEvent('keydown', {
+		keyCode,
+		shiftKey: hasShift,
+		bubbles: true,
+	}))
+	event.isTrusted      = true
+	event.preventDefault = () => {
+		// Do nothing
+	}
+	handler(event)
 }
 const createWindow        = (prefix: string, title: string, mainContent: string) => {
 	const el: HTMLDivElement = eval('document').createElement('div')
@@ -115,22 +161,24 @@ export const main         = async (ns: NS) => {
 					while (getGameText() === 'Remember all the mines!') await ns.sleep(50)
 					while (getGameText() === 'Mark all the mines!') {
 						if (matrix[currentLocation.y][currentLocation.x]) {
-							pressKeyCode(32, false)
+							await pressKeyCode(ns, 32, false)
 						}
 
 						if (currentLocation.x === rowLength - 1) {
-							pressKeyCode(39, false)
-							pressKeyCode(40, false)
+							await pressKeyCode(ns, 39, false)
+							await pressKeyCode(ns, 40, false)
 							currentLocation.x = 0
 							currentLocation.y++
 						} else {
-							pressKeyCode(39, false)
+							await pressKeyCode(ns, 39, false)
 							currentLocation.x++
 						}
 					}
 
 					break
 				case 'Type it backward':
+
+
 					const fullTypingChallenge = (infilContainer.querySelector(`[style="transform: scaleX(-1);"]`) as HTMLDivElement).innerText
 
 					changeContent(`Game: Type Backwards`)
@@ -138,7 +186,7 @@ export const main         = async (ns: NS) => {
 					const keys: string[] = fullTypingChallenge.toLowerCase().split('')
 
 					for (const key of keys) {
-						pressKey(key)
+						await pressKey(ns, key)
 					}
 
 					while (getGameText() === 'Type it backward') {
@@ -148,6 +196,8 @@ export const main         = async (ns: NS) => {
 
 					break
 				case 'Say something nice about the guard.':
+
+
 					const niceWords = ['affectionate', 'agreeable', 'bright', 'charming', 'creative',
 						'determined', 'diplomatic', 'dynamic', 'energetic', 'friendly',
 						'funny', 'generous', 'giving', 'hardworking', 'helpful', 'kind',
@@ -157,13 +207,15 @@ export const main         = async (ns: NS) => {
 						changeContent(`Game: Say Something Nice`)
 
 						if (!isNice) {
-							pressKeyCode(40, false)
+							await pressKeyCode(ns, 40, false)
 						} else {
-							pressKeyCode(32, false)
+							await pressKeyCode(ns, 32, false)
 						}
 					}
 					break
 				case 'Match the symbols!':
+
+
 					const targetContainer: HTMLHeadingElement       = infilContainer.querySelector(`h2[style="font-size: 2em;"]`) as HTMLHeadingElement
 					const cyberpunkFieldElements: HTMLSpanElement[] = Array.from(infilContainer.querySelectorAll(`span[style="font-size: 2em;"], span[style="font-size: 2em; color: blue;"]`))
 
@@ -200,9 +252,9 @@ export const main         = async (ns: NS) => {
 						for (let deltaX = 0; deltaX < Math.abs(horizontalDifference); deltaX++) {
 							if (horizontalDifference === 0) break
 							else if (horizontalDifference > 0) {
-								pressKeyCode(39, false)
+								await pressKeyCode(ns, 39, false)
 							} else if (horizontalDifference < 0) {
-								pressKeyCode(37, false)
+								await pressKeyCode(ns, 37, false)
 							}
 
 						}
@@ -210,19 +262,21 @@ export const main         = async (ns: NS) => {
 						for (let deltaY = 0; deltaY < Math.abs(verticalDifference); deltaY++) {
 							if (verticalDifference === 0) break
 							else if (verticalDifference > 0) {
-								pressKeyCode(40, false)
+								await pressKeyCode(ns, 40, false)
 							} else if (verticalDifference < 0) {
-								pressKeyCode(38, false)
+								await pressKeyCode(ns, 38, false)
 							}
 						}
 
 						location = target
 
-						pressKeyCode(32, false)
+						await pressKeyCode(ns, 32, false)
 
 					}
 					break
-				case 'Cut the wires with the following properties!':
+				case 'Cut the wires with the following properties! (keyboard 1 to 9)':
+
+
 					const wireTargetElements: HTMLHeadingElement[] = Array.from(infilContainer.children[0].children[1].querySelectorAll('h3')) as HTMLHeadingElement[]
 					const wireElements: HTMLSpanElement[]          = Array.from(infilContainer.children[0].children[1].querySelectorAll('span'))
 					                                                      .filter((element) => isNaN(+element.innerText)) as HTMLSpanElement[]
@@ -265,13 +319,15 @@ export const main         = async (ns: NS) => {
 					}
 
 					for (const n of numberTargets) {
-						pressKey(n.toString())
+						await pressKey(ns, n.toString())
 					}
 
 					changeContent('Game: Wire Cutting')
-					while (getGameText() === 'Cut the wires with the following properties!') await ns.sleep(100)
+					while (getGameText() === 'Cut the wires with the following properties! (keyboard 1 to 9)') await ns.sleep(100)
 					break
 				case 'Enter the Code!':
+
+
 					changeContent('Game: Enter Code')
 					while (getGameText() === 'Enter the Code!') {
 						const codeContainer: HTMLParagraphElement = infilContainer.querySelector(`p[style="font-size: 5em;"]`) as HTMLParagraphElement
@@ -280,21 +336,23 @@ export const main         = async (ns: NS) => {
 
 						switch (arrow) {
 							case '←':
-								pressKeyCode(37, false)
+								await pressKeyCode(ns, 37, false)
 								break
 							case '→':
-								pressKeyCode(39, false)
+								await pressKeyCode(ns, 39, false)
 								break
 							case '↑':
-								pressKeyCode(38, false)
+								await pressKeyCode(ns, 38, false)
 								break
 							case '↓':
-								pressKeyCode(40, false)
+								await pressKeyCode(ns, 40, false)
 								break
 						}
 					}
 					break
 				case 'Close the brackets':
+
+
 					const brackets: string = (infilContainer.children[0].children[1].children[0].children[1].children[1] as HTMLDivElement).innerText
 
 					const openingBrackets: string[] = brackets.split('').filter((bracket) => bracket !== '|')
@@ -305,16 +363,16 @@ export const main         = async (ns: NS) => {
 
 						switch (bracket) {
 							case '(':
-								pressKeyCode(48, true)
+								await pressKeyCode(ns, 48, true)
 								break
 							case '[':
-								pressKeyCode(221, false)
+								await pressKeyCode(ns, 221, false)
 								break
 							case '{':
-								pressKeyCode(221, true)
+								await pressKeyCode(ns, 221, true)
 								break
 							case '<':
-								pressKeyCode(190, true)
+								await pressKeyCode(ns, 190, true)
 								break
 						}
 					}
@@ -326,12 +384,14 @@ export const main         = async (ns: NS) => {
 
 					break
 				case 'Slash when his guard is down!':
+
+
 					changeContent('Game: Slash the Guard')
 					while (getGameText() === 'Slash when his guard is down!') {
 						const element: HTMLParagraphElement = infilContainer.querySelector(`p[style="font-size: 5em;"]`) as HTMLParagraphElement
 						if (element.innerText === '!Guarding!') await ns.sleep(10)
 						else {
-							pressKeyCode(32, false)
+							await pressKeyCode(ns, 32, false)
 						}
 					}
 					break

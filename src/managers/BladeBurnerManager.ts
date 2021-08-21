@@ -9,7 +9,7 @@ import BBAction                                       from '/src/classes/BladeBu
 import { BBSkill }                                    from '/src/classes/BladeBurner/BBSkill.js'
 import * as BladeBurnerUtils                          from '/src/util/BladeBurnerUtils.js'
 import * as PlayerUtils                               from '/src/util/PlayerUtils.js'
-import { BBSkillPriority }                            from '/src/classes/BladeBurner/BBInterfaces.js'
+import { BBActionChance, BBSkillPriority }            from '/src/classes/BladeBurner/BBInterfaces.js'
 import { BBCity }                                     from '/src/classes/BladeBurner/BBCity.js'
 
 const MONEY_THRESHOLD: number                 = 1e9 as const // 1 billion
@@ -22,6 +22,7 @@ const FIELD_ANALYSIS_INTERVAL: number         = 30 as const
 const FIELD_ANALYSIS_ITERATIONS: number       = 20 as const
 const CHAOS_THRESHOLD: number                 = 100 as const
 const FINAL_BLACK_OP_WARNING_INTERVAL: number = 10 as const
+const MAX_ACTION_CHANCE_DELTA: number         = 0.1 as const
 
 class BladeBurnerManager implements Manager {
 
@@ -42,8 +43,8 @@ class BladeBurnerManager implements Manager {
 		return BladeBurnerManager.getStaminaPercentage(ns) <= 50
 	}
 
-	private static hasLittleMoney(ns: NS): boolean {
-		return PlayerUtils.getMoney(ns) < MONEY_THRESHOLD
+	private shouldPreferContracts(ns: NS): boolean {
+		return this.canFinishBitNode(ns) || PlayerUtils.getMoney(ns) < MONEY_THRESHOLD
 	}
 
 	private static shouldMove(ns: NS, currentCity: BBCity): boolean {
@@ -59,6 +60,13 @@ class BladeBurnerManager implements Manager {
 			player.dexterity < 100 ||
 			player.strength < 100
 		)
+	}
+
+	private static shouldAnalyze(ns: NS, actions: BBAction[]): boolean {
+		return actions.some((action: BBAction) => {
+			const chance: BBActionChance = action.getChance(ns)
+			return (chance.upper - chance.lower > MAX_ACTION_CHANCE_DELTA)
+		})
 	}
 
 	private static hasSimulacrum(ns: NS) {
@@ -170,8 +178,7 @@ class BladeBurnerManager implements Manager {
 
 		const currentCity: BBCity = this.cities.find((city) => city.isCurrent(ns)) as BBCity
 
-		const shouldDoFieldAnalysis: boolean = ((this.iterationCounter % (FIELD_ANALYSIS_INTERVAL + FIELD_ANALYSIS_ITERATIONS)) < FIELD_ANALYSIS_ITERATIONS)
-		if (shouldDoFieldAnalysis) return BladeBurnerUtils.getAction(ns, this.actions, 'Field Analysis')
+		if (BladeBurnerManager.shouldAnalyze(ns, this.actions)) return BladeBurnerUtils.getAction(ns, this.actions, 'Field Analysis')
 
 		// NOTE: Now we have figured out that there is basically nothing to do...
 		if (currentCity.getChaos(ns) > CHAOS_THRESHOLD) {
@@ -196,11 +203,10 @@ class BladeBurnerManager implements Manager {
 
 		// If we have little money, prefer contracts over operations
 		if (achievableOperations.length > 0 && achievableContracts.length > 0) {
-			return (BladeBurnerManager.hasLittleMoney(ns)) ? achievableContracts[0] : achievableOperations[0]
+			return (this.shouldPreferContracts(ns)) ? achievableContracts[0] : achievableOperations[0]
 		}
 
 		// Otherwise, do whatever we can
-
 		if (achievableOperations.length > 0) {
 			return achievableOperations[0]
 		}

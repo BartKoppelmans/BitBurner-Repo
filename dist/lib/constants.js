@@ -72,7 +72,7 @@ export const CONSTANT = {
     MAX_TARGET_COUNT: 20,
     RUNNER_INTERVAL: 60000,
     HACK_LOOP_DELAY: 2000,
-    MAX_CYCLE_NUMBER: 25,
+    MAX_CYCLE_NUMBER: 30,
     // Max server growth rate, higher than this will be throttled
     MAX_GROWTH_RATE: 1.0035,
     // Unadjusted server growth rate, this is higher than actually possible

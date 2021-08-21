@@ -2437,7 +2437,7 @@ declare module 'Bitburner' {
 		getActionEstimatedSuccessChance(
 			type: BladeburnerActTypes,
 			name: BladeburnerGenActions | BladeburnerContracts | BladeburnerOperations | BladeburnerBlackOps,
-		): number;
+		): [number, number];
 
 		/**
 		 * You have to be employed in the Bladeburner division and be in BitNode-7

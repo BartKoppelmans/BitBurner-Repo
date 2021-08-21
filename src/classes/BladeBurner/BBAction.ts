@@ -1,8 +1,8 @@
-import type { BitBurner as NS, BladeburnerBlackOps } from 'Bitburner'
-import { BBActionName, BBActionType }                from '/src/classes/BladeBurner/BBInterfaces.js'
-import { CONSTANT }                                  from '/src/lib/constants.js'
-import * as LogAPI                                   from '/src/api/LogAPI.js'
-import { LogType }                                   from '/src/api/LogAPI.js'
+import type { BitBurner as NS, BladeburnerBlackOps }  from 'Bitburner'
+import { BBActionChance, BBActionName, BBActionType } from '/src/classes/BladeBurner/BBInterfaces.js'
+import { CONSTANT }                                   from '/src/lib/constants.js'
+import * as LogAPI                                    from '/src/api/LogAPI.js'
+import { LogType }                                    from '/src/api/LogAPI.js'
 
 export const CHANCE_THRESHOLD: number = 0.95 as const
 export const ACTION_SLACK: number     = 500 as const
@@ -40,8 +40,9 @@ export default class BBAction {
 		return actualTime * CONSTANT.MILLISECONDS_IN_SECOND + ACTION_SLACK
 	}
 
-	public getChance(ns: NS): number {
-		return ns.bladeburner.getActionEstimatedSuccessChance(this.type, this.name)
+	public getChance(ns: NS): BBActionChance {
+		const [lower, upper] = ns.bladeburner.getActionEstimatedSuccessChance(this.type, this.name)
+		return { lower, upper }
 	}
 
 	public isAchievable(ns: NS): boolean {
@@ -50,7 +51,7 @@ export default class BBAction {
 				return false
 			}
 		}
-		return this.getChance(ns) > CHANCE_THRESHOLD
+		return this.getChance(ns).lower > CHANCE_THRESHOLD
 	}
 
 	public getBlackOpRank(ns: NS): number {

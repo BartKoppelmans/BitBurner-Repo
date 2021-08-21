@@ -61,6 +61,8 @@ export function getAchievableActions(ns: NS, actions: BBAction[], type?: BBActio
 		actions = actions.filter((action) => action.type === type)
 	}
 
+	// TODO: Sort by money if it is contracts, or by reputation gain if it is not
+
 	return actions
 		.sort((a, b) => {
 			return b.getReputationGain(ns) - a.getReputationGain(ns)

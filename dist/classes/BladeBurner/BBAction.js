@@ -27,7 +27,8 @@ export default class BBAction {
         return actualTime * CONSTANT.MILLISECONDS_IN_SECOND + ACTION_SLACK;
     }
     getChance(ns) {
-        return ns.bladeburner.getActionEstimatedSuccessChance(this.type, this.name);
+        const [lower, upper] = ns.bladeburner.getActionEstimatedSuccessChance(this.type, this.name);
+        return { lower, upper };
     }
     isAchievable(ns) {
         if (this.type === 'black ops') {
@@ -35,7 +36,7 @@ export default class BBAction {
                 return false;
             }
         }
-        return this.getChance(ns) > CHANCE_THRESHOLD;
+        return this.getChance(ns).lower > CHANCE_THRESHOLD;
     }
     getBlackOpRank(ns) {
         if (this.type !== 'black ops')

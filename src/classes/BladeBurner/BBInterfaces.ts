@@ -12,6 +12,8 @@ export type BBActionType = BladeburnerActTypes;
 
 export type BBSkillName = BladeburnerSkills
 
+export type BBActionChance = { lower: number, upper: number }
+
 export enum BBSkillPriority {
 	LOW,
 	MEDIUM,
