@@ -26,6 +26,7 @@ const files: string[] = [
 	'classes/Server/ServerInterfaces.js',
 	'lib/constants.js',
 	'managers/BladeBurnerManager.js',
+	'managers/GangManager.js',
 	'managers/JobManager.js',
 	'runners/CodingContractRunner.js',
 	'runners/ProgramRunner.js',

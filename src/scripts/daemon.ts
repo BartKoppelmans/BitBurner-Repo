@@ -5,6 +5,7 @@ import * as LogAPI                    from '/src/api/LogAPI.js'
 import * as ServerAPI                 from '/src/api/ServerAPI.js'
 import * as JobManager                from '/src/managers/JobManager.js'
 import * as BladeBurnerManager        from '/src/managers/BladeBurnerManager.js'
+import * as GangManager               from '/src/managers/GangManager.js'
 import Batch                          from '/src/classes/Job/Batch.js'
 import HackableServer                 from '/src/classes/Server/HackableServer.js'
 import Job                            from '/src/classes/Job/Job.js'
@@ -28,6 +29,7 @@ async function initialize(ns: NS) {
 
 	const flags: Flag = ns.flags([
 		['bladeburner', false],
+		['gang', false],
 	])
 
 	// TODO: Kill all running scripts, as there might be some shit from last session open
@@ -40,6 +42,7 @@ async function initialize(ns: NS) {
 	// Managers
 	tasks.push(JobManager.start(ns))
 	if (flags.bladeburner) tasks.push(BladeBurnerManager.start(ns))
+	if (flags.gang) tasks.push(GangManager.start(ns))
 
 	// Runners
 	tasks.push(ControlFlowAPI.launchRunners(ns))
