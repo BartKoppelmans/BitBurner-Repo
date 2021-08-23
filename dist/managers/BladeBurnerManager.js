@@ -104,7 +104,9 @@ class BladeBurnerManager {
         // Check whether we have enough Synths, otherwise move or search for new ones
         const currentCity = this.cities.find((city) => city.isCurrent(ns));
         if (BladeBurnerManager.shouldMove(ns, currentCity)) {
-            this.cities = this.cities.sort((a, b) => {
+            this.cities = this.cities
+                .filter((city) => !BladeBurnerManager.shouldMove(ns, city))
+                .sort((a, b) => {
                 return b.getPopulation(ns) - a.getPopulation(ns);
             });
             if (this.cities[0].name !== currentCity.name)

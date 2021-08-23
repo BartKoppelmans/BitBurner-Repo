@@ -138,9 +138,11 @@ class BladeBurnerManager implements Manager {
 		// Check whether we have enough Synths, otherwise move or search for new ones
 		const currentCity: BBCity = this.cities.find((city) => city.isCurrent(ns)) as BBCity
 		if (BladeBurnerManager.shouldMove(ns, currentCity)) {
-			this.cities = this.cities.sort((a, b) => {
-				return b.getPopulation(ns) - a.getPopulation(ns)
-			})
+			this.cities = this.cities
+			                  .filter((city) => !BladeBurnerManager.shouldMove(ns, city))
+			                  .sort((a, b) => {
+				                  return b.getPopulation(ns) - a.getPopulation(ns)
+			                  })
 
 			if (this.cities[0].name !== currentCity.name) this.cities[0].moveTo(ns)
 			else {
