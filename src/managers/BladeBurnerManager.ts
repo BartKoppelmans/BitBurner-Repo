@@ -46,8 +46,7 @@ class BladeBurnerManager implements Manager {
 	}
 
 	private static shouldMove(ns: NS, currentCity: BBCity): boolean {
-		return currentCity.getPopulation(ns) < SYNTH_POPULATION_THRESHOLD ||
-			currentCity.getCommunities(ns) < SYNTH_COMMUNITY_THRESHOLD
+		return currentCity.getPopulation(ns) < SYNTH_POPULATION_THRESHOLD
 	}
 
 	private static shouldTrain(ns: NS): boolean {
@@ -138,22 +137,12 @@ class BladeBurnerManager implements Manager {
 		// Check whether we have enough Synths, otherwise move or search for new ones
 		const currentCity: BBCity = this.cities.find((city) => city.isCurrent(ns)) as BBCity
 		if (BladeBurnerManager.shouldMove(ns, currentCity)) {
-			this.cities = this.cities
-			                  .filter((city) => !BladeBurnerManager.shouldMove(ns, city))
-			                  .sort((a, b) => {
-				                  return b.getPopulation(ns) - a.getPopulation(ns)
-			                  })
+			const cities: BBCity[] = this.cities
+			                             .sort((a, b) => {
+				                             return b.getPopulation(ns) - a.getPopulation(ns)
+			                             })
 
 			if (this.cities[0].name !== currentCity.name) this.cities[0].moveTo(ns)
-			else {
-				const intelActions: BBAction[] = BladeBurnerUtils.getAchievableIntelActions(ns, this.actions)
-				if (intelActions.length > 0) {
-					return intelActions[0].execute(ns, this.iterationCounter).then(nextLoop.bind(this, true))
-				}
-
-				const fieldAnalysisAction: BBAction = BladeBurnerUtils.getAction(ns, this.actions, 'Field Analysis')
-				return fieldAnalysisAction.execute(ns, this.iterationCounter).then(nextLoop.bind(this, false))
-			}
 		}
 
 		const currentAction: BBAction | undefined = this.getCurrentAction(ns)

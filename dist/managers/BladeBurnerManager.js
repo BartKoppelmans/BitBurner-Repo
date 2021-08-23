@@ -30,8 +30,7 @@ class BladeBurnerManager {
         return this.canFinishBitNode(ns) || PlayerUtils.getMoney(ns) < MONEY_THRESHOLD;
     }
     static shouldMove(ns, currentCity) {
-        return currentCity.getPopulation(ns) < SYNTH_POPULATION_THRESHOLD ||
-            currentCity.getCommunities(ns) < SYNTH_COMMUNITY_THRESHOLD;
+        return currentCity.getPopulation(ns) < SYNTH_POPULATION_THRESHOLD;
     }
     static shouldTrain(ns) {
         const player = PlayerUtils.getPlayer(ns);
@@ -104,21 +103,12 @@ class BladeBurnerManager {
         // Check whether we have enough Synths, otherwise move or search for new ones
         const currentCity = this.cities.find((city) => city.isCurrent(ns));
         if (BladeBurnerManager.shouldMove(ns, currentCity)) {
-            this.cities = this.cities
-                .filter((city) => !BladeBurnerManager.shouldMove(ns, city))
+            const cities = this.cities
                 .sort((a, b) => {
                 return b.getPopulation(ns) - a.getPopulation(ns);
             });
             if (this.cities[0].name !== currentCity.name)
                 this.cities[0].moveTo(ns);
-            else {
-                const intelActions = BladeBurnerUtils.getAchievableIntelActions(ns, this.actions);
-                if (intelActions.length > 0) {
-                    return intelActions[0].execute(ns, this.iterationCounter).then(nextLoop.bind(this, true));
-                }
-                const fieldAnalysisAction = BladeBurnerUtils.getAction(ns, this.actions, 'Field Analysis');
-                return fieldAnalysisAction.execute(ns, this.iterationCounter).then(nextLoop.bind(this, false));
-            }
         }
         const currentAction = this.getCurrentAction(ns);
         const nextAction = this.findOptimalAction(ns);
