@@ -14,7 +14,6 @@ const SYNTH_POPULATION_THRESHOLD = 1e8;
 const SYNTH_COMMUNITY_THRESHOLD = 5;
 const CHAOS_THRESHOLD = 100;
 const FINAL_BLACK_OP_WARNING_INTERVAL = 10;
-const MAX_ACTION_CHANCE_DELTA = 0.1;
 class BladeBurnerManager {
     constructor() {
         this.iterationCounter = 1;
@@ -42,7 +41,7 @@ class BladeBurnerManager {
     static shouldAnalyze(ns, actions) {
         return actions.some((action) => {
             const chance = action.getChance(ns);
-            return (chance.upper - chance.lower > MAX_ACTION_CHANCE_DELTA);
+            return (chance.upper !== chance.lower);
         });
     }
     static hasSimulacrum(ns) {

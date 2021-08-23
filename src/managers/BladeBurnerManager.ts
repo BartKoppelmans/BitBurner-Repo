@@ -20,7 +20,6 @@ const SYNTH_POPULATION_THRESHOLD: number      = 1e8 as const
 const SYNTH_COMMUNITY_THRESHOLD: number       = 5 as const
 const CHAOS_THRESHOLD: number                 = 100 as const
 const FINAL_BLACK_OP_WARNING_INTERVAL: number = 10 as const
-const MAX_ACTION_CHANCE_DELTA: number         = 0.1 as const
 
 class BladeBurnerManager implements Manager {
 
@@ -62,7 +61,7 @@ class BladeBurnerManager implements Manager {
 	private static shouldAnalyze(ns: NS, actions: BBAction[]): boolean {
 		return actions.some((action: BBAction) => {
 			const chance: BBActionChance = action.getChance(ns)
-			return (chance.upper - chance.lower > MAX_ACTION_CHANCE_DELTA)
+			return (chance.upper !== chance.lower)
 		})
 	}
 
