@@ -3,6 +3,7 @@ import { BBActionChance, BBActionName, BBActionType } from '/src/classes/BladeBu
 import { CONSTANT }                                   from '/src/lib/constants.js'
 import * as LogAPI                                    from '/src/api/LogAPI.js'
 import { LogType }                                    from '/src/api/LogAPI.js'
+import { BBCity }                                     from '/src/classes/BladeBurner/BBCity'
 
 export const CHANCE_THRESHOLD: number = 0.95 as const
 export const ACTION_SLACK: number     = 500 as const
@@ -50,6 +51,10 @@ export default class BBAction {
 			if (ns.bladeburner.getRank() < ns.bladeburner.getBlackOpRank(this.name as BladeburnerBlackOps)) {
 				return false
 			}
+		}
+		if (this.name === 'Raid') {
+			const currentCity: BBCity = new BBCity(ns, ns.bladeburner.getCity())
+			if (currentCity.getCommunities(ns) === 0) return false
 		}
 		return this.getChance(ns).lower > CHANCE_THRESHOLD
 	}
