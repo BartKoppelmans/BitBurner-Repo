@@ -1,5 +1,6 @@
 import * as Utils from '/src/util/Utils.js';
 import { CONSTANT } from '/src/lib/constants.js';
+const PIXEL_TOLERANCE = 4;
 export function error(ns, message) {
     throw new Error('Not implemented');
     // NOT IMPLEMENTED
@@ -52,13 +53,22 @@ function getColorFromLogType(ns, logType) {
             return 'var(--my-font-color)';
     }
 }
+function shouldScrollIntoView(element) {
+    return Math.round(element.scrollHeight - element.scrollTop - element.clientHeight) <= PIXEL_TOLERANCE;
+}
 function printColored(ns, text, logType) {
     const doc = eval('document');
     const terminalInput = doc.getElementById('terminal-input');
+    const terminalContainer = doc.getElementById('terminal-container');
     const rowElement = doc.createElement('tr');
     const cellElement = doc.createElement('td');
+    let shouldScroll = true;
     if (!terminalInput) {
         throw new Error('Could not find the terminal input.');
+    }
+    // We have to do this before we add the new element
+    if (terminalContainer) {
+        shouldScroll = shouldScrollIntoView(terminalContainer);
     }
     text = `${Utils.formatTime()} ${text}`;
     rowElement.classList.add('posted');
@@ -67,5 +77,6 @@ function printColored(ns, text, logType) {
     cellElement.innerText = text;
     rowElement.appendChild(cellElement);
     terminalInput.before(rowElement);
-    terminalInput.scrollIntoView(false);
+    if (shouldScroll)
+        terminalInput.scrollIntoView(false);
 }

@@ -2,6 +2,7 @@ import type { BitBurner as NS } from 'Bitburner'
 import * as Utils               from '/src/util/Utils.js'
 import { CONSTANT }             from '/src/lib/constants.js'
 
+const PIXEL_TOLERANCE: number = 4 as const
 
 export function error(ns: NS, message: string): void {
 	throw new Error('Not implemented')
@@ -63,14 +64,25 @@ function getColorFromLogType(ns: NS, logType: LogType): string {
 	}
 }
 
+function shouldScrollIntoView(element: HTMLElement): boolean {
+	return Math.round(element.scrollHeight - element.scrollTop - element.clientHeight) <= PIXEL_TOLERANCE
+}
+
 function printColored(ns: NS, text: string, logType: LogType) {
-	const doc: Document = eval('document')
-	const terminalInput = doc.getElementById('terminal-input')
-	const rowElement    = doc.createElement('tr')
-	const cellElement   = doc.createElement('td')
+	const doc: Document                         = eval('document')
+	const terminalInput: HTMLElement | null     = doc.getElementById('terminal-input')
+	const terminalContainer: HTMLElement | null = doc.getElementById('terminal-container')
+	const rowElement: HTMLTableRowElement       = doc.createElement('tr')
+	const cellElement: HTMLTableDataCellElement = doc.createElement('td')
+	let shouldScroll: boolean                   = true
 
 	if (!terminalInput) {
 		throw new Error('Could not find the terminal input.')
+	}
+
+	// We have to do this before we add the new element
+	if (terminalContainer) {
+		shouldScroll = shouldScrollIntoView(terminalContainer)
 	}
 
 	text = `${Utils.formatTime()} ${text}`
@@ -83,5 +95,5 @@ function printColored(ns: NS, text: string, logType: LogType) {
 	rowElement.appendChild(cellElement)
 	terminalInput.before(rowElement)
 
-	terminalInput.scrollIntoView(false)
+	if (shouldScroll) terminalInput.scrollIntoView(false)
 }
