@@ -1,12 +1,13 @@
 {
     "include": [
-        "./src/**/*",
+        "./src/**/*"
     ],
     "exclude": [
         "node_modules",
         "util"
     ],
     "compilerOptions": {
+        "suppressImplicitAnyIndexErrors": true,
         "esModuleInterop": true,
         "noImplicitReturns": true,
         "noImplicitThis": true,

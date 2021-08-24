@@ -3,7 +3,7 @@ import { BBActionChance, BBActionName, BBActionType } from '/src/classes/BladeBu
 import { CONSTANT }                                   from '/src/lib/constants.js'
 import * as LogAPI                                    from '/src/api/LogAPI.js'
 import { LogType }                                    from '/src/api/LogAPI.js'
-import { BBCity }                                     from '/src/classes/BladeBurner/BBCity'
+import { BBCity }                                     from '/src/classes/BladeBurner/BBCity.js'
 
 export const CHANCE_THRESHOLD: number = 0.95 as const
 export const ACTION_SLACK: number     = 500 as const

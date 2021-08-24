@@ -16,7 +16,8 @@ export enum LogType {
 	HACKING,
 	PURCHASED_SERVER,
 	CODING_CONTRACT,
-	BLADEBURNER
+	BLADEBURNER,
+	GANG
 }
 
 export function debug(ns: NS, message: string): void {
@@ -37,7 +38,7 @@ export function warn(ns: NS, message: string): void {
 
 export function log(ns: NS, message: string, logType: LogType): void {
 
-	if (logType !== LogType.NONE && logType !== LogType.INFORMATION && logType !== LogType.PURCHASED_SERVER && logType !== LogType.CODING_CONTRACT && logType !== LogType.BLADEBURNER) {
+	if (logType !== LogType.NONE && logType !== LogType.INFORMATION && logType !== LogType.PURCHASED_SERVER && logType !== LogType.CODING_CONTRACT && logType !== LogType.BLADEBURNER && logType !== LogType.GANG) {
 		throw new Error('Incorrect log type')
 	}
 
@@ -58,6 +59,8 @@ function getColorFromLogType(ns: NS, logType: LogType): string {
 			return CONSTANT.COLOR_CODING_CONTRACT_INFORMATION
 		case LogType.BLADEBURNER:
 			return CONSTANT.COLOR_BLADEBURNER
+		case LogType.GANG:
+			return CONSTANT.COLOR_GANG
 		case LogType.NONE:
 		default:
 			return 'var(--my-font-color)'
