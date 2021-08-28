@@ -986,48 +986,49 @@ declare module 'Bitburner' {
 	}
 
 	export interface GangMemberInfo {
-		/** Agility stat */
-		agility: number;
-		/** Agility multiplier from equipment. Decimal form */
-		agilityEquipMult: number;
-		/** Agility multiplier from ascension. Decimal form */
-		agilityAscensionMult: number;
-		/** Array of names of all owned Augmentations */
-		augmentations: GangAugmentations[];
-		/** Charisma stat */
-		charisma: number;
-		/** Charisma multiplier from equipment. Decimal form */
-		charismaEquipMult: number;
-		/** Charisma multiplier from ascension. Decimal form */
-		charismaAscensionMult: number;
-		/** Defense stat */
-		defense: number;
-		/** Defense multiplier from equipment. Decimal form */
-		defenseEquipMult: number;
-		/** Defense multiplier from ascension. Decimal form */
-		defenseAscensionMult: number;
-		/** Dexterity stat */
-		dexterity: number;
-		/** Dexterity multiplier from equipment. Decimal form */
-		dexterityEquipMult: number;
-		/** Dexterity multiplier from ascension. Decimal form */
-		dexterityAscensionMult: number;
-		/** Array of names of all owned Non-Augmentation Equipment */
-		equipment: GangEquipment[];
-		/** Hacking stat */
-		hacking: number;
-		/** Hacking multiplier from equipment. Decimal form */
-		hackingEquipMult: number;
-		/** Hacking multiplier from ascension. Decimal form */
-		hackingAscensionMult: number;
-		/** Strength stat */
-		strength: number;
-		/** Strength multiplier from equipment. Decimal form */
-		strengthEquipMult: number;
-		/** Strength multiplier from ascension. Decimal form */
-		strengthAscensionMult: number;
-		/** Name of currently assigned task */
-		task: GangTasks;
+
+		name: string,
+		task: GangTasks,
+		earnedRespect: number,
+
+		hack: number,
+		str: number,
+		def: number,
+		dex: number,
+		agi: number,
+		cha: number,
+
+		hack_exp: number,
+		str_exp: number,
+		def_exp: number,
+		dex_exp: number,
+		agi_exp: number,
+		cha_exp: number,
+
+		hack_mult: number,
+		str_mult: number,
+		def_mult: number,
+		dex_mult: number,
+		agi_mult: number,
+		cha_mult: number,
+
+		hack_asc_mult: number,
+		str_asc_mult: number,
+		def_asc_mult: number,
+		dex_asc_mult: number,
+		agi_asc_mult: number,
+		cha_asc_mult: number,
+
+		hack_asc_points: number,
+		str_asc_points: number,
+		def_asc_points: number,
+		dex_asc_points: number,
+		agi_asc_points: number,
+		cha_asc_points: number,
+
+		upgrades: GangEquipment[],
+		augmentations: GangAugmentations[],
+
 	}
 
 	export interface GangMemberAscension {
@@ -2905,6 +2906,8 @@ declare module 'Bitburner' {
 	export interface Gang {
 
 		inGang(): boolean;
+
+		createGang(name: GangName): boolean;
 
 		/**
 		 * If you are not in BitNode-2, then you must have Source-File 2 in order to use this function.

@@ -6,14 +6,22 @@ import * as GangUtils from '/src/util/GangUtils.js';
 import { CONSTANT } from '/src/lib/constants.js';
 import GangMember from '/src/classes/Gang/GangMember.js';
 import GangTask from '/src/classes/Gang/GangTask.js';
+import GangUpgrade from '/src/classes/Gang/GangUpgrade.js';
+import * as PlayerUtils from '/src/util/PlayerUtils.js';
 const MANAGING_LOOP_DELAY = 1000;
+const CREATE_GANG_DELAY = 10000;
+const ASCENSION_MULTIPLIER_THRESHOLD = 2;
+const GANG_ALLOWANCE = 0.1;
 class GangManager {
     constructor() {
         this.members = [];
+        this.upgrades = [];
     }
     async initialize(ns) {
         Utils.disableLogging(ns);
-        this.members = GangUtils.createGangMembers(ns);
+        await GangManager.createGang(ns);
+        this.members = GangMember.getAllGangMembers(ns);
+        this.upgrades = GangUpgrade.getAllUpgrades(ns);
     }
     async start(ns) {
         LogAPI.debug(ns, `Starting the GangManager`);
@@ -27,8 +35,45 @@ class GangManager {
     async managingLoop(ns) {
         while (ns.gang.canRecruitMember()) {
             this.recruitMember(ns);
+            await ns.sleep(CONSTANT.SMALL_DELAY);
         }
+        this.members.forEach((member) => this.manageMember(ns, member));
         this.managingLoopTimeout = setTimeout(this.managingLoop.bind(this, ns), MANAGING_LOOP_DELAY);
+    }
+    static async createGang(ns) {
+        while (!ns.gang.inGang()) {
+            const factions = ns.getPlayer().factions;
+            if (!factions.includes('Slum Snakes')) {
+                const invitations = ns.checkFactionInvitations();
+                if (!invitations.includes('Slum Snakes')) {
+                    await ns.sleep(CREATE_GANG_DELAY);
+                    continue;
+                }
+                ns.joinFaction('Slum Snakes');
+            }
+            ns.gang.createGang('Slum Snakes');
+        }
+    }
+    manageMember(ns, member) {
+        if (GangManager.shouldAscend(ns, member)) {
+            member.ascend(ns);
+        }
+        let remainingUpgrades = this.upgrades.filter((upgrade) => !member.upgrades.some((memberUpgrade) => upgrade.name === memberUpgrade.name));
+        remainingUpgrades = GangUpgrade.sortUpgrades(ns, remainingUpgrades);
+        for (const upgrade of remainingUpgrades) {
+            if (GangManager.canAfford(ns, upgrade)) {
+                member.purchaseUpgrade(ns, upgrade);
+            }
+        }
+        // TODO: Assign tasks
+    }
+    static shouldAscend(ns, member) {
+        const ascensionResults = member.getAscensionResults(ns);
+        return ascensionResults.hack * ascensionResults.str * ascensionResults.def * ascensionResults.dex * ascensionResults.agi * ascensionResults.cha >= ASCENSION_MULTIPLIER_THRESHOLD;
+    }
+    static canAfford(ns, upgrade) {
+        const money = PlayerUtils.getMoney(ns) * GANG_ALLOWANCE;
+        return upgrade.cost <= money;
     }
     recruitMember(ns) {
         const name = GangUtils.generateName(ns);
@@ -59,10 +104,6 @@ export function isRunning(ns) {
 export async function main(ns) {
     if (ns.getHostname() !== 'home') {
         throw new Error('Run the script from home');
-    }
-    if (!ns.gang.inGang()) {
-        LogAPI.warn(ns, `Cannot start GangManager. Please join a gang first.`);
-        return;
     }
     const instance = new GangManager();
     await instance.initialize(ns);
