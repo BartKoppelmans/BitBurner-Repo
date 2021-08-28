@@ -1,23 +1,23 @@
-import type { BitBurner as NS, Flag } from 'Bitburner'
-import * as ControlFlowAPI            from '/src/api/ControlFlowAPI.js'
-import * as JobAPI                    from '/src/api/JobAPI.js'
-import * as LogAPI                    from '/src/api/LogAPI.js'
-import * as ServerAPI                 from '/src/api/ServerAPI.js'
-import * as JobManager                from '/src/managers/JobManager.js'
-import * as BladeBurnerManager        from '/src/managers/BladeBurnerManager.js'
-import * as GangManager               from '/src/managers/GangManager.js'
-import Batch                          from '/src/classes/Job/Batch.js'
-import HackableServer                 from '/src/classes/Server/HackableServer.js'
-import Job                            from '/src/classes/Job/Job.js'
-import Server                         from '/src/classes/Server/Server.js'
-import { Cycle, ThreadSpread }        from '/src/classes/Misc/HackInterfaces.js'
-import { ServerStatus }               from '/src/classes/Server/ServerInterfaces.js'
-import { CONSTANT }                   from '/src/lib/constants.js'
-import { Tools }                      from '/src/tools/Tools.js'
-import * as CycleUtils                from '/src/util/CycleUtils.js'
-import * as HackUtils                 from '/src/util/HackUtils.js'
-import * as ToolUtils                 from '/src/util/ToolUtils.js'
-import * as Utils                     from '/src/util/Utils.js'
+import type { BitBurner as NS } from 'Bitburner'
+import * as ControlFlowAPI      from '/src/api/ControlFlowAPI.js'
+import * as JobAPI              from '/src/api/JobAPI.js'
+import * as LogAPI              from '/src/api/LogAPI.js'
+import * as ServerAPI           from '/src/api/ServerAPI.js'
+import * as JobManager          from '/src/managers/JobManager.js'
+import * as BladeBurnerManager  from '/src/managers/BladeBurnerManager.js'
+import * as GangManager         from '/src/managers/GangManager.js'
+import Batch                    from '/src/classes/Job/Batch.js'
+import HackableServer           from '/src/classes/Server/HackableServer.js'
+import Job                      from '/src/classes/Job/Job.js'
+import Server                   from '/src/classes/Server/Server.js'
+import { Cycle, ThreadSpread }  from '/src/classes/Misc/HackInterfaces.js'
+import { ServerStatus }         from '/src/classes/Server/ServerInterfaces.js'
+import { CONSTANT }             from '/src/lib/constants.js'
+import { Tools }                from '/src/tools/Tools.js'
+import * as CycleUtils          from '/src/util/CycleUtils.js'
+import * as HackUtils           from '/src/util/HackUtils.js'
+import * as ToolUtils           from '/src/util/ToolUtils.js'
+import * as Utils               from '/src/util/Utils.js'
 
 let isHacking: boolean = false
 let hackLoopTimeout: ReturnType<typeof setTimeout>
@@ -27,7 +27,7 @@ async function initialize(ns: NS) {
 
 	Utils.disableLogging(ns)
 
-	const flags: Flag = ns.flags([
+	const flags = ns.flags([
 		['bladeburner', false],
 		['gang', false],
 	])

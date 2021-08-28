@@ -1,5 +1,4 @@
 import type { BitBurner as NS } from 'Bitburner'
-import { Flag }                 from 'Bitburner'
 import Crime                    from '/src/classes/Misc/Crime.js'
 import { CONSTANT }             from '/src/lib/constants.js'
 import * as CrimeUtils          from '/src/util/CrimeUtils.js'
@@ -13,12 +12,12 @@ export async function main(ns: NS) {
 		return
 	}
 
-	const flags: Flag = ns.flags([
-		['h', false],
+	const flags = ns.flags([
 		['homicide', false],
+		['experience', false],
 	])
 
-	const useHomicide: boolean = (flags.h || flags.homicide) as boolean
+	if (flags.homicide && flags.experience) throw new Error('Unable to optimize for experience and force \'homicide\' at the same time.')
 
 	let crimes: Crime[]      = CrimeUtils.getCrimes(ns)
 	let isCancelled: boolean = false
@@ -30,12 +29,12 @@ export async function main(ns: NS) {
 			continue
 		}
 
-		let crime: Crime = crimes.find((c) => c.name === 'homicide') as Crime
-
-		if (!useHomicide) {
+		let crime: Crime
+		if (flags.homicide) crime = crimes.find((c) => c.name === 'homicide') as Crime
+		else {
 			// Evaluate the potential crimes afterwards
 			await Promise.all(crimes.map(async (c) => {
-				return c.evaluate(ns)
+				return c.evaluate(ns, flags.experience)
 			}))
 
 			// Sort the potential crimes
@@ -43,7 +42,6 @@ export async function main(ns: NS) {
 
 			crime = crimes[0]
 		}
-
 
 		crime.commit(ns)
 

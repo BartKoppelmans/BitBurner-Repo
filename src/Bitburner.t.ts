@@ -1,6 +1,16 @@
 declare module 'Bitburner' {
 
-	export type Flag = { [key: string]: string | string[] | number | boolean }
+	type UnionToIntersection<T> = (T extends T ? (p: T) => void : never) extends (
+			p: infer U,
+		) => void
+		? U
+		: never;
+	type FromEntries<T extends readonly [PropertyKey, any]> = T extends T
+		? Record<T[0], T[1]>
+		: never;
+	type Flatten<T> = {} & {
+		[P in keyof T]: T[P];
+	};
 
 	export type Host = string;
 	export type Script = string;
@@ -3375,7 +3385,10 @@ declare module 'Bitburner' {
 
 		getPlayer(): any;
 
-		flags(flags: any[]): Flag
+		flags<Key extends string, TConfig extends [readonly [Key, any]] | (readonly [Key, any])[]>
+		(
+			config: TConfig,
+		): Flatten<UnionToIntersection<FromEntries<TConfig[number]>>>;
 
 		/**
 		 * Function that is used to try and hack servers to steal money and gain hacking experience.

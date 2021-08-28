@@ -8,10 +8,11 @@ export async function main(ns) {
         return;
     }
     const flags = ns.flags([
-        ['h', false],
         ['homicide', false],
+        ['experience', false],
     ]);
-    const useHomicide = (flags.h || flags.homicide);
+    if (flags.homicide && flags.experience)
+        throw new Error('Unable to optimize for experience and force \'homicide\' at the same time.');
     let crimes = CrimeUtils.getCrimes(ns);
     let isCancelled = false;
     LogAPI.log(ns, 'Executing crimes', LogType.INFORMATION);
@@ -20,11 +21,13 @@ export async function main(ns) {
             await ns.sleep(CONSTANT.CRIME_DELAY);
             continue;
         }
-        let crime = crimes.find((c) => c.name === 'homicide');
-        if (!useHomicide) {
+        let crime;
+        if (flags.homicide)
+            crime = crimes.find((c) => c.name === 'homicide');
+        else {
             // Evaluate the potential crimes afterwards
             await Promise.all(crimes.map(async (c) => {
-                return c.evaluate(ns);
+                return c.evaluate(ns, flags.experience);
             }));
             // Sort the potential crimes
             crimes = crimes.sort((a, b) => b.crimeValue - a.crimeValue);
