@@ -19,7 +19,7 @@ const CREATE_GANG_DELAY: number              = 10000 as const
 const ASCENSION_MULTIPLIER_THRESHOLD: number = 5 as const
 const GANG_ALLOWANCE: number                 = 0.1 as const
 const WANTED_PENALTY_THRESHOLD: number       = 0.25 as const // Percentage
-const COMBAT_STAT_HIGH_THRESHOLD: number     = 1000 as const
+const COMBAT_STAT_HIGH_THRESHOLD: number     = 5000 as const
 const COMBAT_STAT_LOW_THRESHOLD: number      = 100 as const
 const MAX_GANG_MEMBERS: number               = 12 as const
 
@@ -64,25 +64,22 @@ class GangManager implements Manager {
 	private static hasReachedCombatStatsLevel(ns: NS, member: GangMember, level: number): boolean {
 		const gangMemberStats: GangMemberStats = member.getGangMemberStats(ns)
 
-		let hasReached: boolean = true
-		for (const [key, value] of Object.entries(gangMemberStats)) {
-			if (key !== 'cha' && key !== 'hack') {
-				hasReached = hasReached && (value >= level)
-			}
-		}
+		const average: number = (gangMemberStats.str + gangMemberStats.agi + gangMemberStats.def + gangMemberStats.dex) / 4
 
-		return hasReached
+		return average > level
 	}
 
-	private static shouldDoTerritoryWarfare(ns: NS, homeGang: HomeGang, gangs: Gang[]): boolean {
-
-		// TODO: Actually calculate this
-
-		return true
+	private static canWinTerritoryWarfare(ns: NS, homeGang: HomeGang, gangs: Gang[]): boolean {
+		return gangs.every((gang) => gang.getChanceToWinClash(ns) > 0.95)
 	}
 
 
 	private static shouldReduceWantedLevel(ns: NS): boolean {
+
+		// TODO: Make sure that this takes respect into account more
+		// When respect and wanted are both (equally) low, we should gain more respect
+		// Otherwise, perhaps consider not ascending the highest respect person
+
 		const gangInformation: GangGenInfo = ns.gang.getGangInformation()
 		const wantedPenalty: number        = (gangInformation.respect) / (gangInformation.respect + gangInformation.wantedLevel)
 
@@ -161,6 +158,10 @@ class GangManager implements Manager {
 
 	private async managingLoop(ns: NS): Promise<void> {
 
+
+		const doTerritoryWarfare: boolean = GangManager.canWinTerritoryWarfare(ns, this.homeGang, this.gangs)
+		doTerritoryWarfare ? this.homeGang.enableTerritoryWarfare(ns) : this.homeGang.disableTerritoryWarfare(ns)
+
 		while (ns.gang.canRecruitMember()) {
 			const newMember: GangMember | null = GangManager.recruitMember(ns)
 			if (newMember) this.upgradeMember(ns, newMember)
@@ -203,7 +204,7 @@ class GangManager implements Manager {
 			return member.startTask(ns, GangTask.getTrainTask(ns))
 		}
 
-		if (GangManager.shouldDoTerritoryWarfare(ns, this.homeGang, this.gangs)) {
+		if (!GangManager.canWinTerritoryWarfare(ns, this.homeGang, this.gangs)) {
 			return member.startTask(ns, GangTask.getTerritoryWarfareTask(ns))
 		}
 
@@ -226,7 +227,7 @@ class GangManager implements Manager {
 			return member.startTask(ns, GangTask.getTrainTask(ns))
 		}
 
-		if (GangManager.shouldDoTerritoryWarfare(ns, this.homeGang, this.gangs)) {
+		if (!GangManager.canWinTerritoryWarfare(ns, this.homeGang, this.gangs)) {
 			return member.startTask(ns, GangTask.getTerritoryWarfareTask(ns))
 		}
 

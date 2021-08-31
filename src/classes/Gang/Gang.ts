@@ -9,8 +9,10 @@ export default class Gang {
 	}
 
 	public static getGangs(ns: NS): Gang[] {
-		const gangNames: GangName[] = ['Slum Snakes', 'Tetrads', 'The Syndicate', 'The Dark Army', 'Speakers for the Dead', 'NiteSec', 'The Black Hand']
-		return gangNames.map((name) => new Gang(ns, name))
+		const gangNames: GangName[]  = ['Slum Snakes', 'Tetrads', 'The Syndicate', 'The Dark Army', 'Speakers for the Dead', 'NiteSec', 'The Black Hand']
+		const homeGangName: GangName = ns.gang.getGangInformation().faction
+
+		return gangNames.filter((gangName) => gangName !== homeGangName).map((name) => new Gang(ns, name))
 	}
 
 	public getGangInformation(ns: NS): GangOtherInfoObject {
@@ -24,5 +26,9 @@ export default class Gang {
 
 	public getTerritory(ns: NS): number {
 		return this.getGangInformation(ns).territory
+	}
+
+	public getChanceToWinClash(ns: NS): number {
+		return ns.gang.getChanceToWinClash(this.name)
 	}
 }

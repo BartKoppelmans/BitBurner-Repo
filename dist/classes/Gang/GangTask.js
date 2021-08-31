@@ -23,7 +23,7 @@ export default class GangTask {
         return GangTask.getTask(ns, 'Vigilante Justice');
     }
     static getMoneyTask(ns) {
-        return GangTask.getTask(ns, 'Human Trafficking');
+        return GangTask.getTask(ns, 'Traffick Illegal Arms');
     }
     static getTerritoryWarfareTask(ns) {
         return GangTask.getTask(ns, 'Territory Warfare');

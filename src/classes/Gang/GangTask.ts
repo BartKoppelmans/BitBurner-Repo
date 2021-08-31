@@ -33,7 +33,7 @@ export default class GangTask {
 	}
 
 	public static getMoneyTask(ns: NS): GangTask {
-		return GangTask.getTask(ns, 'Human Trafficking')
+		return GangTask.getTask(ns, 'Traffick Illegal Arms')
 	}
 
 	public static getTerritoryWarfareTask(ns: NS): GangTask {
