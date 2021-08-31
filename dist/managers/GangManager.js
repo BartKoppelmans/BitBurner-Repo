@@ -24,6 +24,7 @@ class GangManager {
     }
     static getBestMember(ns, members) {
         const isHacking = GangUtils.isHackingGang(ns);
+        // TODO: Update this to take the current skill points and respect into account
         const evaluations = members.map((member) => {
             const ascensionPoints = member.getCurrentAscensionPoints(ns);
             let score;
@@ -140,6 +141,7 @@ class GangManager {
         while (!GangManager.hasMinimumWantedLevel(ns)) {
             await ns.sleep(LOOP_DELAY);
         }
+        LogAPI.log(ns, `Finished reducing wanted level`, LogType.GANG);
     }
     manageMember(ns, member) {
         this.upgradeMember(ns, member);
@@ -184,7 +186,7 @@ class GangManager {
             }
         }
         if (numUpgrades > 0) {
-            LogAPI.log(ns, `Purchased ${numUpgrades} for ${member.name}`, LogType.GANG);
+            LogAPI.log(ns, `Purchased ${numUpgrades} upgrades for ${member.name}`, LogType.GANG);
         }
     }
 }

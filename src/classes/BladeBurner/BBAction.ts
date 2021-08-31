@@ -65,7 +65,10 @@ export default class BBAction {
 	}
 
 	public async continue(ns: NS, iteration: number): Promise<void> {
-		LogAPI.log(ns, `${ns.nFormat(iteration, '000000')} - Executing ${this.type} action '${this.name}'`, LogType.BLADEBURNER)
+		/*
+		 TODO: Decide whether we want to log continuing actions
+		 LogAPI.log(ns, `${ns.nFormat(iteration, '000000')} - Executing ${this.type} action '${this.name}'`, LogType.BLADEBURNER)
+		 */
 		await ns.sleep(this.getDuration(ns))
 	}
 
