@@ -15,8 +15,8 @@ const CREATE_GANG_DELAY = 10000;
 const ASCENSION_MULTIPLIER_THRESHOLD = 5;
 const GANG_ALLOWANCE = 0.1;
 const WANTED_PENALTY_THRESHOLD = 0.25; // Percentage
-const COMBAT_STAT_HIGH_THRESHOLD = 5000;
-const COMBAT_STAT_LOW_THRESHOLD = 500;
+const COMBAT_STAT_HIGH_THRESHOLD = 2500;
+const COMBAT_STAT_LOW_THRESHOLD = 250;
 const MAX_GANG_MEMBERS = 12;
 class GangManager {
     constructor() {
@@ -24,14 +24,16 @@ class GangManager {
     }
     static getBestMember(ns, members) {
         const isHacking = GangUtils.isHackingGang(ns);
-        // TODO: Update this to take the current skill points and respect into account
+        // TODO: Perhaps modify this to use the optimal respect gain?
+        // TODO: Add something to prevent it from constantly switching
         const evaluations = members.map((member) => {
-            const ascensionPoints = member.getCurrentAscensionPoints(ns);
+            const stats = member.getGangMemberStats(ns);
             let score;
             if (isHacking)
-                score = ascensionPoints.hack + ascensionPoints.cha;
+                score = stats.hack + stats.cha;
             else
-                score = ascensionPoints.agi + ascensionPoints.str + ascensionPoints.dex + ascensionPoints.def + ascensionPoints.cha;
+                score = stats.agi + stats.str + stats.dex + stats.def + stats.cha;
+            score += member.getGangMemberInformation(ns).earnedRespect;
             return { member, score };
         }).sort((a, b) => b.score - a.score);
         return evaluations[0].member;
