@@ -142,6 +142,10 @@ class PurchasedServerRunner {
 	}
 
 	private shouldUpgrade(ns: NS, purpose: ServerPurpose): boolean {
+
+		// NOTE: This doesn't work at all, so
+		// TODO: Fix this
+
 		const serverMap: Server[] = (purpose === ServerPurpose.HACK) ? ServerAPI.getHackingServers(ns) : ServerAPI.getPreppingServers(ns)
 
 		const utilized: number = serverMap.reduce((subtotal, server) => subtotal + server.getUsedRam(ns), 0)

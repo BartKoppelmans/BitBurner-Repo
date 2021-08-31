@@ -20,16 +20,15 @@ export default class Server {
 	}
 
 	public getAvailableRam(ns: NS): number {
-		const [total, used] = ns.getServerRam(this.characteristics.host)
-		return total - used - this.reservation - ((ServerUtils.isHomeServer(this)) ? CONSTANT.DESIRED_HOME_FREE_RAM : 0)
+		return this.getTotalRam(ns) - this.getUsedRam(ns) - this.reservation - ((ServerUtils.isHomeServer(this)) ? CONSTANT.DESIRED_HOME_FREE_RAM : 0)
 	}
 
 	public getTotalRam(ns: NS): number {
-		return ns.getServerRam(this.characteristics.host)[0]
+		return ns.getServerMaxRam(this.characteristics.host)
 	}
 
 	public getUsedRam(ns: NS): number {
-		return ns.getServerRam(this.characteristics.host)[1]
+		return ns.getServerUsedRam(this.characteristics.host)
 	}
 
 	public isRooted(ns: NS): boolean {

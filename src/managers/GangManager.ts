@@ -20,7 +20,7 @@ const ASCENSION_MULTIPLIER_THRESHOLD: number = 5 as const
 const GANG_ALLOWANCE: number                 = 0.1 as const
 const WANTED_PENALTY_THRESHOLD: number       = 0.25 as const // Percentage
 const COMBAT_STAT_HIGH_THRESHOLD: number     = 5000 as const
-const COMBAT_STAT_LOW_THRESHOLD: number      = 100 as const
+const COMBAT_STAT_LOW_THRESHOLD: number      = 500 as const
 const MAX_GANG_MEMBERS: number               = 12 as const
 
 class GangManager implements Manager {
@@ -81,7 +81,7 @@ class GangManager implements Manager {
 		// Otherwise, perhaps consider not ascending the highest respect person
 
 		const gangInformation: GangGenInfo = ns.gang.getGangInformation()
-		const wantedPenalty: number        = (gangInformation.respect) / (gangInformation.respect + gangInformation.wantedLevel)
+		const wantedPenalty: number        = HomeGang.calculateWantedPenalty(ns, gangInformation)
 
 		return (wantedPenalty <= WANTED_PENALTY_THRESHOLD)
 	}
@@ -187,8 +187,10 @@ class GangManager implements Manager {
 
 		LogAPI.log(ns, `Reducing wanted level`, LogType.GANG)
 
-		const reductionTask: GangTask = GangTask.getTask(ns, 'Vigilante Justice')
-		members.forEach((member) => member.startTask(ns, reductionTask))
+		members.forEach((member) => {
+			member.startTask(ns, GangTask.getWantedLevelReductionTask(ns, member))
+		})
+
 		while (!GangManager.hasMinimumWantedLevel(ns)) {
 			await ns.sleep(LOOP_DELAY)
 		}
@@ -208,7 +210,7 @@ class GangManager implements Manager {
 			return member.startTask(ns, GangTask.getTerritoryWarfareTask(ns))
 		}
 
-		return member.startTask(ns, GangTask.getMoneyTask(ns))
+		return member.startTask(ns, GangTask.getMoneyTask(ns, member))
 	}
 
 	private manageBestMember(ns: NS, member: GangMember): void {
@@ -231,7 +233,7 @@ class GangManager implements Manager {
 			return member.startTask(ns, GangTask.getTerritoryWarfareTask(ns))
 		}
 
-		return member.startTask(ns, GangTask.getMoneyTask(ns))
+		return member.startTask(ns, GangTask.getMoneyTask(ns, member))
 	}
 
 	private upgradeMember(ns: NS, member: GangMember) {

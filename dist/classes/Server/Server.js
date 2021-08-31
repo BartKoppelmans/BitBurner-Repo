@@ -10,14 +10,13 @@ export default class Server {
         this.reservation = (server.reservation) ? server.reservation : 0;
     }
     getAvailableRam(ns) {
-        const [total, used] = ns.getServerRam(this.characteristics.host);
-        return total - used - this.reservation - ((ServerUtils.isHomeServer(this)) ? CONSTANT.DESIRED_HOME_FREE_RAM : 0);
+        return this.getTotalRam(ns) - this.getUsedRam(ns) - this.reservation - ((ServerUtils.isHomeServer(this)) ? CONSTANT.DESIRED_HOME_FREE_RAM : 0);
     }
     getTotalRam(ns) {
-        return ns.getServerRam(this.characteristics.host)[0];
+        return ns.getServerMaxRam(this.characteristics.host);
     }
     getUsedRam(ns) {
-        return ns.getServerRam(this.characteristics.host)[1];
+        return ns.getServerUsedRam(this.characteristics.host);
     }
     isRooted(ns) {
         return ns.hasRootAccess(this.characteristics.host);

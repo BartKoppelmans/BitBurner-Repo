@@ -113,6 +113,8 @@ class PurchasedServerRunner {
         return cost <= money;
     }
     shouldUpgrade(ns, purpose) {
+        // NOTE: This doesn't work at all, so
+        // TODO: Fix this
         const serverMap = (purpose === ServerPurpose.HACK) ? ServerAPI.getHackingServers(ns) : ServerAPI.getPreppingServers(ns);
         const utilized = serverMap.reduce((subtotal, server) => subtotal + server.getUsedRam(ns), 0);
         const total = serverMap.reduce((subtotal, server) => subtotal + server.getTotalRam(ns), 0);

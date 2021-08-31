@@ -16,7 +16,7 @@ const ASCENSION_MULTIPLIER_THRESHOLD = 5;
 const GANG_ALLOWANCE = 0.1;
 const WANTED_PENALTY_THRESHOLD = 0.25; // Percentage
 const COMBAT_STAT_HIGH_THRESHOLD = 5000;
-const COMBAT_STAT_LOW_THRESHOLD = 100;
+const COMBAT_STAT_LOW_THRESHOLD = 500;
 const MAX_GANG_MEMBERS = 12;
 class GangManager {
     constructor() {
@@ -56,7 +56,7 @@ class GangManager {
         // When respect and wanted are both (equally) low, we should gain more respect
         // Otherwise, perhaps consider not ascending the highest respect person
         const gangInformation = ns.gang.getGangInformation();
-        const wantedPenalty = (gangInformation.respect) / (gangInformation.respect + gangInformation.wantedLevel);
+        const wantedPenalty = HomeGang.calculateWantedPenalty(ns, gangInformation);
         return (wantedPenalty <= WANTED_PENALTY_THRESHOLD);
     }
     static hasMinimumWantedLevel(ns) {
@@ -135,8 +135,9 @@ class GangManager {
     }
     async reduceWantedLevel(ns, members) {
         LogAPI.log(ns, `Reducing wanted level`, LogType.GANG);
-        const reductionTask = GangTask.getTask(ns, 'Vigilante Justice');
-        members.forEach((member) => member.startTask(ns, reductionTask));
+        members.forEach((member) => {
+            member.startTask(ns, GangTask.getWantedLevelReductionTask(ns, member));
+        });
         while (!GangManager.hasMinimumWantedLevel(ns)) {
             await ns.sleep(LOOP_DELAY);
         }
@@ -150,7 +151,7 @@ class GangManager {
         if (!GangManager.canWinTerritoryWarfare(ns, this.homeGang, this.gangs)) {
             return member.startTask(ns, GangTask.getTerritoryWarfareTask(ns));
         }
-        return member.startTask(ns, GangTask.getMoneyTask(ns));
+        return member.startTask(ns, GangTask.getMoneyTask(ns, member));
     }
     manageBestMember(ns, member) {
         this.upgradeMember(ns, member);
@@ -166,7 +167,7 @@ class GangManager {
         if (!GangManager.canWinTerritoryWarfare(ns, this.homeGang, this.gangs)) {
             return member.startTask(ns, GangTask.getTerritoryWarfareTask(ns));
         }
-        return member.startTask(ns, GangTask.getMoneyTask(ns));
+        return member.startTask(ns, GangTask.getMoneyTask(ns, member));
     }
     upgradeMember(ns, member) {
         if (GangManager.shouldAscend(ns, member)) {
