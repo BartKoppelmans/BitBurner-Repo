@@ -22,6 +22,7 @@ const WANTED_PENALTY_THRESHOLD: number       = 0.25 as const // Percentage
 const COMBAT_STAT_HIGH_THRESHOLD: number     = 2500 as const
 const COMBAT_STAT_LOW_THRESHOLD: number      = 250 as const
 const MAX_GANG_MEMBERS: number               = 12 as const
+const CLASH_CHANCE_THRESHOLD: number         = 0.99 as const
 
 class GangManager implements Manager {
 
@@ -74,7 +75,7 @@ class GangManager implements Manager {
 	}
 
 	private static canWinTerritoryWarfare(ns: NS, homeGang: HomeGang, gangs: Gang[]): boolean {
-		return gangs.every((gang) => gang.getChanceToWinClash(ns) > 0.95)
+		return gangs.every((gang) => gang.getChanceToWinClash(ns) > CLASH_CHANCE_THRESHOLD)
 	}
 
 

@@ -18,6 +18,7 @@ const WANTED_PENALTY_THRESHOLD = 0.25; // Percentage
 const COMBAT_STAT_HIGH_THRESHOLD = 2500;
 const COMBAT_STAT_LOW_THRESHOLD = 250;
 const MAX_GANG_MEMBERS = 12;
+const CLASH_CHANCE_THRESHOLD = 0.99;
 class GangManager {
     constructor() {
         this.isReducingWantedLevel = false;
@@ -51,7 +52,7 @@ class GangManager {
         return average > level;
     }
     static canWinTerritoryWarfare(ns, homeGang, gangs) {
-        return gangs.every((gang) => gang.getChanceToWinClash(ns) > 0.95);
+        return gangs.every((gang) => gang.getChanceToWinClash(ns) > CLASH_CHANCE_THRESHOLD);
     }
     static shouldReduceWantedLevel(ns) {
         // TODO: Make sure that this takes respect into account more
