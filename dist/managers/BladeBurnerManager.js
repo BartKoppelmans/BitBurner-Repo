@@ -25,9 +25,6 @@ class BladeBurnerManager {
     static isTired(ns) {
         return BladeBurnerManager.getStaminaPercentage(ns) <= 50;
     }
-    shouldPreferContracts(ns) {
-        return this.canFinishBitNode(ns) || PlayerUtils.getMoney(ns) < MONEY_THRESHOLD;
-    }
     static shouldMove(ns, currentCity) {
         return currentCity.getPopulation(ns) < SYNTH_POPULATION_THRESHOLD;
     }
@@ -67,6 +64,9 @@ class BladeBurnerManager {
             clearTimeout(this.managingLoopTimeout);
         ns.bladeburner.stopBladeburnerAction();
         LogAPI.debug(ns, `Stopping the BladeBurnerManager`);
+    }
+    shouldPreferContracts(ns) {
+        return this.canFinishBitNode(ns) || PlayerUtils.getMoney(ns) < MONEY_THRESHOLD;
     }
     canFinishBitNode(ns) {
         // We try to do the next BlackOp if possible

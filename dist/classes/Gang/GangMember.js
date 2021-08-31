@@ -1,3 +1,4 @@
+import GangTask from '/src/classes/Gang/GangTask.js';
 import GangUpgrade from '/src/classes/Gang/GangUpgrade.js';
 import * as LogAPI from '/src/api/LogAPI.js';
 import { LogType } from '/src/api/LogAPI.js';
@@ -6,11 +7,38 @@ export default class GangMember {
         this.name = name;
         this.upgrades = GangUpgrade.getMemberUpgrades(ns, this.name);
     }
-    getStats(ns) {
+    getCurrentTask(ns) {
+        const taskName = this.getGangMemberInformation(ns).task;
+        return GangTask.getTask(ns, taskName);
+    }
+    static getAllGangMembers(ns) {
+        const names = ns.gang.getMemberNames();
+        return names.map((name) => new GangMember(ns, name));
+    }
+    static calculateAscensionMultiplier(points) {
+        return Math.max(Math.pow(points / 4000, 0.7), 1);
+    }
+    getGangMemberInformation(ns) {
         return ns.gang.getMemberInformation(this.name);
     }
+    getGangMemberStats(ns) {
+        const gangMemberInformation = this.getGangMemberInformation(ns);
+        return {
+            hack: gangMemberInformation.hack,
+            str: gangMemberInformation.str,
+            def: gangMemberInformation.def,
+            dex: gangMemberInformation.dex,
+            agi: gangMemberInformation.agi,
+            cha: gangMemberInformation.cha,
+        };
+    }
     startTask(ns, task) {
-        ns.gang.setMemberTask(this.name, task.name);
+        const currentTask = this.getCurrentTask(ns);
+        if (currentTask.name !== task.name) {
+            ns.gang.setMemberTask(this.name, task.name);
+            if (task.name !== 'Unassigned')
+                LogAPI.log(ns, `Gang member '${this.name}' is starting task '${task.name}'`, LogType.GANG);
+        }
     }
     ascend(ns) {
         const results = ns.gang.ascendMember(this.name);
@@ -24,14 +52,11 @@ export default class GangMember {
     }
     purchaseUpgrade(ns, upgrade) {
         const isSuccessful = ns.gang.purchaseEquipment(this.name, upgrade.name);
-        if (!isSuccessful)
-            LogAPI.warn(ns, `Could not successfully purchase ${upgrade.name}`);
-        else {
+        if (isSuccessful)
             this.upgrades.push(upgrade);
-            LogAPI.log(ns, `Purchased ${upgrade.name} for ${this.name}`, LogType.GANG);
-        }
+        return isSuccessful;
     }
-    getAscensionPoints(ns) {
+    getCurrentAscensionPoints(ns) {
         const memberInformation = ns.gang.getMemberInformation(this.name);
         return {
             hack: memberInformation.hack_asc_points,
@@ -40,6 +65,18 @@ export default class GangMember {
             dex: memberInformation.dex_asc_points,
             agi: memberInformation.agi_asc_points,
             cha: memberInformation.cha_asc_points,
+        };
+    }
+    getAscensionResults(ns) {
+        const currentPoints = this.getCurrentAscensionPoints(ns);
+        const newPoints = this.getNewAscensionPoints(ns);
+        return {
+            hack: GangMember.calculateAscensionMultiplier(currentPoints.hack + newPoints.hack) / GangMember.calculateAscensionMultiplier(currentPoints.hack),
+            str: GangMember.calculateAscensionMultiplier(currentPoints.str + newPoints.str) / GangMember.calculateAscensionMultiplier(currentPoints.str),
+            def: GangMember.calculateAscensionMultiplier(currentPoints.def + newPoints.def) / GangMember.calculateAscensionMultiplier(currentPoints.def),
+            dex: GangMember.calculateAscensionMultiplier(currentPoints.dex + newPoints.dex) / GangMember.calculateAscensionMultiplier(currentPoints.dex),
+            agi: GangMember.calculateAscensionMultiplier(currentPoints.agi + newPoints.agi) / GangMember.calculateAscensionMultiplier(currentPoints.agi),
+            cha: GangMember.calculateAscensionMultiplier(currentPoints.cha + newPoints.cha) / GangMember.calculateAscensionMultiplier(currentPoints.cha),
         };
     }
     getNewAscensionPoints(ns) {
@@ -52,24 +89,5 @@ export default class GangMember {
             agi: Math.max(memberInformation.agi_exp - 1000, 0),
             cha: Math.max(memberInformation.cha_exp - 1000, 0),
         };
-    }
-    static calculateAscensionMultiplier(points) {
-        return Math.max(Math.pow(points / 4000, 0.7), 1);
-    }
-    getAscensionResults(ns) {
-        const currentPoints = this.getAscensionPoints(ns);
-        const newPoints = this.getNewAscensionPoints(ns);
-        return {
-            hack: GangMember.calculateAscensionMultiplier(currentPoints.hack + newPoints.hack) / GangMember.calculateAscensionMultiplier(currentPoints.hack),
-            str: GangMember.calculateAscensionMultiplier(currentPoints.str + newPoints.str) / GangMember.calculateAscensionMultiplier(currentPoints.str),
-            def: GangMember.calculateAscensionMultiplier(currentPoints.def + newPoints.def) / GangMember.calculateAscensionMultiplier(currentPoints.def),
-            dex: GangMember.calculateAscensionMultiplier(currentPoints.dex + newPoints.dex) / GangMember.calculateAscensionMultiplier(currentPoints.dex),
-            agi: GangMember.calculateAscensionMultiplier(currentPoints.agi + newPoints.agi) / GangMember.calculateAscensionMultiplier(currentPoints.agi),
-            cha: GangMember.calculateAscensionMultiplier(currentPoints.cha + newPoints.cha) / GangMember.calculateAscensionMultiplier(currentPoints.cha),
-        };
-    }
-    static getAllGangMembers(ns) {
-        const names = ns.gang.getMemberNames();
-        return names.map((name) => new GangMember(ns, name));
     }
 }

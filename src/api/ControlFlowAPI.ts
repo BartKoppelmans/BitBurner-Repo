@@ -37,7 +37,7 @@ export async function launchRunner(ns: NS, script: string): Promise<void> {
 }
 
 export function hasDaemonKillRequest(ns: NS): boolean {
-	const requestPortHandle = ns.getPortHandle(CONSTANT.CONTROL_FLOW_PORT)
+	const requestPortHandle: any = ns.getPortHandle(CONSTANT.CONTROL_FLOW_PORT)
 	if (requestPortHandle.empty()) return false
 
 	// We only peek, as we want to be sure that we have a request for the daemon
@@ -53,7 +53,7 @@ export function hasDaemonKillRequest(ns: NS): boolean {
 }
 
 export function hasManagerKillRequest(ns: NS): boolean {
-	const requestPortHandle = ns.getPortHandle(CONSTANT.CONTROL_FLOW_PORT)
+	const requestPortHandle: any = ns.getPortHandle(CONSTANT.CONTROL_FLOW_PORT)
 	if (requestPortHandle.empty()) return false
 
 	// We only peek, as we want to wait until daemon finishes first if that is a request
@@ -70,7 +70,7 @@ export function clearPorts(ns: NS): void {
 }
 
 export async function killDaemon(ns: NS): Promise<void> {
-	const requestPortHandle = ns.getPortHandle(CONSTANT.CONTROL_FLOW_PORT)
+	const requestPortHandle: any = ns.getPortHandle(CONSTANT.CONTROL_FLOW_PORT)
 
 	while (requestPortHandle.full()) {
 		await ns.sleep(CONSTANT.PORT_FULL_RETRY_TIME)
@@ -95,7 +95,7 @@ export async function killAllManagers(ns: NS): Promise<void> {
 
 	// TODO: Perhaps move this to each API individually? Then we also know which one failed.
 
-	const requestPortHandle = ns.getPortHandle(CONSTANT.CONTROL_FLOW_PORT)
+	const requestPortHandle: any = ns.getPortHandle(CONSTANT.CONTROL_FLOW_PORT)
 
 	while (requestPortHandle.full()) {
 		await ns.sleep(CONSTANT.PORT_FULL_RETRY_TIME)

@@ -1,61 +1,96 @@
-import type { BitBurner as NS, FactionName } from 'Bitburner'
-import * as ControlFlowAPI                   from '/src/api/ControlFlowAPI.js'
-import * as LogAPI                           from '/src/api/LogAPI.js'
-import { LogType }                           from '/src/api/LogAPI.js'
-import * as Utils                            from '/src/util/Utils.js'
-import * as GangUtils                        from '/src/util/GangUtils.js'
-import { Manager }                           from '/src/classes/Misc/ScriptInterfaces.js'
-import { CONSTANT }                          from '/src/lib/constants.js'
-import GangMember                            from '/src/classes/Gang/GangMember.js'
-import GangTask                              from '/src/classes/Gang/GangTask.js'
-import { GangAscensionPoints }               from '/src/classes/Gang/GangInterfaces.js'
-import GangUpgrade                           from '/src/classes/Gang/GangUpgrade.js'
-import * as PlayerUtils                      from '/src/util/PlayerUtils.js'
+import type { BitBurner as NS, FactionName, GangGenInfo }             from 'Bitburner'
+import * as ControlFlowAPI                                            from '/src/api/ControlFlowAPI.js'
+import * as LogAPI                                                    from '/src/api/LogAPI.js'
+import { LogType }                                                    from '/src/api/LogAPI.js'
+import * as Utils                                                     from '/src/util/Utils.js'
+import * as GangUtils                                                 from '/src/util/GangUtils.js'
+import { Manager }                                                    from '/src/classes/Misc/ScriptInterfaces.js'
+import { CONSTANT }                                                   from '/src/lib/constants.js'
+import GangMember                                                     from '/src/classes/Gang/GangMember.js'
+import GangTask                                                       from '/src/classes/Gang/GangTask.js'
+import { GangAscensionPoints, GangMemberEvaluation, GangMemberStats } from '/src/classes/Gang/GangInterfaces.js'
+import GangUpgrade                                                    from '/src/classes/Gang/GangUpgrade.js'
+import * as PlayerUtils                                               from '/src/util/PlayerUtils.js'
+import HomeGang                                                       from '/src/classes/Gang/HomeGang.js'
+import Gang                                                           from '/src/classes/Gang/Gang.js'
 
-const MANAGING_LOOP_DELAY: number            = 1000 as const
+const LOOP_DELAY: number                     = 10000 as const
 const CREATE_GANG_DELAY: number              = 10000 as const
-const ASCENSION_MULTIPLIER_THRESHOLD: number = 2 as const
+const ASCENSION_MULTIPLIER_THRESHOLD: number = 5 as const
 const GANG_ALLOWANCE: number                 = 0.1 as const
+const WANTED_PENALTY_THRESHOLD: number       = 0.25 as const // Percentage
+const COMBAT_STAT_HIGH_THRESHOLD: number     = 1000 as const
+const COMBAT_STAT_LOW_THRESHOLD: number      = 100 as const
+const MAX_GANG_MEMBERS: number               = 12 as const
 
 class GangManager implements Manager {
 
 	private managingLoopTimeout?: ReturnType<typeof setTimeout>
 
-	private members: GangMember[]   = []
-	private upgrades: GangUpgrade[] = []
+	private gangs!: Gang[]
+	private homeGang!: HomeGang
+	private upgrades!: GangUpgrade[]
 
-	public async initialize(ns: NS) {
-		Utils.disableLogging(ns)
+	private isReducingWantedLevel: boolean = false
 
-		await GangManager.createGang(ns)
+	private static getBestMember(ns: NS, members: GangMember[]): GangMember {
+		const isHacking: boolean = GangUtils.isHackingGang(ns)
 
-		this.members  = GangMember.getAllGangMembers(ns)
-		this.upgrades = GangUpgrade.getAllUpgrades(ns)
+		const evaluations: GangMemberEvaluation[] = members.map((member) => {
+			const ascensionPoints: GangAscensionPoints = member.getCurrentAscensionPoints(ns)
+			let score: number
+
+			if (isHacking) score = ascensionPoints.hack + ascensionPoints.cha
+			else score = ascensionPoints.agi + ascensionPoints.str + ascensionPoints.dex + ascensionPoints.def + ascensionPoints.cha
+
+			return { member, score }
+		}).sort((a, b) => b.score - a.score)
+
+		return evaluations[0].member
 	}
 
-	public async start(ns: NS): Promise<void> {
-		LogAPI.debug(ns, `Starting the GangManager`)
 
-
-		this.managingLoopTimeout = setTimeout(this.managingLoop.bind(this, ns), MANAGING_LOOP_DELAY)
+	private static getNumMembers(ns: NS): number {
+		return ns.gang.getMemberNames().length
 	}
 
-	public async destroy(ns: NS): Promise<void> {
-		if (this.managingLoopTimeout) clearTimeout(this.managingLoopTimeout)
-
-		LogAPI.debug(ns, `Stopping the GangManager`)
+	// TODO: Move this to the gang manager
+	private static hasMaximumGangMembers(ns: NS): boolean {
+		return GangManager.getNumMembers(ns) >= MAX_GANG_MEMBERS
 	}
 
-	private async managingLoop(ns: NS): Promise<void> {
+	private static hasReachedCombatStatsLevel(ns: NS, member: GangMember, level: number): boolean {
+		const gangMemberStats: GangMemberStats = member.getGangMemberStats(ns)
 
-		while (ns.gang.canRecruitMember()) {
-			this.recruitMember(ns)
-			await ns.sleep(CONSTANT.SMALL_DELAY)
+		let hasReached: boolean = true
+		for (const [key, value] of Object.entries(gangMemberStats)) {
+			if (key !== 'cha' && key !== 'hack') {
+				hasReached = hasReached && (value >= level)
+			}
 		}
 
-		this.members.forEach((member) => this.manageMember(ns, member))
+		return hasReached
+	}
 
-		this.managingLoopTimeout = setTimeout(this.managingLoop.bind(this, ns), MANAGING_LOOP_DELAY)
+	private static shouldDoTerritoryWarfare(ns: NS, homeGang: HomeGang, gangs: Gang[]): boolean {
+
+		// TODO: Actually calculate this
+
+		return true
+	}
+
+
+	private static shouldReduceWantedLevel(ns: NS): boolean {
+		const gangInformation: GangGenInfo = ns.gang.getGangInformation()
+		const wantedPenalty: number        = (gangInformation.respect) / (gangInformation.respect + gangInformation.wantedLevel)
+
+		return (wantedPenalty <= WANTED_PENALTY_THRESHOLD)
+	}
+
+	private static hasMinimumWantedLevel(ns: NS): boolean {
+		const gangInformation: GangGenInfo = ns.gang.getGangInformation()
+
+		return (gangInformation.wantedLevel === 1)
 	}
 
 	private static async createGang(ns: NS): Promise<void> {
@@ -76,24 +111,6 @@ class GangManager implements Manager {
 		}
 	}
 
-	private manageMember(ns: NS, member: GangMember): void {
-
-		if (GangManager.shouldAscend(ns, member)) {
-			member.ascend(ns)
-		}
-
-		let remainingUpgrades: GangUpgrade[] = this.upgrades.filter((upgrade) => !member.upgrades.some((memberUpgrade) => upgrade.name === memberUpgrade.name))
-		remainingUpgrades                    = GangUpgrade.sortUpgrades(ns, remainingUpgrades)
-
-		for (const upgrade of remainingUpgrades) {
-			if (GangManager.canAfford(ns, upgrade)) {
-				member.purchaseUpgrade(ns, upgrade)
-			}
-		}
-
-		// TODO: Assign tasks
-	}
-
 	private static shouldAscend(ns: NS, member: GangMember): boolean {
 		const ascensionResults: GangAscensionPoints = member.getAscensionResults(ns)
 		return ascensionResults.hack * ascensionResults.str * ascensionResults.def * ascensionResults.dex * ascensionResults.agi * ascensionResults.cha >= ASCENSION_MULTIPLIER_THRESHOLD
@@ -104,17 +121,134 @@ class GangManager implements Manager {
 		return upgrade.cost <= money
 	}
 
-	private recruitMember(ns: NS): void {
+	private static recruitMember(ns: NS): GangMember | null {
 		const name: string          = GangUtils.generateName(ns)
 		const isSuccessful: boolean = ns.gang.recruitMember(name)
 		if (!isSuccessful) {
 			LogAPI.warn(ns, `Failed to recruit a new member`)
-			return
+			return null
 		} else LogAPI.log(ns, `Recruited new gang member '${name}'`, LogType.GANG)
 
-		const member: GangMember = new GangMember(ns, name)
-		member.startTask(ns, new GangTask(ns, 'Ransomware'))
-		this.members.push(member)
+		return new GangMember(ns, name)
+	}
+
+	public async initialize(ns: NS) {
+		Utils.disableLogging(ns)
+
+		await GangManager.createGang(ns)
+
+		this.upgrades = GangUpgrade.getAllUpgrades(ns)
+		this.gangs    = Gang.getGangs(ns)
+		this.homeGang = HomeGang.getHomeGang(ns)
+	}
+
+	public async start(ns: NS): Promise<void> {
+		LogAPI.debug(ns, `Starting the GangManager`)
+
+		this.managingLoopTimeout = setTimeout(this.managingLoop.bind(this, ns), LOOP_DELAY)
+	}
+
+	public async destroy(ns: NS): Promise<void> {
+		if (this.managingLoopTimeout) clearTimeout(this.managingLoopTimeout)
+
+		const members: GangMember[] = GangMember.getAllGangMembers(ns)
+		members.forEach((member) => member.startTask(ns, GangTask.getUnassignedTask(ns)))
+
+		LogAPI.debug(ns, `Stopping the GangManager`)
+	}
+
+	private async managingLoop(ns: NS): Promise<void> {
+
+		while (ns.gang.canRecruitMember()) {
+			const newMember: GangMember | null = GangManager.recruitMember(ns)
+			if (newMember) this.upgradeMember(ns, newMember)
+			await ns.sleep(CONSTANT.SMALL_DELAY)
+		}
+
+		const members: GangMember[] = GangMember.getAllGangMembers(ns)
+
+		if (GangManager.shouldReduceWantedLevel(ns)) {
+			await this.reduceWantedLevel(ns, members)
+		}
+
+		const bestMember: GangMember     = GangManager.getBestMember(ns, members)
+		const otherMembers: GangMember[] = members.filter((member) => member.name !== bestMember.name)
+
+		this.manageBestMember(ns, bestMember)
+		otherMembers.forEach((member) => this.manageMember(ns, member))
+
+		this.managingLoopTimeout = setTimeout(this.managingLoop.bind(this, ns), LOOP_DELAY)
+	}
+
+	private async reduceWantedLevel(ns: NS, members: GangMember[]): Promise<void> {
+
+		LogAPI.log(ns, `Reducing wanted level`, LogType.GANG)
+
+		const reductionTask: GangTask = GangTask.getTask(ns, 'Vigilante Justice')
+		members.forEach((member) => member.startTask(ns, reductionTask))
+		while (!GangManager.hasMinimumWantedLevel(ns)) {
+			await ns.sleep(LOOP_DELAY)
+		}
+	}
+
+	private manageMember(ns: NS, member: GangMember): void {
+
+		this.upgradeMember(ns, member)
+
+		if (!GangManager.hasReachedCombatStatsLevel(ns, member, COMBAT_STAT_HIGH_THRESHOLD)) {
+			return member.startTask(ns, GangTask.getTrainTask(ns))
+		}
+
+		if (GangManager.shouldDoTerritoryWarfare(ns, this.homeGang, this.gangs)) {
+			return member.startTask(ns, GangTask.getTerritoryWarfareTask(ns))
+		}
+
+		return member.startTask(ns, GangTask.getMoneyTask(ns))
+	}
+
+	private manageBestMember(ns: NS, member: GangMember): void {
+
+		this.upgradeMember(ns, member)
+
+		if (!GangManager.hasReachedCombatStatsLevel(ns, member, COMBAT_STAT_LOW_THRESHOLD)) {
+			return member.startTask(ns, GangTask.getTrainTask(ns))
+		}
+
+		if (!GangManager.hasMaximumGangMembers(ns)) {
+			return member.startTask(ns, GangTask.getRespectTask(ns, member))
+		}
+
+		if (!GangManager.hasReachedCombatStatsLevel(ns, member, COMBAT_STAT_HIGH_THRESHOLD)) {
+			return member.startTask(ns, GangTask.getTrainTask(ns))
+		}
+
+		if (GangManager.shouldDoTerritoryWarfare(ns, this.homeGang, this.gangs)) {
+			return member.startTask(ns, GangTask.getTerritoryWarfareTask(ns))
+		}
+
+		return member.startTask(ns, GangTask.getMoneyTask(ns))
+	}
+
+	private upgradeMember(ns: NS, member: GangMember) {
+		if (GangManager.shouldAscend(ns, member)) {
+			member.ascend(ns)
+		}
+
+		let remainingUpgrades: GangUpgrade[] = this.upgrades.filter((upgrade) => !member.upgrades.some((memberUpgrade) => upgrade.name === memberUpgrade.name))
+		remainingUpgrades                    = GangUpgrade.sortUpgrades(ns, remainingUpgrades)
+
+		let numUpgrades: number = 0
+		for (const upgrade of remainingUpgrades) {
+			if (GangManager.canAfford(ns, upgrade)) {
+				const isSuccessful: boolean = member.purchaseUpgrade(ns, upgrade)
+				if (!isSuccessful) LogAPI.warn(ns, `Could not successfully purchase ${upgrade.name}`)
+				else numUpgrades++
+			}
+		}
+
+		if (numUpgrades > 0) {
+			LogAPI.log(ns, `Purchased ${numUpgrades} for ${member.name}`, LogType.GANG)
+		}
 	}
 }
 

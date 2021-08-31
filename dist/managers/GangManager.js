@@ -8,37 +8,62 @@ import GangMember from '/src/classes/Gang/GangMember.js';
 import GangTask from '/src/classes/Gang/GangTask.js';
 import GangUpgrade from '/src/classes/Gang/GangUpgrade.js';
 import * as PlayerUtils from '/src/util/PlayerUtils.js';
-const MANAGING_LOOP_DELAY = 1000;
+import HomeGang from '/src/classes/Gang/HomeGang.js';
+import Gang from '/src/classes/Gang/Gang.js';
+const LOOP_DELAY = 10000;
 const CREATE_GANG_DELAY = 10000;
-const ASCENSION_MULTIPLIER_THRESHOLD = 2;
+const ASCENSION_MULTIPLIER_THRESHOLD = 5;
 const GANG_ALLOWANCE = 0.1;
+const WANTED_PENALTY_THRESHOLD = 0.25; // Percentage
+const COMBAT_STAT_HIGH_THRESHOLD = 1000;
+const COMBAT_STAT_LOW_THRESHOLD = 100;
+const MAX_GANG_MEMBERS = 12;
 class GangManager {
     constructor() {
-        this.members = [];
-        this.upgrades = [];
+        this.isReducingWantedLevel = false;
     }
-    async initialize(ns) {
-        Utils.disableLogging(ns);
-        await GangManager.createGang(ns);
-        this.members = GangMember.getAllGangMembers(ns);
-        this.upgrades = GangUpgrade.getAllUpgrades(ns);
+    static getBestMember(ns, members) {
+        const isHacking = GangUtils.isHackingGang(ns);
+        const evaluations = members.map((member) => {
+            const ascensionPoints = member.getCurrentAscensionPoints(ns);
+            let score;
+            if (isHacking)
+                score = ascensionPoints.hack + ascensionPoints.cha;
+            else
+                score = ascensionPoints.agi + ascensionPoints.str + ascensionPoints.dex + ascensionPoints.def + ascensionPoints.cha;
+            return { member, score };
+        }).sort((a, b) => b.score - a.score);
+        return evaluations[0].member;
     }
-    async start(ns) {
-        LogAPI.debug(ns, `Starting the GangManager`);
-        this.managingLoopTimeout = setTimeout(this.managingLoop.bind(this, ns), MANAGING_LOOP_DELAY);
+    static getNumMembers(ns) {
+        return ns.gang.getMemberNames().length;
     }
-    async destroy(ns) {
-        if (this.managingLoopTimeout)
-            clearTimeout(this.managingLoopTimeout);
-        LogAPI.debug(ns, `Stopping the GangManager`);
+    // TODO: Move this to the gang manager
+    static hasMaximumGangMembers(ns) {
+        return GangManager.getNumMembers(ns) >= MAX_GANG_MEMBERS;
     }
-    async managingLoop(ns) {
-        while (ns.gang.canRecruitMember()) {
-            this.recruitMember(ns);
-            await ns.sleep(CONSTANT.SMALL_DELAY);
+    static hasReachedCombatStatsLevel(ns, member, level) {
+        const gangMemberStats = member.getGangMemberStats(ns);
+        let hasReached = true;
+        for (const [key, value] of Object.entries(gangMemberStats)) {
+            if (key !== 'cha' && key !== 'hack') {
+                hasReached = hasReached && (value >= level);
+            }
         }
-        this.members.forEach((member) => this.manageMember(ns, member));
-        this.managingLoopTimeout = setTimeout(this.managingLoop.bind(this, ns), MANAGING_LOOP_DELAY);
+        return hasReached;
+    }
+    static shouldDoTerritoryWarfare(ns, homeGang, gangs) {
+        // TODO: Actually calculate this
+        return true;
+    }
+    static shouldReduceWantedLevel(ns) {
+        const gangInformation = ns.gang.getGangInformation();
+        const wantedPenalty = (gangInformation.respect) / (gangInformation.respect + gangInformation.wantedLevel);
+        return (wantedPenalty <= WANTED_PENALTY_THRESHOLD);
+    }
+    static hasMinimumWantedLevel(ns) {
+        const gangInformation = ns.gang.getGangInformation();
+        return (gangInformation.wantedLevel === 1);
     }
     static async createGang(ns) {
         while (!ns.gang.inGang()) {
@@ -54,19 +79,6 @@ class GangManager {
             ns.gang.createGang('Slum Snakes');
         }
     }
-    manageMember(ns, member) {
-        if (GangManager.shouldAscend(ns, member)) {
-            member.ascend(ns);
-        }
-        let remainingUpgrades = this.upgrades.filter((upgrade) => !member.upgrades.some((memberUpgrade) => upgrade.name === memberUpgrade.name));
-        remainingUpgrades = GangUpgrade.sortUpgrades(ns, remainingUpgrades);
-        for (const upgrade of remainingUpgrades) {
-            if (GangManager.canAfford(ns, upgrade)) {
-                member.purchaseUpgrade(ns, upgrade);
-            }
-        }
-        // TODO: Assign tasks
-    }
     static shouldAscend(ns, member) {
         const ascensionResults = member.getAscensionResults(ns);
         return ascensionResults.hack * ascensionResults.str * ascensionResults.def * ascensionResults.dex * ascensionResults.agi * ascensionResults.cha >= ASCENSION_MULTIPLIER_THRESHOLD;
@@ -75,18 +87,105 @@ class GangManager {
         const money = PlayerUtils.getMoney(ns) * GANG_ALLOWANCE;
         return upgrade.cost <= money;
     }
-    recruitMember(ns) {
+    static recruitMember(ns) {
         const name = GangUtils.generateName(ns);
         const isSuccessful = ns.gang.recruitMember(name);
         if (!isSuccessful) {
             LogAPI.warn(ns, `Failed to recruit a new member`);
-            return;
+            return null;
         }
         else
             LogAPI.log(ns, `Recruited new gang member '${name}'`, LogType.GANG);
-        const member = new GangMember(ns, name);
-        member.startTask(ns, new GangTask(ns, 'Ransomware'));
-        this.members.push(member);
+        return new GangMember(ns, name);
+    }
+    async initialize(ns) {
+        Utils.disableLogging(ns);
+        await GangManager.createGang(ns);
+        this.upgrades = GangUpgrade.getAllUpgrades(ns);
+        this.gangs = Gang.getGangs(ns);
+        this.homeGang = HomeGang.getHomeGang(ns);
+    }
+    async start(ns) {
+        LogAPI.debug(ns, `Starting the GangManager`);
+        this.managingLoopTimeout = setTimeout(this.managingLoop.bind(this, ns), LOOP_DELAY);
+    }
+    async destroy(ns) {
+        if (this.managingLoopTimeout)
+            clearTimeout(this.managingLoopTimeout);
+        const members = GangMember.getAllGangMembers(ns);
+        members.forEach((member) => member.startTask(ns, GangTask.getUnassignedTask(ns)));
+        LogAPI.debug(ns, `Stopping the GangManager`);
+    }
+    async managingLoop(ns) {
+        while (ns.gang.canRecruitMember()) {
+            const newMember = GangManager.recruitMember(ns);
+            if (newMember)
+                this.upgradeMember(ns, newMember);
+            await ns.sleep(CONSTANT.SMALL_DELAY);
+        }
+        const members = GangMember.getAllGangMembers(ns);
+        if (GangManager.shouldReduceWantedLevel(ns)) {
+            await this.reduceWantedLevel(ns, members);
+        }
+        const bestMember = GangManager.getBestMember(ns, members);
+        const otherMembers = members.filter((member) => member.name !== bestMember.name);
+        this.manageBestMember(ns, bestMember);
+        otherMembers.forEach((member) => this.manageMember(ns, member));
+        this.managingLoopTimeout = setTimeout(this.managingLoop.bind(this, ns), LOOP_DELAY);
+    }
+    async reduceWantedLevel(ns, members) {
+        LogAPI.log(ns, `Reducing wanted level`, LogType.GANG);
+        const reductionTask = GangTask.getTask(ns, 'Vigilante Justice');
+        members.forEach((member) => member.startTask(ns, reductionTask));
+        while (!GangManager.hasMinimumWantedLevel(ns)) {
+            await ns.sleep(LOOP_DELAY);
+        }
+    }
+    manageMember(ns, member) {
+        this.upgradeMember(ns, member);
+        if (!GangManager.hasReachedCombatStatsLevel(ns, member, COMBAT_STAT_HIGH_THRESHOLD)) {
+            return member.startTask(ns, GangTask.getTrainTask(ns));
+        }
+        if (GangManager.shouldDoTerritoryWarfare(ns, this.homeGang, this.gangs)) {
+            return member.startTask(ns, GangTask.getTerritoryWarfareTask(ns));
+        }
+        return member.startTask(ns, GangTask.getMoneyTask(ns));
+    }
+    manageBestMember(ns, member) {
+        this.upgradeMember(ns, member);
+        if (!GangManager.hasReachedCombatStatsLevel(ns, member, COMBAT_STAT_LOW_THRESHOLD)) {
+            return member.startTask(ns, GangTask.getTrainTask(ns));
+        }
+        if (!GangManager.hasMaximumGangMembers(ns)) {
+            return member.startTask(ns, GangTask.getRespectTask(ns, member));
+        }
+        if (!GangManager.hasReachedCombatStatsLevel(ns, member, COMBAT_STAT_HIGH_THRESHOLD)) {
+            return member.startTask(ns, GangTask.getTrainTask(ns));
+        }
+        if (GangManager.shouldDoTerritoryWarfare(ns, this.homeGang, this.gangs)) {
+            return member.startTask(ns, GangTask.getTerritoryWarfareTask(ns));
+        }
+        return member.startTask(ns, GangTask.getMoneyTask(ns));
+    }
+    upgradeMember(ns, member) {
+        if (GangManager.shouldAscend(ns, member)) {
+            member.ascend(ns);
+        }
+        let remainingUpgrades = this.upgrades.filter((upgrade) => !member.upgrades.some((memberUpgrade) => upgrade.name === memberUpgrade.name));
+        remainingUpgrades = GangUpgrade.sortUpgrades(ns, remainingUpgrades);
+        let numUpgrades = 0;
+        for (const upgrade of remainingUpgrades) {
+            if (GangManager.canAfford(ns, upgrade)) {
+                const isSuccessful = member.purchaseUpgrade(ns, upgrade);
+                if (!isSuccessful)
+                    LogAPI.warn(ns, `Could not successfully purchase ${upgrade.name}`);
+                else
+                    numUpgrades++;
+            }
+        }
+        if (numUpgrades > 0) {
+            LogAPI.log(ns, `Purchased ${numUpgrades} for ${member.name}`, LogType.GANG);
+        }
     }
 }
 export async function start(ns) {

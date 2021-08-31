@@ -40,10 +40,6 @@ class BladeBurnerManager implements Manager {
 		return BladeBurnerManager.getStaminaPercentage(ns) <= 50
 	}
 
-	private shouldPreferContracts(ns: NS): boolean {
-		return this.canFinishBitNode(ns) || PlayerUtils.getMoney(ns) < MONEY_THRESHOLD
-	}
-
 	private static shouldMove(ns: NS, currentCity: BBCity): boolean {
 		return currentCity.getPopulation(ns) < SYNTH_POPULATION_THRESHOLD
 	}
@@ -95,6 +91,10 @@ class BladeBurnerManager implements Manager {
 		ns.bladeburner.stopBladeburnerAction()
 
 		LogAPI.debug(ns, `Stopping the BladeBurnerManager`)
+	}
+
+	private shouldPreferContracts(ns: NS): boolean {
+		return this.canFinishBitNode(ns) || PlayerUtils.getMoney(ns) < MONEY_THRESHOLD
 	}
 
 	private canFinishBitNode(ns: NS): boolean {
