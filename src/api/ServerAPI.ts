@@ -77,6 +77,19 @@ export function addServer(ns: NS, server: Server): void {
 	writeServerMap(ns, serverMap)
 }
 
+export function getServerUtilization(ns: NS, serverPurpose?: ServerPurpose): number {
+
+	let serverMap: Server[]
+	if (serverPurpose === ServerPurpose.HACK) serverMap = getHackingServers(ns)
+	else if (serverPurpose === ServerPurpose.PREP) serverMap = getPreppingServers(ns)
+	else serverMap = getServerMap(ns).servers
+
+	const utilized: number = serverMap.reduce((subtotal, server) => subtotal + server.getUsedRam(ns), 0)
+	const total: number    = serverMap.reduce((subtotal, server) => subtotal + server.getTotalRam(ns), 0)
+
+	return (utilized / total)
+}
+
 export function quarantine(ns: NS, host: string, ram: number): void {
 	const server: Server = getServerByName(ns, host)
 

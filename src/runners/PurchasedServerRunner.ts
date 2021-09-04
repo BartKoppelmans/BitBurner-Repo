@@ -6,7 +6,6 @@ import { PurchasedServerCharacteristics, ServerPurpose, ServerType } from '/src/
 import * as Utils                                                    from '/src/util/Utils.js'
 import PurchasedServer                                               from '/src/classes/Server/PurchasedServer.js'
 import * as PlayerUtils                                              from '/src/util/PlayerUtils.js'
-import Server                                                        from '/src/classes/Server/Server.js'
 import { CONSTANT }                                                  from '/src/lib/constants.js'
 
 const MIN_RAM_EXPONENT: number      = 4 as const
@@ -97,8 +96,8 @@ class PurchasedServerRunner {
 			}
 		}
 
-		const shouldUpgradePrep: boolean = this.shouldUpgrade(ns, ServerPurpose.PREP)
-		const shouldUpgradeHack: boolean = this.shouldUpgrade(ns, ServerPurpose.HACK)
+		const shouldUpgradePrep: boolean = PurchasedServerRunner.shouldUpgrade(ns, ServerPurpose.PREP)
+		const shouldUpgradeHack: boolean = PurchasedServerRunner.shouldUpgrade(ns, ServerPurpose.HACK)
 
 		if (!shouldUpgradeHack && !shouldUpgradePrep) return
 
@@ -141,17 +140,9 @@ class PurchasedServerRunner {
 		return cost <= money
 	}
 
-	private shouldUpgrade(ns: NS, purpose: ServerPurpose): boolean {
-
-		// NOTE: This doesn't work at all, so
-		// TODO: Fix this
-
-		const serverMap: Server[] = (purpose === ServerPurpose.HACK) ? ServerAPI.getHackingServers(ns) : ServerAPI.getPreppingServers(ns)
-
-		const utilized: number = serverMap.reduce((subtotal, server) => subtotal + server.getUsedRam(ns), 0)
-		const total: number    = serverMap.reduce((subtotal, server) => subtotal + server.getTotalRam(ns), 0)
-
-		return ((utilized / total) > UTILIZATION_THRESHOLD)
+	private static shouldUpgrade(ns: NS, purpose: ServerPurpose): boolean {
+		const utilization: number = ServerAPI.getServerUtilization(ns, purpose)
+		return (utilization > UTILIZATION_THRESHOLD)
 	}
 
 	private getReservedMoney(ns: NS): number {

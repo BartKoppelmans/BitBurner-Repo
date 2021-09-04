@@ -73,8 +73,8 @@ class PurchasedServerRunner {
                 ServerAPI.upgradeServer(ns, server.characteristics.host, ram);
             }
         }
-        const shouldUpgradePrep = this.shouldUpgrade(ns, ServerPurpose.PREP);
-        const shouldUpgradeHack = this.shouldUpgrade(ns, ServerPurpose.HACK);
+        const shouldUpgradePrep = PurchasedServerRunner.shouldUpgrade(ns, ServerPurpose.PREP);
+        const shouldUpgradeHack = PurchasedServerRunner.shouldUpgrade(ns, ServerPurpose.HACK);
         if (!shouldUpgradeHack && !shouldUpgradePrep)
             return;
         for (const server of purchasedServerList) {
@@ -112,13 +112,9 @@ class PurchasedServerRunner {
         const money = (PlayerUtils.getMoney(ns) - reservedMoney) * CONSTANT.PURCHASED_SERVER_ALLOWANCE_PERCENTAGE;
         return cost <= money;
     }
-    shouldUpgrade(ns, purpose) {
-        // NOTE: This doesn't work at all, so
-        // TODO: Fix this
-        const serverMap = (purpose === ServerPurpose.HACK) ? ServerAPI.getHackingServers(ns) : ServerAPI.getPreppingServers(ns);
-        const utilized = serverMap.reduce((subtotal, server) => subtotal + server.getUsedRam(ns), 0);
-        const total = serverMap.reduce((subtotal, server) => subtotal + server.getTotalRam(ns), 0);
-        return ((utilized / total) > UTILIZATION_THRESHOLD);
+    static shouldUpgrade(ns, purpose) {
+        const utilization = ServerAPI.getServerUtilization(ns, purpose);
+        return (utilization > UTILIZATION_THRESHOLD);
     }
     getReservedMoney(ns) {
         const purchasedServerList = ServerAPI.getPurchasedServers(ns);

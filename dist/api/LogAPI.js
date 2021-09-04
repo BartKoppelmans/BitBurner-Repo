@@ -60,6 +60,7 @@ function shouldScrollIntoView(element) {
     return Math.round(element.scrollHeight - element.scrollTop - element.clientHeight) <= PIXEL_TOLERANCE;
 }
 function printColored(ns, text, logType) {
+    // TODO: Rewrite to use the new function
     const doc = eval('document');
     const terminalInput = doc.getElementById('terminal-input');
     const terminalContainer = doc.getElementById('terminal-container');

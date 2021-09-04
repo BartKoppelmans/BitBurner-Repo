@@ -7,16 +7,18 @@ import * as BladeBurnerManager from '/src/managers/BladeBurnerManager.js';
 import * as GangManager from '/src/managers/GangManager.js';
 import Batch from '/src/classes/Job/Batch.js';
 import Job from '/src/classes/Job/Job.js';
-import { ServerStatus } from '/src/classes/Server/ServerInterfaces.js';
+import { ServerPurpose, ServerStatus } from '/src/classes/Server/ServerInterfaces.js';
 import { CONSTANT } from '/src/lib/constants.js';
 import { Tools } from '/src/tools/Tools.js';
 import * as CycleUtils from '/src/util/CycleUtils.js';
 import * as HackUtils from '/src/util/HackUtils.js';
 import * as ToolUtils from '/src/util/ToolUtils.js';
 import * as Utils from '/src/util/Utils.js';
-let isHacking = false;
+const UTILIZATION_DATA_POINTS = 5;
+const UTILIZATION_DELTA_THRESHOLD = 0.25;
 let hackLoopTimeout;
 let runnerInterval;
+const utilizationDataPoints = [];
 async function initialize(ns) {
     Utils.disableLogging(ns);
     const flags = ns.flags([
@@ -38,6 +40,10 @@ async function initialize(ns) {
     await Promise.allSettled(tasks);
 }
 async function hackLoop(ns) {
+    const dataPoint = getUtilizationDataPoint(ns);
+    utilizationDataPoints.length = Math.min(utilizationDataPoints.length, UTILIZATION_DATA_POINTS - 1);
+    utilizationDataPoints.unshift(dataPoint);
+    console.log(utilizationDataPoints);
     // Get the potential targets
     let potentialTargets = ServerAPI.getTargetServers(ns);
     // We would have a problem if there are no targets
@@ -48,20 +54,21 @@ async function hackLoop(ns) {
     potentialTargets = potentialTargets.sort((a, b) => a.serverValue - b.serverValue);
     // Attack each of the targets
     for (const target of potentialTargets) {
-        while (isHacking) {
-            await ns.sleep(CONSTANT.SMALL_DELAY);
-        }
-        isHacking = true;
         const currentTargets = ServerAPI.getCurrentTargets(ns);
         // Can't have too many targets at the same time
         if (currentTargets.length >= CONSTANT.MAX_TARGET_COUNT) {
-            isHacking = false;
             break;
         }
         await hack(ns, target);
-        isHacking = false;
     }
     hackLoopTimeout = setTimeout(hackLoop.bind(null, ns), CONSTANT.HACK_LOOP_DELAY);
+}
+function getUtilizationDataPoint(ns) {
+    return {
+        prep: ServerAPI.getServerUtilization(ns, ServerPurpose.PREP),
+        hack: ServerAPI.getServerUtilization(ns, ServerPurpose.HACK),
+        total: ServerAPI.getServerUtilization(ns),
+    };
 }
 function hack(ns, target) {
     // If it is prepping or targeting, leave it
@@ -235,6 +242,7 @@ function attackServer(ns, target) {
 }
 function optimizePerformance(ns, target) {
     // PERFORMANCE: This is a very expensive function call
+    // TODO: This does not seem to work properly?
     let performanceUpdated = false;
     const hackingServers = ServerAPI.getHackingServers(ns);
     const originalPercentageToSteal = target.percentageToSteal;

@@ -56,6 +56,18 @@ export function addServer(ns, server) {
     serverMap.servers.push(server);
     writeServerMap(ns, serverMap);
 }
+export function getServerUtilization(ns, serverPurpose) {
+    let serverMap;
+    if (serverPurpose === ServerPurpose.HACK)
+        serverMap = getHackingServers(ns);
+    else if (serverPurpose === ServerPurpose.PREP)
+        serverMap = getPreppingServers(ns);
+    else
+        serverMap = getServerMap(ns).servers;
+    const utilized = serverMap.reduce((subtotal, server) => subtotal + server.getUsedRam(ns), 0);
+    const total = serverMap.reduce((subtotal, server) => subtotal + server.getTotalRam(ns), 0);
+    return (utilized / total);
+}
 export function quarantine(ns, host, ram) {
     const server = getServerByName(ns, host);
     if (!ServerUtils.isPurchasedServer(server))

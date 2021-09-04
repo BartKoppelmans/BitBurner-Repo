@@ -14,7 +14,7 @@ import * as PlayerUtils                                               from '/src
 import HomeGang                                                       from '/src/classes/Gang/HomeGang.js'
 import Gang                                                           from '/src/classes/Gang/Gang.js'
 
-const LOOP_DELAY: number                     = 10000 as const
+const LOOP_DELAY: number                     = 2000 as const
 const CREATE_GANG_DELAY: number              = 10000 as const
 const ASCENSION_MULTIPLIER_THRESHOLD: number = 5 as const
 const GANG_ALLOWANCE: number                 = 0.1 as const
@@ -31,6 +31,8 @@ class GangManager implements Manager {
 	private gangs!: Gang[]
 	private homeGang!: HomeGang
 	private upgrades!: GangUpgrade[]
+
+	private focusOnRespect: boolean = false
 
 	private isReducingWantedLevel: boolean = false
 
@@ -144,6 +146,40 @@ class GangManager implements Manager {
 		this.upgrades = GangUpgrade.getAllUpgrades(ns)
 		this.gangs    = Gang.getGangs(ns)
 		this.homeGang = HomeGang.getHomeGang(ns)
+
+		this.createFocusSwitch()
+	}
+
+	private createFocusSwitch(): void {
+		const doc: Document = eval('document')
+
+		const appendSwitch = () => {
+			// ----- Create a Container -----
+			const gangFocusSwitchContainer     = doc.createElement('tr')
+			gangFocusSwitchContainer.id        = 'gangFocusSwitchContainer'
+			gangFocusSwitchContainer.innerHTML =
+				`<input id="focus-respect" type="checkbox" value="respect" class="optionCheckbox"/>` +
+				`<label for="focus-respect">Focus on respect</label>`
+
+			gangFocusSwitchContainer.addEventListener('change', (event: Event) => {
+				const target: HTMLInputElement = event.target as HTMLInputElement
+				this.focusOnRespect            = target.checked
+			})
+
+			// Append container to DOM
+
+			// @ts-ignore
+			const element = doc.getElementById('character-overview-text').firstChild.firstChild
+			if (element) element.appendChild(gangFocusSwitchContainer)
+		}
+
+		if (!doc.getElementById('gangFocusSwitchContainer')) appendSwitch()
+	}
+
+	private removeFocusSwitch(): void {
+		const doc: Document                    = eval('document')
+		const focusElement: HTMLElement | null = doc.getElementById('gangFocusSwitchContainer')
+		if (focusElement) focusElement.remove()
 	}
 
 	public async start(ns: NS): Promise<void> {
@@ -157,6 +193,8 @@ class GangManager implements Manager {
 
 		const members: GangMember[] = GangMember.getAllGangMembers(ns)
 		members.forEach((member) => member.startTask(ns, GangTask.getUnassignedTask(ns)))
+
+		this.removeFocusSwitch()
 
 		LogAPI.debug(ns, `Stopping the GangManager`)
 	}
@@ -215,7 +253,8 @@ class GangManager implements Manager {
 			return member.startTask(ns, GangTask.getTerritoryWarfareTask(ns))
 		}
 
-		return member.startTask(ns, GangTask.getMoneyTask(ns, member))
+		const task: GangTask = (this.focusOnRespect) ? GangTask.getRespectTask(ns, member) : GangTask.getMoneyTask(ns, member)
+		return member.startTask(ns, task)
 	}
 
 	private manageBestMember(ns: NS, member: GangMember): void {
@@ -238,7 +277,8 @@ class GangManager implements Manager {
 			return member.startTask(ns, GangTask.getTerritoryWarfareTask(ns))
 		}
 
-		return member.startTask(ns, GangTask.getMoneyTask(ns, member))
+		const task: GangTask = (this.focusOnRespect) ? GangTask.getRespectTask(ns, member) : GangTask.getMoneyTask(ns, member)
+		return member.startTask(ns, task)
 	}
 
 	private upgradeMember(ns: NS, member: GangMember) {

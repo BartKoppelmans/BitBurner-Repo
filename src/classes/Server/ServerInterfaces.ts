@@ -75,3 +75,9 @@ export interface ServerMap {
 	lastUpdated: Date;
 	servers: Server[];
 }
+
+export interface UtilizationDataPoint {
+	prep: number;
+	hack: number;
+	total: number;
+}

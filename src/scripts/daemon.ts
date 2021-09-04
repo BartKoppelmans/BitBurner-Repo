@@ -1,27 +1,30 @@
-import type { BitBurner as NS } from 'Bitburner'
-import * as ControlFlowAPI      from '/src/api/ControlFlowAPI.js'
-import * as JobAPI              from '/src/api/JobAPI.js'
-import * as LogAPI              from '/src/api/LogAPI.js'
-import * as ServerAPI           from '/src/api/ServerAPI.js'
-import * as JobManager          from '/src/managers/JobManager.js'
-import * as BladeBurnerManager  from '/src/managers/BladeBurnerManager.js'
-import * as GangManager         from '/src/managers/GangManager.js'
-import Batch                    from '/src/classes/Job/Batch.js'
-import HackableServer           from '/src/classes/Server/HackableServer.js'
-import Job                      from '/src/classes/Job/Job.js'
-import Server                   from '/src/classes/Server/Server.js'
-import { Cycle, ThreadSpread }  from '/src/classes/Misc/HackInterfaces.js'
-import { ServerStatus }         from '/src/classes/Server/ServerInterfaces.js'
-import { CONSTANT }             from '/src/lib/constants.js'
-import { Tools }                from '/src/tools/Tools.js'
-import * as CycleUtils          from '/src/util/CycleUtils.js'
-import * as HackUtils           from '/src/util/HackUtils.js'
-import * as ToolUtils           from '/src/util/ToolUtils.js'
-import * as Utils               from '/src/util/Utils.js'
+import type { BitBurner as NS }                              from 'Bitburner'
+import * as ControlFlowAPI                                   from '/src/api/ControlFlowAPI.js'
+import * as JobAPI                                           from '/src/api/JobAPI.js'
+import * as LogAPI                                           from '/src/api/LogAPI.js'
+import * as ServerAPI                                        from '/src/api/ServerAPI.js'
+import * as JobManager                                       from '/src/managers/JobManager.js'
+import * as BladeBurnerManager                               from '/src/managers/BladeBurnerManager.js'
+import * as GangManager                                      from '/src/managers/GangManager.js'
+import Batch                                                 from '/src/classes/Job/Batch.js'
+import HackableServer                                        from '/src/classes/Server/HackableServer.js'
+import Job                                                   from '/src/classes/Job/Job.js'
+import Server                                                from '/src/classes/Server/Server.js'
+import { Cycle, ThreadSpread }                               from '/src/classes/Misc/HackInterfaces.js'
+import { ServerPurpose, ServerStatus, UtilizationDataPoint } from '/src/classes/Server/ServerInterfaces.js'
+import { CONSTANT }                                          from '/src/lib/constants.js'
+import { Tools }                                             from '/src/tools/Tools.js'
+import * as CycleUtils                                       from '/src/util/CycleUtils.js'
+import * as HackUtils                                        from '/src/util/HackUtils.js'
+import * as ToolUtils                                        from '/src/util/ToolUtils.js'
+import * as Utils                                            from '/src/util/Utils.js'
 
-let isHacking: boolean = false
+const UTILIZATION_DATA_POINTS: number     = 5 as const
+const UTILIZATION_DELTA_THRESHOLD: number = 0.25 as const
+
 let hackLoopTimeout: ReturnType<typeof setTimeout>
 let runnerInterval: ReturnType<typeof setInterval>
+const utilizationDataPoints: UtilizationDataPoint[] = []
 
 async function initialize(ns: NS) {
 
@@ -52,6 +55,14 @@ async function initialize(ns: NS) {
 
 async function hackLoop(ns: NS): Promise<void> {
 
+	const dataPoint: UtilizationDataPoint = getUtilizationDataPoint(ns)
+
+	utilizationDataPoints.length = Math.min(utilizationDataPoints.length, UTILIZATION_DATA_POINTS - 1)
+
+	utilizationDataPoints.unshift(dataPoint)
+
+	console.log(utilizationDataPoints)
+
 	// Get the potential targets
 	let potentialTargets: HackableServer[] = ServerAPI.getTargetServers(ns)
 
@@ -66,26 +77,26 @@ async function hackLoop(ns: NS): Promise<void> {
 	// Attack each of the targets
 	for (const target of potentialTargets) {
 
-		while (isHacking) {
-			await ns.sleep(CONSTANT.SMALL_DELAY)
-		}
-
-		isHacking = true
-
 		const currentTargets: HackableServer[] = ServerAPI.getCurrentTargets(ns)
 
 		// Can't have too many targets at the same time
 		if (currentTargets.length >= CONSTANT.MAX_TARGET_COUNT) {
-			isHacking = false
 			break
 		}
 
 		await hack(ns, target)
-
-		isHacking = false
 	}
 
 	hackLoopTimeout = setTimeout(hackLoop.bind(null, ns), CONSTANT.HACK_LOOP_DELAY)
+}
+
+function getUtilizationDataPoint(ns: NS): UtilizationDataPoint {
+
+	return {
+		prep: ServerAPI.getServerUtilization(ns, ServerPurpose.PREP),
+		hack: ServerAPI.getServerUtilization(ns, ServerPurpose.HACK),
+		total: ServerAPI.getServerUtilization(ns),
+	}
 }
 
 function hack(ns: NS, target: HackableServer): void {
@@ -318,6 +329,8 @@ function attackServer(ns: NS, target: HackableServer): void {
 function optimizePerformance(ns: NS, target: HackableServer): void {
 
 	// PERFORMANCE: This is a very expensive function call
+
+	// TODO: This does not seem to work properly?
 
 	let performanceUpdated: boolean = false
 

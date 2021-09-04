@@ -72,6 +72,9 @@ function shouldScrollIntoView(element: HTMLElement): boolean {
 }
 
 function printColored(ns: NS, text: string, logType: LogType) {
+
+	// TODO: Rewrite to use the new function
+
 	const doc: Document                         = eval('document')
 	const terminalInput: HTMLElement | null     = doc.getElementById('terminal-input')
 	const terminalContainer: HTMLElement | null = doc.getElementById('terminal-container')

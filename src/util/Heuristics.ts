@@ -3,6 +3,8 @@ import HackableServer           from '/src/classes/Server/HackableServer.js'
 
 export namespace Heuristics {
 
+	// TODO: These do not seem to work properly?
+
 	export type HeuristicValue = number;
 
 	export interface ServerHeuristic {

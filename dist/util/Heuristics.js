@@ -1,5 +1,6 @@
 export var Heuristics;
 (function (Heuristics) {
+    // TODO: These do not seem to work properly?
     Heuristics.MainHeuristic = function (ns, target) {
         return target.staticHackingProperties.maxMoney * (100 / (target.staticHackingProperties.minSecurityLevel + target.getSecurityLevel(ns)));
     };
