@@ -1,13 +1,15 @@
-import type { BitBurner as NS }                   from 'Bitburner'
-import HackableServer                             from '/src/classes/Server/HackableServer.js'
-import Server                                     from '/src/classes/Server/Server.js'
-import { ServerMap, ServerPurpose, ServerStatus } from '/src/classes/Server/ServerInterfaces.js'
-import { CONSTANT }                               from '/src/lib/constants.js'
-import * as ServerUtils                           from '/src/util/ServerUtils.js'
-import * as SerializationUtils                    from '/src/util/SerializationUtils.js'
-import * as LogAPI                                from '/src/api/LogAPI.js'
-import { LogType }                                from '/src/api/LogAPI.js'
-import PurchasedServer                            from '/src/classes/Server/PurchasedServer.js'
+import type { BitBurner as NS }                                       from 'Bitburner'
+import HackableServer                                                 from '/src/classes/Server/HackableServer.js'
+import Server                                                         from '/src/classes/Server/Server.js'
+import { ServerMap, ServerPurpose, ServerSortingOrder, ServerStatus } from '/src/classes/Server/ServerInterfaces.js'
+import { CONSTANT }                                                   from '/src/lib/constants.js'
+import * as ServerUtils                                               from '/src/util/ServerUtils.js'
+import * as SerializationUtils                                        from '/src/util/SerializationUtils.js'
+import * as LogAPI                                                    from '/src/api/LogAPI.js'
+import { LogType }                                                    from '/src/api/LogAPI.js'
+import PurchasedServer                                                from '/src/classes/Server/PurchasedServer.js'
+
+const MIN_NUMBER_PURPOSED_SERVERS: number = 2 as const
 
 export function getServerMap(ns: NS): ServerMap {
 	return readServerMap(ns)
@@ -198,12 +200,12 @@ export function addPreppingServer(ns: NS): void {
 
 	// TODO: Make this return a boolean and log in the daemon script
 
-	const purchasedServers: PurchasedServer[] = getPurchasedServers(ns)
+	const purchasedServers: PurchasedServer[] = getPurchasedServers(ns, 'alphabetic')
 
 	const numPrepServers: number = purchasedServers.filter((server) => server.hasPurpose(ServerPurpose.PREP)).length
 
 	// We can't add any more prep servers
-	if (numPrepServers >= ns.getPurchasedServerLimit()) return
+	if (numPrepServers >= ns.getPurchasedServerLimit() - MIN_NUMBER_PURPOSED_SERVERS) return
 
 	const newPrepServer: PurchasedServer | undefined = purchasedServers.reverse()
 	                                                                   .find((server) => server.hasPurpose(ServerPurpose.HACK))
@@ -219,12 +221,12 @@ export function addHackingServer(ns: NS): void {
 
 	// TODO: Make this return a boolean and log in the daemon script
 
-	const purchasedServers: PurchasedServer[] = getPurchasedServers(ns)
+	const purchasedServers: PurchasedServer[] = getPurchasedServers(ns, 'alphabetic')
 
 	const numHackServers: number = purchasedServers.filter((server) => server.hasPurpose(ServerPurpose.HACK)).length
 
 	// We can't add any more prep servers
-	if (numHackServers >= ns.getPurchasedServerLimit()) return
+	if (numHackServers >= ns.getPurchasedServerLimit() - MIN_NUMBER_PURPOSED_SERVERS) return
 
 	const newHackServer: PurchasedServer | undefined = purchasedServers.find((server) => server.hasPurpose(ServerPurpose.PREP))
 
@@ -236,10 +238,14 @@ export function addHackingServer(ns: NS): void {
 }
 
 // We sort this ascending
-export function getPurchasedServers(ns: NS): PurchasedServer[] {
+export function getPurchasedServers(ns: NS, sortBy: ServerSortingOrder = 'ram'): PurchasedServer[] {
 	const purchasedServers: PurchasedServer[] = getServerMap(ns).servers
 	                                                            .filter((server: Server) => ServerUtils.isPurchasedServer(server)) as PurchasedServer[]
-	return purchasedServers.sort((a, b) => a.getAvailableRam(ns) - b.getAvailableRam(ns))
+
+	if (sortBy === 'alphabetic') return purchasedServers.sort((a, b) => a.characteristics.purchasedServerId - b.characteristics.purchasedServerId)
+	else if (sortBy === 'ram') return purchasedServers.sort((a, b) => a.getAvailableRam(ns) - b.getAvailableRam(ns))
+	else throw new Error('Unknown sorting order')
+
 }
 
 export function isServerMapInitialized(ns: NS): boolean {

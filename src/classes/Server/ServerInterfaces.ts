@@ -1,6 +1,8 @@
 import Server         from '/src/classes/Server/Server.js'
 import { Heuristics } from '/src/util/Heuristics.js'
 
+export type ServerSortingOrder = 'ram' | 'server-value' | 'alphabetic'
+
 export interface IServer {
 	characteristics: ServerCharacteristics
 	purpose: ServerPurpose

@@ -96,7 +96,7 @@ async function importFiles(ns: NS) {
 			const response: Response = await fetch(remoteFileName)
 			if (!response.ok) return { file, result: false }
 			const localFileName: string = `/${CONSTANT.LOCAL_FOLDER}/${file}`
-			ns.write(localFileName, await response.text())
+			ns.write(localFileName, await response.text(), 'w')
 			return {
 				file,
 				result: true,

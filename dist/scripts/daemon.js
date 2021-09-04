@@ -15,7 +15,7 @@ import * as HackUtils from '/src/util/HackUtils.js';
 import * as ToolUtils from '/src/util/ToolUtils.js';
 import * as Utils from '/src/util/Utils.js';
 const UTILIZATION_DATA_POINTS = 10;
-const UTILIZATION_DELTA_THRESHOLD = 0.25;
+const UTILIZATION_DELTA_THRESHOLD = 0.4;
 let hackLoopTimeout;
 let runnerInterval;
 const utilizationDataPoints = [];
@@ -43,13 +43,17 @@ function checkUtilization(ns) {
     const dataPoint = getUtilizationDataPoint(ns);
     utilizationDataPoints.length = Math.min(utilizationDataPoints.length, UTILIZATION_DATA_POINTS - 1);
     utilizationDataPoints.unshift(dataPoint);
-    console.log(`Prep:  ${dataPoint.prep}\n` +
-        `Hack:  ${dataPoint.hack}\n` +
-        `Total: ${dataPoint.total}\n`);
+    // console.log(
+    // 	`Prep:  ${dataPoint.prep}\n` +
+    // 	`Hack:  ${dataPoint.hack}\n` +
+    // 	`Total: ${dataPoint.total}\n`
+    // )
     if (utilizationDataPoints.length < UTILIZATION_DATA_POINTS)
         return;
     const shouldAddPrepServer = utilizationDataPoints.every((point) => point.prep - point.hack > UTILIZATION_DELTA_THRESHOLD);
-    const shouldAddHackServer = utilizationDataPoints.every((point) => point.hack - point.prep > UTILIZATION_DELTA_THRESHOLD);
+    const shouldAddHackServer = utilizationDataPoints.every((point) => {
+        return point.hack - point.prep > UTILIZATION_DELTA_THRESHOLD || point.prep < UTILIZATION_DELTA_THRESHOLD;
+    });
     if (shouldAddHackServer)
         ServerAPI.addHackingServer(ns);
     else if (shouldAddPrepServer)

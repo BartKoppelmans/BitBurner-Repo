@@ -5,6 +5,7 @@ import * as SerializationUtils from '/src/util/SerializationUtils.js';
 import * as LogAPI from '/src/api/LogAPI.js';
 import { LogType } from '/src/api/LogAPI.js';
 import PurchasedServer from '/src/classes/Server/PurchasedServer.js';
+const MIN_NUMBER_PURPOSED_SERVERS = 2;
 export function getServerMap(ns) {
     return readServerMap(ns);
 }
@@ -161,10 +162,10 @@ export function getHackingServers(ns) {
 }
 export function addPreppingServer(ns) {
     // TODO: Make this return a boolean and log in the daemon script
-    const purchasedServers = getPurchasedServers(ns);
+    const purchasedServers = getPurchasedServers(ns, 'alphabetic');
     const numPrepServers = purchasedServers.filter((server) => server.hasPurpose(ServerPurpose.PREP)).length;
     // We can't add any more prep servers
-    if (numPrepServers >= ns.getPurchasedServerLimit())
+    if (numPrepServers >= ns.getPurchasedServerLimit() - MIN_NUMBER_PURPOSED_SERVERS)
         return;
     const newPrepServer = purchasedServers.reverse()
         .find((server) => server.hasPurpose(ServerPurpose.HACK));
@@ -175,10 +176,10 @@ export function addPreppingServer(ns) {
 }
 export function addHackingServer(ns) {
     // TODO: Make this return a boolean and log in the daemon script
-    const purchasedServers = getPurchasedServers(ns);
+    const purchasedServers = getPurchasedServers(ns, 'alphabetic');
     const numHackServers = purchasedServers.filter((server) => server.hasPurpose(ServerPurpose.HACK)).length;
     // We can't add any more prep servers
-    if (numHackServers >= ns.getPurchasedServerLimit())
+    if (numHackServers >= ns.getPurchasedServerLimit() - MIN_NUMBER_PURPOSED_SERVERS)
         return;
     const newHackServer = purchasedServers.find((server) => server.hasPurpose(ServerPurpose.PREP));
     if (!newHackServer)
@@ -187,10 +188,15 @@ export function addHackingServer(ns) {
     LogAPI.log(ns, `Changed purchased server ${newHackServer.characteristics.host} to hack`, LogType.INFORMATION);
 }
 // We sort this ascending
-export function getPurchasedServers(ns) {
+export function getPurchasedServers(ns, sortBy = 'ram') {
     const purchasedServers = getServerMap(ns).servers
         .filter((server) => ServerUtils.isPurchasedServer(server));
-    return purchasedServers.sort((a, b) => a.getAvailableRam(ns) - b.getAvailableRam(ns));
+    if (sortBy === 'alphabetic')
+        return purchasedServers.sort((a, b) => a.characteristics.purchasedServerId - b.characteristics.purchasedServerId);
+    else if (sortBy === 'ram')
+        return purchasedServers.sort((a, b) => a.getAvailableRam(ns) - b.getAvailableRam(ns));
+    else
+        throw new Error('Unknown sorting order');
 }
 export function isServerMapInitialized(ns) {
     try {

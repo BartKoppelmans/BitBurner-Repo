@@ -20,7 +20,7 @@ import * as ToolUtils                                        from '/src/util/Too
 import * as Utils                                            from '/src/util/Utils.js'
 
 const UTILIZATION_DATA_POINTS: number     = 10 as const
-const UTILIZATION_DELTA_THRESHOLD: number = 0.25 as const
+const UTILIZATION_DELTA_THRESHOLD: number = 0.4 as const
 
 let hackLoopTimeout: ReturnType<typeof setTimeout>
 let runnerInterval: ReturnType<typeof setInterval>
@@ -60,14 +60,18 @@ function checkUtilization(ns: NS) {
 
 	utilizationDataPoints.unshift(dataPoint)
 
-	console.log(`Prep:  ${dataPoint.prep}\n` +
-		`Hack:  ${dataPoint.hack}\n` +
-		`Total: ${dataPoint.total}\n`)
+	// console.log(
+	// 	`Prep:  ${dataPoint.prep}\n` +
+	// 	`Hack:  ${dataPoint.hack}\n` +
+	// 	`Total: ${dataPoint.total}\n`
+	// )
 
 	if (utilizationDataPoints.length < UTILIZATION_DATA_POINTS) return
 
 	const shouldAddPrepServer: boolean = utilizationDataPoints.every((point) => point.prep - point.hack > UTILIZATION_DELTA_THRESHOLD)
-	const shouldAddHackServer: boolean = utilizationDataPoints.every((point) => point.hack - point.prep > UTILIZATION_DELTA_THRESHOLD)
+	const shouldAddHackServer: boolean = utilizationDataPoints.every((point) => {
+		return point.hack - point.prep > UTILIZATION_DELTA_THRESHOLD || point.prep < UTILIZATION_DELTA_THRESHOLD
+	})
 
 	if (shouldAddHackServer) ServerAPI.addHackingServer(ns)
 	else if (shouldAddPrepServer) ServerAPI.addPreppingServer(ns)
