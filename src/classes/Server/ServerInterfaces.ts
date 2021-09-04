@@ -48,9 +48,9 @@ export enum ServerType {
 }
 
 export enum ServerPurpose {
-	NONE,
-	PREP,
-	HACK
+	NONE = 'None',
+	PREP = 'Prep',
+	HACK = 'Hack'
 }
 
 export enum ServerStatus {

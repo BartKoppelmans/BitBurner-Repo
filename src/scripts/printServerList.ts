@@ -2,7 +2,6 @@ import type { BitBurner as NS } from 'Bitburner'
 import * as ServerAPI           from '/src/api/ServerAPI.js'
 import Server                   from '/src/classes/Server/Server.js'
 import * as ServerUtils         from '/src/util/ServerUtils.js'
-import HackableServer           from '/src/classes/Server/HackableServer.js'
 import { CONSTANT }             from '/src/lib/constants.js'
 
 enum PrintColor {
@@ -40,14 +39,21 @@ function getFormattedServerName(ns: NS, server: Server): string {
 	let serverInformation: string = `<strong>${server.characteristics.host}</strong>`
 
 	if (ServerUtils.isHackableServer(server)) {
-		const hackableServer: HackableServer = server as HackableServer
+		serverInformation += `<br>` +
+			`Rooted: <span style="color:${pipColor}">${server.isRooted(ns)}</span><br>` +
+			`Hack Level Req: ${server.staticHackingProperties.hackingLevel}<br>` +
+			`Money: ${ns.nFormat(server.getMoney(ns), '$0.000a')} / ${ns.nFormat(server.staticHackingProperties.maxMoney, '$0.000a')}<br>` +
+			`Security: ${server.getSecurityLevel(ns)} / Min ${server.staticHackingProperties.minSecurityLevel}<br>` +
+			`Growth: ${server.staticHackingProperties.growth}`
+	}
+
+	if (ServerUtils.isPurchasedServer(server)) {
+		const quarantinedColor: string = (server.isQuarantined()) ? PrintColor.ROOTED_PIP : PrintColor.NOT_ROOTED_PIP
 
 		serverInformation += `<br>` +
-			`Rooted: <span style="color:${pipColor}">${hackableServer.isRooted(ns)}</span><br>` +
-			`Hack Level Req: ${hackableServer.staticHackingProperties.hackingLevel}<br>` +
-			`Money: ${ns.nFormat(hackableServer.getMoney(ns), '$0.000a')} / ${ns.nFormat(hackableServer.staticHackingProperties.maxMoney, '$0.000a')}<br>` +
-			`Security: ${hackableServer.getSecurityLevel(ns)} / Min ${hackableServer.staticHackingProperties.minSecurityLevel}<br>` +
-			`Growth: ${hackableServer.staticHackingProperties.growth}`
+			`Quarantined: <span style="color:${quarantinedColor}">${server.quarantinedInformation.quarantined}</span><br>` +
+			`Purpose: ${server.purpose.toString()}<br>` +
+			`Ram: ${server.getTotalRam(ns)}`
 	}
 
 	return `<span style="color: ${pipColor}; display: ${(showRootedPip) ? 'inline' : 'none'}">◉</span>` +

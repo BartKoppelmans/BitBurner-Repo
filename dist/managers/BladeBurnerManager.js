@@ -78,6 +78,10 @@ class BladeBurnerManager {
         }
         return false;
     }
+    static shouldSkipIteration(ns) {
+        return !BladeBurnerManager.hasSimulacrum(ns) &&
+            (ns.isBusy() || ns.scriptRunning('/src/scripts/executeCrimes.js', CONSTANT.HOME_SERVER_HOST));
+    }
     async managingLoop(ns) {
         const nextLoop = (isIteration) => {
             if (isIteration)
@@ -87,7 +91,7 @@ class BladeBurnerManager {
         };
         this.upgradeSkills(ns);
         // NOTE: This might still have some problems
-        if (!BladeBurnerManager.hasSimulacrum(ns) && ns.isBusy()) {
+        if (BladeBurnerManager.shouldSkipIteration(ns)) {
             await ns.sleep(BUSY_RETRY_DELAY);
             return nextLoop(false);
         }

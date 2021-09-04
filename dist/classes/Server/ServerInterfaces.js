@@ -8,9 +8,9 @@ export var ServerType;
 })(ServerType || (ServerType = {}));
 export var ServerPurpose;
 (function (ServerPurpose) {
-    ServerPurpose[ServerPurpose["NONE"] = 0] = "NONE";
-    ServerPurpose[ServerPurpose["PREP"] = 1] = "PREP";
-    ServerPurpose[ServerPurpose["HACK"] = 2] = "HACK";
+    ServerPurpose["NONE"] = "None";
+    ServerPurpose["PREP"] = "Prep";
+    ServerPurpose["HACK"] = "Hack";
 })(ServerPurpose || (ServerPurpose = {}));
 export var ServerStatus;
 (function (ServerStatus) {

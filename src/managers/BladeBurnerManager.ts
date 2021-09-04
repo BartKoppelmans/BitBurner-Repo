@@ -107,6 +107,11 @@ class BladeBurnerManager implements Manager {
 		return false
 	}
 
+	private static shouldSkipIteration(ns: NS): boolean {
+		return !BladeBurnerManager.hasSimulacrum(ns) &&
+			(ns.isBusy() || ns.scriptRunning('/src/scripts/executeCrimes.js', CONSTANT.HOME_SERVER_HOST))
+	}
+
 	private async managingLoop(ns: NS): Promise<void> {
 
 		const nextLoop = (isIteration: boolean) => {
@@ -118,7 +123,7 @@ class BladeBurnerManager implements Manager {
 		this.upgradeSkills(ns)
 
 		// NOTE: This might still have some problems
-		if (!BladeBurnerManager.hasSimulacrum(ns) && ns.isBusy()) {
+		if (BladeBurnerManager.shouldSkipIteration(ns)) {
 			await ns.sleep(BUSY_RETRY_DELAY)
 			return nextLoop(false)
 		}

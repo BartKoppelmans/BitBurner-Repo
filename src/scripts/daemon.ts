@@ -53,7 +53,7 @@ async function initialize(ns: NS) {
 	await Promise.allSettled(tasks)
 }
 
-function checkUtilization(ns: NS) {
+function updatePurchasedServerPurposes(ns: NS) {
 	const dataPoint: UtilizationDataPoint = getUtilizationDataPoint(ns)
 
 	utilizationDataPoints.length = Math.min(utilizationDataPoints.length, UTILIZATION_DATA_POINTS - 1)
@@ -83,7 +83,7 @@ function checkUtilization(ns: NS) {
 
 async function hackLoop(ns: NS): Promise<void> {
 
-	checkUtilization(ns)
+	updatePurchasedServerPurposes(ns)
 
 	// Get the potential targets
 	let potentialTargets: HackableServer[] = ServerAPI.getTargetServers(ns)

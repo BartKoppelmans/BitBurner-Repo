@@ -39,7 +39,7 @@ async function initialize(ns) {
     tasks.push(ControlFlowAPI.launchRunners(ns));
     await Promise.allSettled(tasks);
 }
-function checkUtilization(ns) {
+function updatePurchasedServerPurposes(ns) {
     const dataPoint = getUtilizationDataPoint(ns);
     utilizationDataPoints.length = Math.min(utilizationDataPoints.length, UTILIZATION_DATA_POINTS - 1);
     utilizationDataPoints.unshift(dataPoint);
@@ -64,7 +64,7 @@ function checkUtilization(ns) {
     utilizationDataPoints.length = 0;
 }
 async function hackLoop(ns) {
-    checkUtilization(ns);
+    updatePurchasedServerPurposes(ns);
     // Get the potential targets
     let potentialTargets = ServerAPI.getTargetServers(ns);
     // We would have a problem if there are no targets
