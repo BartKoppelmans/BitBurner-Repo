@@ -50,10 +50,8 @@ export default class BBAction {
         return ns.bladeburner.getBlackOpRank(this.name);
     }
     async continue(ns, iteration) {
-        /*
-         TODO: Decide whether we want to log continuing actions
-         LogAPI.log(ns, `${ns.nFormat(iteration, '000000')} - Executing ${this.type} action '${this.name}'`, LogType.BLADEBURNER)
-         */
+        // TODO: Decide whether we want to log continuing actions
+        LogAPI.log(ns, `${ns.nFormat(iteration, '000000')} - Executing ${this.type} action '${this.name}'`, LogType.BLADEBURNER);
         await ns.sleep(this.getDuration(ns));
     }
     async execute(ns, iteration) {

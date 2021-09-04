@@ -10,7 +10,12 @@ export default class PurchasedServer extends Server {
             throw new Error('Cannot initialize the purchased server without its characteristics');
         this.characteristics = server.characteristics;
         this.quarantinedInformation = (server.quarantinedInformation) ? server.quarantinedInformation : { quarantined: false };
-        this.purpose = (this.isQuarantined()) ? ServerPurpose.NONE : PurchasedServer.determinePurpose(ns, server.characteristics.purchasedServerId);
+        if (this.isQuarantined())
+            this.purpose = ServerPurpose.NONE;
+        else {
+            // Set to the last known purpose, or use the default
+            this.purpose = server.purpose ? server.purpose : PurchasedServer.determinePurpose(ns, server.characteristics.purchasedServerId);
+        }
     }
     static determinePurpose(ns, id) {
         return (id < Math.ceil(PERCENTAGE_HACK_PURPOSE * ns.getPurchasedServerLimit())) ? ServerPurpose.HACK : ServerPurpose.PREP;
@@ -21,6 +26,13 @@ export default class PurchasedServer extends Server {
             parent: CONSTANT.HOME_SERVER_ID,
             children: [],
         };
+    }
+    hasPurpose(purpose) {
+        if (this.quarantinedInformation.quarantined) {
+            return this.quarantinedInformation.originalPurpose === purpose;
+        }
+        else
+            return this.purpose === purpose;
     }
     isQuarantined() {
         return this.quarantinedInformation.quarantined;

@@ -14,7 +14,7 @@ import * as CycleUtils from '/src/util/CycleUtils.js';
 import * as HackUtils from '/src/util/HackUtils.js';
 import * as ToolUtils from '/src/util/ToolUtils.js';
 import * as Utils from '/src/util/Utils.js';
-const UTILIZATION_DATA_POINTS = 5;
+const UTILIZATION_DATA_POINTS = 10;
 const UTILIZATION_DELTA_THRESHOLD = 0.25;
 let hackLoopTimeout;
 let runnerInterval;
@@ -39,11 +39,28 @@ async function initialize(ns) {
     tasks.push(ControlFlowAPI.launchRunners(ns));
     await Promise.allSettled(tasks);
 }
-async function hackLoop(ns) {
+function checkUtilization(ns) {
     const dataPoint = getUtilizationDataPoint(ns);
     utilizationDataPoints.length = Math.min(utilizationDataPoints.length, UTILIZATION_DATA_POINTS - 1);
     utilizationDataPoints.unshift(dataPoint);
-    console.log(utilizationDataPoints);
+    console.log(`Prep:  ${dataPoint.prep}\n` +
+        `Hack:  ${dataPoint.hack}\n` +
+        `Total: ${dataPoint.total}\n`);
+    if (utilizationDataPoints.length < UTILIZATION_DATA_POINTS)
+        return;
+    const shouldAddPrepServer = utilizationDataPoints.every((point) => point.prep - point.hack > UTILIZATION_DELTA_THRESHOLD);
+    const shouldAddHackServer = utilizationDataPoints.every((point) => point.hack - point.prep > UTILIZATION_DELTA_THRESHOLD);
+    if (shouldAddHackServer)
+        ServerAPI.addHackingServer(ns);
+    else if (shouldAddPrepServer)
+        ServerAPI.addPreppingServer(ns);
+    else
+        return;
+    // Reset the measurements to prevent immediately adding another server
+    utilizationDataPoints.length = 0;
+}
+async function hackLoop(ns) {
+    checkUtilization(ns);
     // Get the potential targets
     let potentialTargets = ServerAPI.getTargetServers(ns);
     // We would have a problem if there are no targets
@@ -65,9 +82,9 @@ async function hackLoop(ns) {
 }
 function getUtilizationDataPoint(ns) {
     return {
-        prep: ServerAPI.getServerUtilization(ns, ServerPurpose.PREP),
-        hack: ServerAPI.getServerUtilization(ns, ServerPurpose.HACK),
-        total: ServerAPI.getServerUtilization(ns),
+        prep: ServerAPI.getServerUtilization(ns, true, ServerPurpose.PREP),
+        hack: ServerAPI.getServerUtilization(ns, true, ServerPurpose.HACK),
+        total: ServerAPI.getServerUtilization(ns, true),
     };
 }
 function hack(ns, target) {

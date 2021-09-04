@@ -36,9 +36,17 @@ export function updateServer(ns, server) {
     serverMap.servers[index] = server;
     writeServerMap(ns, serverMap);
 }
-export function setPurpose(ns, host, purpose) {
+export function setPurpose(ns, host, purpose, force = false) {
     const server = getServerByName(ns, host);
-    server.purpose = purpose;
+    if (ServerUtils.isPurchasedServer(server) && !force) {
+        if (server.quarantinedInformation.quarantined) {
+            server.quarantinedInformation.originalPurpose = purpose;
+        }
+        else
+            server.purpose = purpose;
+    }
+    else
+        server.purpose = purpose;
     updateServer(ns, server);
 }
 export function setStatus(ns, host, status) {
@@ -56,7 +64,7 @@ export function addServer(ns, server) {
     serverMap.servers.push(server);
     writeServerMap(ns, serverMap);
 }
-export function getServerUtilization(ns, serverPurpose) {
+export function getServerUtilization(ns, onlyPurchasedServers, serverPurpose) {
     let serverMap;
     if (serverPurpose === ServerPurpose.HACK)
         serverMap = getHackingServers(ns);
@@ -64,6 +72,8 @@ export function getServerUtilization(ns, serverPurpose) {
         serverMap = getPreppingServers(ns);
     else
         serverMap = getServerMap(ns).servers;
+    if (onlyPurchasedServers)
+        serverMap = serverMap.filter((server) => ServerUtils.isPurchasedServer(server));
     const utilized = serverMap.reduce((subtotal, server) => subtotal + server.getUsedRam(ns), 0);
     const total = serverMap.reduce((subtotal, server) => subtotal + server.getTotalRam(ns), 0);
     return (utilized / total);
@@ -72,8 +82,8 @@ export function quarantine(ns, host, ram) {
     const server = getServerByName(ns, host);
     if (!ServerUtils.isPurchasedServer(server))
         throw new Error('Cannot quarantine a normal server');
+    server.quarantinedInformation = { quarantined: true, ram, originalPurpose: server.purpose };
     server.purpose = ServerPurpose.NONE;
-    server.quarantinedInformation = { quarantined: true, ram };
     updateServer(ns, server);
     LogAPI.log(ns, `We put ${server.characteristics.host} into quarantine`, LogType.PURCHASED_SERVER);
 }
@@ -148,6 +158,33 @@ export function getHackingServers(ns) {
         .filter((server) => server.isRooted(ns))
         .filter((server) => server.purpose === ServerPurpose.HACK)
         .sort((a, b) => b.getAvailableRam(ns) - a.getAvailableRam(ns));
+}
+export function addPreppingServer(ns) {
+    // TODO: Make this return a boolean and log in the daemon script
+    const purchasedServers = getPurchasedServers(ns);
+    const numPrepServers = purchasedServers.filter((server) => server.hasPurpose(ServerPurpose.PREP)).length;
+    // We can't add any more prep servers
+    if (numPrepServers >= ns.getPurchasedServerLimit())
+        return;
+    const newPrepServer = purchasedServers.reverse()
+        .find((server) => server.hasPurpose(ServerPurpose.HACK));
+    if (!newPrepServer)
+        return;
+    setPurpose(ns, newPrepServer.characteristics.host, ServerPurpose.PREP);
+    LogAPI.log(ns, `Changed purchased server ${newPrepServer.characteristics.host} to prep`, LogType.INFORMATION);
+}
+export function addHackingServer(ns) {
+    // TODO: Make this return a boolean and log in the daemon script
+    const purchasedServers = getPurchasedServers(ns);
+    const numHackServers = purchasedServers.filter((server) => server.hasPurpose(ServerPurpose.HACK)).length;
+    // We can't add any more prep servers
+    if (numHackServers >= ns.getPurchasedServerLimit())
+        return;
+    const newHackServer = purchasedServers.find((server) => server.hasPurpose(ServerPurpose.PREP));
+    if (!newHackServer)
+        return;
+    setPurpose(ns, newHackServer.characteristics.host, ServerPurpose.HACK);
+    LogAPI.log(ns, `Changed purchased server ${newHackServer.characteristics.host} to hack`, LogType.INFORMATION);
 }
 // We sort this ascending
 export function getPurchasedServers(ns) {

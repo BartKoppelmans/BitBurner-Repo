@@ -90,7 +90,9 @@ class PurchasedServerRunner {
 		const quarantinedServers: PurchasedServer[] = purchasedServerList.filter((s) => s.isQuarantined())
 
 		for (const server of quarantinedServers) {
-			const ram: number = server.quarantinedInformation.ram!
+			if (!server.quarantinedInformation.quarantined) continue
+
+			const ram: number = server.quarantinedInformation.ram
 			if (server.canUpgrade(ns, ram)) {
 				ServerAPI.upgradeServer(ns, server.characteristics.host, ram)
 			}
@@ -141,7 +143,7 @@ class PurchasedServerRunner {
 	}
 
 	private static shouldUpgrade(ns: NS, purpose: ServerPurpose): boolean {
-		const utilization: number = ServerAPI.getServerUtilization(ns, purpose)
+		const utilization: number = ServerAPI.getServerUtilization(ns, true, purpose)
 		return (utilization > UTILIZATION_THRESHOLD)
 	}
 
@@ -149,7 +151,11 @@ class PurchasedServerRunner {
 		const purchasedServerList: PurchasedServer[]   = ServerAPI.getPurchasedServers(ns)
 		const quarantinedServerList: PurchasedServer[] = purchasedServerList.filter((s) => s.isQuarantined())
 
-		return quarantinedServerList.reduce((reservedMoney, server) => reservedMoney + PurchasedServerRunner.getCost(ns, server.quarantinedInformation.ram!), 0)
+		return quarantinedServerList.reduce((reservedMoney: number, server: PurchasedServer) => {
+			if (server.quarantinedInformation.quarantined) {
+				return reservedMoney + PurchasedServerRunner.getCost(ns, server.quarantinedInformation.ram)
+			} else return reservedMoney
+		}, 0)
 	}
 
 }

@@ -26,7 +26,11 @@ export default class PurchasedServer extends Server {
 		this.characteristics        = server.characteristics
 		this.quarantinedInformation = (server.quarantinedInformation) ? server.quarantinedInformation : { quarantined: false }
 
-		this.purpose = (this.isQuarantined()) ? ServerPurpose.NONE : PurchasedServer.determinePurpose(ns, server.characteristics.purchasedServerId)
+		if (this.isQuarantined()) this.purpose = ServerPurpose.NONE
+		else {
+			// Set to the last known purpose, or use the default
+			this.purpose = server.purpose ? server.purpose : PurchasedServer.determinePurpose(ns, server.characteristics.purchasedServerId)
+		}
 	}
 
 	public static determinePurpose(ns: NS, id: number): ServerPurpose {
@@ -39,6 +43,12 @@ export default class PurchasedServer extends Server {
 			parent: CONSTANT.HOME_SERVER_ID,
 			children: [],
 		}
+	}
+
+	public hasPurpose(purpose: ServerPurpose): boolean {
+		if (this.quarantinedInformation.quarantined) {
+			return this.quarantinedInformation.originalPurpose === purpose
+		} else return this.purpose === purpose
 	}
 
 	public isQuarantined(): boolean {

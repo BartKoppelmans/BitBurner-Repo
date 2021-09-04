@@ -57,9 +57,12 @@ export enum ServerStatus {
 	TARGETING
 }
 
-export interface QuarantinedInformation {
-	quarantined: boolean;
-	ram?: number;
+export type QuarantinedInformation = {
+	quarantined: false;
+} | {
+	quarantined: true;
+	ram: number;
+	originalPurpose: ServerPurpose
 }
 
 export interface StaticHackingProperties {

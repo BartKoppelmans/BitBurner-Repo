@@ -19,7 +19,7 @@ import * as HackUtils                                        from '/src/util/Hac
 import * as ToolUtils                                        from '/src/util/ToolUtils.js'
 import * as Utils                                            from '/src/util/Utils.js'
 
-const UTILIZATION_DATA_POINTS: number     = 5 as const
+const UTILIZATION_DATA_POINTS: number     = 10 as const
 const UTILIZATION_DELTA_THRESHOLD: number = 0.25 as const
 
 let hackLoopTimeout: ReturnType<typeof setTimeout>
@@ -53,15 +53,33 @@ async function initialize(ns: NS) {
 	await Promise.allSettled(tasks)
 }
 
-async function hackLoop(ns: NS): Promise<void> {
-
+function checkUtilization(ns: NS) {
 	const dataPoint: UtilizationDataPoint = getUtilizationDataPoint(ns)
 
 	utilizationDataPoints.length = Math.min(utilizationDataPoints.length, UTILIZATION_DATA_POINTS - 1)
 
 	utilizationDataPoints.unshift(dataPoint)
 
-	console.log(utilizationDataPoints)
+	console.log(`Prep:  ${dataPoint.prep}\n` +
+		`Hack:  ${dataPoint.hack}\n` +
+		`Total: ${dataPoint.total}\n`)
+
+	if (utilizationDataPoints.length < UTILIZATION_DATA_POINTS) return
+
+	const shouldAddPrepServer: boolean = utilizationDataPoints.every((point) => point.prep - point.hack > UTILIZATION_DELTA_THRESHOLD)
+	const shouldAddHackServer: boolean = utilizationDataPoints.every((point) => point.hack - point.prep > UTILIZATION_DELTA_THRESHOLD)
+
+	if (shouldAddHackServer) ServerAPI.addHackingServer(ns)
+	else if (shouldAddPrepServer) ServerAPI.addPreppingServer(ns)
+	else return
+
+	// Reset the measurements to prevent immediately adding another server
+	utilizationDataPoints.length = 0
+}
+
+async function hackLoop(ns: NS): Promise<void> {
+
+	checkUtilization(ns)
 
 	// Get the potential targets
 	let potentialTargets: HackableServer[] = ServerAPI.getTargetServers(ns)
@@ -93,9 +111,9 @@ async function hackLoop(ns: NS): Promise<void> {
 function getUtilizationDataPoint(ns: NS): UtilizationDataPoint {
 
 	return {
-		prep: ServerAPI.getServerUtilization(ns, ServerPurpose.PREP),
-		hack: ServerAPI.getServerUtilization(ns, ServerPurpose.HACK),
-		total: ServerAPI.getServerUtilization(ns),
+		prep: ServerAPI.getServerUtilization(ns, true, ServerPurpose.PREP),
+		hack: ServerAPI.getServerUtilization(ns, true, ServerPurpose.HACK),
+		total: ServerAPI.getServerUtilization(ns, true),
 	}
 }
 
