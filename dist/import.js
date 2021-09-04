@@ -1,4 +1,5 @@
 import { CONSTANT } from '/src/lib/constants.js';
+const DO_ASYNC = false;
 const files = [
     'Bitburner.t.js',
     'import.js',
@@ -81,12 +82,23 @@ async function importFiles(ns) {
     if (!files) {
         throw new Error('No files found.');
     }
-    let filesImported = true;
-    for (const file of files) {
+    const requests = files.map(async (file) => {
         const remoteFileName = `${CONSTANT.ROOT_URL}/${CONSTANT.REMOTE_FOLDER}/${file}`;
-        const result = await ns.wget(remoteFileName, `/${CONSTANT.LOCAL_FOLDER}/${file}`);
-        filesImported = filesImported && result;
-        ns.tprint(`File: ${file}: ${result ? '✔️' : '❌'}`);
+        const response = await fetch(remoteFileName);
+        if (!response.ok)
+            return { file, result: false };
+        const localFileName = `/${CONSTANT.LOCAL_FOLDER}/${file}`;
+        ns.write(localFileName, await response.text());
+        return {
+            file,
+            result: true,
+        };
+    });
+    const responses = await Promise.all(requests);
+    let filesImported = true;
+    for (const response of responses) {
+        filesImported = filesImported && response.result;
+        ns.tprint(`File: ${response.file}: ${response.result ? '✔️' : '❌'}`);
     }
     return filesImported;
 }

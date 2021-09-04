@@ -1,6 +1,8 @@
 import type { BitBurner as NS } from 'Bitburner'
 import { CONSTANT }             from '/src/lib/constants.js'
 
+const DO_ASYNC: boolean = false as const
+
 const files: string[] = [
 	'Bitburner.t.js',
 	'import.js',
@@ -89,12 +91,25 @@ async function importFiles(ns: NS) {
 		throw new Error('No files found.')
 	}
 
+	const requests: Promise<{ file: string, result: boolean }>[] = files.map(async (file) => {
+			const remoteFileName     = `${CONSTANT.ROOT_URL}/${CONSTANT.REMOTE_FOLDER}/${file}`
+			const response: Response = await fetch(remoteFileName)
+			if (!response.ok) return { file, result: false }
+			const localFileName: string = `/${CONSTANT.LOCAL_FOLDER}/${file}`
+			ns.write(localFileName, await response.text())
+			return {
+				file,
+				result: true,
+			}
+		},
+	)
+
+	const responses: { file: string, result: boolean }[] = await Promise.all(requests)
+
 	let filesImported = true
-	for (const file of files) {
-		const remoteFileName = `${CONSTANT.ROOT_URL}/${CONSTANT.REMOTE_FOLDER}/${file}`
-		const result         = await ns.wget(remoteFileName, `/${CONSTANT.LOCAL_FOLDER}/${file}`)
-		filesImported        = filesImported && result
-		ns.tprint(`File: ${file}: ${result ? '✔️' : '❌'}`)
+	for (const response of responses) {
+		filesImported = filesImported && response.result
+		ns.tprint(`File: ${response.file}: ${response.result ? '✔️' : '❌'}`)
 	}
 
 	return filesImported
