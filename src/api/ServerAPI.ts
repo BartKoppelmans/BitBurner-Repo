@@ -184,6 +184,11 @@ export function getTargetServers(ns: NS): HackableServer[] {
 export function getPreppingServers(ns: NS): Server[] {
 	return getServerMap(ns).servers
 	                       .filter((server: Server) => server.isRooted(ns))
+	                       .filter((server: Server) => {
+		                       if (ServerUtils.isPurchasedServer(server) && server.quarantinedInformation.quarantined) {
+			                       return server.quarantinedInformation.originalPurpose === ServerPurpose.PREP
+		                       } else return server.purpose === ServerPurpose.PREP
+	                       })
 	                       .filter((server: Server) => server.purpose === ServerPurpose.PREP)
 	                       .sort((a, b) => b.getAvailableRam(ns) - a.getAvailableRam(ns))
 }
@@ -192,7 +197,11 @@ export function getPreppingServers(ns: NS): Server[] {
 export function getHackingServers(ns: NS): Server[] {
 	return getServerMap(ns).servers
 	                       .filter((server: Server) => server.isRooted(ns))
-	                       .filter((server: Server) => server.purpose === ServerPurpose.HACK)
+	                       .filter((server: Server) => {
+		                       if (ServerUtils.isPurchasedServer(server) && server.quarantinedInformation.quarantined) {
+			                       return server.quarantinedInformation.originalPurpose === ServerPurpose.HACK
+		                       } else return server.purpose === ServerPurpose.HACK
+	                       })
 	                       .sort((a, b) => b.getAvailableRam(ns) - a.getAvailableRam(ns))
 }
 
