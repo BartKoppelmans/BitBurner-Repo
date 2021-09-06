@@ -18,6 +18,7 @@ export const CONSTANT = {
 	COLOR_CODING_CONTRACT_INFORMATION: 'yellow',
 	COLOR_BLADEBURNER: 'pink',
 	COLOR_GANG: 'purple',
+	COLOR_SLEEVE: 'aquamarine',
 
 	/*
 	 * Import script constants

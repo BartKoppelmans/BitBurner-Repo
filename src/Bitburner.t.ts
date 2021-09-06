@@ -3882,7 +3882,7 @@ declare module 'Bitburner' {
 		/**
 		 * @ramCost 0 GB
 		 */
-		readonly sleeve: CodingContract;
+		readonly sleeve: Sleeve;
 
 		/**
 		 * Arguments passed into a script can be accessed using a normal

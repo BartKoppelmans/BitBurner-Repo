@@ -17,7 +17,8 @@ export enum LogType {
 	PURCHASED_SERVER,
 	CODING_CONTRACT,
 	BLADEBURNER,
-	GANG
+	GANG,
+	SLEEVE
 }
 
 export function debug(ns: NS, message: string): void {
@@ -38,14 +39,21 @@ export function warn(ns: NS, message: string): void {
 
 export function log(ns: NS, message: string, logType: LogType): void {
 
-	if (logType !== LogType.NONE && logType !== LogType.INFORMATION && logType !== LogType.PURCHASED_SERVER && logType !== LogType.CODING_CONTRACT && logType !== LogType.BLADEBURNER && logType !== LogType.GANG) {
+	if (!isCorrectLogType(logType)) {
 		throw new Error('Incorrect log type')
 	}
 
 	printColored(ns, message, logType)
 }
 
+function isCorrectLogType(logType: LogType): boolean {
+	return logType === LogType.NONE || logType === LogType.INFORMATION || logType === LogType.PURCHASED_SERVER || logType === LogType.CODING_CONTRACT || logType === LogType.BLADEBURNER || logType === LogType.GANG
+}
+
 function getColorFromLogType(ns: NS, logType: LogType): string {
+
+	// TODO: Move the constants to here
+
 	switch (logType) {
 		case LogType.INFORMATION:
 			return CONSTANT.COLOR_INFORMATION
@@ -61,6 +69,8 @@ function getColorFromLogType(ns: NS, logType: LogType): string {
 			return CONSTANT.COLOR_BLADEBURNER
 		case LogType.GANG:
 			return CONSTANT.COLOR_GANG
+		case LogType.SLEEVE:
+			return CONSTANT.COLOR_SLEEVE
 		case LogType.NONE:
 		default:
 			return 'var(--my-font-color)'
