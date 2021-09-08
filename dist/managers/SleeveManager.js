@@ -33,7 +33,7 @@ class SleeveManager {
         if (stats.sync < 100) {
             return sleeve.synchronize(ns);
         }
-        return sleeve.commitCrime(ns, 'homicide');
+        return sleeve.commitCrime(ns, 'Homicide');
     }
 }
 export async function start(ns) {

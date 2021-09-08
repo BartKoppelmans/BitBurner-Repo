@@ -23,7 +23,7 @@ export async function main(ns) {
         }
         let crime;
         if (flags.homicide)
-            crime = crimes.find((c) => c.name === 'homicide');
+            crime = crimes.find((c) => c.name === 'Homicide');
         else {
             // Evaluate the potential crimes afterwards
             await Promise.all(crimes.map(async (c) => {

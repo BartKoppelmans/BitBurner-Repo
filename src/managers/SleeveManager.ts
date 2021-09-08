@@ -53,7 +53,7 @@ class SleeveManager implements Manager {
 			return sleeve.synchronize(ns)
 		}
 
-		return sleeve.commitCrime(ns, 'homicide')
+		return sleeve.commitCrime(ns, 'Homicide')
 	}
 
 }

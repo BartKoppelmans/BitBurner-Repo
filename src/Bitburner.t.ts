@@ -191,18 +191,18 @@ declare module 'Bitburner' {
 		| 'The Black Hand';
 	export type FactionWork = 'hacking' | 'field' | 'security';
 	export type Crime =
-		| 'shoplift'
-		| 'rob store'
-		| 'mug'
-		| 'larceny'
-		| 'deal drugs'
-		| 'bond forgery'
-		| 'traffick arms'
-		| 'homicide'
-		| 'grand theft auto'
-		| 'kidnap'
-		| 'assassinate'
-		| 'heist';
+		| 'Shoplift'
+		| 'Rob Store'
+		| 'Mug'
+		| 'Larceny'
+		| 'Deal Drugs'
+		| 'Bond Forgery'
+		| 'Traffick Arms'
+		| 'Homicide'
+		| 'Grand Theft Auto'
+		| 'Kidnap'
+		| 'Assassinate'
+		| 'Heist';
 	export type AugmentName =
 		| 'Augmented Targeting I'
 		| 'Augmented Targeting II'

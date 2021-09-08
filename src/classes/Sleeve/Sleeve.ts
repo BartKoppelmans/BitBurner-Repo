@@ -49,8 +49,9 @@ export default class Sleeve {
 			return
 		}
 
-		ns.sleeve.setToCommitCrime(this.id, crime)
-		LogAPI.log(ns, `Set sleeve ${this.id} to commit crime '${crime}'`, LogType.SLEEVE)
+		const isSuccessful: boolean = ns.sleeve.setToCommitCrime(this.id, crime)
+		if (isSuccessful) LogAPI.log(ns, `Set sleeve ${this.id} to commit crime '${crime}'`, LogType.SLEEVE)
+		else LogAPI.warn(ns, `Failed to set sleeve ${this.id} to commit crime '${crime}'`)
 	}
 
 	public static getSleeves(ns: NS): Sleeve[] {

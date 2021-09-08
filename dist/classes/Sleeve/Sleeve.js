@@ -34,8 +34,11 @@ export default class Sleeve {
         if (task.task === 'Crime' && task.crime === crime) {
             return;
         }
-        ns.sleeve.setToCommitCrime(this.id, crime);
-        LogAPI.log(ns, `Set sleeve ${this.id} to commit crime '${crime}'`, LogType.SLEEVE);
+        const isSuccessful = ns.sleeve.setToCommitCrime(this.id, crime);
+        if (isSuccessful)
+            LogAPI.log(ns, `Set sleeve ${this.id} to commit crime '${crime}'`, LogType.SLEEVE);
+        else
+            LogAPI.warn(ns, `Failed to set sleeve ${this.id} to commit crime '${crime}'`);
     }
     static getSleeves(ns) {
         const numSleeves = ns.sleeve.getNumSleeves();

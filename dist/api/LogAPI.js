@@ -37,7 +37,7 @@ export function log(ns, message, logType) {
     printColored(ns, message, logType);
 }
 function isCorrectLogType(logType) {
-    return logType === LogType.NONE || logType === LogType.INFORMATION || logType === LogType.PURCHASED_SERVER || logType === LogType.CODING_CONTRACT || logType === LogType.BLADEBURNER || logType === LogType.GANG;
+    return logType === LogType.NONE || logType === LogType.INFORMATION || logType === LogType.PURCHASED_SERVER || logType === LogType.CODING_CONTRACT || logType === LogType.BLADEBURNER || logType === LogType.GANG || logType === LogType.SLEEVE;
 }
 function getColorFromLogType(ns, logType) {
     // TODO: Move the constants to here

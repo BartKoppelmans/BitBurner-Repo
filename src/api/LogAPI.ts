@@ -47,7 +47,7 @@ export function log(ns: NS, message: string, logType: LogType): void {
 }
 
 function isCorrectLogType(logType: LogType): boolean {
-	return logType === LogType.NONE || logType === LogType.INFORMATION || logType === LogType.PURCHASED_SERVER || logType === LogType.CODING_CONTRACT || logType === LogType.BLADEBURNER || logType === LogType.GANG
+	return logType === LogType.NONE || logType === LogType.INFORMATION || logType === LogType.PURCHASED_SERVER || logType === LogType.CODING_CONTRACT || logType === LogType.BLADEBURNER || logType === LogType.GANG || logType === LogType.SLEEVE
 }
 
 function getColorFromLogType(ns: NS, logType: LogType): string {
