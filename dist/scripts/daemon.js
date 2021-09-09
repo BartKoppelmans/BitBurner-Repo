@@ -6,6 +6,7 @@ import * as JobManager from '/src/managers/JobManager.js';
 import * as BladeBurnerManager from '/src/managers/BladeBurnerManager.js';
 import * as GangManager from '/src/managers/GangManager.js';
 import * as SleeveManager from '/src/managers/SleeveManager.js';
+import * as StockManager from '/src/managers/StockManager.js';
 import Batch from '/src/classes/Job/Batch.js';
 import Job from '/src/classes/Job/Job.js';
 import { ServerPurpose, ServerStatus } from '/src/classes/Server/ServerInterfaces.js';
@@ -26,6 +27,7 @@ async function initialize(ns) {
         ['bladeburner', false],
         ['gang', false],
         ['sleeve', false],
+        ['stock', false],
     ]);
     // TODO: Kill all running scripts, as there might be some shit from last session open
     await ServerAPI.initializeServerMap(ns);
@@ -39,6 +41,8 @@ async function initialize(ns) {
         tasks.push(GangManager.start(ns));
     if (flags.sleeve)
         tasks.push(SleeveManager.start(ns));
+    if (flags.stock)
+        tasks.push(StockManager.start(ns));
     // Runners
     tasks.push(ControlFlowAPI.launchRunners(ns));
     await Promise.allSettled(tasks);

@@ -4,7 +4,7 @@ import * as Utils                     from '/src/util/Utils.js'
 import * as ServerAPI                 from '/src/api/ServerAPI.js'
 import { ServerMap }                  from '/src/classes/Server/ServerInterfaces.js'
 
-const MANAGER_KILL_DELAY: number = 5000 as const
+const MANAGER_KILL_DELAY: number = 2500 as const
 
 export enum ControlFlowCode {
 	KILL_MANAGERS,

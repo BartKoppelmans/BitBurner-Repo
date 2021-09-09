@@ -7,6 +7,7 @@ import * as JobManager                                       from '/src/managers
 import * as BladeBurnerManager                               from '/src/managers/BladeBurnerManager.js'
 import * as GangManager                                      from '/src/managers/GangManager.js'
 import * as SleeveManager                                    from '/src/managers/SleeveManager.js'
+import * as StockManager                                     from '/src/managers/StockManager.js'
 import Batch                                                 from '/src/classes/Job/Batch.js'
 import HackableServer                                        from '/src/classes/Server/HackableServer.js'
 import Job                                                   from '/src/classes/Job/Job.js'
@@ -35,6 +36,7 @@ async function initialize(ns: NS) {
 		['bladeburner', false],
 		['gang', false],
 		['sleeve', false],
+		['stock', false],
 	])
 
 	// TODO: Kill all running scripts, as there might be some shit from last session open
@@ -49,6 +51,7 @@ async function initialize(ns: NS) {
 	if (flags.bladeburner) tasks.push(BladeBurnerManager.start(ns))
 	if (flags.gang) tasks.push(GangManager.start(ns))
 	if (flags.sleeve) tasks.push(SleeveManager.start(ns))
+	if (flags.stock) tasks.push(StockManager.start(ns))
 
 	// Runners
 	tasks.push(ControlFlowAPI.launchRunners(ns))

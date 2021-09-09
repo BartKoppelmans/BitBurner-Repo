@@ -16,6 +16,7 @@ export var LogType;
     LogType[LogType["BLADEBURNER"] = 6] = "BLADEBURNER";
     LogType[LogType["GANG"] = 7] = "GANG";
     LogType[LogType["SLEEVE"] = 8] = "SLEEVE";
+    LogType[LogType["STOCK"] = 9] = "STOCK";
 })(LogType || (LogType = {}));
 export function debug(ns, message) {
     if (CONSTANT.LOG_DEBUG) {
@@ -37,7 +38,7 @@ export function log(ns, message, logType) {
     printColored(ns, message, logType);
 }
 function isCorrectLogType(logType) {
-    return logType === LogType.NONE || logType === LogType.INFORMATION || logType === LogType.PURCHASED_SERVER || logType === LogType.CODING_CONTRACT || logType === LogType.BLADEBURNER || logType === LogType.GANG || logType === LogType.SLEEVE;
+    return logType === LogType.NONE || logType === LogType.INFORMATION || logType === LogType.PURCHASED_SERVER || logType === LogType.CODING_CONTRACT || logType === LogType.BLADEBURNER || logType === LogType.GANG || logType === LogType.SLEEVE || logType === LogType.STOCK;
 }
 function getColorFromLogType(ns, logType) {
     // TODO: Move the constants to here
@@ -58,6 +59,8 @@ function getColorFromLogType(ns, logType) {
             return CONSTANT.COLOR_GANG;
         case LogType.SLEEVE:
             return CONSTANT.COLOR_SLEEVE;
+        case LogType.STOCK:
+            return CONSTANT.COLOR_STOCK;
         case LogType.NONE:
         default:
             return 'var(--my-font-color)';

@@ -18,7 +18,8 @@ export enum LogType {
 	CODING_CONTRACT,
 	BLADEBURNER,
 	GANG,
-	SLEEVE
+	SLEEVE,
+	STOCK
 }
 
 export function debug(ns: NS, message: string): void {
@@ -47,7 +48,7 @@ export function log(ns: NS, message: string, logType: LogType): void {
 }
 
 function isCorrectLogType(logType: LogType): boolean {
-	return logType === LogType.NONE || logType === LogType.INFORMATION || logType === LogType.PURCHASED_SERVER || logType === LogType.CODING_CONTRACT || logType === LogType.BLADEBURNER || logType === LogType.GANG || logType === LogType.SLEEVE
+	return logType === LogType.NONE || logType === LogType.INFORMATION || logType === LogType.PURCHASED_SERVER || logType === LogType.CODING_CONTRACT || logType === LogType.BLADEBURNER || logType === LogType.GANG || logType === LogType.SLEEVE || logType === LogType.STOCK
 }
 
 function getColorFromLogType(ns: NS, logType: LogType): string {
@@ -71,6 +72,8 @@ function getColorFromLogType(ns: NS, logType: LogType): string {
 			return CONSTANT.COLOR_GANG
 		case LogType.SLEEVE:
 			return CONSTANT.COLOR_SLEEVE
+		case LogType.STOCK:
+			return CONSTANT.COLOR_STOCK
 		case LogType.NONE:
 		default:
 			return 'var(--my-font-color)'
