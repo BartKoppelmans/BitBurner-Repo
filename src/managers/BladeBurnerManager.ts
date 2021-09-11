@@ -1,7 +1,6 @@
 import type { BitBurner as NS, BladeburnerCurAction } from 'Bitburner'
 import * as ControlFlowAPI                            from '/src/api/ControlFlowAPI.js'
 import * as LogAPI                                    from '/src/api/LogAPI.js'
-import { LogType }                                    from '/src/api/LogAPI.js'
 import * as Utils                                     from '/src/util/Utils.js'
 import { Manager }                                    from '/src/classes/Misc/ScriptInterfaces.js'
 import { CONSTANT }                                   from '/src/lib/constants.js'
@@ -66,11 +65,16 @@ class BladeBurnerManager implements Manager {
 		return augs.includes('The Blade\'s Simulacrum')
 	}
 
+	private static shouldSkipIteration(ns: NS): boolean {
+		return !BladeBurnerManager.hasSimulacrum(ns) &&
+			(ns.isBusy() || ns.scriptRunning('/src/scripts/executeCrimes.js', CONSTANT.HOME_SERVER_HOST))
+	}
+
 	public async initialize(ns: NS) {
 		Utils.disableLogging(ns)
 
 		while (!ns.bladeburner.joinBladeburnerDivision()) {
-			LogAPI.log(ns, `Waiting to join BladeBurner Division`, LogType.BLADEBURNER)
+			LogAPI.log(ns, `Waiting to join BladeBurner Division`)
 			await ns.sleep(JOIN_DELAY)
 		}
 
@@ -105,11 +109,6 @@ class BladeBurnerManager implements Manager {
 			if (nextBlackOp.name === 'Operation Daedalus') return true
 		}
 		return false
-	}
-
-	private static shouldSkipIteration(ns: NS): boolean {
-		return !BladeBurnerManager.hasSimulacrum(ns) &&
-			(ns.isBusy() || ns.scriptRunning('/src/scripts/executeCrimes.js', CONSTANT.HOME_SERVER_HOST))
 	}
 
 	private async managingLoop(ns: NS): Promise<void> {
@@ -238,7 +237,7 @@ class BladeBurnerManager implements Manager {
 			} while (hasUpgraded)
 		}
 
-		upgradedSkills.forEach((skill) => LogAPI.log(ns, `Upgraded skill '${skill.name}' to level ${skill.getLevel(ns)}`, LogType.BLADEBURNER))
+		upgradedSkills.forEach((skill) => LogAPI.log(ns, `Upgraded skill '${skill.name}' to level ${skill.getLevel(ns)}`))
 
 	}
 }

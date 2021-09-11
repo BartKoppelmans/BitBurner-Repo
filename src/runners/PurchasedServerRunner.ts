@@ -1,6 +1,5 @@
 import type { BitBurner as NS }                                      from 'Bitburner'
 import * as LogAPI                                                   from '/src/api/LogAPI.js'
-import { LogType }                                                   from '/src/api/LogAPI.js'
 import * as ServerAPI                                                from '/src/api/ServerAPI.js'
 import { PurchasedServerCharacteristics, ServerPurpose, ServerType } from '/src/classes/Server/ServerInterfaces.js'
 import * as Utils                                                    from '/src/util/Utils.js'
@@ -33,6 +32,34 @@ class PurchasedServerRunner {
 		return ns.getPurchasedServerCost(ram)
 	}
 
+	private static purchaseNewServer(ns: NS, ram: number, purchasedServerId: number): PurchasedServer {
+		const host: string         = CONSTANT.PURCHASED_SERVER_PREFIX + purchasedServerId.toString()
+		const boughtServer: string = ns.purchaseServer(host, ram)
+
+		if (boughtServer === '') throw new Error('Could not purchase the server')
+
+		LogAPI.log(ns, `Purchased server ${boughtServer} with ${ram}GB ram.`)
+
+		const characteristics: PurchasedServerCharacteristics = {
+			id: Utils.generateHash(),
+			type: ServerType.PurchasedServer,
+			host,
+			purchasedServerId,
+			treeStructure: PurchasedServer.getDefaultTreeStructure(),
+		}
+
+		const server: PurchasedServer = new PurchasedServer(ns, { characteristics })
+
+		ServerAPI.addServer(ns, server)
+
+		return server
+	}
+
+	private static shouldUpgrade(ns: NS, purpose: ServerPurpose): boolean {
+		const utilization: number = ServerAPI.getServerUtilization(ns, true, purpose)
+		return (utilization > UTILIZATION_THRESHOLD)
+	}
+
 	public async run(ns: NS): Promise<void> {
 		LogAPI.debug(ns, `Running the PurchasedServerRunner`)
 
@@ -56,34 +83,11 @@ class PurchasedServerRunner {
 
 			const id: number = purchasedServerList.length + i
 
-			const purchasedServer: PurchasedServer = this.purchaseNewServer(ns, ram, id)
+			const purchasedServer: PurchasedServer = PurchasedServerRunner.purchaseNewServer(ns, ram, id)
 			if (!purchasedServer) {
 				throw new Error('We could not successfully purchase the server')
 			}
 		}
-	}
-
-	private purchaseNewServer(ns: NS, ram: number, purchasedServerId: number): PurchasedServer {
-		const host: string         = CONSTANT.PURCHASED_SERVER_PREFIX + purchasedServerId.toString()
-		const boughtServer: string = ns.purchaseServer(host, ram)
-
-		if (boughtServer === '') throw new Error('Could not purchase the server')
-
-		LogAPI.log(ns, `Purchased server ${boughtServer} with ${ram}GB ram.`, LogType.PURCHASED_SERVER)
-
-		const characteristics: PurchasedServerCharacteristics = {
-			id: Utils.generateHash(),
-			type: ServerType.PurchasedServer,
-			host,
-			purchasedServerId,
-			treeStructure: PurchasedServer.getDefaultTreeStructure(),
-		}
-
-		const server: PurchasedServer = new PurchasedServer(ns, { characteristics })
-
-		ServerAPI.addServer(ns, server)
-
-		return server
 	}
 
 	private upgradeServers(ns: NS, purchasedServerList: PurchasedServer[]): void {
@@ -140,11 +144,6 @@ class PurchasedServerRunner {
 		const money: number = (PlayerUtils.getMoney(ns) - reservedMoney) * CONSTANT.PURCHASED_SERVER_ALLOWANCE_PERCENTAGE
 
 		return cost <= money
-	}
-
-	private static shouldUpgrade(ns: NS, purpose: ServerPurpose): boolean {
-		const utilization: number = ServerAPI.getServerUtilization(ns, true, purpose)
-		return (utilization > UTILIZATION_THRESHOLD)
 	}
 
 	private getReservedMoney(ns: NS): number {

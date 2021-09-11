@@ -1,7 +1,6 @@
 import type { BitBurner as NS, FactionName, GangGenInfo }             from 'Bitburner'
 import * as ControlFlowAPI                                            from '/src/api/ControlFlowAPI.js'
 import * as LogAPI                                                    from '/src/api/LogAPI.js'
-import { LogType }                                                    from '/src/api/LogAPI.js'
 import * as Utils                                                     from '/src/util/Utils.js'
 import * as GangUtils                                                 from '/src/util/GangUtils.js'
 import { Manager }                                                    from '/src/classes/Misc/ScriptInterfaces.js'
@@ -34,8 +33,6 @@ class GangManager implements Manager {
 
 	private focusOnRespect: boolean = false
 
-	private isReducingWantedLevel: boolean = false
-
 	private static getBestMember(ns: NS, members: GangMember[]): GangMember {
 		const isHacking: boolean = GangUtils.isHackingGang(ns)
 
@@ -58,7 +55,6 @@ class GangManager implements Manager {
 		return evaluations[0].member
 	}
 
-
 	private static getNumMembers(ns: NS): number {
 		return ns.gang.getMemberNames().length
 	}
@@ -76,10 +72,9 @@ class GangManager implements Manager {
 		return average > level
 	}
 
-	private static canWinTerritoryWarfare(ns: NS, homeGang: HomeGang, gangs: Gang[]): boolean {
+	private static canWinTerritoryWarfare(ns: NS, gangs: Gang[]): boolean {
 		return gangs.every((gang) => gang.getChanceToWinClash(ns) > CLASH_CHANCE_THRESHOLD)
 	}
-
 
 	private static shouldReduceWantedLevel(ns: NS): boolean {
 
@@ -109,11 +104,11 @@ class GangManager implements Manager {
 					await ns.sleep(CREATE_GANG_DELAY)
 					continue
 				}
-
 				ns.joinFaction('Slum Snakes')
 			}
 
-			ns.gang.createGang('Slum Snakes')
+			const hasJoined: boolean = ns.gang.createGang('Slum Snakes')
+			if (!hasJoined) await ns.sleep(CREATE_GANG_DELAY)
 		}
 	}
 
@@ -133,9 +128,15 @@ class GangManager implements Manager {
 		if (!isSuccessful) {
 			LogAPI.warn(ns, `Failed to recruit a new member`)
 			return null
-		} else LogAPI.log(ns, `Recruited new gang member '${name}'`, LogType.GANG)
+		} else LogAPI.log(ns, `Recruited new gang member '${name}'`)
 
 		return new GangMember(ns, name)
+	}
+
+	private static removeFocusSwitch(): void {
+		const doc: Document                    = eval('document')
+		const focusElement: HTMLElement | null = doc.getElementById('gangFocusSwitchContainer')
+		if (focusElement) focusElement.remove()
 	}
 
 	public async initialize(ns: NS) {
@@ -148,6 +149,23 @@ class GangManager implements Manager {
 		this.homeGang = HomeGang.getHomeGang(ns)
 
 		this.createFocusSwitch()
+	}
+
+	public async start(ns: NS): Promise<void> {
+		LogAPI.debug(ns, `Starting the GangManager`)
+
+		this.managingLoopTimeout = setTimeout(this.managingLoop.bind(this, ns), LOOP_DELAY)
+	}
+
+	public async destroy(ns: NS): Promise<void> {
+		if (this.managingLoopTimeout) clearTimeout(this.managingLoopTimeout)
+
+		const members: GangMember[] = GangMember.getAllGangMembers(ns)
+		members.forEach((member) => member.startTask(ns, GangTask.getUnassignedTask(ns)))
+
+		GangManager.removeFocusSwitch()
+
+		LogAPI.debug(ns, `Stopping the GangManager`)
 	}
 
 	private createFocusSwitch(): void {
@@ -176,33 +194,10 @@ class GangManager implements Manager {
 		if (!doc.getElementById('gangFocusSwitchContainer')) appendSwitch()
 	}
 
-	private removeFocusSwitch(): void {
-		const doc: Document                    = eval('document')
-		const focusElement: HTMLElement | null = doc.getElementById('gangFocusSwitchContainer')
-		if (focusElement) focusElement.remove()
-	}
-
-	public async start(ns: NS): Promise<void> {
-		LogAPI.debug(ns, `Starting the GangManager`)
-
-		this.managingLoopTimeout = setTimeout(this.managingLoop.bind(this, ns), LOOP_DELAY)
-	}
-
-	public async destroy(ns: NS): Promise<void> {
-		if (this.managingLoopTimeout) clearTimeout(this.managingLoopTimeout)
-
-		const members: GangMember[] = GangMember.getAllGangMembers(ns)
-		members.forEach((member) => member.startTask(ns, GangTask.getUnassignedTask(ns)))
-
-		this.removeFocusSwitch()
-
-		LogAPI.debug(ns, `Stopping the GangManager`)
-	}
-
 	private async managingLoop(ns: NS): Promise<void> {
 
 
-		const doTerritoryWarfare: boolean = GangManager.canWinTerritoryWarfare(ns, this.homeGang, this.gangs)
+		const doTerritoryWarfare: boolean = GangManager.canWinTerritoryWarfare(ns, this.gangs)
 		doTerritoryWarfare ? this.homeGang.enableTerritoryWarfare(ns) : this.homeGang.disableTerritoryWarfare(ns)
 
 		while (ns.gang.canRecruitMember()) {
@@ -228,7 +223,7 @@ class GangManager implements Manager {
 
 	private async reduceWantedLevel(ns: NS, members: GangMember[]): Promise<void> {
 
-		LogAPI.log(ns, `Reducing wanted level`, LogType.GANG)
+		LogAPI.log(ns, `Reducing wanted level`)
 
 		members.forEach((member) => {
 			member.startTask(ns, GangTask.getWantedLevelReductionTask(ns, member))
@@ -238,7 +233,7 @@ class GangManager implements Manager {
 			await ns.sleep(LOOP_DELAY)
 		}
 
-		LogAPI.log(ns, `Finished reducing wanted level`, LogType.GANG)
+		LogAPI.log(ns, `Finished reducing wanted level`)
 	}
 
 	private manageMember(ns: NS, member: GangMember): void {
@@ -249,7 +244,7 @@ class GangManager implements Manager {
 			return member.startTask(ns, GangTask.getTrainTask(ns))
 		}
 
-		if (!GangManager.canWinTerritoryWarfare(ns, this.homeGang, this.gangs)) {
+		if (!GangManager.canWinTerritoryWarfare(ns, this.gangs)) {
 			return member.startTask(ns, GangTask.getTerritoryWarfareTask(ns))
 		}
 
@@ -273,7 +268,7 @@ class GangManager implements Manager {
 			return member.startTask(ns, GangTask.getTrainTask(ns))
 		}
 
-		if (!GangManager.canWinTerritoryWarfare(ns, this.homeGang, this.gangs)) {
+		if (!GangManager.canWinTerritoryWarfare(ns, this.gangs)) {
 			return member.startTask(ns, GangTask.getTerritoryWarfareTask(ns))
 		}
 
@@ -299,7 +294,7 @@ class GangManager implements Manager {
 		}
 
 		if (numUpgrades > 0) {
-			LogAPI.log(ns, `Purchased ${numUpgrades} upgrades for ${member.name}`, LogType.GANG)
+			LogAPI.log(ns, `Purchased ${numUpgrades} upgrades for ${member.name}`)
 		}
 	}
 }

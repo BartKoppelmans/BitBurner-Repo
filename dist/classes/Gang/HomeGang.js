@@ -1,6 +1,5 @@
 import Gang from '/src/classes/Gang/Gang.js';
 import * as LogAPI from '/src/api/LogAPI.js';
-import { LogType } from '/src/api/LogAPI.js';
 export default class HomeGang extends Gang {
     constructor(ns, name) {
         super(ns, name);
@@ -9,11 +8,11 @@ export default class HomeGang extends Gang {
         const name = ns.gang.getGangInformation().faction;
         return new HomeGang(ns, name);
     }
-    calculateWantedPenalty(ns) {
-        const gangInformation = this.getGangInformation(ns);
+    static calculateWantedPenalty(ns, gangInformation) {
         return (gangInformation.respect) / (gangInformation.respect + gangInformation.wantedLevel);
     }
-    static calculateWantedPenalty(ns, gangInformation) {
+    calculateWantedPenalty(ns) {
+        const gangInformation = this.getGangInformation(ns);
         return (gangInformation.respect) / (gangInformation.respect + gangInformation.wantedLevel);
     }
     enableTerritoryWarfare(ns) {
@@ -22,7 +21,7 @@ export default class HomeGang extends Gang {
         if (isInWarfare)
             return;
         ns.gang.setTerritoryWarfare(true);
-        LogAPI.log(ns, `Enabling territory warfare`, LogType.GANG);
+        LogAPI.log(ns, `Enabling territory warfare`);
     }
     disableTerritoryWarfare(ns) {
         const clashChance = this.getGangInformation(ns).territoryClashChance;
@@ -30,7 +29,7 @@ export default class HomeGang extends Gang {
         if (!isInWarfare)
             return;
         ns.gang.setTerritoryWarfare(false);
-        LogAPI.log(ns, `Disabling territory warfare`, LogType.GANG);
+        LogAPI.log(ns, `Disabling territory warfare`);
     }
     getGangInformation(ns) {
         return ns.gang.getGangInformation();

@@ -8,7 +8,6 @@ import {
 }                                                                    from '/src/classes/Gang/GangInterfaces.js'
 import GangUpgrade                                                   from '/src/classes/Gang/GangUpgrade.js'
 import * as LogAPI                                                   from '/src/api/LogAPI.js'
-import { LogType }                                                   from '/src/api/LogAPI.js'
 
 
 export default class GangMember {
@@ -21,11 +20,6 @@ export default class GangMember {
 		this.upgrades = GangUpgrade.getMemberUpgrades(ns, this.name)
 	}
 
-	public getCurrentTask(ns: NS): GangTask {
-		const taskName: GangTaskName = this.getGangMemberInformation(ns).task
-		return GangTask.getTask(ns, taskName)
-	}
-
 	public static getAllGangMembers(ns: NS): GangMember[] {
 		const names: string[] = ns.gang.getMemberNames()
 		return names.map((name) => new GangMember(ns, name))
@@ -33,6 +27,11 @@ export default class GangMember {
 
 	private static calculateAscensionMultiplier(points: number): number {
 		return Math.max(Math.pow(points / 4000, 0.7), 1)
+	}
+
+	public getCurrentTask(ns: NS): GangTask {
+		const taskName: GangTaskName = this.getGangMemberInformation(ns).task
+		return GangTask.getTask(ns, taskName)
 	}
 
 	public getGangMemberInformation(ns: NS): GangMemberInfo {
@@ -56,7 +55,7 @@ export default class GangMember {
 
 		if (currentTask.name !== task.name) {
 			ns.gang.setMemberTask(this.name, task.name)
-			if (task.name !== 'Unassigned') LogAPI.log(ns, `Gang member '${this.name}' is starting task '${task.name}'`, LogType.GANG)
+			if (task.name !== 'Unassigned') LogAPI.log(ns, `Gang member '${this.name}' is starting task '${task.name}'`)
 		}
 	}
 
@@ -65,7 +64,7 @@ export default class GangMember {
 
 		if (!results) LogAPI.warn(ns, `Could not ascend${this.name}`)
 		else {
-			LogAPI.log(ns, `Ascended ${this.name}`, LogType.GANG)
+			LogAPI.log(ns, `Ascended ${this.name}`)
 			this.upgrades = this.upgrades.filter((upgrade) => upgrade.type === 'Augmentation')
 		}
 

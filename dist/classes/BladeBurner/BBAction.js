@@ -1,6 +1,5 @@
 import { CONSTANT } from '/src/lib/constants.js';
 import * as LogAPI from '/src/api/LogAPI.js';
-import { LogType } from '/src/api/LogAPI.js';
 import { BBCity } from '/src/classes/BladeBurner/BBCity.js';
 export const CHANCE_THRESHOLD = 0.95;
 export const ACTION_SLACK = 500;
@@ -51,12 +50,12 @@ export default class BBAction {
     }
     async continue(ns, iteration) {
         // TODO: Decide whether we want to log continuing actions
-        LogAPI.log(ns, `${ns.nFormat(iteration, '000000')} - Executing ${this.type} action '${this.name}'`, LogType.BLADEBURNER);
+        LogAPI.log(ns, `${ns.nFormat(iteration, '000000')} - Executing ${this.type} action '${this.name}'`);
         await ns.sleep(this.getDuration(ns));
     }
     async execute(ns, iteration) {
         ns.bladeburner.startAction(this.type, this.name);
-        LogAPI.log(ns, `${ns.nFormat(iteration, '000000')} - Executing ${this.type} action '${this.name}'`, LogType.BLADEBURNER);
+        LogAPI.log(ns, `${ns.nFormat(iteration, '000000')} - Executing ${this.type} action '${this.name}'`);
         await ns.sleep(this.getDuration(ns));
     }
 }

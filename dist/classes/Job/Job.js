@@ -87,6 +87,6 @@ export default class Job {
             verb = 'Finished attacking';
         else
             throw new Error('This should logically never happen.');
-        LogAPI.hack(ns, `${this.id} ${verb} ${this.target.characteristics.host} - ${ToolUtils.getToolName(this.tool)}`);
+        LogAPI.debug(ns, `${this.id} ${verb} ${this.target.characteristics.host} - ${ToolUtils.getToolName(this.tool)}`);
     }
 }

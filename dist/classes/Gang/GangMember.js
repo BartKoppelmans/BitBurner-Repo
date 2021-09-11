@@ -1,15 +1,10 @@
 import GangTask from '/src/classes/Gang/GangTask.js';
 import GangUpgrade from '/src/classes/Gang/GangUpgrade.js';
 import * as LogAPI from '/src/api/LogAPI.js';
-import { LogType } from '/src/api/LogAPI.js';
 export default class GangMember {
     constructor(ns, name) {
         this.name = name;
         this.upgrades = GangUpgrade.getMemberUpgrades(ns, this.name);
-    }
-    getCurrentTask(ns) {
-        const taskName = this.getGangMemberInformation(ns).task;
-        return GangTask.getTask(ns, taskName);
     }
     static getAllGangMembers(ns) {
         const names = ns.gang.getMemberNames();
@@ -17,6 +12,10 @@ export default class GangMember {
     }
     static calculateAscensionMultiplier(points) {
         return Math.max(Math.pow(points / 4000, 0.7), 1);
+    }
+    getCurrentTask(ns) {
+        const taskName = this.getGangMemberInformation(ns).task;
+        return GangTask.getTask(ns, taskName);
     }
     getGangMemberInformation(ns) {
         return ns.gang.getMemberInformation(this.name);
@@ -37,7 +36,7 @@ export default class GangMember {
         if (currentTask.name !== task.name) {
             ns.gang.setMemberTask(this.name, task.name);
             if (task.name !== 'Unassigned')
-                LogAPI.log(ns, `Gang member '${this.name}' is starting task '${task.name}'`, LogType.GANG);
+                LogAPI.log(ns, `Gang member '${this.name}' is starting task '${task.name}'`);
         }
     }
     ascend(ns) {
@@ -45,7 +44,7 @@ export default class GangMember {
         if (!results)
             LogAPI.warn(ns, `Could not ascend${this.name}`);
         else {
-            LogAPI.log(ns, `Ascended ${this.name}`, LogType.GANG);
+            LogAPI.log(ns, `Ascended ${this.name}`);
             this.upgrades = this.upgrades.filter((upgrade) => upgrade.type === 'Augmentation');
         }
         return results;

@@ -1,6 +1,5 @@
 import * as ControlFlowAPI from '/src/api/ControlFlowAPI.js';
 import * as LogAPI from '/src/api/LogAPI.js';
-import { LogType } from '/src/api/LogAPI.js';
 export async function main(ns) {
     const flags = ns.flags([
         ['force', false],
@@ -12,6 +11,6 @@ export async function main(ns) {
     if (flags.force) {
         await ControlFlowAPI.killAllScripts(ns);
     }
-    LogAPI.log(ns, `Killed all scripts`, LogType.INFORMATION);
+    LogAPI.log(ns, `Killed all scripts`);
     ns.exit();
 }

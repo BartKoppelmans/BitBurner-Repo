@@ -126,7 +126,7 @@ function prepServer(ns, target) {
     const jobs = [];
     let availableThreads = HackUtils.calculateMaxThreads(ns, Tools.WEAKEN, true);
     if (availableThreads <= 0) {
-        LogAPI.hack(ns, 'Skipped a prep.');
+        LogAPI.debug(ns, 'Skipped a prep.');
         return;
     }
     // TODO: Ideally we pick the server that can fit all our threads here immediately,
@@ -245,7 +245,7 @@ function attackServer(ns, target) {
     const numCycles = Math.min(numPossibleCycles, CONSTANT.MAX_CYCLE_NUMBER);
     const batchId = Utils.generateHash();
     if (numCycles === 0) {
-        LogAPI.hack(ns, 'Skipped an attack.');
+        LogAPI.debug(ns, 'Skipped an attack.');
         return;
     }
     const cycles = [];
@@ -293,7 +293,7 @@ function optimizePerformance(ns, target) {
     if (originalPercentageToSteal !== optimalTarget.percentageToSteal)
         performanceUpdated = true;
     if (performanceUpdated) {
-        LogAPI.hack(ns, `Updated percentage to steal for ${target.characteristics.host} to ~${Math.round(target.percentageToSteal * 100)}%`);
+        LogAPI.debug(ns, `Updated percentage to steal for ${target.characteristics.host} to ~${Math.round(target.percentageToSteal * 100)}%`);
     }
 }
 export function destroy(ns) {

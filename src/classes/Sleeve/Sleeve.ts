@@ -1,6 +1,5 @@
 import type { BitBurner as NS, Crime, SleeveInformation, SleeveStats, SleeveTask } from 'Bitburner'
 import * as LogAPI                                                                 from '/src/api/LogAPI.js'
-import { LogType }                                                                 from '/src/api/LogAPI.js'
 
 export default class Sleeve {
 
@@ -8,6 +7,16 @@ export default class Sleeve {
 
 	public constructor(ns: NS, id: number) {
 		this.id = id
+	}
+
+	public static getSleeves(ns: NS): Sleeve[] {
+		const numSleeves: number = ns.sleeve.getNumSleeves()
+		const sleeves: Sleeve[]  = []
+
+		for (let i = 0; i < numSleeves; i++) {
+			sleeves.push(new Sleeve(ns, i))
+		}
+		return sleeves
 	}
 
 	public getInformation(ns: NS): SleeveInformation {
@@ -30,7 +39,7 @@ export default class Sleeve {
 
 
 		ns.sleeve.setToSynchronize(this.id)
-		LogAPI.log(ns, `Set sleeve ${this.id} to synchronize`, LogType.SLEEVE)
+		LogAPI.log(ns, `Set sleeve ${this.id} to synchronize`)
 	}
 
 	public recoverShock(ns: NS): void {
@@ -40,7 +49,7 @@ export default class Sleeve {
 		}
 
 		ns.sleeve.setToShockRecovery(this.id)
-		LogAPI.log(ns, `Set sleeve ${this.id} to recover from shock`, LogType.SLEEVE)
+		LogAPI.log(ns, `Set sleeve ${this.id} to recover from shock`)
 	}
 
 	public commitCrime(ns: NS, crime: Crime): void {
@@ -50,17 +59,7 @@ export default class Sleeve {
 		}
 
 		const isSuccessful: boolean = ns.sleeve.setToCommitCrime(this.id, crime)
-		if (isSuccessful) LogAPI.log(ns, `Set sleeve ${this.id} to commit crime '${crime}'`, LogType.SLEEVE)
+		if (isSuccessful) LogAPI.log(ns, `Set sleeve ${this.id} to commit crime '${crime}'`)
 		else LogAPI.warn(ns, `Failed to set sleeve ${this.id} to commit crime '${crime}'`)
-	}
-
-	public static getSleeves(ns: NS): Sleeve[] {
-		const numSleeves: number = ns.sleeve.getNumSleeves()
-		const sleeves: Sleeve[]  = []
-
-		for (let i = 0; i < numSleeves; i++) {
-			sleeves.push(new Sleeve(ns, i))
-		}
-		return sleeves
 	}
 }

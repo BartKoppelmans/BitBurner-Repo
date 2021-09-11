@@ -1,5 +1,4 @@
 import * as LogAPI from '/src/api/LogAPI.js';
-import { LogType } from '/src/api/LogAPI.js';
 import * as PlayerUtils from '/src/util/PlayerUtils.js';
 export var ProgramType;
 (function (ProgramType) {
@@ -25,7 +24,7 @@ export class Program {
             return false;
         const isSuccessful = ns.purchaseProgram(Program.toValidString(this.name));
         if (isSuccessful) {
-            LogAPI.log(ns, `Purchased ${this.name}`, LogType.INFORMATION);
+            LogAPI.log(ns, `Purchased ${this.name}`);
         }
         return isSuccessful;
     }

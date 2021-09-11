@@ -1,6 +1,5 @@
 import * as ControlFlowAPI from '/src/api/ControlFlowAPI.js';
 import * as LogAPI from '/src/api/LogAPI.js';
-import { LogType } from '/src/api/LogAPI.js';
 import * as Utils from '/src/util/Utils.js';
 import * as GangUtils from '/src/util/GangUtils.js';
 import { CONSTANT } from '/src/lib/constants.js';
@@ -22,7 +21,6 @@ const CLASH_CHANCE_THRESHOLD = 0.99;
 class GangManager {
     constructor() {
         this.focusOnRespect = false;
-        this.isReducingWantedLevel = false;
     }
     static getBestMember(ns, members) {
         const isHacking = GangUtils.isHackingGang(ns);
@@ -52,7 +50,7 @@ class GangManager {
         const average = (gangMemberStats.str + gangMemberStats.agi + gangMemberStats.def + gangMemberStats.dex) / 4;
         return average > level;
     }
-    static canWinTerritoryWarfare(ns, homeGang, gangs) {
+    static canWinTerritoryWarfare(ns, gangs) {
         return gangs.every((gang) => gang.getChanceToWinClash(ns) > CLASH_CHANCE_THRESHOLD);
     }
     static shouldReduceWantedLevel(ns) {
@@ -78,7 +76,9 @@ class GangManager {
                 }
                 ns.joinFaction('Slum Snakes');
             }
-            ns.gang.createGang('Slum Snakes');
+            const hasJoined = ns.gang.createGang('Slum Snakes');
+            if (!hasJoined)
+                await ns.sleep(CREATE_GANG_DELAY);
         }
     }
     static shouldAscend(ns, member) {
@@ -97,8 +97,14 @@ class GangManager {
             return null;
         }
         else
-            LogAPI.log(ns, `Recruited new gang member '${name}'`, LogType.GANG);
+            LogAPI.log(ns, `Recruited new gang member '${name}'`);
         return new GangMember(ns, name);
+    }
+    static removeFocusSwitch() {
+        const doc = eval('document');
+        const focusElement = doc.getElementById('gangFocusSwitchContainer');
+        if (focusElement)
+            focusElement.remove();
     }
     async initialize(ns) {
         Utils.disableLogging(ns);
@@ -107,6 +113,18 @@ class GangManager {
         this.gangs = Gang.getGangs(ns);
         this.homeGang = HomeGang.getHomeGang(ns);
         this.createFocusSwitch();
+    }
+    async start(ns) {
+        LogAPI.debug(ns, `Starting the GangManager`);
+        this.managingLoopTimeout = setTimeout(this.managingLoop.bind(this, ns), LOOP_DELAY);
+    }
+    async destroy(ns) {
+        if (this.managingLoopTimeout)
+            clearTimeout(this.managingLoopTimeout);
+        const members = GangMember.getAllGangMembers(ns);
+        members.forEach((member) => member.startTask(ns, GangTask.getUnassignedTask(ns)));
+        GangManager.removeFocusSwitch();
+        LogAPI.debug(ns, `Stopping the GangManager`);
     }
     createFocusSwitch() {
         const doc = eval('document');
@@ -130,26 +148,8 @@ class GangManager {
         if (!doc.getElementById('gangFocusSwitchContainer'))
             appendSwitch();
     }
-    removeFocusSwitch() {
-        const doc = eval('document');
-        const focusElement = doc.getElementById('gangFocusSwitchContainer');
-        if (focusElement)
-            focusElement.remove();
-    }
-    async start(ns) {
-        LogAPI.debug(ns, `Starting the GangManager`);
-        this.managingLoopTimeout = setTimeout(this.managingLoop.bind(this, ns), LOOP_DELAY);
-    }
-    async destroy(ns) {
-        if (this.managingLoopTimeout)
-            clearTimeout(this.managingLoopTimeout);
-        const members = GangMember.getAllGangMembers(ns);
-        members.forEach((member) => member.startTask(ns, GangTask.getUnassignedTask(ns)));
-        this.removeFocusSwitch();
-        LogAPI.debug(ns, `Stopping the GangManager`);
-    }
     async managingLoop(ns) {
-        const doTerritoryWarfare = GangManager.canWinTerritoryWarfare(ns, this.homeGang, this.gangs);
+        const doTerritoryWarfare = GangManager.canWinTerritoryWarfare(ns, this.gangs);
         doTerritoryWarfare ? this.homeGang.enableTerritoryWarfare(ns) : this.homeGang.disableTerritoryWarfare(ns);
         while (ns.gang.canRecruitMember()) {
             const newMember = GangManager.recruitMember(ns);
@@ -168,21 +168,21 @@ class GangManager {
         this.managingLoopTimeout = setTimeout(this.managingLoop.bind(this, ns), LOOP_DELAY);
     }
     async reduceWantedLevel(ns, members) {
-        LogAPI.log(ns, `Reducing wanted level`, LogType.GANG);
+        LogAPI.log(ns, `Reducing wanted level`);
         members.forEach((member) => {
             member.startTask(ns, GangTask.getWantedLevelReductionTask(ns, member));
         });
         while (!GangManager.hasMinimumWantedLevel(ns)) {
             await ns.sleep(LOOP_DELAY);
         }
-        LogAPI.log(ns, `Finished reducing wanted level`, LogType.GANG);
+        LogAPI.log(ns, `Finished reducing wanted level`);
     }
     manageMember(ns, member) {
         this.upgradeMember(ns, member);
         if (!GangManager.hasReachedCombatStatsLevel(ns, member, COMBAT_STAT_HIGH_THRESHOLD)) {
             return member.startTask(ns, GangTask.getTrainTask(ns));
         }
-        if (!GangManager.canWinTerritoryWarfare(ns, this.homeGang, this.gangs)) {
+        if (!GangManager.canWinTerritoryWarfare(ns, this.gangs)) {
             return member.startTask(ns, GangTask.getTerritoryWarfareTask(ns));
         }
         const task = (this.focusOnRespect) ? GangTask.getRespectTask(ns, member) : GangTask.getMoneyTask(ns, member);
@@ -199,7 +199,7 @@ class GangManager {
         if (!GangManager.hasReachedCombatStatsLevel(ns, member, COMBAT_STAT_HIGH_THRESHOLD)) {
             return member.startTask(ns, GangTask.getTrainTask(ns));
         }
-        if (!GangManager.canWinTerritoryWarfare(ns, this.homeGang, this.gangs)) {
+        if (!GangManager.canWinTerritoryWarfare(ns, this.gangs)) {
             return member.startTask(ns, GangTask.getTerritoryWarfareTask(ns));
         }
         const task = (this.focusOnRespect) ? GangTask.getRespectTask(ns, member) : GangTask.getMoneyTask(ns, member);
@@ -222,7 +222,7 @@ class GangManager {
             }
         }
         if (numUpgrades > 0) {
-            LogAPI.log(ns, `Purchased ${numUpgrades} upgrades for ${member.name}`, LogType.GANG);
+            LogAPI.log(ns, `Purchased ${numUpgrades} upgrades for ${member.name}`);
         }
     }
 }

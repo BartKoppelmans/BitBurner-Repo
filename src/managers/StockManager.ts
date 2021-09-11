@@ -1,7 +1,6 @@
 import type { BitBurner as NS } from 'Bitburner'
 import * as ControlFlowAPI      from '/src/api/ControlFlowAPI.js'
 import * as LogAPI              from '/src/api/LogAPI.js'
-import { LogType }              from '/src/api/LogAPI.js'
 import * as Utils               from '/src/util/Utils.js'
 import * as PlayerUtils         from '/src/util/PlayerUtils.js'
 import { Manager }              from '/src/classes/Misc/ScriptInterfaces.js'
@@ -27,70 +26,10 @@ class StockManager implements Manager {
 		return totalBudget - corpus
 	}
 
-	public async initialize(ns: NS) {
-		Utils.disableLogging(ns)
-
-		this.stocks = Stock.getStocks(ns)
-
-		this.startingCorpus = this.stocks.reduce((total, stock) => total + stock.getStockCorpus(ns), 0)
-	}
-
 	private static hasShortAccess(ns: NS): boolean {
 		return ns.getPlayer().bitNodeN === 8 ||
 			ns.getOwnedSourceFiles().includes({ n: 8, lvl: 2 }) ||
 			ns.getOwnedSourceFiles().includes({ n: 8, lvl: 3 })
-	}
-
-	public async start(ns: NS): Promise<void> {
-		LogAPI.debug(ns, `Starting the StockManager`)
-
-		LogAPI.log(ns, `Starting corpus value of ${ns.nFormat(this.startingCorpus, '$0.000a')}`, LogType.STOCK)
-
-		this.managingLoopTimeout = setTimeout(this.managingLoop.bind(this, ns), LOOP_DELAY)
-	}
-
-	public async destroy(ns: NS): Promise<void> {
-		if (this.managingLoopTimeout) clearTimeout(this.managingLoopTimeout)
-
-		// TODO: Sell all stocks
-		this.stocks.forEach((stock) => {
-			stock.update(ns)
-			stock.sellAll(ns)
-		})
-
-		LogAPI.debug(ns, `Stopping the StockManager`)
-	}
-
-	private async managingLoop(ns: NS): Promise<void> {
-		// let corpus: number = this.stocks.reduce((total, stock) => total + stock.getStockCorpus(ns), 0)
-		// LogAPI.log(ns, `Total corpus value of ${ns.nFormat(corpus, '$0.000a')} before transactions`, LogType.STOCK)
-
-		this.stocks.forEach((stock) => stock.update(ns))
-
-		this.stocks.sort((a, b) => {
-			if (b.stockInformation.expectedReturn === a.stockInformation.expectedReturn) {
-				return Math.abs(b.stockInformation.probability) - Math.abs(a.stockInformation.probability)
-			}
-
-			return b.stockInformation.expectedReturn - a.stockInformation.expectedReturn
-		})
-
-		{
-			const ownedStocks: Stock[] = this.stocks.filter((stock) => stock.hasShares(ns))
-
-			// We update the ownedStocks in-place in the coming function calls
-
-			StockManager.sellUnderperforming(ns, ownedStocks)
-
-			StockManager.sellIncorrectPositions(ns, ownedStocks)
-		}
-
-		StockManager.buyShares(ns, this.stocks)
-
-		// corpus = this.stocks.reduce((total, stock) => total + stock.getStockCorpus(ns), 0)
-		// LogAPI.log(ns, `Total corpus value of ${ns.nFormat(corpus, '$0.000a')} after transactions`, LogType.STOCK)
-
-		this.managingLoopTimeout = setTimeout(this.managingLoop.bind(this, ns), LOOP_DELAY)
 	}
 
 	private static buyShares(ns: NS, stocks: Stock[]): void {
@@ -174,6 +113,66 @@ class StockManager implements Manager {
 			else stocks.splice(index, 1)
 		})
 
+	}
+
+	public async initialize(ns: NS) {
+		Utils.disableLogging(ns)
+
+		this.stocks = Stock.getStocks(ns)
+
+		this.startingCorpus = this.stocks.reduce((total, stock) => total + stock.getStockCorpus(ns), 0)
+	}
+
+	public async start(ns: NS): Promise<void> {
+		LogAPI.debug(ns, `Starting the StockManager`)
+
+		LogAPI.log(ns, `Starting corpus value of ${ns.nFormat(this.startingCorpus, '$0.000a')}`)
+
+		this.managingLoopTimeout = setTimeout(this.managingLoop.bind(this, ns), LOOP_DELAY)
+	}
+
+	public async destroy(ns: NS): Promise<void> {
+		if (this.managingLoopTimeout) clearTimeout(this.managingLoopTimeout)
+
+		// TODO: Sell all stocks
+		this.stocks.forEach((stock) => {
+			stock.update(ns)
+			stock.sellAll(ns)
+		})
+
+		LogAPI.debug(ns, `Stopping the StockManager`)
+	}
+
+	private async managingLoop(ns: NS): Promise<void> {
+		// let corpus: number = this.stocks.reduce((total, stock) => total + stock.getStockCorpus(ns), 0)
+		// LogAPI.log(ns, `Total corpus value of ${ns.nFormat(corpus, '$0.000a')} before transactions`)
+
+		this.stocks.forEach((stock) => stock.update(ns))
+
+		this.stocks.sort((a, b) => {
+			if (b.stockInformation.expectedReturn === a.stockInformation.expectedReturn) {
+				return Math.abs(b.stockInformation.probability) - Math.abs(a.stockInformation.probability)
+			}
+
+			return b.stockInformation.expectedReturn - a.stockInformation.expectedReturn
+		})
+
+		{
+			const ownedStocks: Stock[] = this.stocks.filter((stock) => stock.hasShares(ns))
+
+			// We update the ownedStocks in-place in the coming function calls
+
+			StockManager.sellUnderperforming(ns, ownedStocks)
+
+			StockManager.sellIncorrectPositions(ns, ownedStocks)
+		}
+
+		StockManager.buyShares(ns, this.stocks)
+
+		// corpus = this.stocks.reduce((total, stock) => total + stock.getStockCorpus(ns), 0)
+		// LogAPI.log(ns, `Total corpus value of ${ns.nFormat(corpus, '$0.000a')} after transactions`)
+
+		this.managingLoopTimeout = setTimeout(this.managingLoop.bind(this, ns), LOOP_DELAY)
 	}
 
 }
