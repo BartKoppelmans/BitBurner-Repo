@@ -2,6 +2,7 @@ import type { BitBurner as NS, BladeburnerBlackOps }  from 'Bitburner'
 import { BBActionChance, BBActionName, BBActionType } from '/src/classes/BladeBurner/BBInterfaces.js'
 import { CONSTANT }                                   from '/src/lib/constants.js'
 import * as LogAPI                                    from '/src/api/LogAPI.js'
+import { LogType }                                    from '/src/api/LogAPI.js'
 import { BBCity }                                     from '/src/classes/BladeBurner/BBCity.js'
 
 export const CHANCE_THRESHOLD: number = 0.95 as const
@@ -66,14 +67,14 @@ export default class BBAction {
 	public async continue(ns: NS, iteration: number): Promise<void> {
 
 		// TODO: Decide whether we want to log continuing actions
-		LogAPI.log(ns, `${ns.nFormat(iteration, '000000')} - Executing ${this.type} action '${this.name}'`)
+		LogAPI.log(ns, `${ns.nFormat(iteration, '000000')} - Executing ${this.type} action '${this.name}'`, LogType.BLADEBURNER)
 
 		await ns.sleep(this.getDuration(ns))
 	}
 
 	public async execute(ns: NS, iteration: number): Promise<void> {
 		ns.bladeburner.startAction(this.type, this.name)
-		LogAPI.log(ns, `${ns.nFormat(iteration, '000000')} - Executing ${this.type} action '${this.name}'`)
+		LogAPI.log(ns, `${ns.nFormat(iteration, '000000')} - Executing ${this.type} action '${this.name}'`, LogType.BLADEBURNER)
 		await ns.sleep(this.getDuration(ns))
 	}
 }

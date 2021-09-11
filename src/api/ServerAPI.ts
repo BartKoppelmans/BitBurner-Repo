@@ -6,6 +6,7 @@ import { CONSTANT }                                                   from '/src
 import * as ServerUtils                                               from '/src/util/ServerUtils.js'
 import * as SerializationUtils                                        from '/src/util/SerializationUtils.js'
 import * as LogAPI                                                    from '/src/api/LogAPI.js'
+import { LogType }                                                    from '/src/api/LogAPI.js'
 import PurchasedServer                                                from '/src/classes/Server/PurchasedServer.js'
 
 const MIN_NUMBER_PURPOSED_SERVERS: number = 2 as const
@@ -109,7 +110,7 @@ export function quarantine(ns: NS, host: string, ram: number): void {
 
 	updateServer(ns, server)
 
-	LogAPI.log(ns, `We put ${server.characteristics.host} into quarantine`)
+	LogAPI.log(ns, `We put ${server.characteristics.host} into quarantine`, LogType.PURCHASED_SERVER)
 }
 
 export function upgradeServer(ns: NS, host: string, ram: number): void {
@@ -128,7 +129,7 @@ export function upgradeServer(ns: NS, host: string, ram: number): void {
 
 	const boughtServer: string = ns.purchaseServer(host, ram)
 	if (boughtServer) {
-		LogAPI.log(ns, `Upgraded server ${boughtServer} with ${ram}GB ram.`)
+		LogAPI.log(ns, `Upgraded server ${boughtServer} with ${ram}GB ram.`, LogType.PURCHASED_SERVER)
 	} else throw new Error('Could not purchase the server again.')
 
 	server.purpose                = PurchasedServer.determinePurpose(ns, server.characteristics.purchasedServerId)
@@ -214,7 +215,7 @@ export function addPreppingServer(ns: NS): void {
 
 	setPurpose(ns, newPrepServer.characteristics.host, ServerPurpose.PREP)
 
-	LogAPI.log(ns, `Changed purchased server ${newPrepServer.characteristics.host} to prep`)
+	LogAPI.log(ns, `Changed purchased server ${newPrepServer.characteristics.host} to prep`, LogType.INFORMATION)
 }
 
 export function addHackingServer(ns: NS): void {
@@ -234,7 +235,7 @@ export function addHackingServer(ns: NS): void {
 
 	setPurpose(ns, newHackServer.characteristics.host, ServerPurpose.HACK)
 
-	LogAPI.log(ns, `Changed purchased server ${newHackServer.characteristics.host} to hack`)
+	LogAPI.log(ns, `Changed purchased server ${newHackServer.characteristics.host} to hack`, LogType.INFORMATION)
 }
 
 // We sort this ascending

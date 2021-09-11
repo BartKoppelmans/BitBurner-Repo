@@ -1,5 +1,6 @@
 import type { BitBurner as NS } from 'Bitburner'
 import * as LogAPI              from '/src/api/LogAPI.js'
+import { LogType }              from '/src/api/LogAPI.js'
 import * as ServerAPI           from '/src/api/ServerAPI.js'
 import HackableServer           from '/src/classes/Server/HackableServer.js'
 import { Program, ProgramType } from '/src/classes/Misc/Program.js'
@@ -67,7 +68,7 @@ class ProgramRunner implements Runner {
 				else return
 			} else {
 				ns.purchaseTor()
-				LogAPI.log(ns, `Purchased TOR Router`)
+				LogAPI.log(ns, `Purchased TOR Router`, LogType.INFORMATION)
 			}
 		}
 

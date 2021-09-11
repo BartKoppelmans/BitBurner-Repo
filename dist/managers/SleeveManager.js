@@ -5,22 +5,9 @@ import { CONSTANT } from '/src/lib/constants.js';
 import Sleeve from '/src/classes/Sleeve/Sleeve.js';
 const LOOP_DELAY = 10000;
 class SleeveManager {
-    static manageSleeve(ns, sleeve) {
-        const information = sleeve.getInformation(ns);
-        const stats = sleeve.getStats(ns);
-        if (stats.shock > 0) {
-            return sleeve.recoverShock(ns);
-            // TODO: Check whether mugging is better?
-        }
-        if (stats.sync < 100) {
-            return sleeve.synchronize(ns);
-        }
-        // TODO: Buy augments if possible?
-        // TODO: If the stats are low, we should first train
-        return sleeve.commitCrime(ns, 'Homicide');
-    }
     async initialize(ns) {
         Utils.disableLogging(ns);
+        this.sleeves = Sleeve.getSleeves(ns);
     }
     async start(ns) {
         LogAPI.debug(ns, `Starting the SleeveManager`);
@@ -32,11 +19,21 @@ class SleeveManager {
         LogAPI.debug(ns, `Stopping the SleeveManager`);
     }
     async managingLoop(ns) {
-        const sleeves = Sleeve.getSleeves(ns); // To make sure that we update every time
-        for (const sleeve of sleeves) {
+        for (const sleeve of this.sleeves) {
             SleeveManager.manageSleeve(ns, sleeve);
         }
         this.managingLoopTimeout = setTimeout(this.managingLoop.bind(this, ns), LOOP_DELAY);
+    }
+    static manageSleeve(ns, sleeve) {
+        const information = sleeve.getInformation(ns);
+        const stats = sleeve.getStats(ns);
+        if (stats.shock > 0) {
+            return sleeve.recoverShock(ns);
+        }
+        if (stats.sync < 100) {
+            return sleeve.synchronize(ns);
+        }
+        return sleeve.commitCrime(ns, 'Homicide');
     }
 }
 export async function start(ns) {

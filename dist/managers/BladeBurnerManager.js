@@ -1,5 +1,6 @@
 import * as ControlFlowAPI from '/src/api/ControlFlowAPI.js';
 import * as LogAPI from '/src/api/LogAPI.js';
+import { LogType } from '/src/api/LogAPI.js';
 import * as Utils from '/src/util/Utils.js';
 import { CONSTANT } from '/src/lib/constants.js';
 import * as BladeBurnerUtils from '/src/util/BladeBurnerUtils.js';
@@ -44,14 +45,10 @@ class BladeBurnerManager {
         const augs = ns.getOwnedAugmentations();
         return augs.includes('The Blade\'s Simulacrum');
     }
-    static shouldSkipIteration(ns) {
-        return !BladeBurnerManager.hasSimulacrum(ns) &&
-            (ns.isBusy() || ns.scriptRunning('/src/scripts/executeCrimes.js', CONSTANT.HOME_SERVER_HOST));
-    }
     async initialize(ns) {
         Utils.disableLogging(ns);
         while (!ns.bladeburner.joinBladeburnerDivision()) {
-            LogAPI.log(ns, `Waiting to join BladeBurner Division`);
+            LogAPI.log(ns, `Waiting to join BladeBurner Division`, LogType.BLADEBURNER);
             await ns.sleep(JOIN_DELAY);
         }
         this.actions = BladeBurnerUtils.createActions(ns);
@@ -80,6 +77,10 @@ class BladeBurnerManager {
                 return true;
         }
         return false;
+    }
+    static shouldSkipIteration(ns) {
+        return !BladeBurnerManager.hasSimulacrum(ns) &&
+            (ns.isBusy() || ns.scriptRunning('/src/scripts/executeCrimes.js', CONSTANT.HOME_SERVER_HOST));
     }
     async managingLoop(ns) {
         const nextLoop = (isIteration) => {
@@ -185,7 +186,7 @@ class BladeBurnerManager {
                 }
             } while (hasUpgraded);
         }
-        upgradedSkills.forEach((skill) => LogAPI.log(ns, `Upgraded skill '${skill.name}' to level ${skill.getLevel(ns)}`));
+        upgradedSkills.forEach((skill) => LogAPI.log(ns, `Upgraded skill '${skill.name}' to level ${skill.getLevel(ns)}`, LogType.BLADEBURNER));
     }
 }
 export async function start(ns) {

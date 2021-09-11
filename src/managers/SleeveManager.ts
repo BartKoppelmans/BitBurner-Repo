@@ -12,28 +12,12 @@ class SleeveManager implements Manager {
 
 	private managingLoopTimeout?: ReturnType<typeof setTimeout>
 
-	private static manageSleeve(ns: NS, sleeve: Sleeve): void {
-		const information: SleeveInformation = sleeve.getInformation(ns)
-		const stats: SleeveStats             = sleeve.getStats(ns)
-
-		if (stats.shock > 0) {
-			return sleeve.recoverShock(ns)
-			// TODO: Check whether mugging is better?
-		}
-
-		if (stats.sync < 100) {
-			return sleeve.synchronize(ns)
-		}
-
-		// TODO: Buy augments if possible?
-
-		// TODO: If the stats are low, we should first train
-
-		return sleeve.commitCrime(ns, 'Homicide')
-	}
+	private sleeves!: Sleeve[]
 
 	public async initialize(ns: NS) {
 		Utils.disableLogging(ns)
+
+		this.sleeves = Sleeve.getSleeves(ns)
 	}
 
 	public async start(ns: NS): Promise<void> {
@@ -49,13 +33,27 @@ class SleeveManager implements Manager {
 	}
 
 	private async managingLoop(ns: NS): Promise<void> {
-		const sleeves: Sleeve[] = Sleeve.getSleeves(ns) // To make sure that we update every time
 
-		for (const sleeve of sleeves) {
+		for (const sleeve of this.sleeves) {
 			SleeveManager.manageSleeve(ns, sleeve)
 		}
 
 		this.managingLoopTimeout = setTimeout(this.managingLoop.bind(this, ns), LOOP_DELAY)
+	}
+
+	private static manageSleeve(ns: NS, sleeve: Sleeve): void {
+		const information: SleeveInformation = sleeve.getInformation(ns)
+		const stats: SleeveStats             = sleeve.getStats(ns)
+
+		if (stats.shock > 0) {
+			return sleeve.recoverShock(ns)
+		}
+
+		if (stats.sync < 100) {
+			return sleeve.synchronize(ns)
+		}
+
+		return sleeve.commitCrime(ns, 'Homicide')
 	}
 
 }

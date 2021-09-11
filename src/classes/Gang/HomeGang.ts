@@ -1,6 +1,7 @@
 import type { BitBurner as NS, GangGenInfo, GangName } from 'Bitburner'
 import Gang                                            from '/src/classes/Gang/Gang.js'
 import * as LogAPI                                     from '/src/api/LogAPI.js'
+import { LogType }                                     from '/src/api/LogAPI.js'
 
 export default class HomeGang extends Gang {
 
@@ -14,12 +15,12 @@ export default class HomeGang extends Gang {
 		return new HomeGang(ns, name)
 	}
 
-	public static calculateWantedPenalty(ns: NS, gangInformation: GangGenInfo): number {
+	public calculateWantedPenalty(ns: NS): number {
+		const gangInformation: GangGenInfo = this.getGangInformation(ns)
 		return (gangInformation.respect) / (gangInformation.respect + gangInformation.wantedLevel)
 	}
 
-	public calculateWantedPenalty(ns: NS): number {
-		const gangInformation: GangGenInfo = this.getGangInformation(ns)
+	public static calculateWantedPenalty(ns: NS, gangInformation: GangGenInfo): number {
 		return (gangInformation.respect) / (gangInformation.respect + gangInformation.wantedLevel)
 	}
 
@@ -30,17 +31,17 @@ export default class HomeGang extends Gang {
 		if (isInWarfare) return
 
 		ns.gang.setTerritoryWarfare(true)
-		LogAPI.log(ns, `Enabling territory warfare`)
+		LogAPI.log(ns, `Enabling territory warfare`, LogType.GANG)
 	}
 
 	public disableTerritoryWarfare(ns: NS): void {
 		const clashChance: number  = this.getGangInformation(ns).territoryClashChance
 		const isInWarfare: boolean = (clashChance === 1)
 
-		if (!isInWarfare) return
+		if (!isInWarfare) return;
 
 		ns.gang.setTerritoryWarfare(false)
-		LogAPI.log(ns, `Disabling territory warfare`)
+		LogAPI.log(ns, `Disabling territory warfare`, LogType.GANG)
 	}
 
 	public getGangInformation(ns: NS): GangGenInfo {

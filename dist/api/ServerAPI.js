@@ -3,6 +3,7 @@ import { CONSTANT } from '/src/lib/constants.js';
 import * as ServerUtils from '/src/util/ServerUtils.js';
 import * as SerializationUtils from '/src/util/SerializationUtils.js';
 import * as LogAPI from '/src/api/LogAPI.js';
+import { LogType } from '/src/api/LogAPI.js';
 import PurchasedServer from '/src/classes/Server/PurchasedServer.js';
 const MIN_NUMBER_PURPOSED_SERVERS = 2;
 export function getServerMap(ns) {
@@ -85,7 +86,7 @@ export function quarantine(ns, host, ram) {
     server.quarantinedInformation = { quarantined: true, ram, originalPurpose: server.purpose };
     server.purpose = ServerPurpose.NONE;
     updateServer(ns, server);
-    LogAPI.log(ns, `We put ${server.characteristics.host} into quarantine`);
+    LogAPI.log(ns, `We put ${server.characteristics.host} into quarantine`, LogType.PURCHASED_SERVER);
 }
 export function upgradeServer(ns, host, ram) {
     const server = getServerByName(ns, host);
@@ -100,7 +101,7 @@ export function upgradeServer(ns, host, ram) {
         throw new Error(`Could not delete server ${host}`);
     const boughtServer = ns.purchaseServer(host, ram);
     if (boughtServer) {
-        LogAPI.log(ns, `Upgraded server ${boughtServer} with ${ram}GB ram.`);
+        LogAPI.log(ns, `Upgraded server ${boughtServer} with ${ram}GB ram.`, LogType.PURCHASED_SERVER);
     }
     else
         throw new Error('Could not purchase the server again.');
@@ -172,7 +173,7 @@ export function addPreppingServer(ns) {
     if (!newPrepServer)
         return;
     setPurpose(ns, newPrepServer.characteristics.host, ServerPurpose.PREP);
-    LogAPI.log(ns, `Changed purchased server ${newPrepServer.characteristics.host} to prep`);
+    LogAPI.log(ns, `Changed purchased server ${newPrepServer.characteristics.host} to prep`, LogType.INFORMATION);
 }
 export function addHackingServer(ns) {
     // TODO: Make this return a boolean and log in the daemon script
@@ -185,7 +186,7 @@ export function addHackingServer(ns) {
     if (!newHackServer)
         return;
     setPurpose(ns, newHackServer.characteristics.host, ServerPurpose.HACK);
-    LogAPI.log(ns, `Changed purchased server ${newHackServer.characteristics.host} to hack`);
+    LogAPI.log(ns, `Changed purchased server ${newHackServer.characteristics.host} to hack`, LogType.INFORMATION);
 }
 // We sort this ascending
 export function getPurchasedServers(ns, sortBy = 'ram') {

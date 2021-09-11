@@ -1,4 +1,5 @@
 import * as LogAPI from '/src/api/LogAPI.js';
+import { LogType } from '/src/api/LogAPI.js';
 import * as ServerAPI from '/src/api/ServerAPI.js';
 import { Program, ProgramType } from '/src/classes/Misc/Program.js';
 import { CONSTANT } from '/src/lib/constants.js';
@@ -53,7 +54,7 @@ class ProgramRunner {
             }
             else {
                 ns.purchaseTor();
-                LogAPI.log(ns, `Purchased TOR Router`);
+                LogAPI.log(ns, `Purchased TOR Router`, LogType.INFORMATION);
             }
         }
         const remainingPrograms = ProgramRunner.getRemainingPrograms(ns);

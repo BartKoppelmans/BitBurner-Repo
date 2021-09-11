@@ -1,5 +1,6 @@
 import { BitBurner as NS, City } from 'Bitburner'
 import * as LogAPI               from '/src/api/LogAPI.js'
+import { LogType }               from '/src/api/LogAPI.js'
 
 export class BBCity {
 
@@ -29,6 +30,6 @@ export class BBCity {
 
 	public moveTo(ns: NS): void {
 		ns.bladeburner.switchCity(this.name)
-		LogAPI.log(ns, `Moved to ${this.name}`)
+		LogAPI.log(ns, `Moved to ${this.name}`, LogType.BLADEBURNER)
 	}
 }
