@@ -1626,6 +1626,84 @@ declare module 'Bitburner' {
 		factionWorkType: FactionWork | '';
 	}
 
+	export type CorporationIndustry = 'Energy' |
+		'Water Utilities' |
+		'Agriculture' |
+		'Fishing' |
+		'Mining' |
+		'Food' |
+		'Tobacco' |
+		'Chemical' |
+		'Pharmaceutical' |
+		'Computer Hardware' |
+		'Robotics' |
+		'Software' |
+		'Healthcare' |
+		'RealEstate'
+
+	export type CorporationUpgrade =
+		'Smart Factories'
+		| 'Smart Storage'
+		| 'DreamSense'
+		| 'Wilson Analytics'
+		| 'Nuoptimal Nootropic Injector Implants'
+		| 'Speech Processor Implants'
+		| 'Neural Accelerators'
+		| 'FocusWires'
+		| 'ABC SalesBots'
+		| 'Project Insight'
+
+	export type CorporationMaterialName = 'Water' |
+		'Energy' |
+		'Food' |
+		'Plants' |
+		'Metal' |
+		'Hardware' |
+		'Chemicals' |
+		'Real Estate' |
+		'Drugs' |
+		'Robots' |
+		'AI Cores'
+
+	export type CorporationEmployeePosition = 'Operations' |
+		'Engineer' |
+		'Business' |
+		'Management' |
+		'Research & Development' |
+		'Training' |
+		'Unassigned'
+
+	export type CorporationResearch = 'AutoBrew' |
+		'AutoPartyManager' |
+		'Automatic Drug Administration' |
+		'Bulk Purchasing' |
+		'CPH4 Injections' |
+		'Drones' |
+		'Drones - Assembly' |
+		'Drones - Transport' |
+		'Go-Juice' |
+		'Hi-Tech R&D Laboratory' |
+		'HRBuddy-Recruitment' |
+		'HRBuddy-Training' |
+		'JoyWire' |
+		'Market-TA.I' |
+		'Market-TA.II' |
+		'Overclock' |
+		'Self-Correcting Assemblers' |
+		'Sti.mu' |
+		'sudo.Assist' |
+		'uPgrade: Capacity.I' |
+		'uPgrade: Capacity.II' |
+		'uPgrade: Dashboard' |
+		'uPgrade: Fulcrum'
+
+	export type CorporationDivision = any
+	export type CorporationOffice = any
+	export type CorporationWarehouse = any
+	export type CorporationMaterial = any
+	export type CorporationProduct = any
+	export type CorporationEmployee = any
+
 	export interface TIX {
 		/**
 		 * Returns an array of the symbols of the tradable stocks
@@ -3856,6 +3934,79 @@ declare module 'Bitburner' {
 		purchaseSleeveAug(sleeveNumber: number, augName: AugmentName): boolean;
 	}
 
+	export interface Corporation {
+
+		// TODO: Improve please...
+
+		expandIndustry(industry: CorporationIndustry, division: string): void
+
+		expandCity(division: string, city: City): void;
+
+		unlockUpgrade(upgrade: CorporationUpgrade): void
+
+		levelUpgrade(upgrade: CorporationUpgrade): void
+
+		issueDividends(percent: number): void
+
+		sellMaterial(division: string, city: City, material: CorporationMaterialName, amount: number, price: number): void
+
+		sellProduct(division: string, city: City, product: string, amount: number, price: number, all: boolean): void
+
+		discontinueProduct(division: string, product: string): void
+
+		setSmartSupply(division: string, city: City, enabled: boolean): void
+
+		setSmartSupplyUseLeftovers(): void
+
+		buyMaterial(division: string, city: City, material: CorporationMaterialName, amount: number): void
+
+		employees(division: string, city: City): CorporationEmployee[]
+
+		assignJob(division: string, city: City, employeeName: string, job: CorporationEmployeePosition): void
+
+		hireEmployee(division: string, city: City): void
+
+		upgradeOfficeSize(division: string, city: City, size: number): void
+
+		throwParty(division: string, city: City, costPerEmployee: number): void
+
+		purchaseWarehouse(division: string, city: City): void
+
+		upgradeWarehouse(division: string, city: City): void
+
+		buyCoffee(division: string, city: City): void
+
+		hireAdVert(division: string): void
+
+		makeProduct(division: string, city: City, product: string, designInvest: number, marketingInvest: number): void
+
+		research(division: string, researchName: CorporationResearch): void
+
+		exportMaterial(sourceDivision: string, sourceCity: City, targetDivision: string, targetCity: City, material: CorporationMaterialName, amount: number): void
+
+		cancelExportMaterial(sourceDivision: string, sourceCity: City, targetDivision: string, targetCity: City, material: CorporationMaterialName, amount: number): void
+
+		setMaterialMarketTA1(division: string, city: City, material: CorporationMaterialName, enabled: boolean): void
+
+		setMaterialMarketTA2(division: string, city: City, material: CorporationMaterialName, enabled: boolean): void
+
+		setProductMarketTA1(division: string, product: string, enabled: boolean): void
+
+		setProductMarketTA2(division: string, product: string, enabled: boolean): void
+
+		getDivision(division: string): CorporationDivision
+
+		getOffice(division: string, city: City): CorporationOffice
+
+		getWarehouse(division: string, city: City): CorporationWarehouse
+
+		getMaterial(division: string, city: City, material: CorporationMaterialName): CorporationMaterial
+
+		getProduct(division: string, product: string): CorporationProduct
+
+		getEmployee(division: string, city: City, employeeName: string): CorporationEmployee
+	}
+
 	export interface BitBurner extends TIX, Singularity {
 		/**
 		 * Not all functions in the Hacknet Node API are immediately available.
@@ -3883,6 +4034,8 @@ declare module 'Bitburner' {
 		 * @ramCost 0 GB
 		 */
 		readonly sleeve: Sleeve;
+
+		readonly corporation: Corporation;
 
 		/**
 		 * Arguments passed into a script can be accessed using a normal

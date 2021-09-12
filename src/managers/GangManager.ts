@@ -108,8 +108,8 @@ class GangManager implements Manager {
 
 				ns.joinFaction('Slum Snakes')
 			}
-
-			ns.gang.createGang('Slum Snakes')
+			const hasCreatedGang: boolean = ns.gang.createGang('Slum Snakes')
+			if (!hasCreatedGang) await ns.sleep(CREATE_GANG_DELAY)
 		}
 	}
 

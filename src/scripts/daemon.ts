@@ -364,7 +364,8 @@ function optimizePerformance(ns: NS, target: HackableServer): void {
 
 	const hackingServers: Server[] = ServerAPI.getHackingServers(ns)
 
-	const originalPercentageToSteal: number                                     = target.percentageToSteal
+	const originalPercentageToSteal: number = target.percentageToSteal
+
 	let optimalTarget: { percentageToSteal: number, profitsPerSecond: number; } = {
 		percentageToSteal: CONSTANT.MIN_PERCENTAGE_TO_STEAL,
 		profitsPerSecond: -1,

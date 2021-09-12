@@ -77,7 +77,9 @@ class GangManager {
                 }
                 ns.joinFaction('Slum Snakes');
             }
-            ns.gang.createGang('Slum Snakes');
+            const hasCreatedGang = ns.gang.createGang('Slum Snakes');
+            if (!hasCreatedGang)
+                await ns.sleep(CREATE_GANG_DELAY);
         }
     }
     static shouldAscend(ns, member) {

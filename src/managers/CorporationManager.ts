@@ -13,6 +13,12 @@ class CorporationManager implements Manager {
 
 	public async initialize(ns: NS) {
 		Utils.disableLogging(ns)
+
+		await CorporationManager.createCorporation(ns)
+	}
+
+	private static async createCorporation(ns: NS): Promise<void> {
+		// TODO: Not possible yet
 	}
 
 	public async start(ns: NS): Promise<void> {

@@ -6,6 +6,10 @@ const LOOP_DELAY = 1000;
 class CorporationManager {
     async initialize(ns) {
         Utils.disableLogging(ns);
+        await CorporationManager.createCorporation(ns);
+    }
+    static async createCorporation(ns) {
+        // TODO: Not possible yet
     }
     async start(ns) {
         LogAPI.debug(ns, `Starting the CorporationManager`);
