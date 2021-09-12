@@ -16,13 +16,49 @@ export default class GangTask {
 		return new GangTask(ns, taskName)
 	}
 
-	public getTaskStats(ns: NS): GangTasksStats {
-		return ns.gang.getTaskStats(this.name)
-	}
-
 	public static getAllTasks(ns: NS): GangTask[] {
 		const taskNames: GangTaskName[] = ns.gang.getTaskNames()
 		return taskNames.map((name) => new GangTask(ns, name))
+	}
+
+	public static getTrainTask(ns: NS): GangTask {
+		if (GangUtils.isHackingGang(ns)) return GangTask.getTask(ns, 'Train Hacking')
+		else return GangTask.getTask(ns, 'Train Combat')
+	}
+
+	public static getRespectTask(ns: NS, member: GangMember): GangTask {
+		let optimalGain: GangTaskGain = { task: this.getUnassignedTask(ns), gain: 0 }
+		for (const task of this.getAllTasks(ns)) {
+			const gain: number = this.calculateRespectGain(ns, task, member)
+			if (gain > optimalGain.gain) optimalGain = { task, gain }
+		}
+		return optimalGain.task
+	}
+
+	public static getWantedLevelReductionTask(ns: NS, member: GangMember): GangTask {
+		let optimalGain: GangTaskGain = { task: this.getUnassignedTask(ns), gain: 0 }
+		for (const task of this.getAllTasks(ns)) {
+			const gain: number = this.calculateWantedLevelGain(ns, task, member)
+			if (gain < optimalGain.gain) optimalGain = { task, gain }
+		}
+		return optimalGain.task
+	}
+
+	public static getMoneyTask(ns: NS, member: GangMember): GangTask {
+		let optimalGain: GangTaskGain = { task: this.getUnassignedTask(ns), gain: 0 }
+		for (const task of this.getAllTasks(ns)) {
+			const gain: number = this.calculateMoneyGain(ns, task, member)
+			if (gain > optimalGain.gain) optimalGain = { task, gain }
+		}
+		return optimalGain.task
+	}
+
+	public static getTerritoryWarfareTask(ns: NS): GangTask {
+		return GangTask.getTask(ns, 'Territory Warfare')
+	}
+
+	public static getUnassignedTask(ns: NS): GangTask {
+		return GangTask.getTask(ns, 'Unassigned')
 	}
 
 	private static calculateRespectGain(ns: NS, task: GangTask, member: GangMember): number {
@@ -105,43 +141,7 @@ export default class GangTask {
 		return Math.min(100, calc)
 	}
 
-	public static getTrainTask(ns: NS): GangTask {
-		if (GangUtils.isHackingGang(ns)) return GangTask.getTask(ns, 'Train Hacking')
-		else return GangTask.getTask(ns, 'Train Combat')
-	}
-
-	public static getRespectTask(ns: NS, member: GangMember): GangTask {
-		let optimalGain: GangTaskGain = { task: this.getUnassignedTask(ns), gain: 0 }
-		for (const task of this.getAllTasks(ns)) {
-			const gain: number = this.calculateRespectGain(ns, task, member)
-			if (gain > optimalGain.gain) optimalGain = { task, gain }
-		}
-		return optimalGain.task
-	}
-
-	public static getWantedLevelReductionTask(ns: NS, member: GangMember): GangTask {
-		let optimalGain: GangTaskGain = { task: this.getUnassignedTask(ns), gain: 0 }
-		for (const task of this.getAllTasks(ns)) {
-			const gain: number = this.calculateWantedLevelGain(ns, task, member)
-			if (gain < optimalGain.gain) optimalGain = { task, gain }
-		}
-		return optimalGain.task
-	}
-
-	public static getMoneyTask(ns: NS, member: GangMember): GangTask {
-		let optimalGain: GangTaskGain = { task: this.getUnassignedTask(ns), gain: 0 }
-		for (const task of this.getAllTasks(ns)) {
-			const gain: number = this.calculateMoneyGain(ns, task, member)
-			if (gain > optimalGain.gain) optimalGain = { task, gain }
-		}
-		return optimalGain.task
-	}
-
-	public static getTerritoryWarfareTask(ns: NS): GangTask {
-		return GangTask.getTask(ns, 'Territory Warfare')
-	}
-
-	public static getUnassignedTask(ns: NS): GangTask {
-		return GangTask.getTask(ns, 'Unassigned')
+	public getTaskStats(ns: NS): GangTasksStats {
+		return ns.gang.getTaskStats(this.name)
 	}
 }

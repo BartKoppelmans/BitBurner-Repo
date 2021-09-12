@@ -15,12 +15,12 @@ export default class HomeGang extends Gang {
 		return new HomeGang(ns, name)
 	}
 
-	public calculateWantedPenalty(ns: NS): number {
-		const gangInformation: GangGenInfo = this.getGangInformation(ns)
+	public static calculateWantedPenalty(ns: NS, gangInformation: GangGenInfo): number {
 		return (gangInformation.respect) / (gangInformation.respect + gangInformation.wantedLevel)
 	}
 
-	public static calculateWantedPenalty(ns: NS, gangInformation: GangGenInfo): number {
+	public calculateWantedPenalty(ns: NS): number {
+		const gangInformation: GangGenInfo = this.getGangInformation(ns)
 		return (gangInformation.respect) / (gangInformation.respect + gangInformation.wantedLevel)
 	}
 
@@ -38,7 +38,7 @@ export default class HomeGang extends Gang {
 		const clashChance: number  = this.getGangInformation(ns).territoryClashChance
 		const isInWarfare: boolean = (clashChance === 1)
 
-		if (!isInWarfare) return;
+		if (!isInWarfare) return
 
 		ns.gang.setTerritoryWarfare(false)
 		LogAPI.log(ns, `Disabling territory warfare`, LogType.GANG)

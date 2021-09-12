@@ -134,6 +134,12 @@ class GangManager implements Manager {
 		return new GangMember(ns, name)
 	}
 
+	private static removeFocusSwitch(): void {
+		const doc: Document                    = eval('document')
+		const focusElement: HTMLElement | null = doc.getElementById('gangFocusSwitchContainer')
+		if (focusElement) focusElement.remove()
+	}
+
 	public async initialize(ns: NS) {
 		Utils.disableLogging(ns)
 
@@ -144,6 +150,23 @@ class GangManager implements Manager {
 		this.homeGang = HomeGang.getHomeGang(ns)
 
 		this.createFocusSwitch()
+	}
+
+	public async start(ns: NS): Promise<void> {
+		LogAPI.debug(ns, `Starting the GangManager`)
+
+		this.managingLoopTimeout = setTimeout(this.managingLoop.bind(this, ns), LOOP_DELAY)
+	}
+
+	public async destroy(ns: NS): Promise<void> {
+		if (this.managingLoopTimeout) clearTimeout(this.managingLoopTimeout)
+
+		const members: GangMember[] = GangMember.getAllGangMembers(ns)
+		members.forEach((member) => member.startTask(ns, GangTask.getUnassignedTask(ns)))
+
+		GangManager.removeFocusSwitch()
+
+		LogAPI.debug(ns, `Stopping the GangManager`)
 	}
 
 	private createFocusSwitch(): void {
@@ -170,29 +193,6 @@ class GangManager implements Manager {
 		}
 
 		if (!doc.getElementById('gangFocusSwitchContainer')) appendSwitch()
-	}
-
-	private static removeFocusSwitch(): void {
-		const doc: Document                    = eval('document')
-		const focusElement: HTMLElement | null = doc.getElementById('gangFocusSwitchContainer')
-		if (focusElement) focusElement.remove()
-	}
-
-	public async start(ns: NS): Promise<void> {
-		LogAPI.debug(ns, `Starting the GangManager`)
-
-		this.managingLoopTimeout = setTimeout(this.managingLoop.bind(this, ns), LOOP_DELAY)
-	}
-
-	public async destroy(ns: NS): Promise<void> {
-		if (this.managingLoopTimeout) clearTimeout(this.managingLoopTimeout)
-
-		const members: GangMember[] = GangMember.getAllGangMembers(ns)
-		members.forEach((member) => member.startTask(ns, GangTask.getUnassignedTask(ns)))
-
-		GangManager.removeFocusSwitch()
-
-		LogAPI.debug(ns, `Stopping the GangManager`)
 	}
 
 	private async managingLoop(ns: NS): Promise<void> {

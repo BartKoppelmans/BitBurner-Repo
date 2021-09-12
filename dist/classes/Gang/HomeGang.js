@@ -9,11 +9,11 @@ export default class HomeGang extends Gang {
         const name = ns.gang.getGangInformation().faction;
         return new HomeGang(ns, name);
     }
-    calculateWantedPenalty(ns) {
-        const gangInformation = this.getGangInformation(ns);
+    static calculateWantedPenalty(ns, gangInformation) {
         return (gangInformation.respect) / (gangInformation.respect + gangInformation.wantedLevel);
     }
-    static calculateWantedPenalty(ns, gangInformation) {
+    calculateWantedPenalty(ns) {
+        const gangInformation = this.getGangInformation(ns);
         return (gangInformation.respect) / (gangInformation.respect + gangInformation.wantedLevel);
     }
     enableTerritoryWarfare(ns) {

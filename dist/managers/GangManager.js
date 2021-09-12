@@ -99,6 +99,12 @@ class GangManager {
             LogAPI.log(ns, `Recruited new gang member '${name}'`, LogType.GANG);
         return new GangMember(ns, name);
     }
+    static removeFocusSwitch() {
+        const doc = eval('document');
+        const focusElement = doc.getElementById('gangFocusSwitchContainer');
+        if (focusElement)
+            focusElement.remove();
+    }
     async initialize(ns) {
         Utils.disableLogging(ns);
         await GangManager.createGang(ns);
@@ -106,6 +112,18 @@ class GangManager {
         this.gangs = Gang.getGangs(ns);
         this.homeGang = HomeGang.getHomeGang(ns);
         this.createFocusSwitch();
+    }
+    async start(ns) {
+        LogAPI.debug(ns, `Starting the GangManager`);
+        this.managingLoopTimeout = setTimeout(this.managingLoop.bind(this, ns), LOOP_DELAY);
+    }
+    async destroy(ns) {
+        if (this.managingLoopTimeout)
+            clearTimeout(this.managingLoopTimeout);
+        const members = GangMember.getAllGangMembers(ns);
+        members.forEach((member) => member.startTask(ns, GangTask.getUnassignedTask(ns)));
+        GangManager.removeFocusSwitch();
+        LogAPI.debug(ns, `Stopping the GangManager`);
     }
     createFocusSwitch() {
         const doc = eval('document');
@@ -128,24 +146,6 @@ class GangManager {
         };
         if (!doc.getElementById('gangFocusSwitchContainer'))
             appendSwitch();
-    }
-    static removeFocusSwitch() {
-        const doc = eval('document');
-        const focusElement = doc.getElementById('gangFocusSwitchContainer');
-        if (focusElement)
-            focusElement.remove();
-    }
-    async start(ns) {
-        LogAPI.debug(ns, `Starting the GangManager`);
-        this.managingLoopTimeout = setTimeout(this.managingLoop.bind(this, ns), LOOP_DELAY);
-    }
-    async destroy(ns) {
-        if (this.managingLoopTimeout)
-            clearTimeout(this.managingLoopTimeout);
-        const members = GangMember.getAllGangMembers(ns);
-        members.forEach((member) => member.startTask(ns, GangTask.getUnassignedTask(ns)));
-        GangManager.removeFocusSwitch();
-        LogAPI.debug(ns, `Stopping the GangManager`);
     }
     async managingLoop(ns) {
         const doTerritoryWarfare = GangManager.canWinTerritoryWarfare(ns, this.gangs);

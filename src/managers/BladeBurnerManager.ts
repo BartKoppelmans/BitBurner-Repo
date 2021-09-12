@@ -66,6 +66,11 @@ class BladeBurnerManager implements Manager {
 		return augs.includes('The Blade\'s Simulacrum')
 	}
 
+	private static shouldSkipIteration(ns: NS): boolean {
+		return !BladeBurnerManager.hasSimulacrum(ns) &&
+			(ns.isBusy() || ns.scriptRunning('/src/scripts/executeCrimes.js', CONSTANT.HOME_SERVER_HOST))
+	}
+
 	public async initialize(ns: NS) {
 		Utils.disableLogging(ns)
 
@@ -105,11 +110,6 @@ class BladeBurnerManager implements Manager {
 			if (nextBlackOp.name === 'Operation Daedalus') return true
 		}
 		return false
-	}
-
-	private static shouldSkipIteration(ns: NS): boolean {
-		return !BladeBurnerManager.hasSimulacrum(ns) &&
-			(ns.isBusy() || ns.scriptRunning('/src/scripts/executeCrimes.js', CONSTANT.HOME_SERVER_HOST))
 	}
 
 	private async managingLoop(ns: NS): Promise<void> {

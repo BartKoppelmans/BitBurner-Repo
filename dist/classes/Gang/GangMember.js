@@ -7,16 +7,16 @@ export default class GangMember {
         this.name = name;
         this.upgrades = GangUpgrade.getMemberUpgrades(ns, this.name);
     }
-    getCurrentTask(ns) {
-        const taskName = this.getGangMemberInformation(ns).task;
-        return GangTask.getTask(ns, taskName);
-    }
     static getAllGangMembers(ns) {
         const names = ns.gang.getMemberNames();
         return names.map((name) => new GangMember(ns, name));
     }
     static calculateAscensionMultiplier(points) {
         return Math.max(Math.pow(points / 4000, 0.7), 1);
+    }
+    getCurrentTask(ns) {
+        const taskName = this.getGangMemberInformation(ns).task;
+        return GangTask.getTask(ns, taskName);
     }
     getGangMemberInformation(ns) {
         return ns.gang.getMemberInformation(this.name);

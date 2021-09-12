@@ -10,6 +10,16 @@ export default class Sleeve {
 		this.id = id
 	}
 
+	public static getSleeves(ns: NS): Sleeve[] {
+		const numSleeves: number = ns.sleeve.getNumSleeves()
+		const sleeves: Sleeve[]  = []
+
+		for (let i = 0; i < numSleeves; i++) {
+			sleeves.push(new Sleeve(ns, i))
+		}
+		return sleeves
+	}
+
 	public getInformation(ns: NS): SleeveInformation {
 		return ns.sleeve.getInformation(this.id)
 	}
@@ -52,15 +62,5 @@ export default class Sleeve {
 		const isSuccessful: boolean = ns.sleeve.setToCommitCrime(this.id, crime)
 		if (isSuccessful) LogAPI.log(ns, `Set sleeve ${this.id} to commit crime '${crime}'`, LogType.SLEEVE)
 		else LogAPI.warn(ns, `Failed to set sleeve ${this.id} to commit crime '${crime}'`)
-	}
-
-	public static getSleeves(ns: NS): Sleeve[] {
-		const numSleeves: number = ns.sleeve.getNumSleeves()
-		const sleeves: Sleeve[]  = []
-
-		for (let i = 0; i < numSleeves; i++) {
-			sleeves.push(new Sleeve(ns, i))
-		}
-		return sleeves
 	}
 }

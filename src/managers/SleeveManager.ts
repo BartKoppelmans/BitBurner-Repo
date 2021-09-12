@@ -12,6 +12,26 @@ class SleeveManager implements Manager {
 
 	private managingLoopTimeout?: ReturnType<typeof setTimeout>
 
+	private static manageSleeve(ns: NS, sleeve: Sleeve): void {
+		const information: SleeveInformation = sleeve.getInformation(ns)
+		const stats: SleeveStats             = sleeve.getStats(ns)
+
+		if (stats.shock > 0) {
+			return sleeve.recoverShock(ns)
+			// TODO: Check whether mugging works better?
+		}
+
+		if (stats.sync < 100) {
+			return sleeve.synchronize(ns)
+		}
+
+		// TODO: Buy augments if possible
+
+		// TODO: Train first if stats are shit
+
+		return sleeve.commitCrime(ns, 'Homicide')
+	}
+
 	public async initialize(ns: NS) {
 		Utils.disableLogging(ns)
 	}
@@ -37,26 +57,6 @@ class SleeveManager implements Manager {
 		}
 
 		this.managingLoopTimeout = setTimeout(this.managingLoop.bind(this, ns), LOOP_DELAY)
-	}
-
-	private static manageSleeve(ns: NS, sleeve: Sleeve): void {
-		const information: SleeveInformation = sleeve.getInformation(ns)
-		const stats: SleeveStats             = sleeve.getStats(ns)
-
-		if (stats.shock > 0) {
-			return sleeve.recoverShock(ns)
-			// TODO: Check whether mugging works better?
-		}
-
-		if (stats.sync < 100) {
-			return sleeve.synchronize(ns)
-		}
-
-		// TODO: Buy augments if possible
-
-		// TODO: Train first if stats are shit
-
-		return sleeve.commitCrime(ns, 'Homicide')
 	}
 
 }

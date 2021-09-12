@@ -45,6 +45,10 @@ class BladeBurnerManager {
         const augs = ns.getOwnedAugmentations();
         return augs.includes('The Blade\'s Simulacrum');
     }
+    static shouldSkipIteration(ns) {
+        return !BladeBurnerManager.hasSimulacrum(ns) &&
+            (ns.isBusy() || ns.scriptRunning('/src/scripts/executeCrimes.js', CONSTANT.HOME_SERVER_HOST));
+    }
     async initialize(ns) {
         Utils.disableLogging(ns);
         while (!ns.bladeburner.joinBladeburnerDivision()) {
@@ -77,10 +81,6 @@ class BladeBurnerManager {
                 return true;
         }
         return false;
-    }
-    static shouldSkipIteration(ns) {
-        return !BladeBurnerManager.hasSimulacrum(ns) &&
-            (ns.isBusy() || ns.scriptRunning('/src/scripts/executeCrimes.js', CONSTANT.HOME_SERVER_HOST));
     }
     async managingLoop(ns) {
         const nextLoop = (isIteration) => {

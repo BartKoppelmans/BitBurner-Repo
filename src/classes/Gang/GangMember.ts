@@ -21,11 +21,6 @@ export default class GangMember {
 		this.upgrades = GangUpgrade.getMemberUpgrades(ns, this.name)
 	}
 
-	public getCurrentTask(ns: NS): GangTask {
-		const taskName: GangTaskName = this.getGangMemberInformation(ns).task
-		return GangTask.getTask(ns, taskName)
-	}
-
 	public static getAllGangMembers(ns: NS): GangMember[] {
 		const names: string[] = ns.gang.getMemberNames()
 		return names.map((name) => new GangMember(ns, name))
@@ -33,6 +28,11 @@ export default class GangMember {
 
 	private static calculateAscensionMultiplier(points: number): number {
 		return Math.max(Math.pow(points / 4000, 0.7), 1)
+	}
+
+	public getCurrentTask(ns: NS): GangTask {
+		const taskName: GangTaskName = this.getGangMemberInformation(ns).task
+		return GangTask.getTask(ns, taskName)
 	}
 
 	public getGangMemberInformation(ns: NS): GangMemberInfo {

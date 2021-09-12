@@ -4,6 +4,14 @@ export default class Sleeve {
     constructor(ns, id) {
         this.id = id;
     }
+    static getSleeves(ns) {
+        const numSleeves = ns.sleeve.getNumSleeves();
+        const sleeves = [];
+        for (let i = 0; i < numSleeves; i++) {
+            sleeves.push(new Sleeve(ns, i));
+        }
+        return sleeves;
+    }
     getInformation(ns) {
         return ns.sleeve.getInformation(this.id);
     }
@@ -39,13 +47,5 @@ export default class Sleeve {
             LogAPI.log(ns, `Set sleeve ${this.id} to commit crime '${crime}'`, LogType.SLEEVE);
         else
             LogAPI.warn(ns, `Failed to set sleeve ${this.id} to commit crime '${crime}'`);
-    }
-    static getSleeves(ns) {
-        const numSleeves = ns.sleeve.getNumSleeves();
-        const sleeves = [];
-        for (let i = 0; i < numSleeves; i++) {
-            sleeves.push(new Sleeve(ns, i));
-        }
-        return sleeves;
     }
 }

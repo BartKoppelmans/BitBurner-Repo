@@ -5,6 +5,20 @@ import { CONSTANT } from '/src/lib/constants.js';
 import Sleeve from '/src/classes/Sleeve/Sleeve.js';
 const LOOP_DELAY = 10000;
 class SleeveManager {
+    static manageSleeve(ns, sleeve) {
+        const information = sleeve.getInformation(ns);
+        const stats = sleeve.getStats(ns);
+        if (stats.shock > 0) {
+            return sleeve.recoverShock(ns);
+            // TODO: Check whether mugging works better?
+        }
+        if (stats.sync < 100) {
+            return sleeve.synchronize(ns);
+        }
+        // TODO: Buy augments if possible
+        // TODO: Train first if stats are shit
+        return sleeve.commitCrime(ns, 'Homicide');
+    }
     async initialize(ns) {
         Utils.disableLogging(ns);
     }
@@ -23,20 +37,6 @@ class SleeveManager {
             SleeveManager.manageSleeve(ns, sleeve);
         }
         this.managingLoopTimeout = setTimeout(this.managingLoop.bind(this, ns), LOOP_DELAY);
-    }
-    static manageSleeve(ns, sleeve) {
-        const information = sleeve.getInformation(ns);
-        const stats = sleeve.getStats(ns);
-        if (stats.shock > 0) {
-            return sleeve.recoverShock(ns);
-            // TODO: Check whether mugging works better?
-        }
-        if (stats.sync < 100) {
-            return sleeve.synchronize(ns);
-        }
-        // TODO: Buy augments if possible
-        // TODO: Train first if stats are shit
-        return sleeve.commitCrime(ns, 'Homicide');
     }
 }
 export async function start(ns) {

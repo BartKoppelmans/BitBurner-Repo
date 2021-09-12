@@ -17,6 +17,11 @@ export default class Stock {
 		this.position = this.stockInformation.probability >= 0 ? StockPosition.LONG : StockPosition.SHORT
 	}
 
+	public static getStocks(ns: NS): Stock[] {
+		const symbols: StockSymbol[] = ns.getStockSymbols()
+		return symbols.map((symbol) => new Stock(ns, symbol))
+	}
+
 	public hasShares(ns: NS): boolean {
 		return this.stockInformation.ownedShort + this.stockInformation.ownedLong > 0
 	}
@@ -44,7 +49,6 @@ export default class Stock {
 		LogAPI.log(ns, `Bought ${numShares} longs for ${ns.nFormat(value, '$0.000a')}. Invested: ${ns.nFormat((value * numShares), '$0.000a')}`, LogType.STOCK)
 		this.update(ns)
 	}
-
 
 	public sellAll(ns: NS): void {
 		if (this.stockInformation.ownedShort > 0) this.sellShorts(ns)
@@ -91,10 +95,5 @@ export default class Stock {
 			bidPrice: ns.getStockBidPrice(this.symbol),
 			expectedReturn: Math.abs(volatility * probability),
 		}
-	}
-
-	public static getStocks(ns: NS): Stock[] {
-		const symbols: StockSymbol[] = ns.getStockSymbols()
-		return symbols.map((symbol) => new Stock(ns, symbol))
 	}
 }

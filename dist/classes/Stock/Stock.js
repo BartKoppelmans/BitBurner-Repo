@@ -8,6 +8,10 @@ export default class Stock {
         this.update(ns);
         this.position = this.stockInformation.probability >= 0 ? StockPosition.LONG : StockPosition.SHORT;
     }
+    static getStocks(ns) {
+        const symbols = ns.getStockSymbols();
+        return symbols.map((symbol) => new Stock(ns, symbol));
+    }
     hasShares(ns) {
         return this.stockInformation.ownedShort + this.stockInformation.ownedLong > 0;
     }
@@ -72,9 +76,5 @@ export default class Stock {
             bidPrice: ns.getStockBidPrice(this.symbol),
             expectedReturn: Math.abs(volatility * probability),
         };
-    }
-    static getStocks(ns) {
-        const symbols = ns.getStockSymbols();
-        return symbols.map((symbol) => new Stock(ns, symbol));
     }
 }

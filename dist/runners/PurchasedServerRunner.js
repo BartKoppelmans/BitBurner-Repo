@@ -24,6 +24,27 @@ class PurchasedServerRunner {
     static getCost(ns, ram) {
         return ns.getPurchasedServerCost(ram);
     }
+    static purchaseNewServer(ns, ram, purchasedServerId) {
+        const host = CONSTANT.PURCHASED_SERVER_PREFIX + purchasedServerId.toString();
+        const boughtServer = ns.purchaseServer(host, ram);
+        if (boughtServer === '')
+            throw new Error('Could not purchase the server');
+        LogAPI.log(ns, `Purchased server ${boughtServer} with ${ram}GB ram.`, LogType.PURCHASED_SERVER);
+        const characteristics = {
+            id: Utils.generateHash(),
+            type: ServerType.PurchasedServer,
+            host,
+            purchasedServerId,
+            treeStructure: PurchasedServer.getDefaultTreeStructure(),
+        };
+        const server = new PurchasedServer(ns, { characteristics });
+        ServerAPI.addServer(ns, server);
+        return server;
+    }
+    static shouldUpgrade(ns, purpose) {
+        const utilization = ServerAPI.getServerUtilization(ns, true, purpose);
+        return (utilization > UTILIZATION_THRESHOLD);
+    }
     async run(ns) {
         LogAPI.debug(ns, `Running the PurchasedServerRunner`);
         const purchasedServerList = ServerAPI.getPurchasedServers(ns);
@@ -47,23 +68,6 @@ class PurchasedServerRunner {
                 throw new Error('We could not successfully purchase the server');
             }
         }
-    }
-    static purchaseNewServer(ns, ram, purchasedServerId) {
-        const host = CONSTANT.PURCHASED_SERVER_PREFIX + purchasedServerId.toString();
-        const boughtServer = ns.purchaseServer(host, ram);
-        if (boughtServer === '')
-            throw new Error('Could not purchase the server');
-        LogAPI.log(ns, `Purchased server ${boughtServer} with ${ram}GB ram.`, LogType.PURCHASED_SERVER);
-        const characteristics = {
-            id: Utils.generateHash(),
-            type: ServerType.PurchasedServer,
-            host,
-            purchasedServerId,
-            treeStructure: PurchasedServer.getDefaultTreeStructure(),
-        };
-        const server = new PurchasedServer(ns, { characteristics });
-        ServerAPI.addServer(ns, server);
-        return server;
     }
     upgradeServers(ns, purchasedServerList) {
         const quarantinedServers = purchasedServerList.filter((s) => s.isQuarantined());
@@ -113,10 +117,6 @@ class PurchasedServerRunner {
         const reservedMoney = this.getReservedMoney(ns);
         const money = (PlayerUtils.getMoney(ns) - reservedMoney) * CONSTANT.PURCHASED_SERVER_ALLOWANCE_PERCENTAGE;
         return cost <= money;
-    }
-    static shouldUpgrade(ns, purpose) {
-        const utilization = ServerAPI.getServerUtilization(ns, true, purpose);
-        return (utilization > UTILIZATION_THRESHOLD);
     }
     getReservedMoney(ns) {
         const purchasedServerList = ServerAPI.getPurchasedServers(ns);
