@@ -56,14 +56,14 @@ class PurchasedServerRunner {
 
 			const id: number = purchasedServerList.length + i
 
-			const purchasedServer: PurchasedServer = this.purchaseNewServer(ns, ram, id)
+			const purchasedServer: PurchasedServer = PurchasedServerRunner.purchaseNewServer(ns, ram, id)
 			if (!purchasedServer) {
 				throw new Error('We could not successfully purchase the server')
 			}
 		}
 	}
 
-	private purchaseNewServer(ns: NS, ram: number, purchasedServerId: number): PurchasedServer {
+	private static purchaseNewServer(ns: NS, ram: number, purchasedServerId: number): PurchasedServer {
 		const host: string         = CONSTANT.PURCHASED_SERVER_PREFIX + purchasedServerId.toString()
 		const boughtServer: string = ns.purchaseServer(host, ram)
 

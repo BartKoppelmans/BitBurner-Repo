@@ -42,13 +42,13 @@ class PurchasedServerRunner {
             if (ram === -1)
                 break;
             const id = purchasedServerList.length + i;
-            const purchasedServer = this.purchaseNewServer(ns, ram, id);
+            const purchasedServer = PurchasedServerRunner.purchaseNewServer(ns, ram, id);
             if (!purchasedServer) {
                 throw new Error('We could not successfully purchase the server');
             }
         }
     }
-    purchaseNewServer(ns, ram, purchasedServerId) {
+    static purchaseNewServer(ns, ram, purchasedServerId) {
         const host = CONSTANT.PURCHASED_SERVER_PREFIX + purchasedServerId.toString();
         const boughtServer = ns.purchaseServer(host, ram);
         if (boughtServer === '')

@@ -162,7 +162,7 @@ function prepServer(ns: NS, target: HackableServer): void {
 
 	let availableThreads: number = HackUtils.calculateMaxThreads(ns, Tools.WEAKEN, true)
 	if (availableThreads <= 0) {
-		LogAPI.hack(ns, 'Skipped a prep.')
+		LogAPI.debug(ns, 'Skipped a prep.')
 		return
 	}
 
@@ -322,7 +322,7 @@ function attackServer(ns: NS, target: HackableServer): void {
 	const batchId: string = Utils.generateHash()
 
 	if (numCycles === 0) {
-		LogAPI.hack(ns, 'Skipped an attack.')
+		LogAPI.debug(ns, 'Skipped an attack.')
 		return
 	}
 
@@ -389,7 +389,7 @@ function optimizePerformance(ns: NS, target: HackableServer): void {
 	if (originalPercentageToSteal !== optimalTarget.percentageToSteal) performanceUpdated = true
 
 	if (performanceUpdated) {
-		LogAPI.hack(ns, `Updated percentage to steal for ${target.characteristics.host} to ~${Math.round(target.percentageToSteal * 100)}%`)
+		LogAPI.debug(ns, `Updated percentage to steal for ${target.characteristics.host} to ~${Math.round(target.percentageToSteal * 100)}%`)
 	}
 }
 

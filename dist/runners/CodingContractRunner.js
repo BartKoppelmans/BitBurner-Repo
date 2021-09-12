@@ -8,7 +8,7 @@ class CodingContractRunner {
     static solveContract(ns, contract) {
         const solution = CodingContractUtils.findSolution(ns, contract);
         if (solution === undefined || solution === null) {
-            LogAPI.error(ns, `We currently cannot solve contract ${contract.server.characteristics.host}/${contract.filename}: ${contract.type}`);
+            LogAPI.warn(ns, `We currently cannot solve contract ${contract.server.characteristics.host}/${contract.filename}: ${contract.type}`);
             return;
         }
         const isSuccessful = contract.attempt(ns, solution);

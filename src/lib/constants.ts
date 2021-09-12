@@ -11,16 +11,6 @@ export const CONSTANT = {
 	LOG_DEBUG: false,
 	LOGGING_ENABLED: true,
 
-	COLOR_WARNING: 'red',
-	COLOR_HACKING: 'white',
-	COLOR_INFORMATION: 'blue',
-	COLOR_PURCHASED_SERVER_INFORMATION: 'green',
-	COLOR_CODING_CONTRACT_INFORMATION: 'yellow',
-	COLOR_BLADEBURNER: 'pink',
-	COLOR_GANG: 'purple',
-	COLOR_SLEEVE: 'aquamarine',
-	COLOR_STOCK: 'SpringGreen',
-
 	/*
 	 * Import script constants
 	 */

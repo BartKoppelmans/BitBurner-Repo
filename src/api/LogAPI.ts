@@ -4,11 +4,6 @@ import { CONSTANT }             from '/src/lib/constants.js'
 
 const PIXEL_TOLERANCE: number = 4 as const
 
-export function error(ns: NS, message: string): void {
-	throw new Error('Not implemented')
-	// NOT IMPLEMENTED
-}
-
 export enum LogType {
 	NONE,
 	INFORMATION,
@@ -28,53 +23,35 @@ export function debug(ns: NS, message: string): void {
 	}
 }
 
-export function hack(ns: NS, message: string): void {
-	if (CONSTANT.LOG_DEBUG_HACKING) {
-		printColored(ns, message, LogType.HACKING)
-	}
-}
-
 export function warn(ns: NS, message: string): void {
 	printColored(ns, message, LogType.WARNING)
 }
 
-export function log(ns: NS, message: string, logType: LogType): void {
-
-	if (!isCorrectLogType(logType)) {
-		throw new Error('Incorrect log type')
-	}
-
+export function log(ns: NS, message: string, logType: LogType = LogType.INFORMATION): void {
 	printColored(ns, message, logType)
-}
-
-function isCorrectLogType(logType: LogType): boolean {
-	return logType === LogType.NONE || logType === LogType.INFORMATION || logType === LogType.PURCHASED_SERVER || logType === LogType.CODING_CONTRACT || logType === LogType.BLADEBURNER || logType === LogType.GANG || logType === LogType.SLEEVE || logType === LogType.STOCK
 }
 
 function getColorFromLogType(ns: NS, logType: LogType): string {
 
-	// TODO: Move the constants to here
-
 	switch (logType) {
-		case LogType.INFORMATION:
-			return CONSTANT.COLOR_INFORMATION
 		case LogType.WARNING:
-			return CONSTANT.COLOR_WARNING
+			return 'red'
 		case LogType.HACKING:
-			return CONSTANT.COLOR_HACKING
+			return 'white'
 		case LogType.PURCHASED_SERVER:
-			return CONSTANT.COLOR_PURCHASED_SERVER_INFORMATION
+			return 'green'
 		case LogType.CODING_CONTRACT:
-			return CONSTANT.COLOR_CODING_CONTRACT_INFORMATION
+			return 'yellow'
 		case LogType.BLADEBURNER:
-			return CONSTANT.COLOR_BLADEBURNER
+			return 'pink'
 		case LogType.GANG:
-			return CONSTANT.COLOR_GANG
+			return 'purple'
 		case LogType.SLEEVE:
-			return CONSTANT.COLOR_SLEEVE
+			return 'aquamarine'
 		case LogType.STOCK:
-			return CONSTANT.COLOR_STOCK
+			return 'SpringGreen'
 		case LogType.NONE:
+		case LogType.INFORMATION:
 		default:
 			return 'var(--my-font-color)'
 	}
@@ -84,16 +61,14 @@ function shouldScrollIntoView(element: HTMLElement): boolean {
 	return Math.round(element.scrollHeight - element.scrollTop - element.clientHeight) <= PIXEL_TOLERANCE
 }
 
-function printColored(ns: NS, text: string, logType: LogType) {
-
-	// TODO: Rewrite to use the new function
+function printColored(ns: NS, content: string, logType: LogType) {
+	const color: string = getColorFromLogType(ns, logType)
 
 	const doc: Document                         = eval('document')
 	const terminalInput: HTMLElement | null     = doc.getElementById('terminal-input')
 	const terminalContainer: HTMLElement | null = doc.getElementById('terminal-container')
-	const rowElement: HTMLTableRowElement       = doc.createElement('tr')
-	const cellElement: HTMLTableDataCellElement = doc.createElement('td')
-	let shouldScroll: boolean                   = true
+
+	let shouldScroll: boolean = true
 
 	if (!terminalInput) {
 		throw new Error('Could not find the terminal input.')
@@ -104,15 +79,9 @@ function printColored(ns: NS, text: string, logType: LogType) {
 		shouldScroll = shouldScrollIntoView(terminalContainer)
 	}
 
-	text = `${Utils.formatTime()} ${text}`
+	content = `<span style="color: ${color}">${Utils.formatTime()} ${content}</span>`
 
-	rowElement.classList.add('posted')
-	cellElement.classList.add('terminal-line')
-	cellElement.style.color = getColorFromLogType(ns, logType)
-	cellElement.innerText   = text
-
-	rowElement.appendChild(cellElement)
-	terminalInput.before(rowElement)
+	ns.tprintf(content)
 
 	if (shouldScroll) terminalInput.scrollIntoView(false)
 }

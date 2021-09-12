@@ -3,7 +3,6 @@ import Crime                    from '/src/classes/Misc/Crime.js'
 import { CONSTANT }             from '/src/lib/constants.js'
 import * as CrimeUtils          from '/src/util/CrimeUtils.js'
 import * as LogAPI              from '/src/api/LogAPI.js'
-import { LogType }              from '/src/api/LogAPI.js'
 
 export async function main(ns: NS) {
 
@@ -17,12 +16,11 @@ export async function main(ns: NS) {
 		['experience', false],
 	])
 
-	if (flags.homicide && flags.experience) throw new Error('Unable to optimize for experience and force \'homicide\' at the same time.')
+	if (flags.homicide && flags.experience) throw new Error('Unable to force \'homicide\' and optimize for experience at the same time.')
 
 	let crimes: Crime[]      = CrimeUtils.getCrimes(ns)
 	let isCancelled: boolean = false
 
-	LogAPI.log(ns, 'Executing crimes', LogType.INFORMATION)
 	while (!isCancelled) {
 		if (ns.isBusy()) {
 			await ns.sleep(CONSTANT.CRIME_DELAY)

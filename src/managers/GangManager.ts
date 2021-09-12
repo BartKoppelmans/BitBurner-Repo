@@ -34,8 +34,6 @@ class GangManager implements Manager {
 
 	private focusOnRespect: boolean = false
 
-	private isReducingWantedLevel: boolean = false
-
 	private static getBestMember(ns: NS, members: GangMember[]): GangMember {
 		const isHacking: boolean = GangUtils.isHackingGang(ns)
 
@@ -58,7 +56,6 @@ class GangManager implements Manager {
 		return evaluations[0].member
 	}
 
-
 	private static getNumMembers(ns: NS): number {
 		return ns.gang.getMemberNames().length
 	}
@@ -76,10 +73,9 @@ class GangManager implements Manager {
 		return average > level
 	}
 
-	private static canWinTerritoryWarfare(ns: NS, homeGang: HomeGang, gangs: Gang[]): boolean {
+	private static canWinTerritoryWarfare(ns: NS, gangs: Gang[]): boolean {
 		return gangs.every((gang) => gang.getChanceToWinClash(ns) > CLASH_CHANCE_THRESHOLD)
 	}
-
 
 	private static shouldReduceWantedLevel(ns: NS): boolean {
 
@@ -176,7 +172,7 @@ class GangManager implements Manager {
 		if (!doc.getElementById('gangFocusSwitchContainer')) appendSwitch()
 	}
 
-	private removeFocusSwitch(): void {
+	private static removeFocusSwitch(): void {
 		const doc: Document                    = eval('document')
 		const focusElement: HTMLElement | null = doc.getElementById('gangFocusSwitchContainer')
 		if (focusElement) focusElement.remove()
@@ -194,7 +190,7 @@ class GangManager implements Manager {
 		const members: GangMember[] = GangMember.getAllGangMembers(ns)
 		members.forEach((member) => member.startTask(ns, GangTask.getUnassignedTask(ns)))
 
-		this.removeFocusSwitch()
+		GangManager.removeFocusSwitch()
 
 		LogAPI.debug(ns, `Stopping the GangManager`)
 	}
@@ -202,7 +198,7 @@ class GangManager implements Manager {
 	private async managingLoop(ns: NS): Promise<void> {
 
 
-		const doTerritoryWarfare: boolean = GangManager.canWinTerritoryWarfare(ns, this.homeGang, this.gangs)
+		const doTerritoryWarfare: boolean = GangManager.canWinTerritoryWarfare(ns, this.gangs)
 		doTerritoryWarfare ? this.homeGang.enableTerritoryWarfare(ns) : this.homeGang.disableTerritoryWarfare(ns)
 
 		while (ns.gang.canRecruitMember()) {
@@ -249,7 +245,7 @@ class GangManager implements Manager {
 			return member.startTask(ns, GangTask.getTrainTask(ns))
 		}
 
-		if (!GangManager.canWinTerritoryWarfare(ns, this.homeGang, this.gangs)) {
+		if (!GangManager.canWinTerritoryWarfare(ns, this.gangs)) {
 			return member.startTask(ns, GangTask.getTerritoryWarfareTask(ns))
 		}
 
@@ -273,7 +269,7 @@ class GangManager implements Manager {
 			return member.startTask(ns, GangTask.getTrainTask(ns))
 		}
 
-		if (!GangManager.canWinTerritoryWarfare(ns, this.homeGang, this.gangs)) {
+		if (!GangManager.canWinTerritoryWarfare(ns, this.gangs)) {
 			return member.startTask(ns, GangTask.getTerritoryWarfareTask(ns))
 		}
 

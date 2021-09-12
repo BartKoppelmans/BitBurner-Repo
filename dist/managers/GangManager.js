@@ -22,7 +22,6 @@ const CLASH_CHANCE_THRESHOLD = 0.99;
 class GangManager {
     constructor() {
         this.focusOnRespect = false;
-        this.isReducingWantedLevel = false;
     }
     static getBestMember(ns, members) {
         const isHacking = GangUtils.isHackingGang(ns);
@@ -52,7 +51,7 @@ class GangManager {
         const average = (gangMemberStats.str + gangMemberStats.agi + gangMemberStats.def + gangMemberStats.dex) / 4;
         return average > level;
     }
-    static canWinTerritoryWarfare(ns, homeGang, gangs) {
+    static canWinTerritoryWarfare(ns, gangs) {
         return gangs.every((gang) => gang.getChanceToWinClash(ns) > CLASH_CHANCE_THRESHOLD);
     }
     static shouldReduceWantedLevel(ns) {
@@ -130,7 +129,7 @@ class GangManager {
         if (!doc.getElementById('gangFocusSwitchContainer'))
             appendSwitch();
     }
-    removeFocusSwitch() {
+    static removeFocusSwitch() {
         const doc = eval('document');
         const focusElement = doc.getElementById('gangFocusSwitchContainer');
         if (focusElement)
@@ -145,11 +144,11 @@ class GangManager {
             clearTimeout(this.managingLoopTimeout);
         const members = GangMember.getAllGangMembers(ns);
         members.forEach((member) => member.startTask(ns, GangTask.getUnassignedTask(ns)));
-        this.removeFocusSwitch();
+        GangManager.removeFocusSwitch();
         LogAPI.debug(ns, `Stopping the GangManager`);
     }
     async managingLoop(ns) {
-        const doTerritoryWarfare = GangManager.canWinTerritoryWarfare(ns, this.homeGang, this.gangs);
+        const doTerritoryWarfare = GangManager.canWinTerritoryWarfare(ns, this.gangs);
         doTerritoryWarfare ? this.homeGang.enableTerritoryWarfare(ns) : this.homeGang.disableTerritoryWarfare(ns);
         while (ns.gang.canRecruitMember()) {
             const newMember = GangManager.recruitMember(ns);
@@ -182,7 +181,7 @@ class GangManager {
         if (!GangManager.hasReachedCombatStatsLevel(ns, member, COMBAT_STAT_HIGH_THRESHOLD)) {
             return member.startTask(ns, GangTask.getTrainTask(ns));
         }
-        if (!GangManager.canWinTerritoryWarfare(ns, this.homeGang, this.gangs)) {
+        if (!GangManager.canWinTerritoryWarfare(ns, this.gangs)) {
             return member.startTask(ns, GangTask.getTerritoryWarfareTask(ns));
         }
         const task = (this.focusOnRespect) ? GangTask.getRespectTask(ns, member) : GangTask.getMoneyTask(ns, member);
@@ -199,7 +198,7 @@ class GangManager {
         if (!GangManager.hasReachedCombatStatsLevel(ns, member, COMBAT_STAT_HIGH_THRESHOLD)) {
             return member.startTask(ns, GangTask.getTrainTask(ns));
         }
-        if (!GangManager.canWinTerritoryWarfare(ns, this.homeGang, this.gangs)) {
+        if (!GangManager.canWinTerritoryWarfare(ns, this.gangs)) {
             return member.startTask(ns, GangTask.getTerritoryWarfareTask(ns));
         }
         const task = (this.focusOnRespect) ? GangTask.getRespectTask(ns, member) : GangTask.getMoneyTask(ns, member);

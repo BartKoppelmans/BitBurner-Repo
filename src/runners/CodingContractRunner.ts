@@ -6,7 +6,7 @@ import { CodingContract, CodingContractAnswer } from '/src/classes/Misc/CodingCo
 import * as CodingContractUtils                 from '/src/util/CodingContractUtils.js'
 import * as Utils                               from '/src/util/Utils.js'
 import { ServerMap }                            from '/src/classes/Server/ServerInterfaces.js'
-import { Runner }                               from '/src/classes/Misc/ScriptInterfaces'
+import { Runner }                               from '/src/classes/Misc/ScriptInterfaces.js'
 
 class CodingContractRunner implements Runner {
 
@@ -14,7 +14,7 @@ class CodingContractRunner implements Runner {
 		const solution: CodingContractAnswer | null = CodingContractUtils.findSolution(ns, contract)
 
 		if (solution === undefined || solution === null) {
-			LogAPI.error(ns, `We currently cannot solve contract ${contract.server.characteristics.host}/${contract.filename}: ${contract.type}`)
+			LogAPI.warn(ns, `We currently cannot solve contract ${contract.server.characteristics.host}/${contract.filename}: ${contract.type}`)
 			return
 		}
 

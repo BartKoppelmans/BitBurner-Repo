@@ -12,12 +12,8 @@ class SleeveManager implements Manager {
 
 	private managingLoopTimeout?: ReturnType<typeof setTimeout>
 
-	private sleeves!: Sleeve[]
-
 	public async initialize(ns: NS) {
 		Utils.disableLogging(ns)
-
-		this.sleeves = Sleeve.getSleeves(ns)
 	}
 
 	public async start(ns: NS): Promise<void> {
@@ -34,7 +30,9 @@ class SleeveManager implements Manager {
 
 	private async managingLoop(ns: NS): Promise<void> {
 
-		for (const sleeve of this.sleeves) {
+		const sleeves: Sleeve[] = Sleeve.getSleeves(ns)
+
+		for (const sleeve of sleeves) {
 			SleeveManager.manageSleeve(ns, sleeve)
 		}
 
@@ -47,11 +45,16 @@ class SleeveManager implements Manager {
 
 		if (stats.shock > 0) {
 			return sleeve.recoverShock(ns)
+			// TODO: Check whether mugging works better?
 		}
 
 		if (stats.sync < 100) {
 			return sleeve.synchronize(ns)
 		}
+
+		// TODO: Buy augments if possible
+
+		// TODO: Train first if stats are shit
 
 		return sleeve.commitCrime(ns, 'Homicide')
 	}
