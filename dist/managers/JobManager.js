@@ -1,4 +1,4 @@
-import * as ControlFlowAPI from '/src/api/ControlFlowAPI.js';
+import { hasManagerKillRequest } from '/src/api/ControlFlowAPI.js';
 import * as LogAPI from '/src/api/LogAPI.js';
 import * as JobAPI from '/src/api/JobAPI.js';
 import { CONSTANT } from '/src/lib/constants.js';
@@ -55,7 +55,7 @@ export async function main(ns) {
     const instance = new JobManager();
     await instance.initialize(ns);
     await instance.start(ns);
-    while (!ControlFlowAPI.hasManagerKillRequest(ns)) {
+    while (!hasManagerKillRequest(ns)) {
         await ns.sleep(CONSTANT.CONTROL_FLOW_CHECK_INTERVAL);
     }
     await instance.destroy(ns);

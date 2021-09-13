@@ -2,11 +2,11 @@ import * as ControlFlowAPI from '/src/api/ControlFlowAPI.js';
 import * as JobAPI from '/src/api/JobAPI.js';
 import * as LogAPI from '/src/api/LogAPI.js';
 import * as ServerAPI from '/src/api/ServerAPI.js';
-import * as JobManager from '/src/managers/JobManager.js';
-import * as BladeBurnerManager from '/src/managers/BladeBurnerManager.js';
-import * as GangManager from '/src/managers/GangManager.js';
-import * as SleeveManager from '/src/managers/SleeveManager.js';
-import * as StockManager from '/src/managers/StockManager.js';
+import { start as startJobManager } from '/src/managers/JobManager.js';
+import { start as startBladeBurnerManager } from '/src/managers/BladeBurnerManager.js';
+import { start as startGangManager } from '/src/managers/GangManager.js';
+import { start as startSleeveManager } from '/src/managers/SleeveManager.js';
+import { start as startStockManager } from '/src/managers/StockManager.js';
 import Batch from '/src/classes/Job/Batch.js';
 import Job from '/src/classes/Job/Job.js';
 import { ServerPurpose, ServerStatus } from '/src/classes/Server/ServerInterfaces.js';
@@ -34,15 +34,15 @@ async function initialize(ns) {
     await JobAPI.initializeJobMap(ns);
     const tasks = [];
     // Managers
-    tasks.push(JobManager.start(ns));
+    tasks.push(startJobManager(ns));
     if (flags.bladeburner)
-        tasks.push(BladeBurnerManager.start(ns));
+        tasks.push(startBladeBurnerManager(ns));
     if (flags.gang)
-        tasks.push(GangManager.start(ns));
+        tasks.push(startGangManager(ns));
     if (flags.sleeve)
-        tasks.push(SleeveManager.start(ns));
+        tasks.push(startSleeveManager(ns));
     if (flags.stock)
-        tasks.push(StockManager.start(ns));
+        tasks.push(startStockManager(ns));
     // Runners
     tasks.push(ControlFlowAPI.launchRunners(ns));
     await Promise.allSettled(tasks);

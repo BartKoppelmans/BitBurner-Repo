@@ -1,5 +1,5 @@
 import type { BitBurner as NS, SleeveInformation, SleeveStats } from 'Bitburner'
-import * as ControlFlowAPI                                      from '/src/api/ControlFlowAPI.js'
+import { hasManagerKillRequest }                                from '/src/api/ControlFlowAPI.js'
 import * as LogAPI                                              from '/src/api/LogAPI.js'
 import * as Utils                                               from '/src/util/Utils.js'
 import { Manager }                                              from '/src/classes/Misc/ScriptInterfaces.js'
@@ -87,7 +87,7 @@ export async function main(ns: NS) {
 	await instance.initialize(ns)
 	await instance.start(ns)
 
-	while (!ControlFlowAPI.hasManagerKillRequest(ns)) {
+	while (!hasManagerKillRequest(ns)) {
 		await ns.sleep(CONSTANT.CONTROL_FLOW_CHECK_INTERVAL)
 	}
 
