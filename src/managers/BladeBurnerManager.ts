@@ -120,6 +120,8 @@ class BladeBurnerManager implements Manager {
 			return
 		}
 
+		ns.bladeburner.joinBladeburnerFaction();
+
 		this.upgradeSkills(ns)
 
 		// NOTE: This might still have some problems

@@ -89,6 +89,7 @@ class BladeBurnerManager {
             this.managingLoopTimeout = setTimeout(this.managingLoop.bind(this, ns), MANAGING_LOOP_DELAY);
             return;
         };
+        ns.bladeburner.joinBladeburnerFaction();
         this.upgradeSkills(ns);
         // NOTE: This might still have some problems
         if (BladeBurnerManager.shouldSkipIteration(ns)) {
