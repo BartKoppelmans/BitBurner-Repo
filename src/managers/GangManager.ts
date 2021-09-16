@@ -197,7 +197,6 @@ class GangManager implements Manager {
 
 	private async managingLoop(ns: NS): Promise<void> {
 
-
 		const doTerritoryWarfare: boolean = GangManager.canWinTerritoryWarfare(ns, this.gangs)
 		doTerritoryWarfare ? this.homeGang.enableTerritoryWarfare(ns) : this.homeGang.disableTerritoryWarfare(ns)
 

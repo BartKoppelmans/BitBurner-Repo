@@ -5,9 +5,13 @@ import { LogType }                                     from '/src/api/LogAPI.js'
 
 export default class HomeGang extends Gang {
 
+	isInWarfare: boolean
 
 	public constructor(ns: NS, name: GangName) {
 		super(ns, name)
+
+		const clashChance: number = this.getGangInformation(ns).territoryClashChance
+		this.isInWarfare          = (clashChance === 1)
 	}
 
 	public static getHomeGang(ns: NS): HomeGang {
@@ -25,22 +29,18 @@ export default class HomeGang extends Gang {
 	}
 
 	public enableTerritoryWarfare(ns: NS): void {
-		const clashChance: number  = this.getGangInformation(ns).territoryClashChance
-		const isInWarfare: boolean = (clashChance === 1)
-
-		if (isInWarfare) return
+		if (this.isInWarfare) return
 
 		ns.gang.setTerritoryWarfare(true)
+		this.isInWarfare = true
 		LogAPI.log(ns, `Enabling territory warfare`, LogType.GANG)
 	}
 
 	public disableTerritoryWarfare(ns: NS): void {
-		const clashChance: number  = this.getGangInformation(ns).territoryClashChance
-		const isInWarfare: boolean = (clashChance === 1)
-
-		if (!isInWarfare) return
+		if (!this.isInWarfare) return
 
 		ns.gang.setTerritoryWarfare(false)
+		this.isInWarfare = false
 		LogAPI.log(ns, `Disabling territory warfare`, LogType.GANG)
 	}
 
