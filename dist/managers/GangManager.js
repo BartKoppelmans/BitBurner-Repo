@@ -113,7 +113,7 @@ class GangManager {
         this.upgrades = GangUpgrade.getAllUpgrades(ns);
         this.gangs = Gang.getGangs(ns);
         this.homeGang = HomeGang.getHomeGang(ns);
-        this.createFocusSwitch();
+        // this.createFocusSwitch()
     }
     async start(ns) {
         LogAPI.debug(ns, `Starting the GangManager`);
@@ -124,7 +124,7 @@ class GangManager {
             clearTimeout(this.managingLoopTimeout);
         const members = GangMember.getAllGangMembers(ns);
         members.forEach((member) => member.startTask(ns, GangTask.getUnassignedTask(ns)));
-        GangManager.removeFocusSwitch();
+        // GangManager.removeFocusSwitch()
         LogAPI.debug(ns, `Stopping the GangManager`);
     }
     createFocusSwitch() {

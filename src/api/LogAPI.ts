@@ -63,25 +63,7 @@ function shouldScrollIntoView(element: HTMLElement): boolean {
 
 function printColored(ns: NS, content: string, logType: LogType) {
 	const color: string = getColorFromLogType(ns, logType)
-
-	const doc: Document                         = eval('document')
-	const terminalInput: HTMLElement | null     = doc.getElementById('terminal-input')
-	const terminalContainer: HTMLElement | null = doc.getElementById('terminal-container')
-
-	let shouldScroll: boolean = true
-
-	if (!terminalInput) {
-		throw new Error('Could not find the terminal input.')
-	}
-
-	// We have to do this before we add the new element
-	if (terminalContainer) {
-		shouldScroll = shouldScrollIntoView(terminalContainer)
-	}
-
-	content = `<span style="color: ${color}">${Utils.formatTime()} ${content}</span>`
-
+	const doc: Document = eval('document')
+	content             = `${Utils.formatTime()} ${content}`
 	ns.tprintf(content)
-
-	if (shouldScroll) terminalInput.scrollIntoView(false)
 }

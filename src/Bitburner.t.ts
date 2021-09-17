@@ -2647,6 +2647,10 @@ declare module 'Bitburner' {
 		 */
 		getAugmentationStats(name: AugmentName): AugmentationStats;
 
+		getAugmentationRepReq(name: AugmentName): number;
+
+		getAugmentationPrice(name: AugmentName): number;
+
 		/**
 		 * If you are not in BitNode-4, then you must have Level 3 of Source-File 4 in order to use this function and
 		 * the RAM cost is doubled.

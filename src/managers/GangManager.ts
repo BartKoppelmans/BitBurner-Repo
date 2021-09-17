@@ -149,7 +149,7 @@ class GangManager implements Manager {
 		this.gangs    = Gang.getGangs(ns)
 		this.homeGang = HomeGang.getHomeGang(ns)
 
-		this.createFocusSwitch()
+		// this.createFocusSwitch()
 	}
 
 	public async start(ns: NS): Promise<void> {
@@ -164,7 +164,7 @@ class GangManager implements Manager {
 		const members: GangMember[] = GangMember.getAllGangMembers(ns)
 		members.forEach((member) => member.startTask(ns, GangTask.getUnassignedTask(ns)))
 
-		GangManager.removeFocusSwitch()
+		// GangManager.removeFocusSwitch()
 
 		LogAPI.debug(ns, `Stopping the GangManager`)
 	}
