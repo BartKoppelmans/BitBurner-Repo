@@ -2,20 +2,22 @@ import type { BitBurner as NS }                              from 'Bitburner'
 import { hasManagerKillRequest }                             from '/src/api/ControlFlowAPI.js'
 import * as LogAPI                                           from '/src/api/LogAPI.js'
 import * as Utils                                            from '/src/util/Utils.js'
+import * as Daemon                                           from '/src/scripts/daemon.js'
 import { Manager }                                           from '/src/classes/Misc/ScriptInterfaces.js'
 import { CONSTANT }                                          from '/src/lib/constants.js'
-import HackableServer                                        from '/src/classes/Server/HackableServer'
-import * as ServerAPI                                        from '/src/api/ServerAPI'
-import { ServerPurpose, ServerStatus, UtilizationDataPoint } from '/src/classes/Server/ServerInterfaces'
-import Job                                                   from '/src/classes/Job/Job'
-import * as HackUtils                                        from '/src/util/HackUtils'
-import { Tools }                                             from '/src/tools/Tools'
-import { Cycle, ThreadSpread }                               from '/src/classes/Misc/HackInterfaces'
-import * as ToolUtils                                        from '/src/util/ToolUtils'
-import Batch                                                 from '/src/classes/Job/Batch'
-import * as JobAPI                                           from '/src/api/JobAPI'
-import * as CycleUtils                                       from '/src/util/CycleUtils'
-import Server                                                from '/src/classes/Server/Server'
+import HackableServer                                        from '/src/classes/Server/HackableServer.js'
+import * as ServerAPI                                        from '/src/api/ServerAPI.js'
+import { ServerPurpose, ServerStatus, UtilizationDataPoint } from '/src/classes/Server/ServerInterfaces.js'
+import Job                                                   from '/src/classes/Job/Job.js'
+import * as HackUtils                                        from '/src/util/HackUtils.js'
+import { Tools }                                             from '/src/tools/Tools.js'
+import { Cycle, ThreadSpread }                               from '/src/classes/Misc/HackInterfaces.js'
+import * as ToolUtils                                        from '/src/util/ToolUtils.js'
+import Batch                                                 from '/src/classes/Job/Batch.js'
+import * as JobAPI                                           from '/src/api/JobAPI.js'
+import * as CycleUtils                                       from '/src/util/CycleUtils.js'
+import Server                                                from '/src/classes/Server/Server.js'
+import { Managers }                                          from '/src/managers/Managers.js'
 
 const LOOP_DELAY: number                  = 2000 as const
 const UTILIZATION_DATA_POINTS: number     = 10 as const
@@ -34,6 +36,8 @@ class HackingManager implements Manager {
 
 		await ServerAPI.initializeServerMap(ns)
 		await JobAPI.initializeJobMap(ns)
+
+		await Daemon.startManager(ns, Managers.JobManager)
 	}
 
 	public async start(ns: NS): Promise<void> {
@@ -377,22 +381,6 @@ class HackingManager implements Manager {
 		}
 	}
 
-}
-
-export async function start(ns: NS): Promise<void> {
-	if (isRunning(ns)) return
-
-	// TODO: Check whether there is enough ram available
-
-	ns.exec('/src/managers/HackingManager.js', CONSTANT.HOME_SERVER_HOST)
-
-	while (!isRunning(ns)) {
-		await ns.sleep(CONSTANT.SMALL_DELAY)
-	}
-}
-
-export function isRunning(ns: NS): boolean {
-	return ns.isRunning('/src/managers/HackingManager.js', CONSTANT.HOME_SERVER_HOST)
 }
 
 export async function main(ns: NS) {

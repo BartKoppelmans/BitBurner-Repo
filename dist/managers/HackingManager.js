@@ -1,16 +1,18 @@
 import { hasManagerKillRequest } from '/src/api/ControlFlowAPI.js';
 import * as LogAPI from '/src/api/LogAPI.js';
 import * as Utils from '/src/util/Utils.js';
+import * as Daemon from '/src/scripts/daemon.js';
 import { CONSTANT } from '/src/lib/constants.js';
-import * as ServerAPI from '/src/api/ServerAPI';
-import { ServerPurpose, ServerStatus } from '/src/classes/Server/ServerInterfaces';
-import Job from '/src/classes/Job/Job';
-import * as HackUtils from '/src/util/HackUtils';
-import { Tools } from '/src/tools/Tools';
-import * as ToolUtils from '/src/util/ToolUtils';
-import Batch from '/src/classes/Job/Batch';
-import * as JobAPI from '/src/api/JobAPI';
-import * as CycleUtils from '/src/util/CycleUtils';
+import * as ServerAPI from '/src/api/ServerAPI.js';
+import { ServerPurpose, ServerStatus } from '/src/classes/Server/ServerInterfaces.js';
+import Job from '/src/classes/Job/Job.js';
+import * as HackUtils from '/src/util/HackUtils.js';
+import { Tools } from '/src/tools/Tools.js';
+import * as ToolUtils from '/src/util/ToolUtils.js';
+import Batch from '/src/classes/Job/Batch.js';
+import * as JobAPI from '/src/api/JobAPI.js';
+import * as CycleUtils from '/src/util/CycleUtils.js';
+import { Managers } from '/src/managers/Managers.js';
 const LOOP_DELAY = 2000;
 const UTILIZATION_DATA_POINTS = 10;
 const UTILIZATION_DELTA_THRESHOLD = 0.4;
@@ -24,6 +26,7 @@ class HackingManager {
         Utils.disableLogging(ns);
         await ServerAPI.initializeServerMap(ns);
         await JobAPI.initializeJobMap(ns);
+        await Daemon.startManager(ns, Managers.JobManager);
     }
     async start(ns) {
         LogAPI.debug(ns, `Starting the HackingManager`);
@@ -278,18 +281,6 @@ class HackingManager {
             LogAPI.debug(ns, `Updated percentage to steal for ${target.characteristics.host} to ~${Math.round(target.percentageToSteal * 100)}%`);
         }
     }
-}
-export async function start(ns) {
-    if (isRunning(ns))
-        return;
-    // TODO: Check whether there is enough ram available
-    ns.exec('/src/managers/HackingManager.js', CONSTANT.HOME_SERVER_HOST);
-    while (!isRunning(ns)) {
-        await ns.sleep(CONSTANT.SMALL_DELAY);
-    }
-}
-export function isRunning(ns) {
-    return ns.isRunning('/src/managers/HackingManager.js', CONSTANT.HOME_SERVER_HOST);
 }
 export async function main(ns) {
     if (ns.getHostname() !== 'home') {

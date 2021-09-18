@@ -61,22 +61,6 @@ class SleeveManager implements Manager {
 
 }
 
-export async function start(ns: NS): Promise<void> {
-	if (isRunning(ns)) return
-
-	// TODO: Check whether there is enough ram available
-
-	ns.exec('/src/managers/SleeveManager.js', CONSTANT.HOME_SERVER_HOST)
-
-	while (!isRunning(ns)) {
-		await ns.sleep(CONSTANT.SMALL_DELAY)
-	}
-}
-
-export function isRunning(ns: NS): boolean {
-	return ns.isRunning('/src/managers/SleeveManager.js', CONSTANT.HOME_SERVER_HOST)
-}
-
 export async function main(ns: NS) {
 	if (ns.getHostname() !== 'home') {
 		throw new Error('Run the script from home')

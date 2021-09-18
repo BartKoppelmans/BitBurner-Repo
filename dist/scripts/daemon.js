@@ -1,45 +1,68 @@
 import * as ControlFlowAPI from '/src/api/ControlFlowAPI.js';
 import * as LogAPI from '/src/api/LogAPI.js';
-import { start as startJobManager } from '/src/managers/JobManager.js';
-import { start as startBladeBurnerManager } from '/src/managers/BladeBurnerManager.js';
-import { start as startGangManager } from '/src/managers/GangManager.js';
-import { start as startSleeveManager } from '/src/managers/SleeveManager.js';
-import { start as startStockManager } from '/src/managers/StockManager.js';
-import { start as startHackingManager } from '/src/managers/HackingManager.js';
 import { CONSTANT } from '/src/lib/constants.js';
 import * as Utils from '/src/util/Utils.js';
+import { Managers } from '/src/managers/Managers.js';
 let runnerInterval;
 const RUNNER_INTERVAL = 60000;
+const MANAGER_START_DELAY = 50;
 async function initialize(ns) {
     Utils.disableLogging(ns);
     const flags = ns.flags([
+        ['hacking', true],
         ['bladeburner', false],
         ['gang', false],
         ['sleeve', false],
         ['stock', false],
-        ['hacking', true],
+        ['corporation', false],
     ]);
     // TODO: Kill all running scripts, as there might be some shit from last session open
     const tasks = [];
     // Managers
-    tasks.push(startJobManager(ns));
     if (flags.hacking)
-        tasks.push(startHackingManager(ns));
+        tasks.push(startManager(ns, Managers.HackingManager));
     if (flags.bladeburner)
-        tasks.push(startBladeBurnerManager(ns));
+        tasks.push(startManager(ns, Managers.BladeBurnerManager));
     if (flags.gang)
-        tasks.push(startGangManager(ns));
+        tasks.push(startManager(ns, Managers.GangManager));
     if (flags.sleeve)
-        tasks.push(startSleeveManager(ns));
+        tasks.push(startManager(ns, Managers.SleeveManager));
     if (flags.stock)
-        tasks.push(startStockManager(ns));
+        tasks.push(startManager(ns, Managers.StockManager));
+    if (flags.corporation)
+        tasks.push(startManager(ns, Managers.CorporationManager));
     // Runners
-    tasks.push(ControlFlowAPI.launchRunners(ns));
+    tasks.push(launchRunners(ns));
     await Promise.allSettled(tasks);
 }
-export function destroy(ns) {
+async function launchRunners(ns) {
+    const purchasedServerRunner = launchRunner(ns, '/src/runners/PurchasedServerRunner.js');
+    const programRunner = launchRunner(ns, '/src/runners/ProgramRunner.js');
+    const codingContractRunner = launchRunner(ns, '/src/runners/CodingContractRunner.js');
+    await Promise.allSettled([purchasedServerRunner, programRunner, codingContractRunner]);
+}
+async function launchRunner(ns, script) {
+    // TODO: Check if we have enough ram available to run
+    const pid = ns.run(script);
+    while (ns.isRunning(pid)) {
+        await ns.sleep(CONSTANT.SMALL_DELAY);
+    }
+}
+function destroy(ns) {
     clearTimeout(runnerInterval);
     LogAPI.debug(ns, 'Stopping the daemon');
+}
+export async function startManager(ns, manager) {
+    if (isManagerRunning(ns, manager))
+        return;
+    // TODO: Check whether there is enough ram available
+    ns.exec(manager, CONSTANT.HOME_SERVER_HOST);
+    while (!isManagerRunning(ns, manager)) {
+        await ns.sleep(MANAGER_START_DELAY);
+    }
+}
+export function isManagerRunning(ns, manager) {
+    return ns.isRunning(manager, CONSTANT.HOME_SERVER_HOST);
 }
 export async function main(ns) {
     const hostName = ns.getHostname();
@@ -50,7 +73,7 @@ export async function main(ns) {
     // or whether we want to start hacking using our main hacker
     await initialize(ns);
     LogAPI.debug(ns, 'Starting the daemon');
-    runnerInterval = setInterval(ControlFlowAPI.launchRunners.bind(null, ns), RUNNER_INTERVAL);
+    runnerInterval = setInterval(launchRunners.bind(null, ns), RUNNER_INTERVAL);
     // TODO: Here we should check whether we are still running the hackloop
     while (!ControlFlowAPI.hasDaemonKillRequest(ns)) {
         await ns.sleep(CONSTANT.CONTROL_FLOW_CHECK_INTERVAL);

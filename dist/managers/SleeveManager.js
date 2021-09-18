@@ -39,18 +39,6 @@ class SleeveManager {
         this.managingLoopTimeout = setTimeout(this.managingLoop.bind(this, ns), LOOP_DELAY);
     }
 }
-export async function start(ns) {
-    if (isRunning(ns))
-        return;
-    // TODO: Check whether there is enough ram available
-    ns.exec('/src/managers/SleeveManager.js', CONSTANT.HOME_SERVER_HOST);
-    while (!isRunning(ns)) {
-        await ns.sleep(CONSTANT.SMALL_DELAY);
-    }
-}
-export function isRunning(ns) {
-    return ns.isRunning('/src/managers/SleeveManager.js', CONSTANT.HOME_SERVER_HOST);
-}
 export async function main(ns) {
     if (ns.getHostname() !== 'home') {
         throw new Error('Run the script from home');

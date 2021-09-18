@@ -39,6 +39,7 @@ const files = [
     'managers/GangManager.js',
     'managers/HackingManager.js',
     'managers/JobManager.js',
+    'managers/Managers.js',
     'managers/SleeveManager.js',
     'managers/StockManager.js',
     'runners/CodingContractRunner.js',

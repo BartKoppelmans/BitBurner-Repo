@@ -1,29 +1,25 @@
-import type { BitBurner as NS }             from 'Bitburner'
-import * as ControlFlowAPI                  from '/src/api/ControlFlowAPI.js'
-import * as LogAPI                          from '/src/api/LogAPI.js'
-import { start as startJobManager }         from '/src/managers/JobManager.js'
-import { start as startBladeBurnerManager } from '/src/managers/BladeBurnerManager.js'
-import { start as startGangManager }        from '/src/managers/GangManager.js'
-import { start as startSleeveManager }      from '/src/managers/SleeveManager.js'
-import { start as startStockManager }       from '/src/managers/StockManager.js'
-import { start as startHackingManager }     from '/src/managers/HackingManager.js'
-import { CONSTANT }                         from '/src/lib/constants.js'
-import * as Utils                           from '/src/util/Utils.js'
-
+import type { BitBurner as NS } from 'Bitburner'
+import * as ControlFlowAPI      from '/src/api/ControlFlowAPI.js'
+import * as LogAPI              from '/src/api/LogAPI.js'
+import { CONSTANT }             from '/src/lib/constants.js'
+import * as Utils               from '/src/util/Utils.js'
+import { Managers }             from '/src/managers/Managers.js'
 
 let runnerInterval: ReturnType<typeof setInterval>
-const RUNNER_INTERVAL: number = 60000 as const
+const RUNNER_INTERVAL: number     = 60000 as const
+const MANAGER_START_DELAY: number = 50 as const
 
 async function initialize(ns: NS) {
 
 	Utils.disableLogging(ns)
 
 	const flags = ns.flags([
+		['hacking', true],
 		['bladeburner', false],
 		['gang', false],
 		['sleeve', false],
 		['stock', false],
-		['hacking', true],
+		['corporation', false],
 	])
 
 	// TODO: Kill all running scripts, as there might be some shit from last session open
@@ -31,24 +27,59 @@ async function initialize(ns: NS) {
 	const tasks: Promise<void>[] = []
 
 	// Managers
-	tasks.push(startJobManager(ns))
-	if (flags.hacking) tasks.push(startHackingManager(ns))
-	if (flags.bladeburner) tasks.push(startBladeBurnerManager(ns))
-	if (flags.gang) tasks.push(startGangManager(ns))
-	if (flags.sleeve) tasks.push(startSleeveManager(ns))
-	if (flags.stock) tasks.push(startStockManager(ns))
+	if (flags.hacking) tasks.push(startManager(ns, Managers.HackingManager))
+	if (flags.bladeburner) tasks.push(startManager(ns, Managers.BladeBurnerManager))
+	if (flags.gang) tasks.push(startManager(ns, Managers.GangManager))
+	if (flags.sleeve) tasks.push(startManager(ns, Managers.SleeveManager))
+	if (flags.stock) tasks.push(startManager(ns, Managers.StockManager))
+	if (flags.corporation) tasks.push(startManager(ns, Managers.CorporationManager))
 
 	// Runners
-	tasks.push(ControlFlowAPI.launchRunners(ns))
+	tasks.push(launchRunners(ns))
 
 	await Promise.allSettled(tasks)
 }
 
+async function launchRunners(ns: NS): Promise<void> {
+	const purchasedServerRunner: Promise<void> = launchRunner(ns, '/src/runners/PurchasedServerRunner.js')
+	const programRunner: Promise<void>         = launchRunner(ns, '/src/runners/ProgramRunner.js')
+	const codingContractRunner: Promise<void>  = launchRunner(ns, '/src/runners/CodingContractRunner.js')
 
-export function destroy(ns: NS): void {
+	await Promise.allSettled([purchasedServerRunner, programRunner, codingContractRunner])
+}
+
+async function launchRunner(ns: NS, script: string): Promise<void> {
+
+	// TODO: Check if we have enough ram available to run
+
+	const pid: number = ns.run(script)
+
+	while (ns.isRunning(pid)) {
+		await ns.sleep(CONSTANT.SMALL_DELAY)
+	}
+}
+
+
+function destroy(ns: NS): void {
 	clearTimeout(runnerInterval)
 
 	LogAPI.debug(ns, 'Stopping the daemon')
+}
+
+export async function startManager(ns: NS, manager: Managers): Promise<void> {
+	if (isManagerRunning(ns, manager)) return
+
+	// TODO: Check whether there is enough ram available
+
+	ns.exec(manager, CONSTANT.HOME_SERVER_HOST)
+
+	while (!isManagerRunning(ns, manager)) {
+		await ns.sleep(MANAGER_START_DELAY)
+	}
+}
+
+export function isManagerRunning(ns: NS, manager: Managers): boolean {
+	return ns.isRunning(manager, CONSTANT.HOME_SERVER_HOST)
 }
 
 export async function main(ns: NS) {
@@ -65,7 +96,7 @@ export async function main(ns: NS) {
 
 	LogAPI.debug(ns, 'Starting the daemon')
 
-	runnerInterval = setInterval(ControlFlowAPI.launchRunners.bind(null, ns), RUNNER_INTERVAL)
+	runnerInterval = setInterval(launchRunners.bind(null, ns), RUNNER_INTERVAL)
 
 	// TODO: Here we should check whether we are still running the hackloop
 	while (!ControlFlowAPI.hasDaemonKillRequest(ns)) {

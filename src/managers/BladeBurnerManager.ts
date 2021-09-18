@@ -120,7 +120,7 @@ class BladeBurnerManager implements Manager {
 			return
 		}
 
-		ns.bladeburner.joinBladeburnerFaction();
+		ns.bladeburner.joinBladeburnerFaction()
 
 		this.upgradeSkills(ns)
 
@@ -243,22 +243,6 @@ class BladeBurnerManager implements Manager {
 		upgradedSkills.forEach((skill) => LogAPI.log(ns, `Upgraded skill '${skill.name}' to level ${skill.getLevel(ns)}`, LogType.BLADEBURNER))
 
 	}
-}
-
-export async function start(ns: NS): Promise<void> {
-	if (isRunning(ns)) return
-
-	// TODO: Check whether there is enough ram available
-
-	ns.exec('/src/managers/BladeBurnerManager.js', CONSTANT.HOME_SERVER_HOST)
-
-	while (!isRunning(ns)) {
-		await ns.sleep(CONSTANT.SMALL_DELAY)
-	}
-}
-
-export function isRunning(ns: NS): boolean {
-	return ns.isRunning('/src/managers/BladeBurnerManager.js', CONSTANT.HOME_SERVER_HOST)
 }
 
 export async function main(ns: NS) {
