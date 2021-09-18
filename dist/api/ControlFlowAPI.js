@@ -2,6 +2,7 @@ import { CONSTANT } from '/src/lib/constants.js';
 import * as Utils from '/src/util/Utils.js';
 import * as ServerAPI from '/src/api/ServerAPI.js';
 const MANAGER_KILL_DELAY = 2500;
+// TODO: Move this all to the daemon
 export var ControlFlowCode;
 (function (ControlFlowCode) {
     ControlFlowCode[ControlFlowCode["KILL_MANAGERS"] = 0] = "KILL_MANAGERS";

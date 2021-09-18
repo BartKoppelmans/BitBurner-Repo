@@ -1,8 +1,6 @@
 import type { BitBurner as NS } from 'Bitburner'
 import { CONSTANT }             from '/src/lib/constants.js'
 
-const DO_ASYNC: boolean = false as const
-
 const files: string[] = [
 	'Bitburner.t.js',
 	'import.js',
@@ -23,6 +21,7 @@ const files: string[] = [
 	'classes/Job/Batch.js',
 	'classes/Job/Job.js',
 	'classes/Job/JobInterfaces.js',
+	'classes/Misc/Augmentation.js',
 	'classes/Misc/CodingContract.js',
 	'classes/Misc/Crime.js',
 	'classes/Misc/HackInterfaces.js',
@@ -38,7 +37,9 @@ const files: string[] = [
 	'lib/constants.js',
 	'lib/names.txt',
 	'managers/BladeBurnerManager.js',
+	'managers/CorporationManager.js',
 	'managers/GangManager.js',
+	'managers/HackingManager.js',
 	'managers/JobManager.js',
 	'managers/SleeveManager.js',
 	'managers/StockManager.js',

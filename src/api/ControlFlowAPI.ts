@@ -6,6 +6,8 @@ import { ServerMap }                  from '/src/classes/Server/ServerInterfaces
 
 const MANAGER_KILL_DELAY: number = 2500 as const
 
+// TODO: Move this all to the daemon
+
 export enum ControlFlowCode {
 	KILL_MANAGERS,
 	KILL_DAEMON,

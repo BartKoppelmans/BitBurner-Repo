@@ -64,8 +64,6 @@ export const CONSTANT = {
      */
     // TODO: Change this back to 20 after early game.
     MAX_TARGET_COUNT: 30,
-    RUNNER_INTERVAL: 60000,
-    HACK_LOOP_DELAY: 2000,
     MAX_CYCLE_NUMBER: 50,
     // Max server growth rate, higher than this will be throttled
     MAX_GROWTH_RATE: 1.0035,

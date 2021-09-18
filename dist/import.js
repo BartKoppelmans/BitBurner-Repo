@@ -1,5 +1,4 @@
 import { CONSTANT } from '/src/lib/constants.js';
-const DO_ASYNC = false;
 const files = [
     'Bitburner.t.js',
     'import.js',
@@ -20,6 +19,7 @@ const files = [
     'classes/Job/Batch.js',
     'classes/Job/Job.js',
     'classes/Job/JobInterfaces.js',
+    'classes/Misc/Augmentation.js',
     'classes/Misc/CodingContract.js',
     'classes/Misc/Crime.js',
     'classes/Misc/HackInterfaces.js',
@@ -35,7 +35,9 @@ const files = [
     'lib/constants.js',
     'lib/names.txt',
     'managers/BladeBurnerManager.js',
+    'managers/CorporationManager.js',
     'managers/GangManager.js',
+    'managers/HackingManager.js',
     'managers/JobManager.js',
     'managers/SleeveManager.js',
     'managers/StockManager.js',
