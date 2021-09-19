@@ -1,5 +1,6 @@
 import type { BitBurner as NS } from 'Bitburner'
 import * as ServerAPI           from '/src/api/ServerAPI.js'
+import * as LogAPI              from '/src/api/LogAPI.js'
 import Server                   from '/src/classes/Server/Server.js'
 import * as ServerUtils         from '/src/util/ServerUtils.js'
 import { CONSTANT }             from '/src/lib/constants.js'
@@ -65,24 +66,6 @@ function getFormattedServerName(ns: NS, server: Server): string {
 		`<span style="color: ${pipColor}; display: ${(showCodingContract && hasContracts) ? 'inline' : 'none'}">⋐</span>`
 }
 
-function tprint(html: string) {
-	const doc: Document = eval('document')
-	const terminalInput = doc.getElementById('terminal-input')
-	const rowElement    = doc.createElement('tr')
-	const cellElement   = doc.createElement('td')
-
-	if (!terminalInput) return
-
-	rowElement.classList.add('posted')
-	cellElement.classList.add('terminal-line')
-	cellElement.innerHTML = html
-
-	rowElement.appendChild(cellElement)
-	terminalInput.before(rowElement)
-
-	terminalInput.scrollIntoView(false)
-}
-
 async function printChildren(ns: NS, server: Server, level: number, isLastChild: boolean) {
 	let prefixes: string = '│ '.repeat(Math.max(level - 1, 0))
 
@@ -90,7 +73,8 @@ async function printChildren(ns: NS, server: Server, level: number, isLastChild:
 		prefixes += (isLastChild) ? '└> ' : '├> '
 	}
 
-	tprint(`${prefixes}${getFormattedServerName(ns, server)}`)
+	// noinspection CssUnresolvedCustomProperty
+	LogAPI.logHTML(ns, `<span style='color: var(--my-font-color)'>${prefixes}${getFormattedServerName(ns, server)}</span>`)
 
 	for (const [index, childId] of server.characteristics.treeStructure.children.entries()) {
 		const child: Server = await ServerAPI.getServer(ns, childId)
@@ -99,7 +83,7 @@ async function printChildren(ns: NS, server: Server, level: number, isLastChild:
 }
 
 export async function main(ns: NS) {
-	const isInitialized: boolean = await ServerAPI.isServerMapInitialized(ns)
+	const isInitialized: boolean = ServerAPI.isServerMapInitialized(ns)
 	if (!isInitialized) await ServerAPI.initializeServerMap(ns)
 
 	const home: Server = await ServerAPI.getServer(ns, CONSTANT.HOME_SERVER_ID)

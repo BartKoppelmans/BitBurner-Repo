@@ -1,4 +1,5 @@
 import * as ServerAPI from '/src/api/ServerAPI.js';
+import * as LogAPI from '/src/api/LogAPI.js';
 import * as ServerUtils from '/src/util/ServerUtils.js';
 import { CONSTANT } from '/src/lib/constants.js';
 var PrintColor;
@@ -55,33 +56,20 @@ function getFormattedServerName(ns, server) {
         `</span>` +
         `<span style="color: ${pipColor}; display: ${(showCodingContract && hasContracts) ? 'inline' : 'none'}">⋐</span>`;
 }
-function tprint(html) {
-    const doc = eval('document');
-    const terminalInput = doc.getElementById('terminal-input');
-    const rowElement = doc.createElement('tr');
-    const cellElement = doc.createElement('td');
-    if (!terminalInput)
-        return;
-    rowElement.classList.add('posted');
-    cellElement.classList.add('terminal-line');
-    cellElement.innerHTML = html;
-    rowElement.appendChild(cellElement);
-    terminalInput.before(rowElement);
-    terminalInput.scrollIntoView(false);
-}
 async function printChildren(ns, server, level, isLastChild) {
     let prefixes = '│ '.repeat(Math.max(level - 1, 0));
     if (!ServerUtils.isHomeServer(server)) {
         prefixes += (isLastChild) ? '└> ' : '├> ';
     }
-    tprint(`${prefixes}${getFormattedServerName(ns, server)}`);
+    // noinspection CssUnresolvedCustomProperty
+    LogAPI.logHTML(ns, `<span style='color: var(--my-font-color)'>${prefixes}${getFormattedServerName(ns, server)}</span>`);
     for (const [index, childId] of server.characteristics.treeStructure.children.entries()) {
         const child = await ServerAPI.getServer(ns, childId);
         await printChildren(ns, child, level + 1, (index === server.characteristics.treeStructure.children.length - 1));
     }
 }
 export async function main(ns) {
-    const isInitialized = await ServerAPI.isServerMapInitialized(ns);
+    const isInitialized = ServerAPI.isServerMapInitialized(ns);
     if (!isInitialized)
         await ServerAPI.initializeServerMap(ns);
     const home = await ServerAPI.getServer(ns, CONSTANT.HOME_SERVER_ID);

@@ -31,8 +31,11 @@ export function log(ns: NS, message: string, logType: LogType = LogType.INFORMAT
 	printColored(ns, message, logType)
 }
 
-function getColorFromLogType(ns: NS, logType: LogType): string {
+export function logHTML(ns: NS, content: string) {
+	printHTML(ns, content)
+}
 
+function getColorFromLogType(ns: NS, logType: LogType): string {
 	switch (logType) {
 		case LogType.WARNING:
 			return 'red'
@@ -57,13 +60,19 @@ function getColorFromLogType(ns: NS, logType: LogType): string {
 	}
 }
 
-function shouldScrollIntoView(element: HTMLElement): boolean {
-	return Math.round(element.scrollHeight - element.scrollTop - element.clientHeight) <= PIXEL_TOLERANCE
+function printHTML(ns: NS, content: string): void {
+	const doc: Document = eval('document')
+
+	const terminalContainer: HTMLElement | null = doc.getElementById('generic-react-container')
+	if (!terminalContainer) throw new Error('Could not find the terminal container')
+
+	const terminalLines: HTMLUListElement | null = terminalContainer.querySelector('ul')
+	if (!terminalLines) throw new Error('Could not find the terminal lines')
+
+	terminalLines.insertAdjacentHTML('beforeend', `<li>${content}</li>`)
 }
 
-function printColored(ns: NS, content: string, logType: LogType) {
+function printColored(ns: NS, content: string, logType: LogType): void {
 	const color: string = getColorFromLogType(ns, logType)
-	const doc: Document = eval('document')
-	content             = `${Utils.formatTime()} ${content}`
-	ns.tprintf(content)
+	ns.tprintf(`${Utils.formatTime()} ${content}`)
 }
