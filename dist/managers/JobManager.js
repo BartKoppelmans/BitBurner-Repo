@@ -7,9 +7,9 @@ const JOB_MANAGING_LOOP_INTERVAL = 1000;
 class JobManager {
     async initialize(ns) {
         Utils.disableLogging(ns);
-        const jobMap = await JobAPI.getJobMap(ns);
+        const jobMap = JobAPI.getJobMap(ns);
         if (jobMap.batches.length > 0) {
-            await JobAPI.cancelAllJobs(ns);
+            JobAPI.cancelAllJobs(ns);
         }
     }
     async start(ns) {

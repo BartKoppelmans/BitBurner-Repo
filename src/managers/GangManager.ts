@@ -95,6 +95,11 @@ class GangManager implements Manager {
 		return (gangInformation.wantedLevel === 1)
 	}
 
+	private static isHackingGang(ns: NS): boolean {
+		const gangInformation: GangGenInfo = ns.gang.getGangInformation()
+		return gangInformation.isHacking
+	}
+
 	private static async createGang(ns: NS): Promise<void> {
 		while (!ns.gang.inGang()) {
 			const factions: FactionName[] = ns.getPlayer().factions
@@ -282,7 +287,15 @@ class GangManager implements Manager {
 		}
 
 		let remainingUpgrades: GangUpgrade[] = this.upgrades.filter((upgrade) => !member.upgrades.some((memberUpgrade) => upgrade.name === memberUpgrade.name))
-		remainingUpgrades                    = GangUpgrade.sortUpgrades(ns, remainingUpgrades)
+		                                           .filter((upgrade) => {
+			                                           if (GangManager.isHackingGang(ns)) {
+				                                           return upgrade.multipliers.hack || upgrade.multipliers.cha
+			                                           } else {
+				                                           return upgrade.multipliers.cha || upgrade.multipliers.agi || upgrade.multipliers.str || upgrade.multipliers.dex || upgrade.multipliers.agi
+			                                           }
+		                                           })
+
+		remainingUpgrades = GangUpgrade.sortUpgrades(ns, remainingUpgrades)
 
 		let numUpgrades: number = 0
 		for (const upgrade of remainingUpgrades) {

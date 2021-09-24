@@ -17,10 +17,10 @@ class JobManager implements Manager {
 	public async initialize(ns: NS) {
 		Utils.disableLogging(ns)
 
-		const jobMap: JobMap = await JobAPI.getJobMap(ns)
+		const jobMap: JobMap = JobAPI.getJobMap(ns)
 
 		if (jobMap.batches.length > 0) {
-			await JobAPI.cancelAllJobs(ns)
+			JobAPI.cancelAllJobs(ns)
 		}
 
 	}

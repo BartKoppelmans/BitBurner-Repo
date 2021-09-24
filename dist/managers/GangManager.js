@@ -66,6 +66,10 @@ class GangManager {
         const gangInformation = ns.gang.getGangInformation();
         return (gangInformation.wantedLevel === 1);
     }
+    static isHackingGang(ns) {
+        const gangInformation = ns.gang.getGangInformation();
+        return gangInformation.isHacking;
+    }
     static async createGang(ns) {
         while (!ns.gang.inGang()) {
             const factions = ns.getPlayer().factions;
@@ -210,7 +214,15 @@ class GangManager {
         if (GangManager.shouldAscend(ns, member)) {
             member.ascend(ns);
         }
-        let remainingUpgrades = this.upgrades.filter((upgrade) => !member.upgrades.some((memberUpgrade) => upgrade.name === memberUpgrade.name));
+        let remainingUpgrades = this.upgrades.filter((upgrade) => !member.upgrades.some((memberUpgrade) => upgrade.name === memberUpgrade.name))
+            .filter((upgrade) => {
+            if (GangManager.isHackingGang(ns)) {
+                return upgrade.multipliers.hack || upgrade.multipliers.cha;
+            }
+            else {
+                return upgrade.multipliers.cha || upgrade.multipliers.agi || upgrade.multipliers.str || upgrade.multipliers.dex || upgrade.multipliers.agi;
+            }
+        });
         remainingUpgrades = GangUpgrade.sortUpgrades(ns, remainingUpgrades);
         let numUpgrades = 0;
         for (const upgrade of remainingUpgrades) {

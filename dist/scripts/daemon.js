@@ -3,6 +3,7 @@ import * as LogAPI from '/src/api/LogAPI.js';
 import { CONSTANT } from '/src/lib/constants.js';
 import * as Utils from '/src/util/Utils.js';
 import { Managers } from '/src/managers/Managers.js';
+import * as ServerAPI from '/src/api/ServerAPI.js';
 let runnerInterval;
 const RUNNER_INTERVAL = 60000;
 const MANAGER_START_DELAY = 50;
@@ -16,7 +17,7 @@ async function initialize(ns) {
         ['stock', false],
         ['corporation', false],
     ]);
-    // TODO: Kill all running scripts, as there might be some shit from last session open
+    await ServerAPI.initializeServerMap(ns);
     const tasks = [];
     // Managers
     if (flags.hacking)

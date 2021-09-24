@@ -31,80 +31,6 @@ class HackingManager implements Manager {
 	private managingLoopTimeout?: ReturnType<typeof setTimeout>
 	private utilizationDataPoints: UtilizationDataPoint[] = []
 
-	public async initialize(ns: NS) {
-		Utils.disableLogging(ns)
-
-		await ServerAPI.initializeServerMap(ns)
-		await JobAPI.initializeJobMap(ns)
-
-		await Daemon.startManager(ns, Managers.JobManager)
-	}
-
-	public async start(ns: NS): Promise<void> {
-		LogAPI.debug(ns, `Starting the HackingManager`)
-
-		this.managingLoopTimeout = setTimeout(this.managingLoop.bind(this, ns), LOOP_DELAY)
-	}
-
-	public async destroy(ns: NS): Promise<void> {
-		if (this.managingLoopTimeout) clearTimeout(this.managingLoopTimeout)
-
-		LogAPI.debug(ns, `Stopping the HackingManager`)
-	}
-
-	private updatePurchasedServerPurposes(ns: NS) {
-		const dataPoint: UtilizationDataPoint = HackingManager.getUtilizationDataPoint(ns)
-
-		this.utilizationDataPoints.length = Math.min(this.utilizationDataPoints.length, UTILIZATION_DATA_POINTS - 1)
-
-		this.utilizationDataPoints.unshift(dataPoint)
-
-		if (this.utilizationDataPoints.length < UTILIZATION_DATA_POINTS) return
-
-		const shouldAddPrepServer: boolean = this.utilizationDataPoints.every((point) => point.prep - point.hack > UTILIZATION_DELTA_THRESHOLD)
-		const shouldAddHackServer: boolean = this.utilizationDataPoints.every((point) => {
-			return point.hack - point.prep > UTILIZATION_DELTA_THRESHOLD || point.prep < UTILIZATION_DELTA_THRESHOLD
-		})
-
-		if (shouldAddHackServer) ServerAPI.addHackingServer(ns)
-		else if (shouldAddPrepServer) ServerAPI.addPreppingServer(ns)
-		else return
-
-		// Reset the measurements to prevent immediately adding another server
-		this.utilizationDataPoints.length = 0
-	}
-
-	private async managingLoop(ns: NS): Promise<void> {
-		this.updatePurchasedServerPurposes(ns)
-
-		// Get the potential targets
-		let potentialTargets: HackableServer[] = ServerAPI.getTargetServers(ns)
-
-		// We would have a problem if there are no targets
-		if (potentialTargets.length === 0) {
-			throw new Error('No potential targets found.')
-		}
-
-		// Sort the potential targets
-		potentialTargets = potentialTargets.sort((a, b) => a.serverValue! - b.serverValue!)
-
-		// Attack each of the targets
-		for (const target of potentialTargets) {
-
-			const currentTargets: HackableServer[] = ServerAPI.getCurrentTargets(ns)
-
-			// Can't have too many targets at the same time
-			if (currentTargets.length >= MAX_TARGET_COUNT) {
-				break
-			}
-
-			await HackingManager.hack(ns, target)
-		}
-
-		this.managingLoopTimeout = setTimeout(this.managingLoop.bind(this, ns), LOOP_DELAY)
-	}
-
-
 	private static getUtilizationDataPoint(ns: NS): UtilizationDataPoint {
 
 		return {
@@ -379,6 +305,79 @@ class HackingManager implements Manager {
 		if (performanceUpdated) {
 			LogAPI.debug(ns, `Updated percentage to steal for ${target.characteristics.host} to ~${Math.round(target.percentageToSteal * 100)}%`)
 		}
+	}
+
+	public async initialize(ns: NS) {
+		Utils.disableLogging(ns)
+
+		await ServerAPI.initializeServerMap(ns)
+		await JobAPI.initializeJobMap(ns)
+
+		await Daemon.startManager(ns, Managers.JobManager)
+	}
+
+	public async start(ns: NS): Promise<void> {
+		LogAPI.debug(ns, `Starting the HackingManager`)
+
+		this.managingLoopTimeout = setTimeout(this.managingLoop.bind(this, ns), LOOP_DELAY)
+	}
+
+	public async destroy(ns: NS): Promise<void> {
+		if (this.managingLoopTimeout) clearTimeout(this.managingLoopTimeout)
+
+		LogAPI.debug(ns, `Stopping the HackingManager`)
+	}
+
+	private updatePurchasedServerPurposes(ns: NS) {
+		const dataPoint: UtilizationDataPoint = HackingManager.getUtilizationDataPoint(ns)
+
+		this.utilizationDataPoints.length = Math.min(this.utilizationDataPoints.length, UTILIZATION_DATA_POINTS - 1)
+
+		this.utilizationDataPoints.unshift(dataPoint)
+
+		if (this.utilizationDataPoints.length < UTILIZATION_DATA_POINTS) return
+
+		const shouldAddPrepServer: boolean = this.utilizationDataPoints.every((point) => point.prep - point.hack > UTILIZATION_DELTA_THRESHOLD)
+		const shouldAddHackServer: boolean = this.utilizationDataPoints.every((point) => {
+			return point.hack - point.prep > UTILIZATION_DELTA_THRESHOLD || point.prep < UTILIZATION_DELTA_THRESHOLD
+		})
+
+		if (shouldAddHackServer) ServerAPI.addHackingServer(ns)
+		else if (shouldAddPrepServer) ServerAPI.addPreppingServer(ns)
+		else return
+
+		// Reset the measurements to prevent immediately adding another server
+		this.utilizationDataPoints.length = 0
+	}
+
+	private async managingLoop(ns: NS): Promise<void> {
+		this.updatePurchasedServerPurposes(ns)
+
+		// Get the potential targets
+		let potentialTargets: HackableServer[] = ServerAPI.getTargetServers(ns)
+
+		// We would have a problem if there are no targets
+		if (potentialTargets.length === 0) {
+			throw new Error('No potential targets found.')
+		}
+
+		// Sort the potential targets
+		potentialTargets = potentialTargets.sort((a, b) => a.serverValue! - b.serverValue!)
+
+		// Attack each of the targets
+		for (const target of potentialTargets) {
+
+			const currentTargets: HackableServer[] = ServerAPI.getCurrentTargets(ns)
+
+			// Can't have too many targets at the same time
+			if (currentTargets.length >= MAX_TARGET_COUNT) {
+				break
+			}
+
+			await HackingManager.hack(ns, target)
+		}
+
+		this.managingLoopTimeout = setTimeout(this.managingLoop.bind(this, ns), LOOP_DELAY)
 	}
 
 }

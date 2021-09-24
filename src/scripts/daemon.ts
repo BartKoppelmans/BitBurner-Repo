@@ -4,6 +4,7 @@ import * as LogAPI              from '/src/api/LogAPI.js'
 import { CONSTANT }             from '/src/lib/constants.js'
 import * as Utils               from '/src/util/Utils.js'
 import { Managers }             from '/src/managers/Managers.js'
+import * as ServerAPI           from '/src/api/ServerAPI.js'
 
 let runnerInterval: ReturnType<typeof setInterval>
 const RUNNER_INTERVAL: number     = 60000 as const
@@ -22,7 +23,7 @@ async function initialize(ns: NS) {
 		['corporation', false],
 	])
 
-	// TODO: Kill all running scripts, as there might be some shit from last session open
+	await ServerAPI.initializeServerMap(ns)
 
 	const tasks: Promise<void>[] = []
 
