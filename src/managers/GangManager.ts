@@ -22,7 +22,8 @@ const WANTED_PENALTY_THRESHOLD: number       = 0.25 as const // Percentage
 const COMBAT_STAT_HIGH_THRESHOLD: number     = 2500 as const
 const COMBAT_STAT_LOW_THRESHOLD: number      = 250 as const
 const MAX_GANG_MEMBERS: number               = 12 as const
-const CLASH_CHANCE_THRESHOLD: number         = 0.99 as const
+const CLASH_CHANCE_LOWER_THRESHOLD: number   = 0.90 as const
+const CLASH_CHANCE_UPPER_THRESHOLD: number   = 0.95 as const
 
 class GangManager implements Manager {
 
@@ -31,6 +32,8 @@ class GangManager implements Manager {
 	private gangs!: Gang[]
 	private homeGang!: HomeGang
 	private upgrades!: GangUpgrade[]
+
+	private isIncreasingPower: boolean = false
 
 	private focusOnRespect: boolean = false
 
@@ -73,8 +76,12 @@ class GangManager implements Manager {
 		return average > level
 	}
 
-	private static canWinTerritoryWarfare(ns: NS, gangs: Gang[]): boolean {
-		return gangs.every((gang) => gang.getChanceToWinClash(ns) > CLASH_CHANCE_THRESHOLD)
+	private static shouldIncreasePower(ns: NS, gangs: Gang[]): boolean {
+		return gangs.some((gang) => gang.getChanceToWinClash(ns) < CLASH_CHANCE_LOWER_THRESHOLD)
+	}
+
+	private static shouldContinueIncreasingPower(ns: NS, gangs: Gang[]): boolean {
+		return gangs.some((gang) => gang.getChanceToWinClash(ns) < CLASH_CHANCE_UPPER_THRESHOLD)
 	}
 
 	private static shouldReduceWantedLevel(ns: NS): boolean {
@@ -202,8 +209,15 @@ class GangManager implements Manager {
 
 	private async managingLoop(ns: NS): Promise<void> {
 
-		const doTerritoryWarfare: boolean = GangManager.canWinTerritoryWarfare(ns, this.gangs)
-		doTerritoryWarfare ? this.homeGang.enableTerritoryWarfare(ns) : this.homeGang.disableTerritoryWarfare(ns)
+		if (!this.isIncreasingPower && GangManager.shouldIncreasePower(ns, this.gangs)) {
+			// We should start increasing power, so we disable territory warfare to decrease the chance of deaths
+			this.homeGang.disableTerritoryWarfare(ns)
+			this.isIncreasingPower = true
+		} else if (this.isIncreasingPower && !GangManager.shouldContinueIncreasingPower(ns, this.gangs)) {
+			// We can stop increasing power, so we enable territory warfare again (as we will not have any deaths)
+			this.homeGang.enableTerritoryWarfare(ns)
+			this.isIncreasingPower = false
+		}
 
 		while (ns.gang.canRecruitMember()) {
 			const newMember: GangMember | null = GangManager.recruitMember(ns)
@@ -249,7 +263,7 @@ class GangManager implements Manager {
 			return member.startTask(ns, GangTask.getTrainTask(ns))
 		}
 
-		if (!GangManager.canWinTerritoryWarfare(ns, this.gangs)) {
+		if (this.isIncreasingPower) {
 			return member.startTask(ns, GangTask.getTerritoryWarfareTask(ns))
 		}
 
@@ -273,7 +287,7 @@ class GangManager implements Manager {
 			return member.startTask(ns, GangTask.getTrainTask(ns))
 		}
 
-		if (!GangManager.canWinTerritoryWarfare(ns, this.gangs)) {
+		if (this.isIncreasingPower) {
 			return member.startTask(ns, GangTask.getTerritoryWarfareTask(ns))
 		}
 
