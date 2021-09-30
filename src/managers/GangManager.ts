@@ -24,6 +24,7 @@ const COMBAT_STAT_LOW_THRESHOLD: number      = 250 as const
 const MAX_GANG_MEMBERS: number               = 12 as const
 const CLASH_CHANCE_LOWER_THRESHOLD: number   = 0.90 as const
 const CLASH_CHANCE_UPPER_THRESHOLD: number   = 0.95 as const
+const POWER_THRESHOLD: number                = 1000 as const
 
 class GangManager implements Manager {
 
@@ -74,6 +75,10 @@ class GangManager implements Manager {
 		const average: number = (gangMemberStats.str + gangMemberStats.agi + gangMemberStats.def + gangMemberStats.dex) / 4
 
 		return average > level
+	}
+
+	private static hasSufficientPower(ns: NS, homeGang: HomeGang): boolean {
+		return homeGang.getPower(ns) > POWER_THRESHOLD
 	}
 
 	private static shouldIncreasePower(ns: NS, gangs: Gang[]): boolean {
@@ -209,11 +214,11 @@ class GangManager implements Manager {
 
 	private async managingLoop(ns: NS): Promise<void> {
 
-		if (!this.isIncreasingPower && GangManager.shouldIncreasePower(ns, this.gangs)) {
+		if (!this.isIncreasingPower && (!GangManager.hasSufficientPower(ns, this.homeGang) || GangManager.shouldIncreasePower(ns, this.gangs))) {
 			// We should start increasing power, so we disable territory warfare to decrease the chance of deaths
 			this.homeGang.disableTerritoryWarfare(ns)
 			this.isIncreasingPower = true
-		} else if (this.isIncreasingPower && !GangManager.shouldContinueIncreasingPower(ns, this.gangs)) {
+		} else if (this.isIncreasingPower && (GangManager.hasSufficientPower(ns, this.homeGang) && !GangManager.shouldContinueIncreasingPower(ns, this.gangs))) {
 			// We can stop increasing power, so we enable territory warfare again (as we will not have any deaths)
 			this.homeGang.enableTerritoryWarfare(ns)
 			this.isIncreasingPower = false
@@ -305,7 +310,7 @@ class GangManager implements Manager {
 			                                           if (GangManager.isHackingGang(ns)) {
 				                                           return upgrade.multipliers.hack || upgrade.multipliers.cha
 			                                           } else {
-				                                           return upgrade.multipliers.cha || upgrade.multipliers.agi || upgrade.multipliers.str || upgrade.multipliers.dex || upgrade.multipliers.agi
+				                                           return upgrade.multipliers.cha || upgrade.multipliers.agi || upgrade.multipliers.str || upgrade.multipliers.dex || upgrade.multipliers.agi || upgrade.multipliers.def
 			                                           }
 		                                           })
 

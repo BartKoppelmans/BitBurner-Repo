@@ -38,6 +38,16 @@ export function getAchievableActions(ns, actions, type) {
     if (type) {
         actions = actions.filter((action) => action.type === type);
     }
+    if (type === 'black ops') {
+        actions.sort((a, b) => {
+            return a.getBlackOpRank(ns) - b.getBlackOpRank(ns);
+        });
+        const nextAction = actions.find((action) => action.getCount(ns) === 1);
+        if (nextAction)
+            actions = [nextAction];
+        else
+            return [];
+    }
     // TODO: Sort by money if it is contracts, or by reputation gain if it is not
     return actions
         .sort((a, b) => {

@@ -20,6 +20,7 @@ const COMBAT_STAT_LOW_THRESHOLD = 250;
 const MAX_GANG_MEMBERS = 12;
 const CLASH_CHANCE_LOWER_THRESHOLD = 0.90;
 const CLASH_CHANCE_UPPER_THRESHOLD = 0.95;
+const POWER_THRESHOLD = 1000;
 class GangManager {
     constructor() {
         this.isIncreasingPower = false;
@@ -52,6 +53,9 @@ class GangManager {
         const gangMemberStats = member.getGangMemberStats(ns);
         const average = (gangMemberStats.str + gangMemberStats.agi + gangMemberStats.def + gangMemberStats.dex) / 4;
         return average > level;
+    }
+    static hasSufficientPower(ns, homeGang) {
+        return homeGang.getPower(ns) > POWER_THRESHOLD;
     }
     static shouldIncreasePower(ns, gangs) {
         return gangs.some((gang) => gang.getChanceToWinClash(ns) < CLASH_CHANCE_LOWER_THRESHOLD);
@@ -159,12 +163,12 @@ class GangManager {
             appendSwitch();
     }
     async managingLoop(ns) {
-        if (!this.isIncreasingPower && GangManager.shouldIncreasePower(ns, this.gangs)) {
+        if (!this.isIncreasingPower && (!GangManager.hasSufficientPower(ns, this.homeGang) || GangManager.shouldIncreasePower(ns, this.gangs))) {
             // We should start increasing power, so we disable territory warfare to decrease the chance of deaths
             this.homeGang.disableTerritoryWarfare(ns);
             this.isIncreasingPower = true;
         }
-        else if (this.isIncreasingPower && !GangManager.shouldContinueIncreasingPower(ns, this.gangs)) {
+        else if (this.isIncreasingPower && (GangManager.hasSufficientPower(ns, this.homeGang) && !GangManager.shouldContinueIncreasingPower(ns, this.gangs))) {
             // We can stop increasing power, so we enable territory warfare again (as we will not have any deaths)
             this.homeGang.enableTerritoryWarfare(ns);
             this.isIncreasingPower = false;
@@ -233,7 +237,7 @@ class GangManager {
                 return upgrade.multipliers.hack || upgrade.multipliers.cha;
             }
             else {
-                return upgrade.multipliers.cha || upgrade.multipliers.agi || upgrade.multipliers.str || upgrade.multipliers.dex || upgrade.multipliers.agi;
+                return upgrade.multipliers.cha || upgrade.multipliers.agi || upgrade.multipliers.str || upgrade.multipliers.dex || upgrade.multipliers.agi || upgrade.multipliers.def;
             }
         });
         remainingUpgrades = GangUpgrade.sortUpgrades(ns, remainingUpgrades);
