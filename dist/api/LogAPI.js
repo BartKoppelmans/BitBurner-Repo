@@ -1,6 +1,5 @@
 import * as Utils from '/src/util/Utils.js';
 import { CONSTANT } from '/src/lib/constants.js';
-const PIXEL_TOLERANCE = 4;
 export var LogType;
 (function (LogType) {
     LogType[LogType["NONE"] = 0] = "NONE";
@@ -24,9 +23,6 @@ export function warn(ns, message) {
 }
 export function log(ns, message, logType = LogType.INFORMATION) {
     printColored(ns, message, logType);
-}
-export function logHTML(ns, content) {
-    printHTML(ns, content);
 }
 function getColorFromLogType(ns, logType) {
     switch (logType) {
@@ -52,17 +48,6 @@ function getColorFromLogType(ns, logType) {
             return 'var(--my-font-color)';
     }
 }
-function printHTML(ns, content) {
-    const doc = eval('document');
-    const terminalContainer = doc.getElementById('generic-react-container');
-    if (!terminalContainer)
-        throw new Error('Could not find the terminal container');
-    const terminalLines = terminalContainer.querySelector('ul');
-    if (!terminalLines)
-        throw new Error('Could not find the terminal lines');
-    terminalLines.insertAdjacentHTML('beforeend', `<li>${content}</li>`);
-}
 function printColored(ns, content, logType) {
-    const color = getColorFromLogType(ns, logType);
     ns.tprintf(`${Utils.formatTime()} ${content}`);
 }

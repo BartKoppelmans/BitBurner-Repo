@@ -6,7 +6,7 @@ import { Manager }                                              from '/src/class
 import { CONSTANT }                                             from '/src/lib/constants.js'
 import Sleeve                                                   from '/src/classes/Sleeve/Sleeve.js'
 
-const LOOP_DELAY: number = 10000 as const
+const LOOP_DELAY: number = 1000 as const
 
 class SleeveManager implements Manager {
 

@@ -22,9 +22,10 @@ const WANTED_PENALTY_THRESHOLD: number       = 0.25 as const // Percentage
 const COMBAT_STAT_HIGH_THRESHOLD: number     = 2500 as const
 const COMBAT_STAT_LOW_THRESHOLD: number      = 250 as const
 const MAX_GANG_MEMBERS: number               = 12 as const
-const CLASH_CHANCE_LOWER_THRESHOLD: number   = 0.90 as const
-const CLASH_CHANCE_UPPER_THRESHOLD: number   = 0.95 as const
-const POWER_THRESHOLD: number                = 1000 as const
+const CLASH_CHANCE_THRESHOLD: number         = 0.90 as const
+const CLASH_CHANCE_THRESHOLD_BUFFER: number  = 0.05 as const
+const POWER_THRESHOLD: number                = 500 as const
+const POWER_THRESHOLD_BUFFER: number         = 50 as const
 
 class GangManager implements Manager {
 
@@ -81,12 +82,17 @@ class GangManager implements Manager {
 		return homeGang.getPower(ns) > POWER_THRESHOLD
 	}
 
-	private static shouldIncreasePower(ns: NS, gangs: Gang[]): boolean {
-		return gangs.some((gang) => gang.getChanceToWinClash(ns) < CLASH_CHANCE_LOWER_THRESHOLD)
+	private static shouldContinueIncreasingPower(ns: NS, homeGang: HomeGang): boolean {
+		return homeGang.getPower(ns) < POWER_THRESHOLD + POWER_THRESHOLD_BUFFER
 	}
 
-	private static shouldContinueIncreasingPower(ns: NS, gangs: Gang[]): boolean {
-		return gangs.some((gang) => gang.getChanceToWinClash(ns) < CLASH_CHANCE_UPPER_THRESHOLD)
+	private static hasSufficientChanceToWinClash(ns: NS, gangs: Gang[]): boolean {
+		return gangs.every((gang) => gang.getChanceToWinClash(ns) >= CLASH_CHANCE_THRESHOLD)
+	}
+
+	private static shouldContinueIncreasingChanceToWinClash(ns: NS, gangs: Gang[]): boolean {
+		return gangs.some((gang) => gang.getChanceToWinClash(ns) < (CLASH_CHANCE_THRESHOLD + CLASH_CHANCE_THRESHOLD_BUFFER))
+
 	}
 
 	private static shouldReduceWantedLevel(ns: NS): boolean {
@@ -214,11 +220,19 @@ class GangManager implements Manager {
 
 	private async managingLoop(ns: NS): Promise<void> {
 
-		if (!this.isIncreasingPower && (!GangManager.hasSufficientPower(ns, this.homeGang) || GangManager.shouldIncreasePower(ns, this.gangs))) {
-			// We should start increasing power, so we disable territory warfare to decrease the chance of deaths
-			this.homeGang.disableTerritoryWarfare(ns)
-			this.isIncreasingPower = true
-		} else if (this.isIncreasingPower && (GangManager.hasSufficientPower(ns, this.homeGang) && !GangManager.shouldContinueIncreasingPower(ns, this.gangs))) {
+		if (!this.isIncreasingPower) {
+
+			// Check whether we still have sufficient power and sufficient chance to win a clash
+
+			if (GangManager.hasSufficientPower(ns, this.homeGang) && GangManager.hasSufficientChanceToWinClash(ns, this.gangs)) {
+				this.homeGang.enableTerritoryWarfare(ns)
+			} else {
+				// We should start increasing power, so we disable territory warfare to decrease the chance of deaths
+				this.homeGang.disableTerritoryWarfare(ns)
+				this.isIncreasingPower = true
+			}
+
+		} else if (!GangManager.shouldContinueIncreasingPower(ns, this.homeGang) && !GangManager.shouldContinueIncreasingChanceToWinClash(ns, this.gangs)) {
 			// We can stop increasing power, so we enable territory warfare again (as we will not have any deaths)
 			this.homeGang.enableTerritoryWarfare(ns)
 			this.isIncreasingPower = false

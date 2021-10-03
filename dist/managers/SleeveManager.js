@@ -3,7 +3,7 @@ import * as LogAPI from '/src/api/LogAPI.js';
 import * as Utils from '/src/util/Utils.js';
 import { CONSTANT } from '/src/lib/constants.js';
 import Sleeve from '/src/classes/Sleeve/Sleeve.js';
-const LOOP_DELAY = 10000;
+const LOOP_DELAY = 1000;
 class SleeveManager {
     static manageSleeve(ns, sleeve) {
         const information = sleeve.getInformation(ns);
