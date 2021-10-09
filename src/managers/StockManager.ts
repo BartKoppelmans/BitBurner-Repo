@@ -9,10 +9,11 @@ import { CONSTANT }              from '/src/lib/constants.js'
 import Stock                     from '/src/classes/Stock/Stock.js'
 import { StockPosition }         from '/src/classes/Stock/StockInterfaces.js'
 
-const LOOP_DELAY: number              = 2000 as const
-const STOCK_ALLOWANCE: number         = 0.05 as const
-const STOCK_COMMISSION: number        = 100000 as const
-const MINIMUM_MONEY_TO_INVEST: number = 10 * STOCK_COMMISSION
+const LOOP_DELAY: number                = 1000 as const
+const STOCK_ALLOWANCE: number           = 0.05 as const
+const STOCK_COMMISSION: number          = 100000 as const
+const MINIMUM_MONEY_TO_INVEST: number   = 10 * STOCK_COMMISSION
+const EXPECTED_RETURN_THRESHOLD: number = 0.0002 as const // Buy anything forecasted to earn better than a 0.02% return
 
 class StockManager implements Manager {
 
@@ -21,7 +22,7 @@ class StockManager implements Manager {
 	private startingCorpus: number = 0
 
 	private static getBudget(ns: NS, stocks: Stock[]): number {
-		const corpus: number = stocks.reduce((total, stock) => total + stock.getStockCorpus(ns), 0)
+		const corpus: number = stocks.reduce((total, stock) => total + stock.getStockCorpus(), 0)
 
 		const totalBudget: number = STOCK_ALLOWANCE * PlayerUtils.getMoney(ns)
 		return totalBudget - corpus
@@ -42,7 +43,9 @@ class StockManager implements Manager {
 			if (budget < MINIMUM_MONEY_TO_INVEST) break
 
 			// Skip over this stock if we can't buy any more shares
-			if (stock.hasMaxShares(ns)) continue
+			if (stock.hasMaxShares()) continue
+
+			if (stock.stockInformation.expectedReturn <= EXPECTED_RETURN_THRESHOLD) continue
 
 			const remainingShares: number = stock.stockInformation.maxShares - stock.stockInformation.ownedLong - stock.stockInformation.ownedShort
 			if (stock.position === StockPosition.LONG) {
@@ -121,7 +124,7 @@ class StockManager implements Manager {
 
 		this.stocks = Stock.getStocks(ns)
 
-		this.startingCorpus = this.stocks.reduce((total, stock) => total + stock.getStockCorpus(ns), 0)
+		this.startingCorpus = this.stocks.reduce((total, stock) => total + stock.getStockCorpus(), 0)
 	}
 
 	public async start(ns: NS): Promise<void> {
@@ -158,15 +161,17 @@ class StockManager implements Manager {
 			return b.stockInformation.expectedReturn - a.stockInformation.expectedReturn
 		})
 
-		{
-			const ownedStocks: Stock[] = this.stocks.filter((stock) => stock.hasShares(ns))
 
-			// We update the ownedStocks in-place in the coming function calls
+		const ownedStocks: Stock[] = this.stocks.filter((stock) => stock.hasShares())
 
-			StockManager.sellUnderperforming(ns, ownedStocks)
+		// We update the ownedStocks in-place in the coming function calls
 
+		StockManager.sellUnderperforming(ns, ownedStocks)
+
+		if (StockManager.hasShortAccess(ns)) {
 			StockManager.sellIncorrectPositions(ns, ownedStocks)
 		}
+
 
 		StockManager.buyShares(ns, this.stocks)
 

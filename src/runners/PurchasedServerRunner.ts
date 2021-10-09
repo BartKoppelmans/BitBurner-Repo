@@ -33,7 +33,7 @@ class PurchasedServerRunner {
 		return ns.getPurchasedServerCost(ram)
 	}
 
-	private static purchaseNewServer(ns: NS, ram: number, purchasedServerId: number): PurchasedServer {
+	private static async purchaseNewServer(ns: NS, ram: number, purchasedServerId: number): Promise<PurchasedServer> {
 		const host: string         = CONSTANT.PURCHASED_SERVER_PREFIX + purchasedServerId.toString()
 		const boughtServer: string = ns.purchaseServer(host, ram)
 
@@ -51,7 +51,7 @@ class PurchasedServerRunner {
 
 		const server: PurchasedServer = new PurchasedServer(ns, { characteristics })
 
-		ServerAPI.addServer(ns, server)
+		await ServerAPI.addServer(ns, server)
 
 		return server
 	}
@@ -67,13 +67,13 @@ class PurchasedServerRunner {
 		const purchasedServerList: PurchasedServer[] = ServerAPI.getPurchasedServers(ns)
 
 		if (purchasedServerList.length < ns.getPurchasedServerLimit()) {
-			this.purchaseServers(ns, purchasedServerList)
+			await this.purchaseServers(ns, purchasedServerList)
 		} else {
-			this.upgradeServers(ns, purchasedServerList)
+			await this.upgradeServers(ns, purchasedServerList)
 		}
 	}
 
-	private purchaseServers(ns: NS, purchasedServerList: PurchasedServer[]): void {
+	private async purchaseServers(ns: NS, purchasedServerList: PurchasedServer[]): Promise<void> {
 		const numServersLeft: number = ns.getPurchasedServerLimit() - purchasedServerList.length
 
 		for (let i = 0; i < numServersLeft; i++) {
@@ -84,14 +84,14 @@ class PurchasedServerRunner {
 
 			const id: number = purchasedServerList.length + i
 
-			const purchasedServer: PurchasedServer = PurchasedServerRunner.purchaseNewServer(ns, ram, id)
+			const purchasedServer: PurchasedServer = await PurchasedServerRunner.purchaseNewServer(ns, ram, id)
 			if (!purchasedServer) {
 				throw new Error('We could not successfully purchase the server')
 			}
 		}
 	}
 
-	private upgradeServers(ns: NS, purchasedServerList: PurchasedServer[]): void {
+	private async upgradeServers(ns: NS, purchasedServerList: PurchasedServer[]): Promise<void> {
 		const quarantinedServers: PurchasedServer[] = purchasedServerList.filter((s) => s.isQuarantined())
 
 		for (const server of quarantinedServers) {
@@ -99,7 +99,7 @@ class PurchasedServerRunner {
 
 			const ram: number = server.quarantinedInformation.ram
 			if (server.canUpgrade(ns, ram)) {
-				ServerAPI.upgradeServer(ns, server.characteristics.host, ram)
+				await ServerAPI.upgradeServer(ns, server.characteristics.host, ram)
 			}
 		}
 
@@ -116,7 +116,7 @@ class PurchasedServerRunner {
 
 			const maxRam: number = this.computeMaxRamPossible(ns)
 			if (maxRam > server.getTotalRam(ns)) {
-				ServerAPI.quarantine(ns, server.characteristics.host, maxRam)
+				await ServerAPI.quarantine(ns, server.characteristics.host, maxRam)
 			} else break
 		}
 	}

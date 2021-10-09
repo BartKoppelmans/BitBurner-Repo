@@ -5,21 +5,21 @@ import { Tools } from '/src/tools/Tools.js';
 import * as HackUtils from '/src/util/HackUtils.js';
 import * as ToolUtils from '/src/util/ToolUtils.js';
 import * as Utils from '/src/util/Utils.js';
-export function computeCycles(ns, target, servers) {
+export async function computeCycles(ns, target, servers) {
     if (!servers)
         servers = ServerAPI.getHackingServers(ns);
-    const cycleCost = getOptimalCycleCost(ns, target);
+    const cycleCost = await getOptimalCycleCost(ns, target);
     return Math.max(0, Math.min(CONSTANT.MAX_CYCLE_NUMBER, servers.reduce((threads, server) => threads + Math.floor(server.getAvailableRam(ns) / cycleCost), 0)));
 }
-function determineCycleThreadSpreads(ns, target, cycleThreads) {
+async function determineCycleThreadSpreads(ns, target, cycleThreads) {
     const serverList = ServerAPI.getHackingServers(ns);
     // Get the server with the most available RAM
     const server = serverList[0];
-    const cost = getOptimalCycleCost(ns, target);
+    const cost = await getOptimalCycleCost(ns, target);
     if (cost > server.getAvailableRam(ns)) {
         throw new Error('Not enough RAM available to create a cycle (on one server)');
     }
-    ServerAPI.increaseReservation(ns, server.characteristics.host, cost);
+    await ServerAPI.increaseReservation(ns, server.characteristics.host, cost);
     const hackSpreadMap = new Map();
     const growthSpreadMap = new Map();
     const weaken1SpreadMap = new Map();
@@ -48,20 +48,20 @@ export function calculateTotalBatchTime(ns, target, numCycles) {
     }
 }
 // Returns the number of threads
-export function getOptimalCycleCost(ns, target) {
+export async function getOptimalCycleCost(ns, target) {
     const cycleThreads = determineCycleThreads(ns, target);
     const hackThreads = cycleThreads.hack;
     const growthThreads = cycleThreads.growth;
     const weakenThreads = cycleThreads.weaken1 + cycleThreads.weaken2;
-    const hackCost = hackThreads * ToolUtils.getToolCost(ns, Tools.HACK);
-    const growCost = growthThreads * ToolUtils.getToolCost(ns, Tools.GROW);
-    const weakenCost = weakenThreads * ToolUtils.getToolCost(ns, Tools.WEAKEN);
+    const hackCost = hackThreads * await ToolUtils.getToolCost(ns, Tools.HACK);
+    const growCost = growthThreads * await ToolUtils.getToolCost(ns, Tools.GROW);
+    const weakenCost = weakenThreads * await ToolUtils.getToolCost(ns, Tools.WEAKEN);
     return hackCost + growCost + weakenCost;
 }
-export function scheduleCycle(ns, target, batchId, previousCycle) {
+export async function scheduleCycle(ns, target, batchId, previousCycle) {
     const cycleTimings = determineCycleTimings(ns, target, previousCycle);
     const cycleThreads = determineCycleThreads(ns, target);
-    const cycleThreadSpreads = determineCycleThreadSpreads(ns, target, cycleThreads);
+    const cycleThreadSpreads = await determineCycleThreadSpreads(ns, target, cycleThreads);
     const cycleId = Utils.generateHash();
     const hackJob = new Job(ns, {
         batchId,

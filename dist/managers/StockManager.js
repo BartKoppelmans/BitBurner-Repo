@@ -6,17 +6,18 @@ import * as PlayerUtils from '/src/util/PlayerUtils.js';
 import { CONSTANT } from '/src/lib/constants.js';
 import Stock from '/src/classes/Stock/Stock.js';
 import { StockPosition } from '/src/classes/Stock/StockInterfaces.js';
-const LOOP_DELAY = 2000;
+const LOOP_DELAY = 1000;
 const STOCK_ALLOWANCE = 0.05;
 const STOCK_COMMISSION = 100000;
 const MINIMUM_MONEY_TO_INVEST = 10 * STOCK_COMMISSION;
+const EXPECTED_RETURN_THRESHOLD = 0.0002; // Buy anything forecasted to earn better than a 0.02% return
 class StockManager {
     constructor() {
         this.stocks = [];
         this.startingCorpus = 0;
     }
     static getBudget(ns, stocks) {
-        const corpus = stocks.reduce((total, stock) => total + stock.getStockCorpus(ns), 0);
+        const corpus = stocks.reduce((total, stock) => total + stock.getStockCorpus(), 0);
         const totalBudget = STOCK_ALLOWANCE * PlayerUtils.getMoney(ns);
         return totalBudget - corpus;
     }
@@ -32,7 +33,9 @@ class StockManager {
             if (budget < MINIMUM_MONEY_TO_INVEST)
                 break;
             // Skip over this stock if we can't buy any more shares
-            if (stock.hasMaxShares(ns))
+            if (stock.hasMaxShares())
+                continue;
+            if (stock.stockInformation.expectedReturn <= EXPECTED_RETURN_THRESHOLD)
                 continue;
             const remainingShares = stock.stockInformation.maxShares - stock.stockInformation.ownedLong - stock.stockInformation.ownedShort;
             if (stock.position === StockPosition.LONG) {
@@ -100,7 +103,7 @@ class StockManager {
     async initialize(ns) {
         Utils.disableLogging(ns);
         this.stocks = Stock.getStocks(ns);
-        this.startingCorpus = this.stocks.reduce((total, stock) => total + stock.getStockCorpus(ns), 0);
+        this.startingCorpus = this.stocks.reduce((total, stock) => total + stock.getStockCorpus(), 0);
     }
     async start(ns) {
         LogAPI.debug(ns, `Starting the StockManager`);
@@ -127,10 +130,10 @@ class StockManager {
             }
             return b.stockInformation.expectedReturn - a.stockInformation.expectedReturn;
         });
-        {
-            const ownedStocks = this.stocks.filter((stock) => stock.hasShares(ns));
-            // We update the ownedStocks in-place in the coming function calls
-            StockManager.sellUnderperforming(ns, ownedStocks);
+        const ownedStocks = this.stocks.filter((stock) => stock.hasShares());
+        // We update the ownedStocks in-place in the coming function calls
+        StockManager.sellUnderperforming(ns, ownedStocks);
+        if (StockManager.hasShortAccess(ns)) {
             StockManager.sellIncorrectPositions(ns, ownedStocks);
         }
         StockManager.buyShares(ns, this.stocks);

@@ -2,7 +2,7 @@ import * as ServerAPI from '/src/api/ServerAPI.js';
 import * as LogAPI from '/src/api/LogAPI.js';
 import { CONSTANT } from '/src/lib/constants.js';
 async function findPath(ns, server) {
-    const isInitialized = await ServerAPI.isServerMapInitialized(ns);
+    const isInitialized = ServerAPI.isServerMapInitialized(ns);
     if (!isInitialized)
         await ServerAPI.initializeServerMap(ns);
     const path = [server];

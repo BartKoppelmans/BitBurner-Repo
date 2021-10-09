@@ -2,8 +2,8 @@ import type { BitBurner as NS } from 'Bitburner'
 import HackableServer           from '/src/classes/Server/HackableServer.js'
 import { Tools }                from '/src/tools/Tools.js'
 
-export function getToolCost(ns: NS, tool: Tools): number {
-	return ns.getScriptRam(tool)
+export async function getToolCost(ns: NS, tool: Tools): Promise<number> {
+	return await ns.getScriptRam(tool)
 }
 
 export function getToolTime(ns: NS, tool: Tools, server: HackableServer) {

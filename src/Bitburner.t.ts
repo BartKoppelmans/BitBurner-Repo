@@ -5556,7 +5556,7 @@ declare module 'Bitburner' {
 			handle: Handle,
 			data?: string | string[] | number,
 			mode?: 'w' | 'a',
-		): void;
+		): Promise<void>;
 
 		/**
 		 * Attempts to write data to the specified Netscript Port.
@@ -5693,7 +5693,7 @@ declare module 'Bitburner' {
 		 * @returns Amount of RAM required to run the specified script on the target server, and 0 if the script does
 		 *     not exist.
 		 */
-		getScriptRam(script: Script, host?: Host): number;
+		getScriptRam(script: Script, host?: Host): Promise<number>;
 
 		/**
 		 * Returns the amount of time in seconds it takes to execute the {@link hack} Netscript function on the target

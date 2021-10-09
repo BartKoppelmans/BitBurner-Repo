@@ -12,13 +12,13 @@ export default class Stock {
         const symbols = ns.getStockSymbols();
         return symbols.map((symbol) => new Stock(ns, symbol));
     }
-    hasShares(ns) {
+    hasShares() {
         return this.stockInformation.ownedShort + this.stockInformation.ownedLong > 0;
     }
-    hasMaxShares(ns) {
+    hasMaxShares() {
         return this.stockInformation.ownedShort + this.stockInformation.ownedLong === this.stockInformation.maxShares;
     }
-    getStockCorpus(ns) {
+    getStockCorpus() {
         return this.stockInformation.ownedShort * this.stockInformation.averageShortPrice + this.stockInformation.ownedLong * this.stockInformation.averageLongPrice;
     }
     buyShorts(ns, numShares) {

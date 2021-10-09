@@ -20,7 +20,7 @@ class ServerMapRunner implements Runner {
 
 		const servers: Server[] = this.createServerList(ns)
 
-		ServerAPI.writeServerMap(ns, { servers, lastUpdated: new Date() })
+		await ServerAPI.writeServerMap(ns, { servers, lastUpdated: new Date() })
 	}
 
 	private createServerList(ns: NS): Server[] {

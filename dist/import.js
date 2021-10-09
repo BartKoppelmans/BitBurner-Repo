@@ -96,7 +96,7 @@ async function importFiles(ns) {
         if (!response.ok)
             return { file, result: false };
         const localFileName = `/${CONSTANT.LOCAL_FOLDER}/${file}`;
-        ns.write(localFileName, await response.text(), 'w');
+        await ns.write(localFileName, await response.text(), 'w');
         return {
             file,
             result: true,

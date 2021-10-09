@@ -7,7 +7,7 @@ import { ServerMap }            from '/src/classes/Server/ServerInterfaces.js'
 
 async function findPath(ns: NS, server: Server): Promise<Server[]> {
 
-	const isInitialized: boolean = await ServerAPI.isServerMapInitialized(ns)
+	const isInitialized: boolean = ServerAPI.isServerMapInitialized(ns)
 	if (!isInitialized) await ServerAPI.initializeServerMap(ns)
 
 	const path: Server[] = [server]

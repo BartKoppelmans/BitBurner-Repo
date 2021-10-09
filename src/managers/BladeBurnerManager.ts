@@ -17,7 +17,7 @@ const JOIN_DELAY: number                      = 60000 as const
 const MANAGING_LOOP_DELAY: number             = 100 as const
 const BUSY_RETRY_DELAY: number                = 1000 as const
 const SYNTH_POPULATION_THRESHOLD: number      = 1e8 as const
-const SYNTH_COMMUNITY_THRESHOLD: number       = 5 as const
+// const SYNTH_COMMUNITY_THRESHOLD: number       = 5 as const
 const CHAOS_THRESHOLD: number                 = 100 as const
 const FINAL_BLACK_OP_WARNING_INTERVAL: number = 10 as const
 
@@ -143,10 +143,10 @@ class BladeBurnerManager implements Manager {
 		// Check whether we have enough Synths, otherwise move or search for new ones
 		const currentCity: BBCity = this.cities.find((city) => city.isCurrent(ns)) as BBCity
 		if (BladeBurnerManager.shouldMove(ns, currentCity)) {
-			const cities: BBCity[] = this.cities
-			                             .sort((a, b) => {
-				                             return b.getPopulation(ns) - a.getPopulation(ns)
-			                             })
+			this.cities = this.cities
+			                  .sort((a, b) => {
+				                  return b.getPopulation(ns) - a.getPopulation(ns)
+			                  })
 
 			if (this.cities[0].name !== currentCity.name) this.cities[0].moveTo(ns)
 		}

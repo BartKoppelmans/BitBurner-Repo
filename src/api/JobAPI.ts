@@ -34,27 +34,27 @@ export function clearJobMap(ns: NS): void {
 	ns.clear(CONSTANT.JOB_MAP_FILENAME)
 }
 
-export function writeJobMap(ns: NS, jobMap: JobMap): void {
+export async function writeJobMap(ns: NS, jobMap: JobMap): Promise<void> {
 	// NOTE: Do we want to do this?
 	jobMap.lastUpdated = new Date()
-	ns.write(CONSTANT.JOB_MAP_FILENAME, JSON.stringify(jobMap), 'w')
+	await ns.write(CONSTANT.JOB_MAP_FILENAME, JSON.stringify(jobMap), 'w')
 }
 
-export function startBatch(ns: NS, batch: Batch): void {
+export async function startBatch(ns: NS, batch: Batch): Promise<void> {
 	// TODO: We should do some checking in here
 
 	const isPrep: boolean = batch.jobs[0].isPrep
 
-	ServerAPI.setStatus(ns, batch.target.characteristics.host, (isPrep) ? ServerStatus.PREPPING : ServerStatus.TARGETING)
+	await ServerAPI.setStatus(ns, batch.target.characteristics.host, (isPrep) ? ServerStatus.PREPPING : ServerStatus.TARGETING)
 
 	for (const job of batch.jobs) {
-		startJob(ns, job)
+		await startJob(ns, job)
 	}
 
-	writeBatch(ns, batch)
+	await writeBatch(ns, batch)
 }
 
-function startJob(ns: NS, job: Job): void {
+async function startJob(ns: NS, job: Job): Promise<void> {
 
 	// TODO: We should do some checking in here
 
@@ -64,12 +64,12 @@ function startJob(ns: NS, job: Job): void {
 
 	const threadSpread: ThreadSpread = job.threadSpread
 	for (const [server, threads] of threadSpread) {
-		const reservation: number = threads * ToolUtils.getToolCost(ns, job.tool)
-		ServerAPI.decreaseReservation(ns, server, reservation)
+		const reservation: number = threads * (await ToolUtils.getToolCost(ns, job.tool))
+		await ServerAPI.decreaseReservation(ns, server, reservation)
 	}
 }
 
-export function finishJobs(ns: NS, jobs: Job[]): void {
+export async function finishJobs(ns: NS, jobs: Job[]): Promise<void> {
 	// NOTE: This function manually removes the jobs instead of using removeJob (for performance reasons)
 	const jobMap: JobMap = getJobMap(ns)
 
@@ -89,7 +89,7 @@ export function finishJobs(ns: NS, jobs: Job[]): void {
 	for (const [index, batch] of jobMap.batches.entries()) {
 		const isBatchFinished: boolean = batch.jobs.every((j) => j.finished)
 		if (isBatchFinished) {
-			ServerAPI.setStatus(ns, batch.target.characteristics.host, ServerStatus.NONE)
+			await ServerAPI.setStatus(ns, batch.target.characteristics.host, ServerStatus.NONE)
 			finishedBatchIndices.push(index)
 		}
 	}
@@ -98,13 +98,13 @@ export function finishJobs(ns: NS, jobs: Job[]): void {
 		jobMap.batches.splice(index, 1)
 	}
 
-	writeJobMap(ns, jobMap)
+	await writeJobMap(ns, jobMap)
 }
 
-export function writeBatch(ns: NS, batch: Batch): void {
+export async function writeBatch(ns: NS, batch: Batch): Promise<void> {
 	const jobMap: JobMap = getJobMap(ns)
 	jobMap.batches.push(batch)
-	writeJobMap(ns, jobMap)
+	await writeJobMap(ns, jobMap)
 }
 
 export function getRunningProcesses(ns: NS): ProcessInfo[] {
@@ -147,8 +147,8 @@ export function cancelJob(ns: NS, job: Job): void {
 	if (!allKilled) LogAPI.warn(ns, 'Failed to cancel all jobs')
 }
 
-export function initializeJobMap(ns: NS): void {
+export async function initializeJobMap(ns: NS): Promise<void> {
 	const jobMap: JobMap = { lastUpdated: new Date(), batches: [] }
 
-	writeJobMap(ns, jobMap)
+	await writeJobMap(ns, jobMap)
 }

@@ -53,7 +53,7 @@ class JobManager implements Manager {
 			finishedJobs.push(...jobs)
 		}
 
-		if (finishedJobs.length > 0) JobAPI.finishJobs(ns, finishedJobs)
+		if (finishedJobs.length > 0) await JobAPI.finishJobs(ns, finishedJobs)
 	}
 }
 

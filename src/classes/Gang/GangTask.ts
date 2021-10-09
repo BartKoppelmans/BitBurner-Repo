@@ -61,6 +61,15 @@ export default class GangTask {
 		return GangTask.getTask(ns, 'Unassigned')
 	}
 
+	private static calculateStatWeight(taskStats: GangTasksStats, memberStats: GangMemberStats): number {
+		return (taskStats.hackWeight / 100) * memberStats.hack +
+			(taskStats.strWeight / 100) * memberStats.str +
+			(taskStats.defWeight / 100) * memberStats.def +
+			(taskStats.dexWeight / 100) * memberStats.dex +
+			(taskStats.agiWeight / 100) * memberStats.agi +
+			(taskStats.chaWeight / 100) * memberStats.cha
+	}
+
 	private static calculateRespectGain(ns: NS, task: GangTask, member: GangMember): number {
 		const taskStats: GangTasksStats    = task.getTaskStats(ns)
 		const memberStats: GangMemberStats = member.getGangMemberStats(ns)
@@ -68,12 +77,7 @@ export default class GangTask {
 
 		if (taskStats.baseRespect === 0) return 0
 
-		let statWeight: number = (taskStats.hackWeight / 100) * memberStats.hack +
-			(taskStats.strWeight / 100) * memberStats.str +
-			(taskStats.defWeight / 100) * memberStats.def +
-			(taskStats.dexWeight / 100) * memberStats.dex +
-			(taskStats.agiWeight / 100) * memberStats.agi +
-			(taskStats.chaWeight / 100) * memberStats.cha
+		let statWeight: number = GangTask.calculateStatWeight(taskStats, memberStats)
 
 		statWeight -= (4 * taskStats.difficulty)
 		if (statWeight <= 0) return 0
@@ -93,12 +97,7 @@ export default class GangTask {
 
 		if (taskStats.baseMoney === 0) return 0
 
-		let statWeight: number = (taskStats.hackWeight / 100) * memberStats.hack +
-			(taskStats.strWeight / 100) * memberStats.str +
-			(taskStats.defWeight / 100) * memberStats.def +
-			(taskStats.dexWeight / 100) * memberStats.dex +
-			(taskStats.agiWeight / 100) * memberStats.agi +
-			(taskStats.chaWeight / 100) * memberStats.cha
+		let statWeight: number = GangTask.calculateStatWeight(taskStats, memberStats)
 
 		statWeight -= (3.2 * taskStats.difficulty)
 		if (statWeight <= 0) return 0
@@ -118,12 +117,7 @@ export default class GangTask {
 
 		if (taskStats.baseWanted === 0) return 0
 
-		let statWeight: number = (taskStats.hackWeight / 100) * memberStats.hack +
-			(taskStats.strWeight / 100) * memberStats.str +
-			(taskStats.defWeight / 100) * memberStats.def +
-			(taskStats.dexWeight / 100) * memberStats.dex +
-			(taskStats.agiWeight / 100) * memberStats.agi +
-			(taskStats.chaWeight / 100) * memberStats.cha
+		let statWeight: number = GangTask.calculateStatWeight(taskStats, memberStats)
 
 		statWeight -= (3.5 * taskStats.difficulty)
 		if (statWeight <= 0) return 0

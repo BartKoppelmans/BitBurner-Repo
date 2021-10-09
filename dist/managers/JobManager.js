@@ -33,7 +33,7 @@ class JobManager {
             finishedJobs.push(...jobs);
         }
         if (finishedJobs.length > 0)
-            JobAPI.finishJobs(ns, finishedJobs);
+            await JobAPI.finishJobs(ns, finishedJobs);
     }
 }
 export async function main(ns) {

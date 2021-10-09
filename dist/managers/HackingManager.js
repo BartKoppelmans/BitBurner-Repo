@@ -29,21 +29,21 @@ class HackingManager {
             total: ServerAPI.getServerUtilization(ns, true),
         };
     }
-    static hack(ns, target) {
+    static async hack(ns, target) {
         // If it is prepping or targeting, leave it
         if (target.status !== ServerStatus.NONE)
             return;
         // The server is not optimal, so we have to prep it first
         if (!target.isOptimal(ns)) {
-            HackingManager.prepServer(ns, target);
+            await HackingManager.prepServer(ns, target);
             return;
         }
         // Make sure that the percentage that we steal is optimal
-        HackingManager.optimizePerformance(ns, target);
-        HackingManager.attackServer(ns, target);
+        await HackingManager.optimizePerformance(ns, target);
+        await HackingManager.attackServer(ns, target);
         return;
     }
-    static prepServer(ns, target) {
+    static async prepServer(ns, target) {
         // If the server is optimal, we are done I guess
         if (target.isOptimal(ns))
             return;
@@ -54,7 +54,7 @@ class HackingManager {
         let startTime;
         let endTime;
         const jobs = [];
-        let availableThreads = HackUtils.calculateMaxThreads(ns, Tools.WEAKEN, true);
+        let availableThreads = await HackUtils.calculateMaxThreads(ns, Tools.WEAKEN, true);
         if (availableThreads <= 0) {
             LogAPI.debug(ns, 'Skipped a prep.');
             return;
@@ -65,7 +65,7 @@ class HackingManager {
         if (target.needsWeaken(ns)) {
             const neededWeakenThreads = HackUtils.calculateWeakenThreads(ns, target);
             const weakenThreads = Math.min(neededWeakenThreads, availableThreads);
-            const weakenThreadSpread = HackUtils.computeThreadSpread(ns, Tools.WEAKEN, weakenThreads, true);
+            const weakenThreadSpread = await HackUtils.computeThreadSpread(ns, Tools.WEAKEN, weakenThreads, true);
             const weakenTime = target.getWeakenTime(ns);
             const weakenStart = new Date(Date.now() + CONSTANT.INITIAL_JOB_DELAY);
             const weakenEnd = new Date(weakenStart.getTime() + weakenTime);
@@ -85,7 +85,7 @@ class HackingManager {
             jobs.push(initialWeakenJob);
             availableThreads -= weakenThreads;
             for (const [server, threads] of weakenThreadSpread) {
-                ServerAPI.increaseReservation(ns, server, threads * ToolUtils.getToolCost(ns, Tools.WEAKEN));
+                await ServerAPI.increaseReservation(ns, server, threads * await ToolUtils.getToolCost(ns, Tools.WEAKEN));
             }
         }
         // First grow, so that the amount of money is optimal
@@ -121,7 +121,7 @@ class HackingManager {
                 }
                 startTime = firstStartTime;
                 endTime = compensationWeakenEndTime;
-                const growthThreadSpread = HackUtils.computeThreadSpread(ns, Tools.GROW, growthThreads, true);
+                const growthThreadSpread = await HackUtils.computeThreadSpread(ns, Tools.GROW, growthThreads, true);
                 growJob = new Job(ns, {
                     id: Utils.generateHash(),
                     batchId,
@@ -135,9 +135,9 @@ class HackingManager {
                 });
                 jobs.push(growJob);
                 for (const [server, threads] of growthThreadSpread) {
-                    ServerAPI.increaseReservation(ns, server, threads * ToolUtils.getToolCost(ns, Tools.GROW));
+                    await ServerAPI.increaseReservation(ns, server, threads * await ToolUtils.getToolCost(ns, Tools.GROW));
                 }
-                const compensationWeakenThreadSpread = HackUtils.computeThreadSpread(ns, Tools.WEAKEN, weakenThreads, true);
+                const compensationWeakenThreadSpread = await HackUtils.computeThreadSpread(ns, Tools.WEAKEN, weakenThreads, true);
                 compensationWeakenJob = new Job(ns, {
                     id: Utils.generateHash(),
                     batchId,
@@ -151,7 +151,7 @@ class HackingManager {
                 });
                 jobs.push(compensationWeakenJob);
                 for (const [server, threads] of compensationWeakenThreadSpread) {
-                    ServerAPI.increaseReservation(ns, server, threads * ToolUtils.getToolCost(ns, Tools.WEAKEN));
+                    await ServerAPI.increaseReservation(ns, server, threads * await ToolUtils.getToolCost(ns, Tools.WEAKEN));
                 }
             }
         }
@@ -168,10 +168,10 @@ class HackingManager {
             start: startTime,
             end: endTime,
         });
-        JobAPI.startBatch(ns, batchJob);
+        await JobAPI.startBatch(ns, batchJob);
     }
-    static attackServer(ns, target) {
-        const numPossibleCycles = CycleUtils.computeCycles(ns, target);
+    static async attackServer(ns, target) {
+        const numPossibleCycles = await CycleUtils.computeCycles(ns, target);
         const numCycles = Math.min(numPossibleCycles, MAX_CYCLE_NUMBER);
         const batchId = Utils.generateHash();
         if (numCycles === 0) {
@@ -180,7 +180,7 @@ class HackingManager {
         }
         const cycles = [];
         for (let i = 0; i < numCycles; i++) {
-            const cycle = CycleUtils.scheduleCycle(ns, target, batchId, cycles[cycles.length - 1]);
+            const cycle = await CycleUtils.scheduleCycle(ns, target, batchId, cycles[cycles.length - 1]);
             cycles.push(cycle);
         }
         if (cycles.length === 0) {
@@ -197,9 +197,9 @@ class HackingManager {
             start: startTime,
             end: endTime,
         });
-        JobAPI.startBatch(ns, batchJob);
+        await JobAPI.startBatch(ns, batchJob);
     }
-    static optimizePerformance(ns, target) {
+    static async optimizePerformance(ns, target) {
         // PERFORMANCE: This is a very expensive function call
         // TODO: This does not seem to work properly?
         let performanceUpdated = false;
@@ -211,7 +211,7 @@ class HackingManager {
         };
         for (let n = CONSTANT.MIN_PERCENTAGE_TO_STEAL; n <= CONSTANT.MAX_PERCENTAGE_TO_STEAL; n += CONSTANT.DELTA_PERCENTAGE_TO_STEAL) {
             target.percentageToSteal = n;
-            const cycles = CycleUtils.computeCycles(ns, target, hackingServers);
+            const cycles = await CycleUtils.computeCycles(ns, target, hackingServers);
             const profit = target.staticHackingProperties.maxMoney * target.percentageToSteal * cycles;
             const totalTime = CycleUtils.calculateTotalBatchTime(ns, target, cycles);
             const profitsPerSecond = profit / totalTime;
@@ -241,7 +241,7 @@ class HackingManager {
             clearTimeout(this.managingLoopTimeout);
         LogAPI.debug(ns, `Stopping the HackingManager`);
     }
-    updatePurchasedServerPurposes(ns) {
+    async updatePurchasedServerPurposes(ns) {
         const dataPoint = HackingManager.getUtilizationDataPoint(ns);
         this.utilizationDataPoints.length = Math.min(this.utilizationDataPoints.length, UTILIZATION_DATA_POINTS - 1);
         this.utilizationDataPoints.unshift(dataPoint);
@@ -252,16 +252,16 @@ class HackingManager {
             return point.hack - point.prep > UTILIZATION_DELTA_THRESHOLD || point.prep < UTILIZATION_DELTA_THRESHOLD;
         });
         if (shouldAddHackServer)
-            ServerAPI.addHackingServer(ns);
+            await ServerAPI.addHackingServer(ns);
         else if (shouldAddPrepServer)
-            ServerAPI.addPreppingServer(ns);
+            await ServerAPI.addPreppingServer(ns);
         else
             return;
         // Reset the measurements to prevent immediately adding another server
         this.utilizationDataPoints.length = 0;
     }
     async managingLoop(ns) {
-        this.updatePurchasedServerPurposes(ns);
+        await this.updatePurchasedServerPurposes(ns);
         // Get the potential targets
         let potentialTargets = ServerAPI.getTargetServers(ns);
         // We would have a problem if there are no targets

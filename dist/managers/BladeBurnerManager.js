@@ -11,7 +11,7 @@ const JOIN_DELAY = 60000;
 const MANAGING_LOOP_DELAY = 100;
 const BUSY_RETRY_DELAY = 1000;
 const SYNTH_POPULATION_THRESHOLD = 1e8;
-const SYNTH_COMMUNITY_THRESHOLD = 5;
+// const SYNTH_COMMUNITY_THRESHOLD: number       = 5 as const
 const CHAOS_THRESHOLD = 100;
 const FINAL_BLACK_OP_WARNING_INTERVAL = 10;
 class BladeBurnerManager {
@@ -107,7 +107,7 @@ class BladeBurnerManager {
         // Check whether we have enough Synths, otherwise move or search for new ones
         const currentCity = this.cities.find((city) => city.isCurrent(ns));
         if (BladeBurnerManager.shouldMove(ns, currentCity)) {
-            const cities = this.cities
+            this.cities = this.cities
                 .sort((a, b) => {
                 return b.getPopulation(ns) - a.getPopulation(ns);
             });

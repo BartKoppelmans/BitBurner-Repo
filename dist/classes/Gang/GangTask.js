@@ -50,18 +50,21 @@ export default class GangTask {
     static getUnassignedTask(ns) {
         return GangTask.getTask(ns, 'Unassigned');
     }
+    static calculateStatWeight(taskStats, memberStats) {
+        return (taskStats.hackWeight / 100) * memberStats.hack +
+            (taskStats.strWeight / 100) * memberStats.str +
+            (taskStats.defWeight / 100) * memberStats.def +
+            (taskStats.dexWeight / 100) * memberStats.dex +
+            (taskStats.agiWeight / 100) * memberStats.agi +
+            (taskStats.chaWeight / 100) * memberStats.cha;
+    }
     static calculateRespectGain(ns, task, member) {
         const taskStats = task.getTaskStats(ns);
         const memberStats = member.getGangMemberStats(ns);
         const gangInformation = ns.gang.getGangInformation();
         if (taskStats.baseRespect === 0)
             return 0;
-        let statWeight = (taskStats.hackWeight / 100) * memberStats.hack +
-            (taskStats.strWeight / 100) * memberStats.str +
-            (taskStats.defWeight / 100) * memberStats.def +
-            (taskStats.dexWeight / 100) * memberStats.dex +
-            (taskStats.agiWeight / 100) * memberStats.agi +
-            (taskStats.chaWeight / 100) * memberStats.cha;
+        let statWeight = GangTask.calculateStatWeight(taskStats, memberStats);
         statWeight -= (4 * taskStats.difficulty);
         if (statWeight <= 0)
             return 0;
@@ -77,12 +80,7 @@ export default class GangTask {
         const gangInformation = ns.gang.getGangInformation();
         if (taskStats.baseMoney === 0)
             return 0;
-        let statWeight = (taskStats.hackWeight / 100) * memberStats.hack +
-            (taskStats.strWeight / 100) * memberStats.str +
-            (taskStats.defWeight / 100) * memberStats.def +
-            (taskStats.dexWeight / 100) * memberStats.dex +
-            (taskStats.agiWeight / 100) * memberStats.agi +
-            (taskStats.chaWeight / 100) * memberStats.cha;
+        let statWeight = GangTask.calculateStatWeight(taskStats, memberStats);
         statWeight -= (3.2 * taskStats.difficulty);
         if (statWeight <= 0)
             return 0;
@@ -98,12 +96,7 @@ export default class GangTask {
         const gangInformation = ns.gang.getGangInformation();
         if (taskStats.baseWanted === 0)
             return 0;
-        let statWeight = (taskStats.hackWeight / 100) * memberStats.hack +
-            (taskStats.strWeight / 100) * memberStats.str +
-            (taskStats.defWeight / 100) * memberStats.def +
-            (taskStats.dexWeight / 100) * memberStats.dex +
-            (taskStats.agiWeight / 100) * memberStats.agi +
-            (taskStats.chaWeight / 100) * memberStats.cha;
+        let statWeight = GangTask.calculateStatWeight(taskStats, memberStats);
         statWeight -= (3.5 * taskStats.difficulty);
         if (statWeight <= 0)
             return 0;

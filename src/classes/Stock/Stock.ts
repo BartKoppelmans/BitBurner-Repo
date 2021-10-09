@@ -22,15 +22,15 @@ export default class Stock {
 		return symbols.map((symbol) => new Stock(ns, symbol))
 	}
 
-	public hasShares(ns: NS): boolean {
+	public hasShares(): boolean {
 		return this.stockInformation.ownedShort + this.stockInformation.ownedLong > 0
 	}
 
-	public hasMaxShares(ns: NS): boolean {
+	public hasMaxShares(): boolean {
 		return this.stockInformation.ownedShort + this.stockInformation.ownedLong === this.stockInformation.maxShares
 	}
 
-	public getStockCorpus(ns: NS): number {
+	public getStockCorpus(): number {
 		return this.stockInformation.ownedShort * this.stockInformation.averageShortPrice + this.stockInformation.ownedLong * this.stockInformation.averageLongPrice
 	}
 

@@ -21,31 +21,31 @@ function readJobMap(ns) {
 export function clearJobMap(ns) {
     ns.clear(CONSTANT.JOB_MAP_FILENAME);
 }
-export function writeJobMap(ns, jobMap) {
+export async function writeJobMap(ns, jobMap) {
     // NOTE: Do we want to do this?
     jobMap.lastUpdated = new Date();
-    ns.write(CONSTANT.JOB_MAP_FILENAME, JSON.stringify(jobMap), 'w');
+    await ns.write(CONSTANT.JOB_MAP_FILENAME, JSON.stringify(jobMap), 'w');
 }
-export function startBatch(ns, batch) {
+export async function startBatch(ns, batch) {
     // TODO: We should do some checking in here
     const isPrep = batch.jobs[0].isPrep;
-    ServerAPI.setStatus(ns, batch.target.characteristics.host, (isPrep) ? ServerStatus.PREPPING : ServerStatus.TARGETING);
+    await ServerAPI.setStatus(ns, batch.target.characteristics.host, (isPrep) ? ServerStatus.PREPPING : ServerStatus.TARGETING);
     for (const job of batch.jobs) {
-        startJob(ns, job);
+        await startJob(ns, job);
     }
-    writeBatch(ns, batch);
+    await writeBatch(ns, batch);
 }
-function startJob(ns, job) {
+async function startJob(ns, job) {
     // TODO: We should do some checking in here
     job.execute(ns);
     job.onStart(ns);
     const threadSpread = job.threadSpread;
     for (const [server, threads] of threadSpread) {
-        const reservation = threads * ToolUtils.getToolCost(ns, job.tool);
-        ServerAPI.decreaseReservation(ns, server, reservation);
+        const reservation = threads * (await ToolUtils.getToolCost(ns, job.tool));
+        await ServerAPI.decreaseReservation(ns, server, reservation);
     }
 }
-export function finishJobs(ns, jobs) {
+export async function finishJobs(ns, jobs) {
     // NOTE: This function manually removes the jobs instead of using removeJob (for performance reasons)
     const jobMap = getJobMap(ns);
     for (const finishedJob of jobs) {
@@ -62,19 +62,19 @@ export function finishJobs(ns, jobs) {
     for (const [index, batch] of jobMap.batches.entries()) {
         const isBatchFinished = batch.jobs.every((j) => j.finished);
         if (isBatchFinished) {
-            ServerAPI.setStatus(ns, batch.target.characteristics.host, ServerStatus.NONE);
+            await ServerAPI.setStatus(ns, batch.target.characteristics.host, ServerStatus.NONE);
             finishedBatchIndices.push(index);
         }
     }
     for (const index of finishedBatchIndices.reverse()) {
         jobMap.batches.splice(index, 1);
     }
-    writeJobMap(ns, jobMap);
+    await writeJobMap(ns, jobMap);
 }
-export function writeBatch(ns, batch) {
+export async function writeBatch(ns, batch) {
     const jobMap = getJobMap(ns);
     jobMap.batches.push(batch);
-    writeJobMap(ns, jobMap);
+    await writeJobMap(ns, jobMap);
 }
 export function getRunningProcesses(ns) {
     const serverMap = ServerAPI.getServerMap(ns);
@@ -108,7 +108,7 @@ export function cancelJob(ns, job) {
     if (!allKilled)
         LogAPI.warn(ns, 'Failed to cancel all jobs');
 }
-export function initializeJobMap(ns) {
+export async function initializeJobMap(ns) {
     const jobMap = { lastUpdated: new Date(), batches: [] };
-    writeJobMap(ns, jobMap);
+    await writeJobMap(ns, jobMap);
 }

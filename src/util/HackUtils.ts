@@ -8,14 +8,14 @@ import * as PlayerUtils         from '/src/util/PlayerUtils.js'
 import * as ToolUtils           from '/src/util/ToolUtils.js'
 import { ThreadSpread }         from '/src/classes/Misc/HackInterfaces'
 
-export function computeThreadSpread(ns: NS, tool: Tools, threads: number, isPrep: boolean): ThreadSpread {
-	const maxThreadsAvailable = calculateMaxThreads(ns, tool, isPrep)
+export async function computeThreadSpread(ns: NS, tool: Tools, threads: number, isPrep: boolean): Promise<ThreadSpread> {
+	const maxThreadsAvailable = await calculateMaxThreads(ns, tool, isPrep)
 
 	if (threads > maxThreadsAvailable) {
 		throw new Error('We don\'t have that much threads available.')
 	}
 
-	const cost: number = ToolUtils.getToolCost(ns, tool)
+	const cost: number = await ToolUtils.getToolCost(ns, tool)
 
 	let threadsLeft: number = threads
 
@@ -42,11 +42,11 @@ export function computeThreadSpread(ns: NS, tool: Tools, threads: number, isPrep
 }
 
 // Here we allow thread spreading over multiple servers
-export function calculateMaxThreads(ns: NS, tool: Tools, isPrep: boolean): number {
+export async function calculateMaxThreads(ns: NS, tool: Tools, isPrep: boolean): Promise<number> {
 
 	const serverList: Server[] = (isPrep) ? ServerAPI.getPreppingServers(ns) : ServerAPI.getHackingServers(ns)
 
-	const cost: number = ToolUtils.getToolCost(ns, tool)
+	const cost: number = await ToolUtils.getToolCost(ns, tool)
 
 	return serverList.reduce((threads, server) => {
 		return threads + Math.floor(server.getAvailableRam(ns) / cost)

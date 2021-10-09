@@ -24,20 +24,20 @@ function readServerMap(ns) {
 export function clearServerMap(ns) {
     ns.clear(CONSTANT.SERVER_MAP_FILENAME);
 }
-export function writeServerMap(ns, serverMap) {
+export async function writeServerMap(ns, serverMap) {
     // NOTE: Do we want to do this?
     serverMap.lastUpdated = new Date();
-    ns.write(CONSTANT.SERVER_MAP_FILENAME, JSON.stringify(serverMap), 'w');
+    await ns.write(CONSTANT.SERVER_MAP_FILENAME, JSON.stringify(serverMap), 'w');
 }
-export function updateServer(ns, server) {
+export async function updateServer(ns, server) {
     const serverMap = getServerMap(ns);
     const index = serverMap.servers.findIndex((s) => s.characteristics.host === server.characteristics.host);
     if (index === -1)
         throw new Error('Could not find the server.');
     serverMap.servers[index] = server;
-    writeServerMap(ns, serverMap);
+    await writeServerMap(ns, serverMap);
 }
-export function setPurpose(ns, host, purpose, force = false) {
+export async function setPurpose(ns, host, purpose, force = false) {
     const server = getServerByName(ns, host);
     if (ServerUtils.isPurchasedServer(server) && !force) {
         if (server.quarantinedInformation.quarantined) {
@@ -48,22 +48,22 @@ export function setPurpose(ns, host, purpose, force = false) {
     }
     else
         server.purpose = purpose;
-    updateServer(ns, server);
+    await updateServer(ns, server);
 }
-export function setStatus(ns, host, status) {
+export async function setStatus(ns, host, status) {
     const server = getServerByName(ns, host);
     if (!ServerUtils.isHackableServer(server))
         throw new Error('The server is not a hackable server');
     server.status = status;
-    updateServer(ns, server);
+    await updateServer(ns, server);
 }
-export function addServer(ns, server) {
+export async function addServer(ns, server) {
     const serverMap = getServerMap(ns);
     const serverAlreadyExists = serverMap.servers.some((s) => s.characteristics.host === server.characteristics.host);
     if (serverAlreadyExists)
         throw new Error('Cannot add a server that already exists in the list');
     serverMap.servers.push(server);
-    writeServerMap(ns, serverMap);
+    await writeServerMap(ns, serverMap);
 }
 export function getServerUtilization(ns, onlyPurchasedServers, serverPurpose) {
     let serverMap;
@@ -79,16 +79,16 @@ export function getServerUtilization(ns, onlyPurchasedServers, serverPurpose) {
     const total = serverMap.reduce((subtotal, server) => subtotal + server.getTotalRam(ns), 0);
     return (utilized / total);
 }
-export function quarantine(ns, host, ram) {
+export async function quarantine(ns, host, ram) {
     const server = getServerByName(ns, host);
     if (!ServerUtils.isPurchasedServer(server))
         throw new Error('Cannot quarantine a normal server');
     server.quarantinedInformation = { quarantined: true, ram, originalPurpose: server.purpose };
     server.purpose = ServerPurpose.NONE;
-    updateServer(ns, server);
+    await updateServer(ns, server);
     LogAPI.log(ns, `We put ${server.characteristics.host} into quarantine`, LogType.PURCHASED_SERVER);
 }
-export function upgradeServer(ns, host, ram) {
+export async function upgradeServer(ns, host, ram) {
     const server = getServerByName(ns, host);
     if (!ServerUtils.isPurchasedServer(server))
         throw new Error('Cannot quarantine a normal server');
@@ -107,19 +107,19 @@ export function upgradeServer(ns, host, ram) {
         throw new Error('Could not purchase the server again.');
     server.purpose = PurchasedServer.determinePurpose(ns, server.characteristics.purchasedServerId);
     server.quarantinedInformation = { quarantined: false };
-    updateServer(ns, server);
+    await updateServer(ns, server);
 }
-export function increaseReservation(ns, host, reservation) {
+export async function increaseReservation(ns, host, reservation) {
     const server = getServerByName(ns, host);
     reservation = Math.round(reservation * 100) / 100;
     server.increaseReservation(ns, reservation);
-    updateServer(ns, server);
+    await updateServer(ns, server);
 }
-export function decreaseReservation(ns, host, reservation) {
+export async function decreaseReservation(ns, host, reservation) {
     const server = getServerByName(ns, host);
     reservation = Math.round(reservation * 100) / 100;
     server.decreaseReservation(ns, reservation);
-    updateServer(ns, server);
+    await updateServer(ns, server);
 }
 export function getServer(ns, id) {
     const server = getServerMap(ns).servers.find(s => s.characteristics.id === id);
@@ -161,7 +161,7 @@ export function getHackingServers(ns) {
         .filter((server) => server.purpose === ServerPurpose.HACK)
         .sort((a, b) => b.getAvailableRam(ns) - a.getAvailableRam(ns));
 }
-export function addPreppingServer(ns) {
+export async function addPreppingServer(ns) {
     // TODO: Make this return a boolean and log in the daemon script
     const purchasedServers = getPurchasedServers(ns, 'alphabetic');
     const numPrepServers = purchasedServers.filter((server) => server.hasPurpose(ServerPurpose.PREP)).length;
@@ -172,10 +172,10 @@ export function addPreppingServer(ns) {
         .find((server) => server.hasPurpose(ServerPurpose.HACK));
     if (!newPrepServer)
         return;
-    setPurpose(ns, newPrepServer.characteristics.host, ServerPurpose.PREP);
+    await setPurpose(ns, newPrepServer.characteristics.host, ServerPurpose.PREP);
     LogAPI.log(ns, `Changed purchased server ${newPrepServer.characteristics.host} to prep`, LogType.INFORMATION);
 }
-export function addHackingServer(ns) {
+export async function addHackingServer(ns) {
     // TODO: Make this return a boolean and log in the daemon script
     const purchasedServers = getPurchasedServers(ns, 'alphabetic');
     const numHackServers = purchasedServers.filter((server) => server.hasPurpose(ServerPurpose.HACK)).length;
@@ -185,7 +185,7 @@ export function addHackingServer(ns) {
     const newHackServer = purchasedServers.find((server) => server.hasPurpose(ServerPurpose.PREP));
     if (!newHackServer)
         return;
-    setPurpose(ns, newHackServer.characteristics.host, ServerPurpose.HACK);
+    await setPurpose(ns, newHackServer.characteristics.host, ServerPurpose.HACK);
     LogAPI.log(ns, `Changed purchased server ${newHackServer.characteristics.host} to hack`, LogType.INFORMATION);
 }
 // We sort this ascending

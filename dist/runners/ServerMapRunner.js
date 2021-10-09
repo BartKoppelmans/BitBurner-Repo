@@ -12,7 +12,7 @@ class ServerMapRunner {
         LogAPI.debug(ns, `Running the ServerMapRunner`);
         ServerAPI.clearServerMap(ns);
         const servers = this.createServerList(ns);
-        ServerAPI.writeServerMap(ns, { servers, lastUpdated: new Date() });
+        await ServerAPI.writeServerMap(ns, { servers, lastUpdated: new Date() });
     }
     createServerList(ns) {
         const serverMap = this.spider(ns, CONSTANT.HOME_SERVER_ID, CONSTANT.HOME_SERVER_HOST);

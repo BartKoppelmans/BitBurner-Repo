@@ -62,7 +62,7 @@ async function printChildren(ns, server, level, isLastChild) {
         prefixes += (isLastChild) ? '└> ' : '├> ';
     }
     // noinspection CssUnresolvedCustomProperty
-    LogAPI.logHTML(ns, `<span style='color: var(--my-font-color)'>${prefixes}${getFormattedServerName(ns, server)}</span>`);
+    LogAPI.log(ns, `${prefixes}${getFormattedServerName(ns, server)}`);
     for (const [index, childId] of server.characteristics.treeStructure.children.entries()) {
         const child = await ServerAPI.getServer(ns, childId);
         await printChildren(ns, child, level + 1, (index === server.characteristics.treeStructure.children.length - 1));

@@ -24,7 +24,7 @@ class PurchasedServerRunner {
     static getCost(ns, ram) {
         return ns.getPurchasedServerCost(ram);
     }
-    static purchaseNewServer(ns, ram, purchasedServerId) {
+    static async purchaseNewServer(ns, ram, purchasedServerId) {
         const host = CONSTANT.PURCHASED_SERVER_PREFIX + purchasedServerId.toString();
         const boughtServer = ns.purchaseServer(host, ram);
         if (boughtServer === '')
@@ -38,7 +38,7 @@ class PurchasedServerRunner {
             treeStructure: PurchasedServer.getDefaultTreeStructure(),
         };
         const server = new PurchasedServer(ns, { characteristics });
-        ServerAPI.addServer(ns, server);
+        await ServerAPI.addServer(ns, server);
         return server;
     }
     static shouldUpgrade(ns, purpose) {
@@ -49,13 +49,13 @@ class PurchasedServerRunner {
         LogAPI.debug(ns, `Running the PurchasedServerRunner`);
         const purchasedServerList = ServerAPI.getPurchasedServers(ns);
         if (purchasedServerList.length < ns.getPurchasedServerLimit()) {
-            this.purchaseServers(ns, purchasedServerList);
+            await this.purchaseServers(ns, purchasedServerList);
         }
         else {
-            this.upgradeServers(ns, purchasedServerList);
+            await this.upgradeServers(ns, purchasedServerList);
         }
     }
-    purchaseServers(ns, purchasedServerList) {
+    async purchaseServers(ns, purchasedServerList) {
         const numServersLeft = ns.getPurchasedServerLimit() - purchasedServerList.length;
         for (let i = 0; i < numServersLeft; i++) {
             const ram = this.computeMaxRamPossible(ns);
@@ -63,20 +63,20 @@ class PurchasedServerRunner {
             if (ram === -1)
                 break;
             const id = purchasedServerList.length + i;
-            const purchasedServer = PurchasedServerRunner.purchaseNewServer(ns, ram, id);
+            const purchasedServer = await PurchasedServerRunner.purchaseNewServer(ns, ram, id);
             if (!purchasedServer) {
                 throw new Error('We could not successfully purchase the server');
             }
         }
     }
-    upgradeServers(ns, purchasedServerList) {
+    async upgradeServers(ns, purchasedServerList) {
         const quarantinedServers = purchasedServerList.filter((s) => s.isQuarantined());
         for (const server of quarantinedServers) {
             if (!server.quarantinedInformation.quarantined)
                 continue;
             const ram = server.quarantinedInformation.ram;
             if (server.canUpgrade(ns, ram)) {
-                ServerAPI.upgradeServer(ns, server.characteristics.host, ram);
+                await ServerAPI.upgradeServer(ns, server.characteristics.host, ram);
             }
         }
         const shouldUpgradePrep = PurchasedServerRunner.shouldUpgrade(ns, ServerPurpose.PREP);
@@ -92,7 +92,7 @@ class PurchasedServerRunner {
                 continue;
             const maxRam = this.computeMaxRamPossible(ns);
             if (maxRam > server.getTotalRam(ns)) {
-                ServerAPI.quarantine(ns, server.characteristics.host, maxRam);
+                await ServerAPI.quarantine(ns, server.characteristics.host, maxRam);
             }
             else
                 break;

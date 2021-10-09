@@ -38,13 +38,13 @@ export function clearServerMap(ns: NS): void {
 	ns.clear(CONSTANT.SERVER_MAP_FILENAME)
 }
 
-export function writeServerMap(ns: NS, serverMap: ServerMap): void {
+export async function writeServerMap(ns: NS, serverMap: ServerMap): Promise<void> {
 	// NOTE: Do we want to do this?
 	serverMap.lastUpdated = new Date()
-	ns.write(CONSTANT.SERVER_MAP_FILENAME, JSON.stringify(serverMap), 'w')
+	await ns.write(CONSTANT.SERVER_MAP_FILENAME, JSON.stringify(serverMap), 'w')
 }
 
-export function updateServer(ns: NS, server: Server): void {
+export async function updateServer(ns: NS, server: Server): Promise<void> {
 	const serverMap: ServerMap = getServerMap(ns)
 	const index: number        = serverMap.servers.findIndex((s) => s.characteristics.host === server.characteristics.host)
 
@@ -52,10 +52,10 @@ export function updateServer(ns: NS, server: Server): void {
 
 	serverMap.servers[index] = server
 
-	writeServerMap(ns, serverMap)
+	await writeServerMap(ns, serverMap)
 }
 
-export function setPurpose(ns: NS, host: string, purpose: ServerPurpose, force: boolean = false): void {
+export async function setPurpose(ns: NS, host: string, purpose: ServerPurpose, force: boolean = false): Promise<void> {
 	const server: Server = getServerByName(ns, host)
 
 	if (ServerUtils.isPurchasedServer(server) && !force) {
@@ -64,17 +64,17 @@ export function setPurpose(ns: NS, host: string, purpose: ServerPurpose, force: 
 		} else server.purpose = purpose
 	} else server.purpose = purpose
 
-	updateServer(ns, server)
+	await updateServer(ns, server)
 }
 
-export function setStatus(ns: NS, host: string, status: ServerStatus): void {
+export async function setStatus(ns: NS, host: string, status: ServerStatus): Promise<void> {
 	const server: Server = getServerByName(ns, host)
 	if (!ServerUtils.isHackableServer(server)) throw new Error('The server is not a hackable server')
 	server.status = status
-	updateServer(ns, server)
+	await updateServer(ns, server)
 }
 
-export function addServer(ns: NS, server: Server): void {
+export async function addServer(ns: NS, server: Server): Promise<void> {
 	const serverMap: ServerMap = getServerMap(ns)
 
 	const serverAlreadyExists: boolean = serverMap.servers.some((s) => s.characteristics.host === server.characteristics.host)
@@ -82,7 +82,7 @@ export function addServer(ns: NS, server: Server): void {
 
 	serverMap.servers.push(server)
 
-	writeServerMap(ns, serverMap)
+	await writeServerMap(ns, serverMap)
 }
 
 export function getServerUtilization(ns: NS, onlyPurchasedServers: boolean, serverPurpose?: ServerPurpose): number {
@@ -100,7 +100,7 @@ export function getServerUtilization(ns: NS, onlyPurchasedServers: boolean, serv
 	return (utilized / total)
 }
 
-export function quarantine(ns: NS, host: string, ram: number): void {
+export async function quarantine(ns: NS, host: string, ram: number): Promise<void> {
 	const server: Server = getServerByName(ns, host)
 
 	if (!ServerUtils.isPurchasedServer(server)) throw new Error('Cannot quarantine a normal server')
@@ -108,12 +108,12 @@ export function quarantine(ns: NS, host: string, ram: number): void {
 	server.quarantinedInformation = { quarantined: true, ram, originalPurpose: server.purpose }
 	server.purpose                = ServerPurpose.NONE
 
-	updateServer(ns, server)
+	await updateServer(ns, server)
 
 	LogAPI.log(ns, `We put ${server.characteristics.host} into quarantine`, LogType.PURCHASED_SERVER)
 }
 
-export function upgradeServer(ns: NS, host: string, ram: number): void {
+export async function upgradeServer(ns: NS, host: string, ram: number): Promise<void> {
 	const server: Server = getServerByName(ns, host)
 
 	if (!ServerUtils.isPurchasedServer(server)) throw new Error('Cannot quarantine a normal server')
@@ -135,21 +135,21 @@ export function upgradeServer(ns: NS, host: string, ram: number): void {
 	server.purpose                = PurchasedServer.determinePurpose(ns, server.characteristics.purchasedServerId)
 	server.quarantinedInformation = { quarantined: false }
 
-	updateServer(ns, server)
+	await updateServer(ns, server)
 }
 
-export function increaseReservation(ns: NS, host: string, reservation: number): void {
+export async function increaseReservation(ns: NS, host: string, reservation: number): Promise<void> {
 	const server: Server = getServerByName(ns, host)
 	reservation          = Math.round(reservation * 100) / 100
 	server.increaseReservation(ns, reservation)
-	updateServer(ns, server)
+	await updateServer(ns, server)
 }
 
-export function decreaseReservation(ns: NS, host: string, reservation: number): void {
+export async function decreaseReservation(ns: NS, host: string, reservation: number): Promise<void> {
 	const server: Server = getServerByName(ns, host)
 	reservation          = Math.round(reservation * 100) / 100
 	server.decreaseReservation(ns, reservation)
-	updateServer(ns, server)
+	await updateServer(ns, server)
 }
 
 export function getServer(ns: NS, id: string): Server {
@@ -197,7 +197,7 @@ export function getHackingServers(ns: NS): Server[] {
 	                       .sort((a, b) => b.getAvailableRam(ns) - a.getAvailableRam(ns))
 }
 
-export function addPreppingServer(ns: NS): void {
+export async function addPreppingServer(ns: NS): Promise<void> {
 
 	// TODO: Make this return a boolean and log in the daemon script
 
@@ -213,12 +213,12 @@ export function addPreppingServer(ns: NS): void {
 
 	if (!newPrepServer) return
 
-	setPurpose(ns, newPrepServer.characteristics.host, ServerPurpose.PREP)
+	await setPurpose(ns, newPrepServer.characteristics.host, ServerPurpose.PREP)
 
 	LogAPI.log(ns, `Changed purchased server ${newPrepServer.characteristics.host} to prep`, LogType.INFORMATION)
 }
 
-export function addHackingServer(ns: NS): void {
+export async function addHackingServer(ns: NS): Promise<void> {
 
 	// TODO: Make this return a boolean and log in the daemon script
 
@@ -233,7 +233,7 @@ export function addHackingServer(ns: NS): void {
 
 	if (!newHackServer) return
 
-	setPurpose(ns, newHackServer.characteristics.host, ServerPurpose.HACK)
+	await setPurpose(ns, newHackServer.characteristics.host, ServerPurpose.HACK)
 
 	LogAPI.log(ns, `Changed purchased server ${newHackServer.characteristics.host} to hack`, LogType.INFORMATION)
 }

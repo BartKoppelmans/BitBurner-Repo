@@ -16,27 +16,27 @@ import * as HackUtils           from '/src/util/HackUtils.js'
 import * as ToolUtils           from '/src/util/ToolUtils.js'
 import * as Utils               from '/src/util/Utils.js'
 
-export function computeCycles(ns: NS, target: HackableServer, servers?: Server[]): number {
+export async function computeCycles(ns: NS, target: HackableServer, servers?: Server[]): Promise<number> {
 
 	if (!servers) servers = ServerAPI.getHackingServers(ns)
-	const cycleCost: number = getOptimalCycleCost(ns, target)
+	const cycleCost: number = await getOptimalCycleCost(ns, target)
 
 	return Math.max(0, Math.min(CONSTANT.MAX_CYCLE_NUMBER, servers.reduce((threads, server) => threads + Math.floor(server.getAvailableRam(ns) / cycleCost), 0)))
 }
 
-function determineCycleThreadSpreads(ns: NS, target: HackableServer, cycleThreads: CycleThreads): CycleThreadSpreads {
+async function determineCycleThreadSpreads(ns: NS, target: HackableServer, cycleThreads: CycleThreads): Promise<CycleThreadSpreads> {
 
 	const serverList: Server[] = ServerAPI.getHackingServers(ns)
 
 	// Get the server with the most available RAM
 	const server = serverList[0]
 
-	const cost: number = getOptimalCycleCost(ns, target)
+	const cost: number = await getOptimalCycleCost(ns, target)
 	if (cost > server.getAvailableRam(ns)) {
 		throw new Error('Not enough RAM available to create a cycle (on one server)')
 	}
 
-	ServerAPI.increaseReservation(ns, server.characteristics.host, cost)
+	await ServerAPI.increaseReservation(ns, server.characteristics.host, cost)
 
 	const hackSpreadMap: ThreadSpread    = new Map<string, number>()
 	const growthSpreadMap: ThreadSpread  = new Map<string, number>()
@@ -71,26 +71,26 @@ export function calculateTotalBatchTime(ns: NS, target: HackableServer, numCycle
 }
 
 // Returns the number of threads
-export function getOptimalCycleCost(ns: NS, target: HackableServer): number {
+export async function getOptimalCycleCost(ns: NS, target: HackableServer): Promise<number> {
 	const cycleThreads: CycleThreads = determineCycleThreads(ns, target)
 
 	const hackThreads: number   = cycleThreads.hack
 	const growthThreads: number = cycleThreads.growth
 	const weakenThreads: number = cycleThreads.weaken1 + cycleThreads.weaken2
 
-	const hackCost: number   = hackThreads * ToolUtils.getToolCost(ns, Tools.HACK)
-	const growCost: number   = growthThreads * ToolUtils.getToolCost(ns, Tools.GROW)
-	const weakenCost: number = weakenThreads * ToolUtils.getToolCost(ns, Tools.WEAKEN)
+	const hackCost: number   = hackThreads * await ToolUtils.getToolCost(ns, Tools.HACK)
+	const growCost: number   = growthThreads * await ToolUtils.getToolCost(ns, Tools.GROW)
+	const weakenCost: number = weakenThreads * await ToolUtils.getToolCost(ns, Tools.WEAKEN)
 
 	return hackCost + growCost + weakenCost
 }
 
 
-export function scheduleCycle(ns: NS, target: HackableServer, batchId: string, previousCycle?: Cycle): Cycle {
+export async function scheduleCycle(ns: NS, target: HackableServer, batchId: string, previousCycle?: Cycle): Promise<Cycle> {
 
 	const cycleTimings: CycleTimings             = determineCycleTimings(ns, target, previousCycle)
 	const cycleThreads: CycleThreads             = determineCycleThreads(ns, target)
-	const cycleThreadSpreads: CycleThreadSpreads = determineCycleThreadSpreads(ns, target, cycleThreads)
+	const cycleThreadSpreads: CycleThreadSpreads = await determineCycleThreadSpreads(ns, target, cycleThreads)
 	const cycleId: string                        = Utils.generateHash()
 
 	const hackJob = new Job(ns, {
