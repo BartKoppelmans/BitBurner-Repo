@@ -7,15 +7,11 @@ import * as ServerUtils                                     from '/src/util/Serv
 import * as Utils                                           from '/src/util/Utils.js'
 import { Runner }                                           from '/src/classes/Misc/ScriptInterfaces.js'
 import PurchasedServer                                      from '/src/classes/Server/PurchasedServer.js'
-import * as LogAPI                                          from '/src/api/LogAPI.js'
 import * as ServerAPI                                       from '/src/api/ServerAPI.js'
 
 class ServerMapRunner implements Runner {
 
 	public async run(ns: NS): Promise<void> {
-
-		LogAPI.debug(ns, `Running the ServerMapRunner`)
-
 		ServerAPI.clearServerMap(ns)
 
 		const servers: Server[] = this.createServerList(ns)

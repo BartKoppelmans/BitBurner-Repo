@@ -74,7 +74,7 @@ async function printChildren(ns: NS, server: Server, level: number, isLastChild:
 	}
 
 	// noinspection CssUnresolvedCustomProperty
-	LogAPI.log(ns, `${prefixes}${getFormattedServerName(ns, server)}`)
+	LogAPI.printTerminal(ns, `${prefixes}${getFormattedServerName(ns, server)}`)
 
 	for (const [index, childId] of server.characteristics.treeStructure.children.entries()) {
 		const child: Server = await ServerAPI.getServer(ns, childId)

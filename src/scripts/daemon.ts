@@ -55,6 +55,13 @@ async function launchRunner(ns: NS, script: string): Promise<void> {
 
 	const pid: number = ns.run(script)
 
+	if (pid !== -1) {
+		const scriptNamePattern              = /\/src\/runners\/(\w+)\.js/g
+		const match: RegExpMatchArray | null = script.match(scriptNamePattern)
+		if (!match) throw new Error('Could not get the name of the script')
+		LogAPI.printLog(ns, `Running the ${match[1]}`)
+	}
+
 	while (ns.isRunning(pid)) {
 		await ns.sleep(CONSTANT.SMALL_DELAY)
 	}
@@ -64,7 +71,7 @@ async function launchRunner(ns: NS, script: string): Promise<void> {
 function destroy(ns: NS): void {
 	clearTimeout(runnerInterval)
 
-	LogAPI.debug(ns, 'Stopping the daemon')
+	LogAPI.printTerminal(ns, 'Stopping the daemon')
 }
 
 export async function startManager(ns: NS, manager: Managers): Promise<void> {
@@ -95,7 +102,7 @@ export async function main(ns: NS) {
 
 	await initialize(ns)
 
-	LogAPI.debug(ns, 'Starting the daemon')
+	LogAPI.printTerminal(ns, 'Starting the daemon')
 
 	runnerInterval = setInterval(launchRunners.bind(null, ns), RUNNER_INTERVAL)
 

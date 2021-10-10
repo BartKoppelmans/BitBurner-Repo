@@ -37,7 +37,7 @@ class SleeveManager implements Manager {
 	}
 
 	public async start(ns: NS): Promise<void> {
-		LogAPI.debug(ns, `Starting the SleeveManager`)
+		LogAPI.printTerminal(ns, `Starting the SleeveManager`)
 
 		this.managingLoopTimeout = setTimeout(this.managingLoop.bind(this, ns), LOOP_DELAY)
 	}
@@ -45,7 +45,7 @@ class SleeveManager implements Manager {
 	public async destroy(ns: NS): Promise<void> {
 		if (this.managingLoopTimeout) clearTimeout(this.managingLoopTimeout)
 
-		LogAPI.debug(ns, `Stopping the SleeveManager`)
+		LogAPI.printTerminal(ns, `Stopping the SleeveManager`)
 	}
 
 	private async managingLoop(ns: NS): Promise<void> {

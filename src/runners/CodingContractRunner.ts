@@ -1,6 +1,5 @@
 import type { BitBurner as NS }                 from 'Bitburner'
 import * as LogAPI                              from '/src/api/LogAPI.js'
-import { LogType }                              from '/src/api/LogAPI.js'
 import * as ServerAPI                           from '/src/api/ServerAPI.js'
 import { CodingContract, CodingContractAnswer } from '/src/classes/Misc/CodingContract.js'
 import * as CodingContractUtils                 from '/src/util/CodingContractUtils.js'
@@ -14,7 +13,7 @@ class CodingContractRunner implements Runner {
 		const solution: CodingContractAnswer | null = CodingContractUtils.findSolution(ns, contract)
 
 		if (solution === undefined || solution === null) {
-			LogAPI.warn(ns, `We currently cannot solve contract ${contract.server.characteristics.host}/${contract.filename}: ${contract.type}`)
+			LogAPI.printTerminal(ns, `We currently cannot solve contract ${contract.server.characteristics.host}/${contract.filename}: ${contract.type}`)
 			return
 		}
 
@@ -25,16 +24,14 @@ class CodingContractRunner implements Runner {
 	}
 
 	private static onFailedContract(ns: NS, contract: CodingContract) {
-		LogAPI.log(ns, `Wrong solution for contract ${contract.server.characteristics.host}/${contract.filename}`, LogType.CODING_CONTRACT)
+		LogAPI.printTerminal(ns, `Wrong solution for contract ${contract.server.characteristics.host}/${contract.filename}`)
 	}
 
 	private static onSolvedContract(ns: NS, contract: CodingContract) {
-		LogAPI.log(ns, `Solved contract ${contract.server.characteristics.host}/${contract.filename}`, LogType.CODING_CONTRACT)
+		LogAPI.printTerminal(ns, `Solved contract ${contract.server.characteristics.host}/${contract.filename}`)
 	}
 
 	public async run(ns: NS): Promise<void> {
-		LogAPI.debug(ns, `Running the CodingContractRunner`)
-
 		const serverMap: ServerMap = ServerAPI.getServerMap(ns)
 
 		for (const server of serverMap.servers) {

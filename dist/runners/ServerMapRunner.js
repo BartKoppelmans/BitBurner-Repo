@@ -5,11 +5,9 @@ import { CONSTANT } from '/src/lib/constants.js';
 import * as ServerUtils from '/src/util/ServerUtils.js';
 import * as Utils from '/src/util/Utils.js';
 import PurchasedServer from '/src/classes/Server/PurchasedServer.js';
-import * as LogAPI from '/src/api/LogAPI.js';
 import * as ServerAPI from '/src/api/ServerAPI.js';
 class ServerMapRunner {
     async run(ns) {
-        LogAPI.debug(ns, `Running the ServerMapRunner`);
         ServerAPI.clearServerMap(ns);
         const servers = this.createServerList(ns);
         await ServerAPI.writeServerMap(ns, { servers, lastUpdated: new Date() });

@@ -1,6 +1,5 @@
 import Gang from '/src/classes/Gang/Gang.js';
 import * as LogAPI from '/src/api/LogAPI.js';
-import { LogType } from '/src/api/LogAPI.js';
 export default class HomeGang extends Gang {
     constructor(ns, name) {
         super(ns, name);
@@ -23,14 +22,14 @@ export default class HomeGang extends Gang {
             return;
         ns.gang.setTerritoryWarfare(true);
         this.isInWarfare = true;
-        LogAPI.log(ns, `Enabling territory warfare`, LogType.GANG);
+        LogAPI.printLog(ns, `Enabling territory warfare`);
     }
     disableTerritoryWarfare(ns) {
         if (!this.isInWarfare)
             return;
         ns.gang.setTerritoryWarfare(false);
         this.isInWarfare = false;
-        LogAPI.log(ns, `Disabling territory warfare`, LogType.GANG);
+        LogAPI.printLog(ns, `Disabling territory warfare`);
     }
     getGangInformation(ns) {
         return ns.gang.getGangInformation();

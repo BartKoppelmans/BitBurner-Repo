@@ -1,5 +1,4 @@
 import * as LogAPI from '/src/api/LogAPI.js';
-import { LogType } from '/src/api/LogAPI.js';
 export default class Sleeve {
     constructor(ns, id) {
         this.id = id;
@@ -27,7 +26,7 @@ export default class Sleeve {
             return;
         }
         ns.sleeve.setToSynchronize(this.id);
-        LogAPI.log(ns, `Set sleeve ${this.id} to synchronize`, LogType.SLEEVE);
+        LogAPI.printLog(ns, `Set sleeve ${this.id} to synchronize`);
     }
     recoverShock(ns) {
         const task = this.getTask(ns);
@@ -35,7 +34,7 @@ export default class Sleeve {
             return;
         }
         ns.sleeve.setToShockRecovery(this.id);
-        LogAPI.log(ns, `Set sleeve ${this.id} to recover from shock`, LogType.SLEEVE);
+        LogAPI.printLog(ns, `Set sleeve ${this.id} to recover from shock`);
     }
     commitCrime(ns, crime) {
         const task = this.getTask(ns);
@@ -44,8 +43,8 @@ export default class Sleeve {
         }
         const isSuccessful = ns.sleeve.setToCommitCrime(this.id, crime);
         if (isSuccessful)
-            LogAPI.log(ns, `Set sleeve ${this.id} to commit crime '${crime}'`, LogType.SLEEVE);
+            LogAPI.printLog(ns, `Set sleeve ${this.id} to commit crime '${crime}'`);
         else
-            LogAPI.warn(ns, `Failed to set sleeve ${this.id} to commit crime '${crime}'`);
+            LogAPI.printLog(ns, `Failed to set sleeve ${this.id} to commit crime '${crime}'`);
     }
 }

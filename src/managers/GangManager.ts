@@ -1,7 +1,6 @@
 import type { BitBurner as NS, FactionName, GangGenInfo }             from 'Bitburner'
 import { hasManagerKillRequest }                                      from '/src/api/ControlFlowAPI.js'
 import * as LogAPI                                                    from '/src/api/LogAPI.js'
-import { LogType }                                                    from '/src/api/LogAPI.js'
 import * as Utils                                                     from '/src/util/Utils.js'
 import * as GangUtils                                                 from '/src/util/GangUtils.js'
 import { Manager }                                                    from '/src/classes/Misc/ScriptInterfaces.js'
@@ -15,7 +14,7 @@ import HomeGang                                                       from '/src
 import Gang                                                           from '/src/classes/Gang/Gang.js'
 
 const LOOP_DELAY: number                     = 2000 as const
-const CREATE_GANG_DELAY: number              = 10000 as const
+const CREATE_GANG_DELAY: number              = 1000 as const
 const ASCENSION_MULTIPLIER_THRESHOLD: number = 5 as const
 const GANG_ALLOWANCE: number                 = 0.1 as const
 const WANTED_PENALTY_THRESHOLD: number       = 0.25 as const // Percentage
@@ -150,9 +149,9 @@ class GangManager implements Manager {
 		const name: string          = GangUtils.generateName(ns)
 		const isSuccessful: boolean = ns.gang.recruitMember(name)
 		if (!isSuccessful) {
-			LogAPI.warn(ns, `Failed to recruit a new member`)
+			LogAPI.printLog(ns, `Failed to recruit a new member`)
 			return null
-		} else LogAPI.log(ns, `Recruited new gang member '${name}'`, LogType.GANG)
+		} else LogAPI.printLog(ns, `Recruited new gang member '${name}'`)
 
 		return new GangMember(ns, name)
 	}
@@ -176,7 +175,7 @@ class GangManager implements Manager {
 	}
 
 	public async start(ns: NS): Promise<void> {
-		LogAPI.debug(ns, `Starting the GangManager`)
+		LogAPI.printTerminal(ns, `Starting the GangManager`)
 
 		this.managingLoopTimeout = setTimeout(this.managingLoop.bind(this, ns), LOOP_DELAY)
 	}
@@ -189,7 +188,7 @@ class GangManager implements Manager {
 
 		// GangManager.removeFocusSwitch()
 
-		LogAPI.debug(ns, `Stopping the GangManager`)
+		LogAPI.printTerminal(ns, `Stopping the GangManager`)
 	}
 
 	private createFocusSwitch(): void {
@@ -261,7 +260,7 @@ class GangManager implements Manager {
 
 	private async reduceWantedLevel(ns: NS, members: GangMember[]): Promise<void> {
 
-		LogAPI.log(ns, `Reducing wanted level`, LogType.GANG)
+		LogAPI.printLog(ns, `Reducing wanted level`)
 
 		members.forEach((member) => {
 			member.startTask(ns, GangTask.getWantedLevelReductionTask(ns, member))
@@ -271,7 +270,7 @@ class GangManager implements Manager {
 			await ns.sleep(LOOP_DELAY)
 		}
 
-		LogAPI.log(ns, `Finished reducing wanted level`, LogType.GANG)
+		LogAPI.printLog(ns, `Finished reducing wanted level`)
 	}
 
 	private manageMember(ns: NS, member: GangMember): void {
@@ -334,13 +333,13 @@ class GangManager implements Manager {
 		for (const upgrade of remainingUpgrades) {
 			if (GangManager.canAfford(ns, upgrade)) {
 				const isSuccessful: boolean = member.purchaseUpgrade(ns, upgrade)
-				if (!isSuccessful) LogAPI.warn(ns, `Could not successfully purchase ${upgrade.name}`)
+				if (!isSuccessful) LogAPI.printLog(ns, `Could not successfully purchase ${upgrade.name}`)
 				else numUpgrades++
 			}
 		}
 
 		if (numUpgrades > 0) {
-			LogAPI.log(ns, `Purchased ${numUpgrades} upgrades for ${member.name}`, LogType.GANG)
+			LogAPI.printLog(ns, `Purchased ${numUpgrades} upgrades for ${member.name}`)
 		}
 	}
 }

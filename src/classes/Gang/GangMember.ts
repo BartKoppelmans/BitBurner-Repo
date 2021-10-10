@@ -8,7 +8,6 @@ import {
 }                                                                    from '/src/classes/Gang/GangInterfaces.js'
 import GangUpgrade                                                   from '/src/classes/Gang/GangUpgrade.js'
 import * as LogAPI                                                   from '/src/api/LogAPI.js'
-import { LogType }                                                   from '/src/api/LogAPI.js'
 
 
 export default class GangMember {
@@ -56,16 +55,16 @@ export default class GangMember {
 
 		if (currentTask.name !== task.name) {
 			ns.gang.setMemberTask(this.name, task.name)
-			if (task.name !== 'Unassigned') LogAPI.log(ns, `Gang member '${this.name}' is starting task '${task.name}'`, LogType.GANG)
+			if (task.name !== 'Unassigned') LogAPI.printLog(ns, `Gang member '${this.name}' is starting task '${task.name}'`)
 		}
 	}
 
 	public ascend(ns: NS): GangMemberAscension {
 		const results: GangMemberAscension = ns.gang.ascendMember(this.name)
 
-		if (!results) LogAPI.warn(ns, `Could not ascend${this.name}`)
+		if (!results) LogAPI.printTerminal(ns, `Could not ascend${this.name}`)
 		else {
-			LogAPI.log(ns, `Ascended ${this.name}`, LogType.GANG)
+			LogAPI.printLog(ns, `Ascended ${this.name}`)
 			this.upgrades = this.upgrades.filter((upgrade) => upgrade.type === 'Augmentation')
 		}
 

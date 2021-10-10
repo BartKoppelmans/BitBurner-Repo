@@ -1,6 +1,5 @@
 import { hasManagerKillRequest } from '/src/api/ControlFlowAPI.js';
 import * as LogAPI from '/src/api/LogAPI.js';
-import { LogType } from '/src/api/LogAPI.js';
 import * as Utils from '/src/util/Utils.js';
 import * as GangUtils from '/src/util/GangUtils.js';
 import { CONSTANT } from '/src/lib/constants.js';
@@ -11,7 +10,7 @@ import * as PlayerUtils from '/src/util/PlayerUtils.js';
 import HomeGang from '/src/classes/Gang/HomeGang.js';
 import Gang from '/src/classes/Gang/Gang.js';
 const LOOP_DELAY = 2000;
-const CREATE_GANG_DELAY = 10000;
+const CREATE_GANG_DELAY = 1000;
 const ASCENSION_MULTIPLIER_THRESHOLD = 5;
 const GANG_ALLOWANCE = 0.1;
 const WANTED_PENALTY_THRESHOLD = 0.25; // Percentage
@@ -111,11 +110,11 @@ class GangManager {
         const name = GangUtils.generateName(ns);
         const isSuccessful = ns.gang.recruitMember(name);
         if (!isSuccessful) {
-            LogAPI.warn(ns, `Failed to recruit a new member`);
+            LogAPI.printLog(ns, `Failed to recruit a new member`);
             return null;
         }
         else
-            LogAPI.log(ns, `Recruited new gang member '${name}'`, LogType.GANG);
+            LogAPI.printLog(ns, `Recruited new gang member '${name}'`);
         return new GangMember(ns, name);
     }
     static removeFocusSwitch() {
@@ -133,7 +132,7 @@ class GangManager {
         // this.createFocusSwitch()
     }
     async start(ns) {
-        LogAPI.debug(ns, `Starting the GangManager`);
+        LogAPI.printTerminal(ns, `Starting the GangManager`);
         this.managingLoopTimeout = setTimeout(this.managingLoop.bind(this, ns), LOOP_DELAY);
     }
     async destroy(ns) {
@@ -142,7 +141,7 @@ class GangManager {
         const members = GangMember.getAllGangMembers(ns);
         members.forEach((member) => member.startTask(ns, GangTask.getUnassignedTask(ns)));
         // GangManager.removeFocusSwitch()
-        LogAPI.debug(ns, `Stopping the GangManager`);
+        LogAPI.printTerminal(ns, `Stopping the GangManager`);
     }
     createFocusSwitch() {
         const doc = eval('document');
@@ -200,14 +199,14 @@ class GangManager {
         this.managingLoopTimeout = setTimeout(this.managingLoop.bind(this, ns), LOOP_DELAY);
     }
     async reduceWantedLevel(ns, members) {
-        LogAPI.log(ns, `Reducing wanted level`, LogType.GANG);
+        LogAPI.printLog(ns, `Reducing wanted level`);
         members.forEach((member) => {
             member.startTask(ns, GangTask.getWantedLevelReductionTask(ns, member));
         });
         while (!GangManager.hasMinimumWantedLevel(ns)) {
             await ns.sleep(LOOP_DELAY);
         }
-        LogAPI.log(ns, `Finished reducing wanted level`, LogType.GANG);
+        LogAPI.printLog(ns, `Finished reducing wanted level`);
     }
     manageMember(ns, member) {
         this.upgradeMember(ns, member);
@@ -256,13 +255,13 @@ class GangManager {
             if (GangManager.canAfford(ns, upgrade)) {
                 const isSuccessful = member.purchaseUpgrade(ns, upgrade);
                 if (!isSuccessful)
-                    LogAPI.warn(ns, `Could not successfully purchase ${upgrade.name}`);
+                    LogAPI.printLog(ns, `Could not successfully purchase ${upgrade.name}`);
                 else
                     numUpgrades++;
             }
         }
         if (numUpgrades > 0) {
-            LogAPI.log(ns, `Purchased ${numUpgrades} upgrades for ${member.name}`, LogType.GANG);
+            LogAPI.printLog(ns, `Purchased ${numUpgrades} upgrades for ${member.name}`);
         }
     }
 }

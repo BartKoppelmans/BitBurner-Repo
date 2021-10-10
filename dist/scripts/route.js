@@ -17,13 +17,13 @@ async function findPath(ns, server) {
 export async function main(ns) {
     const serverName = ns.args[0];
     if (!serverName) {
-        LogAPI.warn(ns, 'Please provide a server to connect with.');
+        LogAPI.printTerminal(ns, 'Please provide a server to connect with.');
         return;
     }
     const serverMap = await ServerAPI.getServerMap(ns);
     const server = serverMap.servers.find((s) => s.characteristics.host === serverName);
     if (!server) {
-        LogAPI.warn(ns, 'Cannot find server ' + serverName);
+        LogAPI.printTerminal(ns, 'Cannot find server ' + serverName);
         return;
     }
     const path = await findPath(ns, server);

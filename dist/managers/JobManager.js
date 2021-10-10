@@ -13,7 +13,7 @@ class JobManager {
         }
     }
     async start(ns) {
-        LogAPI.debug(ns, `Starting the JobManager`);
+        LogAPI.printTerminal(ns, `Starting the JobManager`);
         this.managingLoopInterval = setInterval(this.managingLoop.bind(this, ns), JOB_MANAGING_LOOP_INTERVAL);
     }
     async destroy(ns) {
@@ -21,7 +21,7 @@ class JobManager {
             clearInterval(this.managingLoopInterval);
         await JobAPI.cancelAllJobs(ns);
         await JobAPI.clearJobMap(ns);
-        LogAPI.debug(ns, `Stopping the JobManager`);
+        LogAPI.printTerminal(ns, `Stopping the JobManager`);
     }
     async managingLoop(ns) {
         const jobMap = JobAPI.getJobMap(ns);

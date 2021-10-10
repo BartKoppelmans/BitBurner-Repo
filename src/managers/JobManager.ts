@@ -26,7 +26,7 @@ class JobManager implements Manager {
 	}
 
 	public async start(ns: NS): Promise<void> {
-		LogAPI.debug(ns, `Starting the JobManager`)
+		LogAPI.printTerminal(ns, `Starting the JobManager`)
 
 		this.managingLoopInterval = setInterval(this.managingLoop.bind(this, ns), JOB_MANAGING_LOOP_INTERVAL)
 	}
@@ -38,7 +38,7 @@ class JobManager implements Manager {
 
 		await JobAPI.clearJobMap(ns)
 
-		LogAPI.debug(ns, `Stopping the JobManager`)
+		LogAPI.printTerminal(ns, `Stopping the JobManager`)
 	}
 
 	private async managingLoop(ns: NS): Promise<void> {

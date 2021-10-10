@@ -28,7 +28,7 @@ export async function main(ns: NS) {
 	const serverName: string = ns.args[0]
 
 	if (!serverName) {
-		LogAPI.warn(ns, 'Please provide a server to connect with.')
+		LogAPI.printTerminal(ns, 'Please provide a server to connect with.')
 		return
 	}
 
@@ -37,7 +37,7 @@ export async function main(ns: NS) {
 	const server: Server | undefined = serverMap.servers.find((s) => s.characteristics.host === serverName)
 
 	if (!server) {
-		LogAPI.warn(ns, 'Cannot find server ' + serverName)
+		LogAPI.printTerminal(ns, 'Cannot find server ' + serverName)
 		return
 	}
 

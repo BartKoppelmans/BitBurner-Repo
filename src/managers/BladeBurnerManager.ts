@@ -1,7 +1,6 @@
 import type { BitBurner as NS, BladeburnerCurAction } from 'Bitburner'
 import { hasManagerKillRequest }                      from '/src/api/ControlFlowAPI.js'
 import * as LogAPI                                    from '/src/api/LogAPI.js'
-import { LogType }                                    from '/src/api/LogAPI.js'
 import * as Utils                                     from '/src/util/Utils.js'
 import { Manager }                                    from '/src/classes/Misc/ScriptInterfaces.js'
 import { CONSTANT }                                   from '/src/lib/constants.js'
@@ -75,7 +74,7 @@ class BladeBurnerManager implements Manager {
 		Utils.disableLogging(ns)
 
 		while (!ns.bladeburner.joinBladeburnerDivision()) {
-			LogAPI.log(ns, `Waiting to join BladeBurner Division`, LogType.BLADEBURNER)
+			LogAPI.printLog(ns, `Waiting to join BladeBurner Division`)
 			await ns.sleep(JOIN_DELAY)
 		}
 
@@ -85,7 +84,7 @@ class BladeBurnerManager implements Manager {
 	}
 
 	public async start(ns: NS): Promise<void> {
-		LogAPI.debug(ns, `Starting the BladeBurnerManager`)
+		LogAPI.printTerminal(ns, `Starting the BladeBurnerManager`)
 
 		this.managingLoopTimeout = setTimeout(this.managingLoop.bind(this, ns), MANAGING_LOOP_DELAY)
 	}
@@ -95,7 +94,7 @@ class BladeBurnerManager implements Manager {
 
 		ns.bladeburner.stopBladeburnerAction()
 
-		LogAPI.debug(ns, `Stopping the BladeBurnerManager`)
+		LogAPI.printTerminal(ns, `Stopping the BladeBurnerManager`)
 	}
 
 	private shouldPreferContracts(ns: NS): boolean {
@@ -131,7 +130,7 @@ class BladeBurnerManager implements Manager {
 		}
 
 		if (this.canFinishBitNode(ns) && ((this.iterationCounter) % FINAL_BLACK_OP_WARNING_INTERVAL === 0)) {
-			LogAPI.warn(ns, `We are ready to finish the final BlackOp`)
+			LogAPI.printLog(ns, `We are ready to finish the final BlackOp`)
 		}
 
 		// We start our regen if we are tired
@@ -240,7 +239,7 @@ class BladeBurnerManager implements Manager {
 			} while (hasUpgraded)
 		}
 
-		upgradedSkills.forEach((skill) => LogAPI.log(ns, `Upgraded skill '${skill.name}' to level ${skill.getLevel(ns)}`, LogType.BLADEBURNER))
+		upgradedSkills.forEach((skill) => LogAPI.printLog(ns, `Upgraded skill '${skill.name}' to level ${skill.getLevel(ns)}`))
 
 	}
 }

@@ -1,7 +1,6 @@
 import type { BitBurner as NS, GangGenInfo, GangName } from 'Bitburner'
 import Gang                                            from '/src/classes/Gang/Gang.js'
 import * as LogAPI                                     from '/src/api/LogAPI.js'
-import { LogType }                                     from '/src/api/LogAPI.js'
 
 export default class HomeGang extends Gang {
 
@@ -33,7 +32,7 @@ export default class HomeGang extends Gang {
 
 		ns.gang.setTerritoryWarfare(true)
 		this.isInWarfare = true
-		LogAPI.log(ns, `Enabling territory warfare`, LogType.GANG)
+		LogAPI.printLog(ns, `Enabling territory warfare`)
 	}
 
 	public disableTerritoryWarfare(ns: NS): void {
@@ -41,7 +40,7 @@ export default class HomeGang extends Gang {
 
 		ns.gang.setTerritoryWarfare(false)
 		this.isInWarfare = false
-		LogAPI.log(ns, `Disabling territory warfare`, LogType.GANG)
+		LogAPI.printLog(ns, `Disabling territory warfare`)
 	}
 
 	public getGangInformation(ns: NS): GangGenInfo {

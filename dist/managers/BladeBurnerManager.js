@@ -1,6 +1,5 @@
 import { hasManagerKillRequest } from '/src/api/ControlFlowAPI.js';
 import * as LogAPI from '/src/api/LogAPI.js';
-import { LogType } from '/src/api/LogAPI.js';
 import * as Utils from '/src/util/Utils.js';
 import { CONSTANT } from '/src/lib/constants.js';
 import * as BladeBurnerUtils from '/src/util/BladeBurnerUtils.js';
@@ -52,7 +51,7 @@ class BladeBurnerManager {
     async initialize(ns) {
         Utils.disableLogging(ns);
         while (!ns.bladeburner.joinBladeburnerDivision()) {
-            LogAPI.log(ns, `Waiting to join BladeBurner Division`, LogType.BLADEBURNER);
+            LogAPI.printLog(ns, `Waiting to join BladeBurner Division`);
             await ns.sleep(JOIN_DELAY);
         }
         this.actions = BladeBurnerUtils.createActions(ns);
@@ -60,14 +59,14 @@ class BladeBurnerManager {
         this.cities = BladeBurnerUtils.createCities(ns);
     }
     async start(ns) {
-        LogAPI.debug(ns, `Starting the BladeBurnerManager`);
+        LogAPI.printTerminal(ns, `Starting the BladeBurnerManager`);
         this.managingLoopTimeout = setTimeout(this.managingLoop.bind(this, ns), MANAGING_LOOP_DELAY);
     }
     async destroy(ns) {
         if (this.managingLoopTimeout)
             clearTimeout(this.managingLoopTimeout);
         ns.bladeburner.stopBladeburnerAction();
-        LogAPI.debug(ns, `Stopping the BladeBurnerManager`);
+        LogAPI.printTerminal(ns, `Stopping the BladeBurnerManager`);
     }
     shouldPreferContracts(ns) {
         return this.canFinishBitNode(ns) || PlayerUtils.getMoney(ns) < MONEY_THRESHOLD;
@@ -97,7 +96,7 @@ class BladeBurnerManager {
             return nextLoop(false);
         }
         if (this.canFinishBitNode(ns) && ((this.iterationCounter) % FINAL_BLACK_OP_WARNING_INTERVAL === 0)) {
-            LogAPI.warn(ns, `We are ready to finish the final BlackOp`);
+            LogAPI.printLog(ns, `We are ready to finish the final BlackOp`);
         }
         // We start our regen if we are tired
         if (BladeBurnerManager.isTired(ns)) {
@@ -187,7 +186,7 @@ class BladeBurnerManager {
                 }
             } while (hasUpgraded);
         }
-        upgradedSkills.forEach((skill) => LogAPI.log(ns, `Upgraded skill '${skill.name}' to level ${skill.getLevel(ns)}`, LogType.BLADEBURNER));
+        upgradedSkills.forEach((skill) => LogAPI.printLog(ns, `Upgraded skill '${skill.name}' to level ${skill.getLevel(ns)}`));
     }
 }
 export async function main(ns) {

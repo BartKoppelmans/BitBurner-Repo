@@ -23,13 +23,13 @@ class SleeveManager {
         Utils.disableLogging(ns);
     }
     async start(ns) {
-        LogAPI.debug(ns, `Starting the SleeveManager`);
+        LogAPI.printTerminal(ns, `Starting the SleeveManager`);
         this.managingLoopTimeout = setTimeout(this.managingLoop.bind(this, ns), LOOP_DELAY);
     }
     async destroy(ns) {
         if (this.managingLoopTimeout)
             clearTimeout(this.managingLoopTimeout);
-        LogAPI.debug(ns, `Stopping the SleeveManager`);
+        LogAPI.printTerminal(ns, `Stopping the SleeveManager`);
     }
     async managingLoop(ns) {
         const sleeves = Sleeve.getSleeves(ns);

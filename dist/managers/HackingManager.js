@@ -56,7 +56,7 @@ class HackingManager {
         const jobs = [];
         let availableThreads = await HackUtils.calculateMaxThreads(ns, Tools.WEAKEN, true);
         if (availableThreads <= 0) {
-            LogAPI.debug(ns, 'Skipped a prep.');
+            // LogAPI.printLog(ns, 'Skipped a prep.')
             return;
         }
         // TODO: Ideally we pick the server that can fit all our threads here immediately,
@@ -175,7 +175,7 @@ class HackingManager {
         const numCycles = Math.min(numPossibleCycles, MAX_CYCLE_NUMBER);
         const batchId = Utils.generateHash();
         if (numCycles === 0) {
-            LogAPI.debug(ns, 'Skipped an attack.');
+            LogAPI.printLog(ns, 'Skipped an attack.');
             return;
         }
         const cycles = [];
@@ -223,7 +223,7 @@ class HackingManager {
         if (originalPercentageToSteal !== optimalTarget.percentageToSteal)
             performanceUpdated = true;
         if (performanceUpdated) {
-            LogAPI.debug(ns, `Updated percentage to steal for ${target.characteristics.host} to ~${Math.round(target.percentageToSteal * 100)}%`);
+            LogAPI.printLog(ns, `Updated percentage to steal for ${target.characteristics.host} to ~${Math.round(target.percentageToSteal * 100)}%`);
         }
     }
     async initialize(ns) {
@@ -233,13 +233,13 @@ class HackingManager {
         await Daemon.startManager(ns, Managers.JobManager);
     }
     async start(ns) {
-        LogAPI.debug(ns, `Starting the HackingManager`);
+        LogAPI.printTerminal(ns, `Starting the HackingManager`);
         this.managingLoopTimeout = setTimeout(this.managingLoop.bind(this, ns), LOOP_DELAY);
     }
     async destroy(ns) {
         if (this.managingLoopTimeout)
             clearTimeout(this.managingLoopTimeout);
-        LogAPI.debug(ns, `Stopping the HackingManager`);
+        LogAPI.printTerminal(ns, `Stopping the HackingManager`);
     }
     async updatePurchasedServerPurposes(ns) {
         const dataPoint = HackingManager.getUtilizationDataPoint(ns);

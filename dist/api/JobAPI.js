@@ -106,7 +106,7 @@ export function cancelJob(ns, job) {
     }
     job.onCancel(ns);
     if (!allKilled)
-        LogAPI.warn(ns, 'Failed to cancel all jobs');
+        LogAPI.printTerminal(ns, 'Failed to cancel all jobs');
 }
 export async function initializeJobMap(ns) {
     const jobMap = { lastUpdated: new Date(), batches: [] };

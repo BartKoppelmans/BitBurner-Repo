@@ -1,5 +1,4 @@
 import * as LogAPI from '/src/api/LogAPI.js';
-import { LogType } from '/src/api/LogAPI.js';
 import * as ServerAPI from '/src/api/ServerAPI.js';
 import { Program, ProgramType } from '/src/classes/Misc/Program.js';
 import { CONSTANT } from '/src/lib/constants.js';
@@ -42,7 +41,6 @@ class ProgramRunner {
         return !noodles.isRooted(ns);
     }
     async run(ns) {
-        LogAPI.debug(ns, `Running the ProgramRunner`);
         const isFirstRun = ProgramRunner.isFirstRun(ns);
         const money = PlayerUtils.getMoney(ns);
         if (!ProgramRunner.hasTor(ns)) {
@@ -54,7 +52,7 @@ class ProgramRunner {
             }
             else {
                 ns.purchaseTor();
-                LogAPI.log(ns, `Purchased TOR Router`, LogType.INFORMATION);
+                LogAPI.printTerminal(ns, `Purchased TOR Router`);
             }
         }
         const remainingPrograms = ProgramRunner.getRemainingPrograms(ns);

@@ -1,5 +1,4 @@
 import * as LogAPI from '/src/api/LogAPI.js';
-import { LogType } from '/src/api/LogAPI.js';
 export class BBCity {
     // TODO: Include some prioritization for skills
     constructor(ns, name) {
@@ -19,6 +18,6 @@ export class BBCity {
     }
     moveTo(ns) {
         ns.bladeburner.switchCity(this.name);
-        LogAPI.log(ns, `Moved to ${this.name}`, LogType.BLADEBURNER);
+        LogAPI.printLog(ns, `Moved to ${this.name}`);
     }
 }

@@ -45,13 +45,20 @@ async function launchRunners(ns) {
 async function launchRunner(ns, script) {
     // TODO: Check if we have enough ram available to run
     const pid = ns.run(script);
+    if (pid !== -1) {
+        const scriptNamePattern = /\/src\/runners\/(\w+)\.js/g;
+        const match = script.match(scriptNamePattern);
+        if (!match)
+            throw new Error('Could not get the name of the script');
+        LogAPI.printLog(ns, `Running the ${match[1]}`);
+    }
     while (ns.isRunning(pid)) {
         await ns.sleep(CONSTANT.SMALL_DELAY);
     }
 }
 function destroy(ns) {
     clearTimeout(runnerInterval);
-    LogAPI.debug(ns, 'Stopping the daemon');
+    LogAPI.printTerminal(ns, 'Stopping the daemon');
 }
 export async function startManager(ns, manager) {
     if (isManagerRunning(ns, manager))
@@ -73,7 +80,7 @@ export async function main(ns) {
     // TODO: Make a decision on whether we start the to-be-made early hacking scripts,
     // or whether we want to start hacking using our main hacker
     await initialize(ns);
-    LogAPI.debug(ns, 'Starting the daemon');
+    LogAPI.printTerminal(ns, 'Starting the daemon');
     runnerInterval = setInterval(launchRunners.bind(null, ns), RUNNER_INTERVAL);
     // TODO: Here we should check whether we are still running the hackloop
     while (!ControlFlowAPI.hasDaemonKillRequest(ns)) {

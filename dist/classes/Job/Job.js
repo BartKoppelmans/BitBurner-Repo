@@ -43,7 +43,7 @@ export default class Job {
             const args = { ...commonArgs, threads, server };
             const pid = ns.exec.apply(null, Job.createArgumentArray(ns, args));
             if (pid === 0)
-                LogAPI.warn(ns, 'Could not successfully start the process');
+                LogAPI.printLog(ns, 'Could not successfully start the process');
             else
                 this.pids.push(pid);
         }
@@ -87,6 +87,6 @@ export default class Job {
             verb = 'Finished attacking';
         else
             throw new Error('This should logically never happen.');
-        LogAPI.debug(ns, `${this.id} ${verb} ${this.target.characteristics.host} - ${ToolUtils.getToolName(this.tool)}`);
+        LogAPI.printLog(ns, `${this.id} ${verb} ${this.target.characteristics.host} - ${ToolUtils.getToolName(this.tool)}`);
     }
 }

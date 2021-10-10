@@ -22,7 +22,7 @@ class CorporationManager implements Manager {
 	}
 
 	public async start(ns: NS): Promise<void> {
-		LogAPI.debug(ns, `Starting the CorporationManager`)
+		LogAPI.printTerminal(ns, `Starting the CorporationManager`)
 
 		this.managingLoopTimeout = setTimeout(this.managingLoop.bind(this, ns), LOOP_DELAY)
 	}
@@ -30,7 +30,7 @@ class CorporationManager implements Manager {
 	public async destroy(ns: NS): Promise<void> {
 		if (this.managingLoopTimeout) clearTimeout(this.managingLoopTimeout)
 
-		LogAPI.debug(ns, `Stopping the CorporationManager`)
+		LogAPI.printTerminal(ns, `Stopping the CorporationManager`)
 	}
 
 	private async managingLoop(ns: NS): Promise<void> {

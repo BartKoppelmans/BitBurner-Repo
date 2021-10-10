@@ -7,40 +7,28 @@ export var ControlFlowCode;
     ControlFlowCode["KILL_DAEMON"] = "KILL_DAEMON";
 })(ControlFlowCode || (ControlFlowCode = {}));
 export function hasDaemonKillRequest(ns) {
-    const requestPortHandle = ns.getPortHandle(CONSTANT.CONTROL_FLOW_PORT);
-    if (requestPortHandle.empty())
+    const portContents = ns.peek(CONSTANT.CONTROL_FLOW_PORT);
+    if (portContents === 'NULL PORT DATA' || !portContents)
         return false;
-    // We only peek, as we want to be sure that we have a request for the daemon
-    const request = requestPortHandle.peek().toString();
-    if (request === ControlFlowCode.KILL_DAEMON) {
-        // Remove the request from the queue
-        requestPortHandle.read();
-        return true;
-    }
-    else
-        return false;
+    return (portContents.toString() === ControlFlowCode.KILL_DAEMON);
 }
 export function hasManagerKillRequest(ns) {
-    const requestPortHandle = ns.getPortHandle(CONSTANT.CONTROL_FLOW_PORT);
-    if (requestPortHandle.empty())
+    const portContents = ns.peek(CONSTANT.CONTROL_FLOW_PORT);
+    if (portContents === 'NULL PORT DATA' || !portContents)
         return false;
-    // We only peek, as we want to be sure that we have a request for the daemon
-    const request = requestPortHandle.peek().toString();
-    return (request === ControlFlowCode.KILL_MANAGERS);
+    return (portContents.toString() === ControlFlowCode.KILL_MANAGERS);
 }
 export function clearPorts(ns) {
     const ports = Array.from({ length: 20 }, (_, i) => i + 1);
     for (const port of ports) {
-        ns.getPortHandle(port).clear();
+        ns.clear(port);
     }
 }
-export function killDaemon(ns) {
-    const requestPortHandle = ns.getPortHandle(CONSTANT.CONTROL_FLOW_PORT);
-    requestPortHandle.write(ControlFlowCode.KILL_DAEMON);
+export async function killDaemon(ns) {
+    await ns.write(CONSTANT.CONTROL_FLOW_PORT, ControlFlowCode.KILL_DAEMON);
 }
-export function killAllManagers(ns) {
-    const requestPortHandle = ns.getPortHandle(CONSTANT.CONTROL_FLOW_PORT);
-    requestPortHandle.write(ControlFlowCode.KILL_MANAGERS);
+export async function killAllManagers(ns) {
+    await ns.write(CONSTANT.CONTROL_FLOW_PORT, ControlFlowCode.KILL_MANAGERS);
 }
 export function killAllScripts(ns) {
     const serverMap = ServerAPI.getServerMap(ns);

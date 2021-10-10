@@ -1,53 +1,7 @@
 import * as Utils from '/src/util/Utils.js';
-import { CONSTANT } from '/src/lib/constants.js';
-export var LogType;
-(function (LogType) {
-    LogType[LogType["NONE"] = 0] = "NONE";
-    LogType[LogType["INFORMATION"] = 1] = "INFORMATION";
-    LogType[LogType["WARNING"] = 2] = "WARNING";
-    LogType[LogType["HACKING"] = 3] = "HACKING";
-    LogType[LogType["PURCHASED_SERVER"] = 4] = "PURCHASED_SERVER";
-    LogType[LogType["CODING_CONTRACT"] = 5] = "CODING_CONTRACT";
-    LogType[LogType["BLADEBURNER"] = 6] = "BLADEBURNER";
-    LogType[LogType["GANG"] = 7] = "GANG";
-    LogType[LogType["SLEEVE"] = 8] = "SLEEVE";
-    LogType[LogType["STOCK"] = 9] = "STOCK";
-})(LogType || (LogType = {}));
-export function debug(ns, message) {
-    if (CONSTANT.LOG_DEBUG) {
-        printColored(ns, message, LogType.INFORMATION);
-    }
+export function printLog(ns, message) {
+    ns.print(`${Utils.formatTime()} ${message}`);
 }
-export function warn(ns, message) {
-    printColored(ns, message, LogType.WARNING);
-}
-export function log(ns, message, logType = LogType.INFORMATION) {
-    printColored(ns, message, logType);
-}
-function getColorFromLogType(ns, logType) {
-    switch (logType) {
-        case LogType.WARNING:
-            return 'red';
-        case LogType.HACKING:
-            return 'white';
-        case LogType.PURCHASED_SERVER:
-            return 'green';
-        case LogType.CODING_CONTRACT:
-            return 'yellow';
-        case LogType.BLADEBURNER:
-            return 'pink';
-        case LogType.GANG:
-            return 'purple';
-        case LogType.SLEEVE:
-            return 'aquamarine';
-        case LogType.STOCK:
-            return 'SpringGreen';
-        case LogType.NONE:
-        case LogType.INFORMATION:
-        default:
-            return 'var(--my-font-color)';
-    }
-}
-function printColored(ns, content, logType) {
-    ns.tprintf(`${Utils.formatTime()} ${content}`);
+export function printTerminal(ns, message) {
+    ns.tprintf(`${Utils.formatTime()} ${message}`);
 }

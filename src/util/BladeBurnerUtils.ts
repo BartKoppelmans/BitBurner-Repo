@@ -69,7 +69,7 @@ export function getAchievableActions(ns: NS, actions: BBAction[], type?: BBActio
 		const nextAction: BBAction | undefined = actions.find((action) => action.getCount(ns) === 1)
 
 		if (nextAction) actions = [nextAction]
-		else return [];
+		else return []
 
 	}
 

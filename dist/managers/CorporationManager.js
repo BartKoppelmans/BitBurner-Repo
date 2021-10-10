@@ -12,13 +12,13 @@ class CorporationManager {
         await CorporationManager.createCorporation(ns);
     }
     async start(ns) {
-        LogAPI.debug(ns, `Starting the CorporationManager`);
+        LogAPI.printTerminal(ns, `Starting the CorporationManager`);
         this.managingLoopTimeout = setTimeout(this.managingLoop.bind(this, ns), LOOP_DELAY);
     }
     async destroy(ns) {
         if (this.managingLoopTimeout)
             clearTimeout(this.managingLoopTimeout);
-        LogAPI.debug(ns, `Stopping the CorporationManager`);
+        LogAPI.printTerminal(ns, `Stopping the CorporationManager`);
     }
     async managingLoop(ns) {
         this.managingLoopTimeout = setTimeout(this.managingLoop.bind(this, ns), LOOP_DELAY);

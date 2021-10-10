@@ -1,6 +1,5 @@
 import type { BitBurner as NS } from 'Bitburner'
 import * as LogAPI              from '/src/api/LogAPI.js'
-import { LogType }              from '/src/api/LogAPI.js'
 import * as ServerAPI           from '/src/api/ServerAPI.js'
 import HackableServer           from '/src/classes/Server/HackableServer.js'
 import { Program, ProgramType } from '/src/classes/Misc/Program.js'
@@ -56,8 +55,6 @@ class ProgramRunner implements Runner {
 	}
 
 	public async run(ns: NS): Promise<void> {
-		LogAPI.debug(ns, `Running the ProgramRunner`)
-
 		const isFirstRun: boolean = ProgramRunner.isFirstRun(ns)
 
 		const money: number = PlayerUtils.getMoney(ns)
@@ -68,7 +65,7 @@ class ProgramRunner implements Runner {
 				else return
 			} else {
 				ns.purchaseTor()
-				LogAPI.log(ns, `Purchased TOR Router`, LogType.INFORMATION)
+				LogAPI.printTerminal(ns, `Purchased TOR Router`)
 			}
 		}
 

@@ -144,7 +144,7 @@ export function cancelJob(ns: NS, job: Job): void {
 
 	job.onCancel(ns)
 
-	if (!allKilled) LogAPI.warn(ns, 'Failed to cancel all jobs')
+	if (!allKilled) LogAPI.printTerminal(ns, 'Failed to cancel all jobs')
 }
 
 export async function initializeJobMap(ns: NS): Promise<void> {

@@ -75,7 +75,7 @@ class HackingManager implements Manager {
 
 		let availableThreads: number = await HackUtils.calculateMaxThreads(ns, Tools.WEAKEN, true)
 		if (availableThreads <= 0) {
-			LogAPI.debug(ns, 'Skipped a prep.')
+			// LogAPI.printLog(ns, 'Skipped a prep.')
 			return
 		}
 
@@ -235,7 +235,7 @@ class HackingManager implements Manager {
 		const batchId: string = Utils.generateHash()
 
 		if (numCycles === 0) {
-			LogAPI.debug(ns, 'Skipped an attack.')
+			LogAPI.printLog(ns, 'Skipped an attack.')
 			return
 		}
 
@@ -303,7 +303,7 @@ class HackingManager implements Manager {
 		if (originalPercentageToSteal !== optimalTarget.percentageToSteal) performanceUpdated = true
 
 		if (performanceUpdated) {
-			LogAPI.debug(ns, `Updated percentage to steal for ${target.characteristics.host} to ~${Math.round(target.percentageToSteal * 100)}%`)
+			LogAPI.printLog(ns, `Updated percentage to steal for ${target.characteristics.host} to ~${Math.round(target.percentageToSteal * 100)}%`)
 		}
 	}
 
@@ -317,7 +317,7 @@ class HackingManager implements Manager {
 	}
 
 	public async start(ns: NS): Promise<void> {
-		LogAPI.debug(ns, `Starting the HackingManager`)
+		LogAPI.printTerminal(ns, `Starting the HackingManager`)
 
 		this.managingLoopTimeout = setTimeout(this.managingLoop.bind(this, ns), LOOP_DELAY)
 	}
@@ -325,7 +325,7 @@ class HackingManager implements Manager {
 	public async destroy(ns: NS): Promise<void> {
 		if (this.managingLoopTimeout) clearTimeout(this.managingLoopTimeout)
 
-		LogAPI.debug(ns, `Stopping the HackingManager`)
+		LogAPI.printTerminal(ns, `Stopping the HackingManager`)
 	}
 
 	private async updatePurchasedServerPurposes(ns: NS): Promise<void> {

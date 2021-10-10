@@ -1,5 +1,4 @@
 import * as LogAPI from '/src/api/LogAPI.js';
-import { LogType } from '/src/api/LogAPI.js';
 import * as ServerAPI from '/src/api/ServerAPI.js';
 import { ServerPurpose, ServerType } from '/src/classes/Server/ServerInterfaces.js';
 import * as Utils from '/src/util/Utils.js';
@@ -29,7 +28,7 @@ class PurchasedServerRunner {
         const boughtServer = ns.purchaseServer(host, ram);
         if (boughtServer === '')
             throw new Error('Could not purchase the server');
-        LogAPI.log(ns, `Purchased server ${boughtServer} with ${ram}GB ram.`, LogType.PURCHASED_SERVER);
+        LogAPI.printTerminal(ns, `Purchased server ${boughtServer} with ${ram}GB ram.`);
         const characteristics = {
             id: Utils.generateHash(),
             type: ServerType.PurchasedServer,
@@ -46,7 +45,6 @@ class PurchasedServerRunner {
         return (utilization > UTILIZATION_THRESHOLD);
     }
     async run(ns) {
-        LogAPI.debug(ns, `Running the PurchasedServerRunner`);
         const purchasedServerList = ServerAPI.getPurchasedServers(ns);
         if (purchasedServerList.length < ns.getPurchasedServerLimit()) {
             await this.purchaseServers(ns, purchasedServerList);

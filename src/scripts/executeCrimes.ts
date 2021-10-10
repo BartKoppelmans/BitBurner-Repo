@@ -15,7 +15,7 @@ function findCancelButton(ns: NS): HTMLButtonElement | null {
 export async function main(ns: NS) {
 
 	if (ns.isBusy()) {
-		LogAPI.warn(ns, 'Cannot execute crimes, we are currently busy.')
+		LogAPI.printTerminal(ns, 'Cannot execute crimes, we are currently busy.')
 		return
 	}
 
@@ -63,7 +63,7 @@ export async function main(ns: NS) {
 			})
 		} else {
 			hasFoundCancelButton = false
-			LogAPI.warn(ns, `Could not find the cancel button, doing ${MAX_NUM_ITERATIONS - iterations} more iterations`)
+			LogAPI.printTerminal(ns, `Could not find the cancel button, doing ${MAX_NUM_ITERATIONS - iterations} more iterations`)
 		}
 
 		await ns.sleep(crime.crimeStats.time)

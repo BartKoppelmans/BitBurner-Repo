@@ -1,7 +1,6 @@
 import type { BitBurner as NS }  from 'Bitburner'
 import { hasManagerKillRequest } from '/src/api/ControlFlowAPI.js'
 import * as LogAPI               from '/src/api/LogAPI.js'
-import { LogType }               from '/src/api/LogAPI.js'
 import * as Utils                from '/src/util/Utils.js'
 import * as PlayerUtils          from '/src/util/PlayerUtils.js'
 import { Manager }               from '/src/classes/Misc/ScriptInterfaces.js'
@@ -119,6 +118,10 @@ class StockManager implements Manager {
 
 	}
 
+	private static updateStocks(ns: NS, stocks: Stock[]): void {
+		stocks.forEach((stock) => stock.update(ns))
+	}
+
 	public async initialize(ns: NS) {
 		Utils.disableLogging(ns)
 
@@ -128,9 +131,9 @@ class StockManager implements Manager {
 	}
 
 	public async start(ns: NS): Promise<void> {
-		LogAPI.debug(ns, `Starting the StockManager`)
+		LogAPI.printTerminal(ns, `Starting the StockManager`)
 
-		LogAPI.log(ns, `Starting corpus value of ${ns.nFormat(this.startingCorpus, '$0.000a')}`, LogType.STOCK)
+		LogAPI.printLog(ns, `Starting corpus value of ${ns.nFormat(this.startingCorpus, '$0.000a')}`)
 
 		this.managingLoopTimeout = setTimeout(this.managingLoop.bind(this, ns), LOOP_DELAY)
 	}
@@ -144,14 +147,14 @@ class StockManager implements Manager {
 			stock.sellAll(ns)
 		})
 
-		LogAPI.debug(ns, `Stopping the StockManager`)
+		LogAPI.printTerminal(ns, `Stopping the StockManager`)
 	}
 
 	private async managingLoop(ns: NS): Promise<void> {
-		// let corpus: number = this.stocks.reduce((total, stock) => total + stock.getStockCorpus(ns), 0)
-		// LogAPI.log(ns, `Total corpus value of ${ns.nFormat(corpus, '$0.000a')} before transactions`, LogType.STOCK)
+		let corpus: number = this.stocks.reduce((total, stock) => total + stock.getStockCorpus(), 0)
+		LogAPI.printLog(ns, `Total corpus value of ${ns.nFormat(corpus, '$0.000a')} before transactions`)
 
-		this.stocks.forEach((stock) => stock.update(ns))
+		StockManager.updateStocks(ns, this.stocks)
 
 		this.stocks.sort((a, b) => {
 			if (b.stockInformation.expectedReturn === a.stockInformation.expectedReturn) {
@@ -175,8 +178,8 @@ class StockManager implements Manager {
 
 		StockManager.buyShares(ns, this.stocks)
 
-		// corpus = this.stocks.reduce((total, stock) => total + stock.getStockCorpus(ns), 0)
-		// LogAPI.log(ns, `Total corpus value of ${ns.nFormat(corpus, '$0.000a')} after transactions`, LogType.STOCK)
+		corpus = this.stocks.reduce((total, stock) => total + stock.getStockCorpus(), 0)
+		LogAPI.printLog(ns, `Total corpus value of ${ns.nFormat(corpus, '$0.000a')} after transactions`)
 
 		this.managingLoopTimeout = setTimeout(this.managingLoop.bind(this, ns), LOOP_DELAY)
 	}

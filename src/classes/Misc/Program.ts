@@ -1,6 +1,5 @@
 import type { BitBurner as NS, PurchaseableProgram } from 'Bitburner'
 import * as LogAPI                                   from '/src/api/LogAPI.js'
-import { LogType }                                   from '/src/api/LogAPI.js'
 import Server                                        from '/src/classes/Server/Server.js'
 import * as PlayerUtils                              from '/src/util/PlayerUtils.js'
 
@@ -37,7 +36,7 @@ export class Program {
 		const isSuccessful: boolean = ns.purchaseProgram(Program.toValidString(this.name))
 
 		if (isSuccessful) {
-			LogAPI.log(ns, `Purchased ${this.name}`, LogType.INFORMATION)
+			LogAPI.printLog(ns, `Purchased ${this.name}`)
 		}
 
 		return isSuccessful
