@@ -54,26 +54,30 @@ export default class Stock {
 		if (this.stockInformation.ownedLong > 0) this.sellLongs(ns)
 	}
 
-	public sellShorts(ns: NS): void {
+	public sellShorts(ns: NS): number {
 		if (this.stockInformation.ownedShort <= 0) throw new Error(`No owned short shares for ${this.symbol}`)
 
-		const value: number  = ns.sellShort(this.symbol, this.stockInformation.ownedShort)
-		const profit: number = this.stockInformation.ownedShort * (this.stockInformation.averageShortPrice - value) - 2 * STOCK_COMMISSION
+		const value: number = ns.sellShort(this.symbol, this.stockInformation.ownedShort)
 		if (value) {
+			const profit: number = this.stockInformation.ownedShort * (this.stockInformation.averageShortPrice - value) - 2 * STOCK_COMMISSION
 			LogAPI.printLog(ns, `Sold ${this.stockInformation.ownedShort} shorts for ${ns.nFormat(value, '$0.000a')}. Profit: ${ns.nFormat(profit, '$0.000a')}`)
 			this.update(ns)
+			return profit
 		}
+		return 0
 	}
 
-	public sellLongs(ns: NS): void {
+	public sellLongs(ns: NS): number {
 		if (this.stockInformation.ownedLong <= 0) throw new Error(`No owned long shares for ${this.symbol}`)
 
-		const value: number  = ns.sellStock(this.symbol, this.stockInformation.ownedLong)
-		const profit: number = this.stockInformation.ownedLong * (value - this.stockInformation.averageLongPrice) - 2 * STOCK_COMMISSION
+		const value: number = ns.sellStock(this.symbol, this.stockInformation.ownedLong)
 		if (value) {
+			const profit: number = this.stockInformation.ownedLong * (value - this.stockInformation.averageLongPrice) - 2 * STOCK_COMMISSION
 			LogAPI.printLog(ns, `Sold ${this.stockInformation.ownedLong} longs for ${ns.nFormat(value, '$0.000a')}. Profit: ${ns.nFormat(profit, '$0.000a')}`)
 			this.update(ns)
+			return profit
 		}
+		return 0
 	}
 
 	// TODO: Keep the last moment of update to make sure that we update in time
@@ -89,6 +93,7 @@ export default class Stock {
 			averageShortPrice,
 			volatility,
 			probability,
+			price: ns.getStockPrice(this.symbol),
 			maxShares: ns.getStockMaxShares(this.symbol),
 			askPrice: ns.getStockAskPrice(this.symbol),
 			bidPrice: ns.getStockBidPrice(this.symbol),

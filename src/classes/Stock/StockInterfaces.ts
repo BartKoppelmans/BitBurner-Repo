@@ -10,6 +10,7 @@ export interface StockInformation {
 	askPrice: number;
 	bidPrice: number
 	expectedReturn: number
+	price: number
 
 	ownedLong: number;
 	averageLongPrice: number
