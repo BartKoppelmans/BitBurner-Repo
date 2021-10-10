@@ -36,7 +36,7 @@ export class Program {
 		const isSuccessful: boolean = ns.purchaseProgram(Program.toValidString(this.name))
 
 		if (isSuccessful) {
-			LogAPI.printLog(ns, `Purchased ${this.name}`)
+			LogAPI.printTerminal(ns, `Purchased ${this.name}`)
 		}
 
 		return isSuccessful

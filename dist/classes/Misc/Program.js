@@ -24,7 +24,7 @@ export class Program {
             return false;
         const isSuccessful = ns.purchaseProgram(Program.toValidString(this.name));
         if (isSuccessful) {
-            LogAPI.printLog(ns, `Purchased ${this.name}`);
+            LogAPI.printTerminal(ns, `Purchased ${this.name}`);
         }
         return isSuccessful;
     }

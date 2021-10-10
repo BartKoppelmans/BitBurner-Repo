@@ -56,7 +56,7 @@ async function launchRunner(ns: NS, script: string): Promise<void> {
 	const pid: number = ns.run(script)
 
 	if (pid !== -1) {
-		const scriptNamePattern              = /\/src\/runners\/(\w+)\.js/g
+		const scriptNamePattern              = /\/src\/runners\/(\w+)\.js/
 		const match: RegExpMatchArray | null = script.match(scriptNamePattern)
 		if (!match) throw new Error('Could not get the name of the script')
 		LogAPI.printLog(ns, `Running the ${match[1]}`)

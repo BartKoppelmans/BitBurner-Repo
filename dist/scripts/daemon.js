@@ -46,7 +46,7 @@ async function launchRunner(ns, script) {
     // TODO: Check if we have enough ram available to run
     const pid = ns.run(script);
     if (pid !== -1) {
-        const scriptNamePattern = /\/src\/runners\/(\w+)\.js/g;
+        const scriptNamePattern = /\/src\/runners\/(\w+)\.js/;
         const match = script.match(scriptNamePattern);
         if (!match)
             throw new Error('Could not get the name of the script');

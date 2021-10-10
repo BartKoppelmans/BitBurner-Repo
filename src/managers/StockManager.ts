@@ -92,6 +92,8 @@ class StockManager implements Manager {
 
 		for (const stock of stocks) {
 
+			// TODO: Check the conditions for selling (especially when making a loss)
+
 			if (stock.stockInformation.ownedShort) {
 
 				if (stock.stockInformation.expectedReturn > EXPECTED_RETURN_SELL_THRESHOLD) continue
@@ -177,11 +179,14 @@ class StockManager implements Manager {
 	public async destroy(ns: NS): Promise<void> {
 		if (this.managingLoopTimeout) clearTimeout(this.managingLoopTimeout)
 
-		// TODO: Sell all stocks
-		this.stocks.forEach((stock) => {
-			stock.update(ns)
-			stock.sellAll(ns)
-		})
+		// TODO: Do we want to do this?
+
+		/*
+		 this.stocks.forEach((stock) => {
+		 stock.update(ns)
+		 stock.sellAll(ns)
+		 })
+		 */
 
 		LogAPI.printTerminal(ns, `Stopping the StockManager`)
 	}
@@ -203,7 +208,8 @@ class StockManager implements Manager {
 
 		const corpus: number = ownedStocks.reduce((total, stock) => total + stock.getStockCorpus(), 0)
 		if (corpus !== this.lastCorpus) {
-			LogAPI.printLog(ns, `Holding ${ownedStocks.length} stocks (of ${this.stocks.length} total stocks.\nTotal corpus value of ${ns.nFormat(corpus, '$0.000a')}`)
+			this.lastCorpus = corpus
+			LogAPI.printLog(ns, `Holding ${ownedStocks.length} stocks (of ${this.stocks.length} total stocks). Total corpus value of ${ns.nFormat(corpus, '$0.000a')}`)
 		}
 
 		// We update the ownedStocks in-place in the coming function calls

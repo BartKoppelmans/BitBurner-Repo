@@ -78,7 +78,7 @@ export default class Stock {
             maxShares: ns.getStockMaxShares(this.symbol),
             askPrice: ns.getStockAskPrice(this.symbol),
             bidPrice: ns.getStockBidPrice(this.symbol),
-            expectedReturn: Math.abs(volatility * probability) / 2,
+            expectedReturn: volatility * probability / 2,
         };
     }
 }
