@@ -7,7 +7,14 @@ export class CodingContract {
         this.data = ns.codingcontract.getData(filename, server.characteristics.host);
     }
     attempt(ns, answer) {
-        return ns.codingcontract.attempt(answer, this.filename, this.server.characteristics.host);
+        const reward = ns.codingcontract.attempt(answer, this.filename, this.server.characteristics.host, { returnReward: true });
+        if (reward === '')
+            return { success: false };
+        else
+            return {
+                success: true,
+                reward,
+            };
     }
     toJSON() {
         return {

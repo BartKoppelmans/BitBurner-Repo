@@ -1,11 +1,15 @@
-import type { BitBurner as NS }                 from 'Bitburner'
-import * as LogAPI                              from '/src/api/LogAPI.js'
-import * as ServerAPI                           from '/src/api/ServerAPI.js'
-import { CodingContract, CodingContractAnswer } from '/src/classes/Misc/CodingContract.js'
-import * as CodingContractUtils                 from '/src/util/CodingContractUtils.js'
-import * as Utils                               from '/src/util/Utils.js'
-import { ServerMap }                            from '/src/classes/Server/ServerInterfaces.js'
-import { Runner }                               from '/src/classes/Misc/ScriptInterfaces.js'
+import type { BitBurner as NS }                                              from 'Bitburner'
+import * as LogAPI                                                           from '/src/api/LogAPI.js'
+import * as ServerAPI                                                        from '/src/api/ServerAPI.js'
+import { CodingContract, CodingContractAnswer, CodingContractAttemptResult } from '/src/classes/Misc/CodingContract.js'
+import * as CodingContractUtils                                              from '/src/util/CodingContractUtils.js'
+import * as Utils                                                            from '/src/util/Utils.js'
+import {
+	ServerMap,
+}                                                                            from '/src/classes/Server/ServerInterfaces.js'
+import {
+	Runner,
+}                                                                            from '/src/classes/Misc/ScriptInterfaces.js'
 
 class CodingContractRunner implements Runner {
 
@@ -17,8 +21,8 @@ class CodingContractRunner implements Runner {
 			return
 		}
 
-		const isSuccessful: boolean = contract.attempt(ns, solution)
-		if (isSuccessful) CodingContractRunner.onSolvedContract(ns, contract)
+		const result: CodingContractAttemptResult = contract.attempt(ns, solution)
+		if (result.success) CodingContractRunner.onSolvedContract(ns, contract, result.reward)
 		else CodingContractRunner.onFailedContract(ns, contract)
 
 	}
@@ -27,8 +31,8 @@ class CodingContractRunner implements Runner {
 		LogAPI.printTerminal(ns, `Wrong solution for contract ${contract.server.characteristics.host}/${contract.filename}`)
 	}
 
-	private static onSolvedContract(ns: NS, contract: CodingContract) {
-		LogAPI.printTerminal(ns, `Solved contract ${contract.server.characteristics.host}/${contract.filename}`)
+	private static onSolvedContract(ns: NS, contract: CodingContract, reward: string) {
+		LogAPI.printTerminal(ns, `Solved contract ${contract.server.characteristics.host}/${contract.filename}. ${reward}.`)
 	}
 
 	public async run(ns: NS): Promise<void> {

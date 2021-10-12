@@ -10,17 +10,17 @@ class CodingContractRunner {
             LogAPI.printTerminal(ns, `We currently cannot solve contract ${contract.server.characteristics.host}/${contract.filename}: ${contract.type}`);
             return;
         }
-        const isSuccessful = contract.attempt(ns, solution);
-        if (isSuccessful)
-            CodingContractRunner.onSolvedContract(ns, contract);
+        const result = contract.attempt(ns, solution);
+        if (result.success)
+            CodingContractRunner.onSolvedContract(ns, contract, result.reward);
         else
             CodingContractRunner.onFailedContract(ns, contract);
     }
     static onFailedContract(ns, contract) {
         LogAPI.printTerminal(ns, `Wrong solution for contract ${contract.server.characteristics.host}/${contract.filename}`);
     }
-    static onSolvedContract(ns, contract) {
-        LogAPI.printTerminal(ns, `Solved contract ${contract.server.characteristics.host}/${contract.filename}`);
+    static onSolvedContract(ns, contract, reward) {
+        LogAPI.printTerminal(ns, `Solved contract ${contract.server.characteristics.host}/${contract.filename}. ${reward}.`);
     }
     async run(ns) {
         const serverMap = ServerAPI.getServerMap(ns);
