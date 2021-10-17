@@ -46,6 +46,8 @@ class PurchasedServerRunner {
         return (utilization > UTILIZATION_THRESHOLD);
     }
     async run(ns) {
+        if (ns.getPurchasedServerLimit() === 0)
+            return;
         const purchasedServerList = ServerAPI.getPurchasedServers(ns);
         if (purchasedServerList.length < ns.getPurchasedServerLimit()) {
             await this.purchaseServers(ns, purchasedServerList);

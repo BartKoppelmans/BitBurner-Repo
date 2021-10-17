@@ -148,14 +148,32 @@ export function getPreppingServers(ns) {
         .filter((server) => server.isRooted(ns))
         .filter((server) => server.purpose === ServerPurpose.PREP)
         .filter((server) => server.purpose === ServerPurpose.PREP)
-        .sort((a, b) => b.getAvailableRam(ns) - a.getAvailableRam(ns));
+        .sort((a, b) => {
+        if (a.characteristics.type === ServerType.HacknetServer && b.characteristics.type === ServerType.HacknetServer)
+            return b.getAvailableRam(ns) - a.getAvailableRam(ns);
+        else if (a.characteristics.type === ServerType.HacknetServer)
+            return 1;
+        else if (b.characteristics.type === ServerType.HacknetServer)
+            return -1;
+        else
+            return b.getAvailableRam(ns) - a.getAvailableRam(ns);
+    });
 }
 // We sort this descending
 export function getHackingServers(ns) {
     return getServerMap(ns).servers
         .filter((server) => server.isRooted(ns))
         .filter((server) => server.purpose === ServerPurpose.HACK)
-        .sort((a, b) => b.getAvailableRam(ns) - a.getAvailableRam(ns));
+        .sort((a, b) => {
+        if (a.characteristics.type === ServerType.HacknetServer && b.characteristics.type === ServerType.HacknetServer)
+            return b.getAvailableRam(ns) - a.getAvailableRam(ns);
+        else if (a.characteristics.type === ServerType.HacknetServer)
+            return 1;
+        else if (b.characteristics.type === ServerType.HacknetServer)
+            return -1;
+        else
+            return b.getAvailableRam(ns) - a.getAvailableRam(ns);
+    });
 }
 export async function moveServerPurpose(ns, purpose, type) {
     const otherPurpose = (purpose === ServerPurpose.HACK) ? ServerPurpose.PREP : ServerPurpose.HACK;

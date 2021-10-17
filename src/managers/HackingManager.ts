@@ -1,24 +1,22 @@
-import type { BitBurner as NS }                            from 'Bitburner'
-import { ProcessInfo }                                     from 'Bitburner'
-import * as LogAPI                                         from '/src/api/LogAPI.js'
-import * as Utils                                          from '/src/util/Utils.js'
-import * as HackingUtils                                   from '/src/util/HackingUtils.js'
-import { Manager }                                         from '/src/classes/Misc/ScriptInterfaces.js'
-import { CONSTANT }                                        from '/src/lib/constants.js'
-import HackableServer                                      from '/src/classes/Server/HackableServer.js'
-import * as ServerAPI                                      from '/src/api/ServerAPI.js'
-import { ServerPurpose, ServerType, UtilizationDataPoint } from '/src/classes/Server/ServerInterfaces.js'
-import Job                                                 from '/src/classes/Job/Job.js'
-import * as JobAPI                                         from '/src/api/JobAPI.js'
-import { JobMap }                                          from '/src/classes/Job/JobInterfaces.js'
-import Server                                              from '/src/classes/Server/Server.js'
-import { PurchasedServer }                                 from '/src/classes/Server/PurchasedServer.js'
-import { HacknetServer }                                   from '/src/classes/Server/HacknetServer.js'
+import type { BitBurner as NS } from 'Bitburner'
+import { ProcessInfo }          from 'Bitburner'
+import * as LogAPI              from '/src/api/LogAPI.js'
+import * as Utils               from '/src/util/Utils.js'
+import * as HackingUtils        from '/src/util/HackingUtils.js'
+import { Manager }              from '/src/classes/Misc/ScriptInterfaces.js'
+import { CONSTANT }             from '/src/lib/constants.js'
+import HackableServer           from '/src/classes/Server/HackableServer.js'
+import * as ServerAPI           from '/src/api/ServerAPI.js'
+import { ServerPurpose }        from '/src/classes/Server/ServerInterfaces.js'
+import Job                      from '/src/classes/Job/Job.js'
+import * as JobAPI              from '/src/api/JobAPI.js'
+import { JobMap }               from '/src/classes/Job/JobInterfaces.js'
+import Server                   from '/src/classes/Server/Server.js'
+import { PurchasedServer }      from '/src/classes/Server/PurchasedServer'
+import { HacknetServer }        from '/src/classes/Server/HacknetServer'
 
-const JOB_MANAGING_LOOP_INTERVAL          = 1000 as const
-const HACKING_LOOP_DELAY: number          = 2000 as const
-const UTILIZATION_DATA_POINTS: number     = 10 as const
-const UTILIZATION_DELTA_THRESHOLD: number = 0.4 as const
+const JOB_MANAGING_LOOP_INTERVAL = 1000 as const
+const HACKING_LOOP_DELAY: number = 2000 as const
 
 const MAX_TARGET_COUNT: number = 30 as const
 
@@ -27,19 +25,7 @@ class HackingManager implements Manager {
 	private hackingLoopInterval?: ReturnType<typeof setTimeout>
 	private jobLoopInterval?: ReturnType<typeof setInterval>
 
-	private dataPoints: { hacknetServers: UtilizationDataPoint[], purchasedServers: UtilizationDataPoint[] } = {
-		hacknetServers: [],
-		purchasedServers: [],
-	}
-
-	private static getUtilizationDataPoint(ns: NS, servers: Server[]): UtilizationDataPoint {
-		return {
-			prep: ServerAPI.getServerUtilization(ns, servers, ServerPurpose.PREP),
-			hack: ServerAPI.getServerUtilization(ns, servers, ServerPurpose.HACK),
-			total: ServerAPI.getServerUtilization(ns, servers),
-		}
-	}
-
+	private inFullAttackMode: boolean = false
 
 	public async initialize(ns: NS) {
 		Utils.disableLogging(ns)
@@ -47,8 +33,9 @@ class HackingManager implements Manager {
 		ns.atExit(this.destroy.bind(this, ns))
 
 		await ServerAPI.initializeServerMap(ns)
-		await JobAPI.initializeJobMap(ns)
+		await this.resetServerPurposes(ns)
 
+		await JobAPI.initializeJobMap(ns)
 		await JobAPI.cancelAllJobs(ns, true)
 	}
 
@@ -71,50 +58,85 @@ class HackingManager implements Manager {
 		LogAPI.printTerminal(ns, `Stopping the HackingManager`)
 	}
 
-	private async updatePurchasedServerPurposes(ns: NS): Promise<void> {
-		const servers: PurchasedServer[]      = ServerAPI.getPurchasedServers(ns)
-		const dataPoint: UtilizationDataPoint = HackingManager.getUtilizationDataPoint(ns, servers)
+	private async resetServerPurposes(ns: NS): Promise<void> {
+		await ServerAPI.setPurpose(ns, CONSTANT.HOME_SERVER_HOST, ServerPurpose.HACK)
 
-		this.dataPoints.purchasedServers.length = Math.min(this.dataPoints.purchasedServers.length, UTILIZATION_DATA_POINTS - 1)
+		const hackableServers: HackableServer[]   = ServerAPI.getHackableServers(ns)
+		const purchasedServers: PurchasedServer[] = ServerAPI.getPurchasedServers(ns, 'alphabetic')
+		const hacknetServers: HacknetServer[]     = ServerAPI.getHacknetServers(ns, 'alphabetic')
 
-		this.dataPoints.purchasedServers.unshift(dataPoint)
+		if (hackableServers.length > 0) {
+			for (const hackableServer of hackableServers) {
+				await ServerAPI.setPurpose(ns, hackableServer.characteristics.host, ServerPurpose.PREP)
+			}
+		}
 
-		if (this.dataPoints.purchasedServers.length < UTILIZATION_DATA_POINTS) return
+		// Set half of the purchasedServers to prep/hack
+		if (purchasedServers.length > 0) {
+			await HackingManager.setSplitServerPurposes(purchasedServers, ns)
+		}
 
-		const shouldAddPrepServer: boolean = this.dataPoints.purchasedServers.every((point) => point.prep - point.hack > UTILIZATION_DELTA_THRESHOLD)
-		const shouldAddHackServer: boolean = this.dataPoints.purchasedServers.every((point) => {
-			return point.hack - point.prep > UTILIZATION_DELTA_THRESHOLD || point.prep < UTILIZATION_DELTA_THRESHOLD
-		})
+		if (hacknetServers.length > 0) {
+			await HackingManager.setSplitServerPurposes(hacknetServers, ns)
+		}
 
-		if (shouldAddHackServer) await ServerAPI.moveServerPurpose(ns, ServerPurpose.HACK, ServerType.PurchasedServer)
-		else if (shouldAddPrepServer) await ServerAPI.moveServerPurpose(ns, ServerPurpose.PREP, ServerType.PurchasedServer)
-		else return
-
-		// Reset the measurements to prevent immediately adding another server
-		this.dataPoints.purchasedServers.length = 0
+		this.inFullAttackMode = false
 	}
 
-	private async updateHacknetServerPurposes(ns: NS): Promise<void> {
-		const servers: HacknetServer[]        = ServerAPI.getHacknetServers(ns)
-		const dataPoint: UtilizationDataPoint = HackingManager.getUtilizationDataPoint(ns, servers)
+	private async fullAttackMode(ns: NS): Promise<void> {
+		await ServerAPI.setPurpose(ns, CONSTANT.HOME_SERVER_HOST, ServerPurpose.HACK)
 
-		this.dataPoints.hacknetServers.length = Math.min(this.dataPoints.hacknetServers.length, UTILIZATION_DATA_POINTS - 1)
+		const hackableServers: HackableServer[]   = ServerAPI.getHackableServers(ns)
+		const purchasedServers: PurchasedServer[] = ServerAPI.getPurchasedServers(ns, 'alphabetic')
+		const hacknetServers: HacknetServer[]     = ServerAPI.getHacknetServers(ns, 'alphabetic')
 
-		this.dataPoints.hacknetServers.unshift(dataPoint)
+		if (hackableServers.length > 0) {
+			for (const hackableServer of hackableServers) {
+				await ServerAPI.setPurpose(ns, hackableServer.characteristics.host, ServerPurpose.HACK)
+			}
+		}
 
-		if (this.dataPoints.hacknetServers.length < UTILIZATION_DATA_POINTS) return
+		// Set half of the purchasedServers to prep/hack
+		if (purchasedServers.length > 0) {
+			for (const purchasedServer of purchasedServers) {
+				await ServerAPI.setPurpose(ns, purchasedServer.characteristics.host, ServerPurpose.HACK)
+			}
+		}
 
-		const shouldAddPrepServer: boolean = this.dataPoints.hacknetServers.every((point) => point.prep - point.hack > UTILIZATION_DELTA_THRESHOLD)
-		const shouldAddHackServer: boolean = this.dataPoints.hacknetServers.every((point) => {
-			return point.hack - point.prep > UTILIZATION_DELTA_THRESHOLD || point.prep < UTILIZATION_DELTA_THRESHOLD
-		})
+		if (hacknetServers.length > 0) {
+			for (const hacknetServer of hacknetServers) {
+				await ServerAPI.setPurpose(ns, hacknetServer.characteristics.host, ServerPurpose.HACK)
+			}
+		}
 
-		if (shouldAddHackServer) await ServerAPI.moveServerPurpose(ns, ServerPurpose.HACK, ServerType.HacknetServer)
-		else if (shouldAddPrepServer) await ServerAPI.moveServerPurpose(ns, ServerPurpose.PREP, ServerType.HacknetServer)
-		else return
+		this.inFullAttackMode = true
+	}
 
-		// Reset the measurements to prevent immediately adding another server
-		this.dataPoints.hacknetServers.length = 0
+	private static async setSplitServerPurposes(servers: Server[], ns: NS) {
+		const halfwayIndex: number = Math.ceil(servers.length / 2)
+		const prepServers          = servers.slice(0, halfwayIndex)
+		const hackServers          = servers.slice(halfwayIndex, servers.length)
+
+		for (const prepServer of prepServers) {
+			await ServerAPI.setPurpose(ns, prepServer.characteristics.host, ServerPurpose.PREP)
+		}
+
+		for (const hackServer of hackServers) {
+			await ServerAPI.setPurpose(ns, hackServer.characteristics.host, ServerPurpose.HACK)
+		}
+	}
+
+	private async updatePurposes(ns: NS, targets: HackableServer[]): Promise<void> {
+
+		// NOTE: Slice to make sure that we only check our actual targets
+		const allOptimal: boolean = targets.slice(0, CONSTANT.MAX_TARGET_COUNT)
+		                                   .every((target) => target.isOptimal(ns))
+
+		if (allOptimal && !this.inFullAttackMode) {
+			await this.fullAttackMode(ns)
+		} else if (!allOptimal && this.inFullAttackMode) {
+			await this.resetServerPurposes(ns)
+		}
 	}
 
 	private async jobLoop(ns: NS): Promise<void> {
@@ -133,8 +155,7 @@ class HackingManager implements Manager {
 	}
 
 	private async hackingLoop(ns: NS): Promise<void> {
-		await this.updatePurchasedServerPurposes(ns)
-		await this.updateHacknetServerPurposes(ns)
+		// TODO: Set all hackable servers to prep
 
 		// Get the potential targets
 		let potentialTargets: HackableServer[] = ServerAPI.getTargetServers(ns)
@@ -146,6 +167,8 @@ class HackingManager implements Manager {
 
 		// Sort the potential targets
 		potentialTargets = potentialTargets.sort((a, b) => a.serverValue! - b.serverValue!)
+
+		await this.updatePurposes(ns, potentialTargets)
 
 		// Attack each of the targets
 		for (const target of potentialTargets) {

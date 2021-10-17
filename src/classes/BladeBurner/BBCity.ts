@@ -20,7 +20,7 @@ export class BBCity {
 	}
 
 	public getCommunities(ns: NS): number {
-		return ns.bladeburner.getCityEstimatedCommunities(this.name)
+		return ns.bladeburner.getCityCommunities(this.name)
 	}
 
 	public getChaos(ns: NS): number {

@@ -12,7 +12,7 @@ export class BBCity {
         return ns.bladeburner.getCityEstimatedPopulation(this.name);
     }
     getCommunities(ns) {
-        return ns.bladeburner.getCityEstimatedCommunities(this.name);
+        return ns.bladeburner.getCityCommunities(this.name);
     }
     getChaos(ns) {
         return ns.bladeburner.getCityChaos(this.name);

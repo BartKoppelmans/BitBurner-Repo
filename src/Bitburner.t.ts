@@ -3339,7 +3339,7 @@ declare module 'Bitburner' {
 		 * @param cityName Name of city. Case-sensitive
 		 * @returns Estimated number of Synthoids communities in the specified city.
 		 */
-		getCityEstimatedCommunities(name: City): number;
+		getCityCommunities(name: City): number;
 
 		/**
 		 * You have to be employed in the Bladeburner division and be in BitNode-7

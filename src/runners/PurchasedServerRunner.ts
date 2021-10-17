@@ -62,6 +62,9 @@ class PurchasedServerRunner {
 	}
 
 	public async run(ns: NS): Promise<void> {
+
+		if (ns.getPurchasedServerLimit() === 0) return
+
 		const purchasedServerList: PurchasedServer[] = ServerAPI.getPurchasedServers(ns)
 
 		if (purchasedServerList.length < ns.getPurchasedServerLimit()) {

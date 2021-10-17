@@ -4,12 +4,15 @@ import HackableServer from '/src/classes/Server/HackableServer.js';
 import { PurchasedServer } from '/src/classes/Server/PurchasedServer.js';
 import Job from '/src/classes/Job/Job.js';
 import Batch from '/src/classes/Job/Batch.js';
+import { HacknetServer } from '/src/classes/Server/HacknetServer.js';
 export function serverFromJSON(ns, json) {
     switch (+json.characteristics.type) {
         case ServerType.HackableServer:
             return new HackableServer(ns, json);
         case ServerType.PurchasedServer:
             return new PurchasedServer(ns, json);
+        case ServerType.HacknetServer:
+            return new HacknetServer(ns, json);
         case ServerType.BasicServer:
         case ServerType.HomeServer:
         case ServerType.DarkWebServer:

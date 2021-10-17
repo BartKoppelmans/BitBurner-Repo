@@ -12,10 +12,10 @@ export async function computeCycles(ns, target, servers) {
     return Math.max(0, Math.min(CONSTANT.MAX_CYCLE_NUMBER, servers.reduce((threads, server) => threads + Math.floor(server.getAvailableRam(ns) / cycleCost), 0)));
 }
 async function determineCycleThreadSpreads(ns, target, cycleThreads) {
-    const serverList = ServerAPI.getHackingServers(ns);
+    const cost = await getOptimalCycleCost(ns, target);
+    const serverList = ServerAPI.getHackingServers(ns).filter((s) => s.getAvailableRam(ns) >= cost);
     // Get the server with the most available RAM
     const server = serverList[0];
-    const cost = await getOptimalCycleCost(ns, target);
     if (cost > server.getAvailableRam(ns)) {
         throw new Error('Not enough RAM available to create a cycle (on one server)');
     }

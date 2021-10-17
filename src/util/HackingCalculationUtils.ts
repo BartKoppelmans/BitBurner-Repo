@@ -26,12 +26,12 @@ export async function computeCycles(ns: NS, target: HackableServer, servers?: Se
 
 async function determineCycleThreadSpreads(ns: NS, target: HackableServer, cycleThreads: CycleThreads): Promise<CycleThreadSpreads> {
 
-	const serverList: Server[] = ServerAPI.getHackingServers(ns)
+	const cost: number = await getOptimalCycleCost(ns, target)
+
+	const serverList: Server[] = ServerAPI.getHackingServers(ns).filter((s) => s.getAvailableRam(ns) >= cost)
 
 	// Get the server with the most available RAM
 	const server = serverList[0]
-
-	const cost: number = await getOptimalCycleCost(ns, target)
 	if (cost > server.getAvailableRam(ns)) {
 		throw new Error('Not enough RAM available to create a cycle (on one server)')
 	}
