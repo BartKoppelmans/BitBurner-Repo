@@ -4,6 +4,8 @@ import { BBCity } from '/src/classes/BladeBurner/BBCity.js';
 export const CHANCE_THRESHOLD = 0.95;
 export const ACTION_SLACK = 500;
 export default class BBAction {
+    name;
+    type;
     constructor(ns, name, type) {
         this.name = name;
         this.type = type;

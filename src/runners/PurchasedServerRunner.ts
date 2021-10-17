@@ -3,7 +3,7 @@ import * as LogAPI                                                   from '/src/
 import * as ServerAPI                                                from '/src/api/ServerAPI.js'
 import { PurchasedServerCharacteristics, ServerPurpose, ServerType } from '/src/classes/Server/ServerInterfaces.js'
 import * as Utils                                                    from '/src/util/Utils.js'
-import PurchasedServer                                               from '/src/classes/Server/PurchasedServer.js'
+import { PurchasedServer }                                           from '/src/classes/Server/PurchasedServer.js'
 import * as PlayerUtils                                              from '/src/util/PlayerUtils.js'
 import { CONSTANT }                                                  from '/src/lib/constants.js'
 
@@ -56,7 +56,8 @@ class PurchasedServerRunner {
 	}
 
 	private static shouldUpgrade(ns: NS, purpose: ServerPurpose): boolean {
-		const utilization: number = ServerAPI.getServerUtilization(ns, true, purpose)
+		const purchasedServers: PurchasedServer[] = ServerAPI.getPurchasedServers(ns)
+		const utilization: number                 = ServerAPI.getServerUtilization(ns, purchasedServers, purpose)
 		return (utilization > UTILIZATION_THRESHOLD)
 	}
 

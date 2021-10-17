@@ -2,7 +2,7 @@ import * as LogAPI from '/src/api/LogAPI.js';
 import * as ServerAPI from '/src/api/ServerAPI.js';
 import { ServerPurpose, ServerType } from '/src/classes/Server/ServerInterfaces.js';
 import * as Utils from '/src/util/Utils.js';
-import PurchasedServer from '/src/classes/Server/PurchasedServer.js';
+import { PurchasedServer } from '/src/classes/Server/PurchasedServer.js';
 import * as PlayerUtils from '/src/util/PlayerUtils.js';
 import { CONSTANT } from '/src/lib/constants.js';
 const MIN_RAM_EXPONENT = 4;
@@ -41,7 +41,8 @@ class PurchasedServerRunner {
         return server;
     }
     static shouldUpgrade(ns, purpose) {
-        const utilization = ServerAPI.getServerUtilization(ns, true, purpose);
+        const purchasedServers = ServerAPI.getPurchasedServers(ns);
+        const utilization = ServerAPI.getServerUtilization(ns, purchasedServers, purpose);
         return (utilization > UTILIZATION_THRESHOLD);
     }
     async run(ns) {

@@ -1,12 +1,23 @@
-import type { BitBurner as NS }                                       from 'Bitburner'
-import HackableServer                                                 from '/src/classes/Server/HackableServer.js'
-import Server                                                         from '/src/classes/Server/Server.js'
-import { ServerMap, ServerPurpose, ServerSortingOrder, ServerStatus } from '/src/classes/Server/ServerInterfaces.js'
-import { CONSTANT }                                                   from '/src/lib/constants.js'
-import * as ServerUtils                                               from '/src/util/ServerUtils.js'
-import * as SerializationUtils                                        from '/src/util/SerializationUtils.js'
-import * as LogAPI                                                    from '/src/api/LogAPI.js'
-import PurchasedServer                                                from '/src/classes/Server/PurchasedServer.js'
+import type { BitBurner as NS } from 'Bitburner'
+import HackableServer           from '/src/classes/Server/HackableServer.js'
+import Server                   from '/src/classes/Server/Server.js'
+import {
+	ServerMap,
+	ServerPurpose,
+	ServerSortingOrder,
+	ServerStatus,
+	ServerType,
+}                               from '/src/classes/Server/ServerInterfaces.js'
+import { CONSTANT }             from '/src/lib/constants.js'
+import * as ServerUtils         from '/src/util/ServerUtils.js'
+import * as SerializationUtils  from '/src/util/SerializationUtils.js'
+import * as LogAPI              from '/src/api/LogAPI.js'
+import {
+	PurchasedServer,
+}                               from '/src/classes/Server/PurchasedServer.js'
+import {
+	HacknetServer,
+}                               from '/src/classes/Server/HacknetServer.js'
 
 const MIN_NUMBER_PURPOSED_SERVERS: number = 2 as const
 
@@ -84,17 +95,16 @@ export async function addServer(ns: NS, server: Server): Promise<void> {
 	await writeServerMap(ns, serverMap)
 }
 
-export function getServerUtilization(ns: NS, onlyPurchasedServers: boolean, serverPurpose?: ServerPurpose): number {
+export function getServerUtilization(ns: NS, servers: Server[], serverPurpose?: ServerPurpose): number {
 
-	let serverMap: Server[]
-	if (serverPurpose === ServerPurpose.HACK) serverMap = getHackingServers(ns)
-	else if (serverPurpose === ServerPurpose.PREP) serverMap = getPreppingServers(ns)
-	else serverMap = getServerMap(ns).servers
+	if (servers.length === 0) throw new Error('No servers yet?')
 
-	if (onlyPurchasedServers) serverMap = serverMap.filter((server) => ServerUtils.isPurchasedServer(server))
+	if (serverPurpose) servers = servers.filter((server) => server.purpose === serverPurpose)
 
-	const utilized: number = serverMap.reduce((subtotal, server) => subtotal + server.getUsedRam(ns), 0)
-	const total: number    = serverMap.reduce((subtotal, server) => subtotal + server.getTotalRam(ns), 0)
+	if (servers.length <= MIN_NUMBER_PURPOSED_SERVERS) return Infinity
+
+	const utilized: number = servers.reduce((subtotal, server) => subtotal + server.getUsedRam(ns), 0)
+	const total: number    = servers.reduce((subtotal, server) => subtotal + server.getTotalRam(ns), 0)
 
 	return (utilized / total)
 }
@@ -196,45 +206,30 @@ export function getHackingServers(ns: NS): Server[] {
 	                       .sort((a, b) => b.getAvailableRam(ns) - a.getAvailableRam(ns))
 }
 
-export async function addPreppingServer(ns: NS): Promise<void> {
+export async function moveServerPurpose(ns: NS, purpose: ServerPurpose, type: ServerType) {
+	const otherPurpose: ServerPurpose = (purpose === ServerPurpose.HACK) ? ServerPurpose.PREP : ServerPurpose.HACK
 
-	// TODO: Make this return a boolean and log in the daemon script
+	let servers: Server[]
+	if (type === ServerType.HacknetServer) {
+		servers = getHacknetServers(ns, 'alphabetic')
+	} else if (type === ServerType.PurchasedServer) {
+		servers = getPurchasedServers(ns, 'alphabetic')
+	} else throw new Error(`Type ${type} not yet supported.`)
 
-	const purchasedServers: PurchasedServer[] = getPurchasedServers(ns, 'alphabetic')
+	const numPrepServers: number = servers.filter((server) => server.hasPurpose(ServerPurpose.PREP)).length
+	const numHackServers: number = servers.filter((server) => server.hasPurpose(ServerPurpose.HACK)).length
+	const numServers: number     = servers.length
 
-	const numPrepServers: number = purchasedServers.filter((server) => server.hasPurpose(ServerPurpose.PREP)).length
+	if (purpose === ServerPurpose.PREP && numServers - numHackServers <= MIN_NUMBER_PURPOSED_SERVERS) return
+	else if (purpose === ServerPurpose.HACK && numServers - numPrepServers <= MIN_NUMBER_PURPOSED_SERVERS) return
 
-	// We can't add any more prep servers
-	if (numPrepServers >= ns.getPurchasedServerLimit() - MIN_NUMBER_PURPOSED_SERVERS) return
+	const movedServer: Server | undefined = servers.find((server) => server.hasPurpose(otherPurpose))
 
-	const newPrepServer: PurchasedServer | undefined = purchasedServers.reverse()
-	                                                                   .find((server) => server.hasPurpose(ServerPurpose.HACK))
+	if (!movedServer) return
 
-	if (!newPrepServer) return
+	await setPurpose(ns, movedServer.characteristics.host, purpose)
 
-	await setPurpose(ns, newPrepServer.characteristics.host, ServerPurpose.PREP)
-
-	LogAPI.printLog(ns, `Changed purchased server ${newPrepServer.characteristics.host} to prep`)
-}
-
-export async function addHackingServer(ns: NS): Promise<void> {
-
-	// TODO: Make this return a boolean and log in the daemon script
-
-	const purchasedServers: PurchasedServer[] = getPurchasedServers(ns, 'alphabetic')
-
-	const numHackServers: number = purchasedServers.filter((server) => server.hasPurpose(ServerPurpose.HACK)).length
-
-	// We can't add any more prep servers
-	if (numHackServers >= ns.getPurchasedServerLimit() - MIN_NUMBER_PURPOSED_SERVERS) return
-
-	const newHackServer: PurchasedServer | undefined = purchasedServers.find((server) => server.hasPurpose(ServerPurpose.PREP))
-
-	if (!newHackServer) return
-
-	await setPurpose(ns, newHackServer.characteristics.host, ServerPurpose.HACK)
-
-	LogAPI.printLog(ns, `Changed purchased server ${newHackServer.characteristics.host} to hack`)
+	LogAPI.printLog(ns, `Changed server ${movedServer.characteristics.host} to ${purpose}`)
 }
 
 // We sort this ascending
@@ -244,6 +239,17 @@ export function getPurchasedServers(ns: NS, sortBy: ServerSortingOrder = 'ram'):
 
 	if (sortBy === 'alphabetic') return purchasedServers.sort((a, b) => a.characteristics.purchasedServerId - b.characteristics.purchasedServerId)
 	else if (sortBy === 'ram') return purchasedServers.sort((a, b) => a.getAvailableRam(ns) - b.getAvailableRam(ns))
+	else throw new Error('Unknown sorting order')
+
+}
+
+// We sort this ascending
+export function getHacknetServers(ns: NS, sortBy: ServerSortingOrder = 'ram'): HacknetServer[] {
+	const hacknetServers: HacknetServer[] = getServerMap(ns).servers
+	                                                        .filter((server: Server) => ServerUtils.isHacknetServer(server)) as HacknetServer[]
+
+	if (sortBy === 'alphabetic') return hacknetServers.sort((a, b) => a.characteristics.hacknetServerId - b.characteristics.hacknetServerId)
+	else if (sortBy === 'ram') return hacknetServers.sort((a, b) => a.getAvailableRam(ns) - b.getAvailableRam(ns))
 	else throw new Error('Unknown sorting order')
 
 }

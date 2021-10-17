@@ -1,5 +1,4 @@
 import type { BitBurner as NS } from 'Bitburner'
-import * as ControlFlowAPI      from '/src/api/ControlFlowAPI.js'
 import * as LogAPI              from '/src/api/LogAPI.js'
 import { CONSTANT }             from '/src/lib/constants.js'
 import * as Utils               from '/src/util/Utils.js'
@@ -14,6 +13,12 @@ async function initialize(ns: NS) {
 
 	Utils.disableLogging(ns)
 
+	ns.atExit(destroy.bind(null, ns))
+
+	/*
+	 TODO: Remove the hacking flag as is. Replace it with a flag that allows you to set the goal (none, hack, prep).
+	 */
+
 	const flags = ns.flags([
 		['hacking', true],
 		['bladeburner', false],
@@ -21,6 +26,7 @@ async function initialize(ns: NS) {
 		['sleeve', false],
 		['stock', false],
 		['corporation', false],
+		['hacknet', false],
 	])
 
 	await ServerAPI.initializeServerMap(ns)
@@ -34,6 +40,7 @@ async function initialize(ns: NS) {
 	if (flags.sleeve) tasks.push(startManager(ns, Managers.SleeveManager))
 	if (flags.stock) tasks.push(startManager(ns, Managers.StockManager))
 	if (flags.corporation) tasks.push(startManager(ns, Managers.CorporationManager))
+	if (flags.hacknet) tasks.push(startManager(ns, Managers.HackNetManager))
 
 	// Runners
 	tasks.push(launchRunners(ns))
@@ -107,9 +114,7 @@ export async function main(ns: NS) {
 	runnerInterval = setInterval(launchRunners.bind(null, ns), RUNNER_INTERVAL)
 
 	// TODO: Here we should check whether we are still running the hackloop
-	while (!ControlFlowAPI.hasDaemonKillRequest(ns)) {
+	while (true) {
 		await ns.sleep(CONSTANT.CONTROL_FLOW_CHECK_INTERVAL)
 	}
-
-	destroy(ns)
 }

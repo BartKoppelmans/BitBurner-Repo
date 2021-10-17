@@ -12,6 +12,8 @@ export async function main(ns) {
         LogAPI.printTerminal(ns, 'Cannot execute crimes, we are currently busy.');
         return;
     }
+    // TODO: Change the homicide flag to set the crime to commit
+    // This thing should be robust enough that casing etc don't matter
     const flags = ns.flags([
         ['homicide', false],
         ['experience', false],
@@ -29,7 +31,7 @@ export async function main(ns) {
         }
         let crime;
         if (flags.homicide)
-            crime = crimes.find((c) => c.name === 'Homicide');
+            crime = crimes.find((c) => c.name === 'homicide');
         else {
             // Evaluate the potential crimes afterwards
             await Promise.all(crimes.map(async (c) => {

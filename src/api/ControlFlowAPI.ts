@@ -1,42 +1,19 @@
-import type { BitBurner as NS, Port, Serializable } from 'Bitburner'
-import { CONSTANT }                                 from '/src/lib/constants.js'
-import * as ServerAPI                               from '/src/api/ServerAPI.js'
-import { ServerMap }                                from '/src/classes/Server/ServerInterfaces.js'
+import type { BitBurner as NS } from 'Bitburner'
+import { CONSTANT }             from '/src/lib/constants.js'
+import * as ServerAPI           from '/src/api/ServerAPI.js'
+import { ServerMap }            from '/src/classes/Server/ServerInterfaces.js'
+import { Managers }             from '/src/managers/Managers.js'
 
 // TODO: Move this all to the daemon
 
-export enum ControlFlowCode {
-	KILL_MANAGERS = 'KILL_MANAGERS',
-	KILL_DAEMON   = 'KILL_DAEMON',
+export function killDaemon(ns: NS): void {
+	ns.scriptKill('/src/scripts/daemon.js', CONSTANT.HOME_SERVER_HOST)
 }
 
-export function hasDaemonKillRequest(ns: NS): boolean {
-	const portContents: Serializable = ns.peek(CONSTANT.CONTROL_FLOW_PORT)
-	if (portContents === 'NULL PORT DATA' || !portContents) return false
-
-	return (portContents.toString() === ControlFlowCode.KILL_DAEMON)
-}
-
-export function hasManagerKillRequest(ns: NS): boolean {
-	const portContents: Serializable = ns.peek(CONSTANT.CONTROL_FLOW_PORT)
-	if (portContents === 'NULL PORT DATA' || !portContents) return false
-
-	return (portContents.toString() === ControlFlowCode.KILL_MANAGERS)
-}
-
-export function clearPorts(ns: NS): void {
-	const ports: Port[] = Array.from({ length: 20 }, (_, i) => i + 1) as Port[]
-	for (const port of ports) {
-		ns.clear(port)
+export function killAllManagers(ns: NS): void {
+	for (const manager of Object.values(Managers)) {
+		ns.scriptKill(manager, CONSTANT.HOME_SERVER_HOST)
 	}
-}
-
-export async function killDaemon(ns: NS): Promise<void> {
-	await ns.write(CONSTANT.CONTROL_FLOW_PORT, ControlFlowCode.KILL_DAEMON)
-}
-
-export async function killAllManagers(ns: NS): Promise<void> {
-	await ns.write(CONSTANT.CONTROL_FLOW_PORT, ControlFlowCode.KILL_MANAGERS)
 }
 
 export function killAllScripts(ns: NS): void {

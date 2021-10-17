@@ -1,34 +1,14 @@
 import { CONSTANT } from '/src/lib/constants.js';
 import * as ServerAPI from '/src/api/ServerAPI.js';
+import { Managers } from '/src/managers/Managers.js';
 // TODO: Move this all to the daemon
-export var ControlFlowCode;
-(function (ControlFlowCode) {
-    ControlFlowCode["KILL_MANAGERS"] = "KILL_MANAGERS";
-    ControlFlowCode["KILL_DAEMON"] = "KILL_DAEMON";
-})(ControlFlowCode || (ControlFlowCode = {}));
-export function hasDaemonKillRequest(ns) {
-    const portContents = ns.peek(CONSTANT.CONTROL_FLOW_PORT);
-    if (portContents === 'NULL PORT DATA' || !portContents)
-        return false;
-    return (portContents.toString() === ControlFlowCode.KILL_DAEMON);
+export function killDaemon(ns) {
+    ns.scriptKill('/src/scripts/daemon.js', CONSTANT.HOME_SERVER_HOST);
 }
-export function hasManagerKillRequest(ns) {
-    const portContents = ns.peek(CONSTANT.CONTROL_FLOW_PORT);
-    if (portContents === 'NULL PORT DATA' || !portContents)
-        return false;
-    return (portContents.toString() === ControlFlowCode.KILL_MANAGERS);
-}
-export function clearPorts(ns) {
-    const ports = Array.from({ length: 20 }, (_, i) => i + 1);
-    for (const port of ports) {
-        ns.clear(port);
+export function killAllManagers(ns) {
+    for (const manager of Object.values(Managers)) {
+        ns.scriptKill(manager, CONSTANT.HOME_SERVER_HOST);
     }
-}
-export async function killDaemon(ns) {
-    await ns.write(CONSTANT.CONTROL_FLOW_PORT, ControlFlowCode.KILL_DAEMON);
-}
-export async function killAllManagers(ns) {
-    await ns.write(CONSTANT.CONTROL_FLOW_PORT, ControlFlowCode.KILL_MANAGERS);
 }
 export function killAllScripts(ns) {
     const serverMap = ServerAPI.getServerMap(ns);

@@ -7,4 +7,5 @@ export var Managers;
     Managers["StockManager"] = "/src/managers/StockManager.js";
     Managers["HackingManager"] = "/src/managers/HackingManager.js";
     Managers["CorporationManager"] = "/src/managers/CorporationManager.js";
+    Managers["HackNetManager"] = "/src/managers/HackNetManager.js";
 })(Managers || (Managers = {}));

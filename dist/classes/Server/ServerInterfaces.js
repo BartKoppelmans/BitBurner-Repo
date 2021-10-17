@@ -4,7 +4,8 @@ export var ServerType;
     ServerType[ServerType["HackableServer"] = 1] = "HackableServer";
     ServerType[ServerType["HomeServer"] = 2] = "HomeServer";
     ServerType[ServerType["PurchasedServer"] = 3] = "PurchasedServer";
-    ServerType[ServerType["DarkWebServer"] = 4] = "DarkWebServer";
+    ServerType[ServerType["HacknetServer"] = 4] = "HacknetServer";
+    ServerType[ServerType["DarkWebServer"] = 5] = "DarkWebServer";
 })(ServerType || (ServerType = {}));
 export var ServerPurpose;
 (function (ServerPurpose) {

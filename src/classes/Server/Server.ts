@@ -3,20 +3,19 @@ import { IServer, ServerCharacteristics, ServerPurpose } from '/src/classes/Serv
 import { CONSTANT }                                      from '/src/lib/constants.js'
 import * as ServerUtils                                  from '/src/util/ServerUtils.js'
 
-export default class Server {
+export default class Server implements IServer {
 
 	characteristics: ServerCharacteristics
 
-	purpose: ServerPurpose
+	purpose: ServerPurpose = ServerPurpose.NONE
 	reservation: number
 
 	public constructor(ns: NS, server: Partial<IServer>) {
 		if (!server.characteristics) throw new Error('Cannot initialize the server without its characteristics')
 
 		this.characteristics = server.characteristics
-
-		this.purpose     = (server.purpose) ? server.purpose : ServerPurpose.NONE
-		this.reservation = (server.reservation) ? server.reservation : 0
+		this.reservation     = (server.reservation) ? server.reservation : 0
+		if (server.purpose) this.purpose = server.purpose
 	}
 
 	public getAvailableRam(ns: NS): number {
@@ -47,6 +46,10 @@ export default class Server {
 
 		if (reservation > this.reservation) throw new Error('No reservation of that size has been made yet')
 		this.reservation -= reservation
+	}
+
+	public hasPurpose(purpose: ServerPurpose): boolean {
+		return this.purpose === purpose
 	}
 
 	public toJSON() {

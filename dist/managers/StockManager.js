@@ -1,4 +1,3 @@
-import { hasManagerKillRequest } from '/src/api/ControlFlowAPI.js';
 import * as LogAPI from '/src/api/LogAPI.js';
 import * as Utils from '/src/util/Utils.js';
 import * as PlayerUtils from '/src/util/PlayerUtils.js';
@@ -14,13 +13,12 @@ const EXPECTED_RETURN_BUY_THRESHOLD = 0.0002; // Buy anything forecasted to earn
 const EXPECTED_RETURN_SELL_THRESHOLD = 0.0001; // Buy anything forecasted to earn better than a 0.02%
 // return
 class StockManager {
-    constructor() {
-        this.stocks = [];
-        this.startingCorpus = 0;
-        this.lastCorpus = 0;
-        this.runningProfit = 0;
-        this.lastRunningProfit = 0;
-    }
+    managingLoopTimeout;
+    stocks = [];
+    startingCorpus = 0;
+    lastCorpus = 0;
+    runningProfit = 0;
+    lastRunningProfit = 0;
     static getBudget(ns, stocks) {
         const corpus = stocks.reduce((total, stock) => total + stock.getStockCorpus(), 0);
         const totalBudget = STOCK_ALLOWANCE * PlayerUtils.getMoney(ns);
@@ -130,6 +128,7 @@ class StockManager {
     }
     async initialize(ns) {
         Utils.disableLogging(ns);
+        ns.atExit(this.destroy.bind(this, ns));
         this.stocks = Stock.getStocks(ns);
         this.startingCorpus = this.stocks.reduce((total, stock) => total + stock.getStockCorpus(), 0);
     }
@@ -184,8 +183,7 @@ export async function main(ns) {
     const instance = new StockManager();
     await instance.initialize(ns);
     await instance.start(ns);
-    while (!hasManagerKillRequest(ns)) {
+    while (true) {
         await ns.sleep(CONSTANT.CONTROL_FLOW_CHECK_INTERVAL);
     }
-    await instance.destroy(ns);
 }

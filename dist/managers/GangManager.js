@@ -1,4 +1,3 @@
-import { hasManagerKillRequest } from '/src/api/ControlFlowAPI.js';
 import * as LogAPI from '/src/api/LogAPI.js';
 import * as Utils from '/src/util/Utils.js';
 import * as GangUtils from '/src/util/GangUtils.js';
@@ -22,10 +21,12 @@ const CLASH_CHANCE_THRESHOLD_BUFFER = 0.05;
 const POWER_THRESHOLD = 500;
 const POWER_THRESHOLD_BUFFER = 50;
 class GangManager {
-    constructor() {
-        this.isIncreasingPower = false;
-        this.focusOnRespect = false;
-    }
+    managingLoopTimeout;
+    gangs;
+    homeGang;
+    upgrades;
+    isIncreasingPower = false;
+    focusOnRespect = false;
     static getBestMember(ns, members) {
         const isHacking = GangUtils.isHackingGang(ns);
         // TODO: Perhaps modify this to use the optimal respect gain?
@@ -125,6 +126,7 @@ class GangManager {
     }
     async initialize(ns) {
         Utils.disableLogging(ns);
+        ns.atExit(this.destroy.bind(this, ns));
         await GangManager.createGang(ns);
         this.upgrades = GangUpgrade.getAllUpgrades(ns);
         this.gangs = Gang.getGangs(ns);
@@ -272,8 +274,7 @@ export async function main(ns) {
     const instance = new GangManager();
     await instance.initialize(ns);
     await instance.start(ns);
-    while (!hasManagerKillRequest(ns)) {
+    while (true) {
         await ns.sleep(CONSTANT.CONTROL_FLOW_CHECK_INTERVAL);
     }
-    await instance.destroy(ns);
 }

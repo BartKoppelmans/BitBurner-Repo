@@ -1,4 +1,9 @@
 export default class Batch {
+    batchId;
+    target;
+    jobs;
+    start;
+    end;
     constructor(ns, batch) {
         this.target = batch.target;
         this.batchId = batch.batchId;

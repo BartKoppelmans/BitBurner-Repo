@@ -2,12 +2,16 @@ import { ServerPurpose } from '/src/classes/Server/ServerInterfaces.js';
 import { CONSTANT } from '/src/lib/constants.js';
 import * as ServerUtils from '/src/util/ServerUtils.js';
 export default class Server {
+    characteristics;
+    purpose = ServerPurpose.NONE;
+    reservation;
     constructor(ns, server) {
         if (!server.characteristics)
             throw new Error('Cannot initialize the server without its characteristics');
         this.characteristics = server.characteristics;
-        this.purpose = (server.purpose) ? server.purpose : ServerPurpose.NONE;
         this.reservation = (server.reservation) ? server.reservation : 0;
+        if (server.purpose)
+            this.purpose = server.purpose;
     }
     getAvailableRam(ns) {
         return this.getTotalRam(ns) - this.getUsedRam(ns) - this.reservation - ((ServerUtils.isHomeServer(this)) ? CONSTANT.DESIRED_HOME_FREE_RAM : 0);
@@ -32,6 +36,9 @@ export default class Server {
         if (reservation > this.reservation)
             throw new Error('No reservation of that size has been made yet');
         this.reservation -= reservation;
+    }
+    hasPurpose(purpose) {
+        return this.purpose === purpose;
     }
     toJSON() {
         return {

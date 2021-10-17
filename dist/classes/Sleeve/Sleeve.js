@@ -1,5 +1,6 @@
 import * as LogAPI from '/src/api/LogAPI.js';
 export default class Sleeve {
+    id;
     constructor(ns, id) {
         this.id = id;
     }

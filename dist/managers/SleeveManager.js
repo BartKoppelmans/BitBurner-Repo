@@ -1,10 +1,10 @@
-import { hasManagerKillRequest } from '/src/api/ControlFlowAPI.js';
 import * as LogAPI from '/src/api/LogAPI.js';
 import * as Utils from '/src/util/Utils.js';
 import { CONSTANT } from '/src/lib/constants.js';
 import Sleeve from '/src/classes/Sleeve/Sleeve.js';
 const LOOP_DELAY = 1000;
 class SleeveManager {
+    managingLoopTimeout;
     static manageSleeve(ns, sleeve) {
         const information = sleeve.getInformation(ns);
         const stats = sleeve.getStats(ns);
@@ -17,10 +17,11 @@ class SleeveManager {
         }
         // TODO: Buy augments if possible
         // TODO: Train first if stats are shit
-        return sleeve.commitCrime(ns, 'Homicide');
+        return sleeve.commitCrime(ns, 'homicide');
     }
     async initialize(ns) {
         Utils.disableLogging(ns);
+        ns.atExit(this.destroy.bind(this, ns));
     }
     async start(ns) {
         LogAPI.printTerminal(ns, `Starting the SleeveManager`);
@@ -46,8 +47,7 @@ export async function main(ns) {
     const instance = new SleeveManager();
     await instance.initialize(ns);
     await instance.start(ns);
-    while (!hasManagerKillRequest(ns)) {
+    while (true) {
         await ns.sleep(CONSTANT.CONTROL_FLOW_CHECK_INTERVAL);
     }
-    await instance.destroy(ns);
 }

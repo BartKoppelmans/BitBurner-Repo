@@ -1,7 +1,7 @@
 import Server from '/src/classes/Server/Server.js';
 import { ServerType } from '/src/classes/Server/ServerInterfaces.js';
 import HackableServer from '/src/classes/Server/HackableServer.js';
-import PurchasedServer from '/src/classes/Server/PurchasedServer.js';
+import { PurchasedServer } from '/src/classes/Server/PurchasedServer.js';
 import Job from '/src/classes/Job/Job.js';
 import Batch from '/src/classes/Job/Batch.js';
 export function serverFromJSON(ns, json) {

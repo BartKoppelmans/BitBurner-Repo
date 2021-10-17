@@ -14,6 +14,11 @@ export interface IPurchasedServer extends IServer {
 	quarantinedInformation: QuarantinedInformation
 }
 
+export interface IHacknetServer extends IServer {
+	characteristics: HacknetServerCharacteristics
+	nodeInformation: NodeInformation
+}
+
 export interface IHackableServer extends IServer {
 	status: ServerStatus
 	staticHackingProperties: StaticHackingProperties
@@ -39,11 +44,24 @@ export interface PurchasedServerCharacteristics extends ServerCharacteristics {
 	purchasedServerId: number;
 }
 
+export interface HacknetServerCharacteristics extends ServerCharacteristics {
+	hacknetServerId: number;
+}
+
+export interface NodeInformation {
+	level: number;
+	ram: number;
+	cores: number
+	cache: number;
+	hashCapacity: number;
+}
+
 export enum ServerType {
 	BasicServer,
 	HackableServer,
 	HomeServer,
 	PurchasedServer,
+	HacknetServer,
 	DarkWebServer
 }
 

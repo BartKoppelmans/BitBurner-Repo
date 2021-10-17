@@ -9,6 +9,9 @@ export function isPurchasedServer(server) {
 export function isHackableServer(server) {
     return (server.characteristics.type === ServerType.HackableServer);
 }
+export function isHacknetServer(server) {
+    return server.characteristics.type === ServerType.HacknetServer;
+}
 export function isDarkwebServer(server) {
     return server.characteristics.type === ServerType.DarkWebServer;
 }
@@ -20,4 +23,7 @@ export function isPurchased(host) {
 }
 export function isDarkweb(host) {
     return (host === CONSTANT.DARKWEB_HOST);
+}
+export function isHacknet(host) {
+    return host.includes(CONSTANT.HACKNET_SERVER_PREFIX);
 }

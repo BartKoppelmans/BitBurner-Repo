@@ -1,5 +1,4 @@
 import type { BitBurner as NS, SleeveInformation, SleeveStats } from 'Bitburner'
-import { hasManagerKillRequest }                                from '/src/api/ControlFlowAPI.js'
 import * as LogAPI                                              from '/src/api/LogAPI.js'
 import * as Utils                                               from '/src/util/Utils.js'
 import { Manager }                                              from '/src/classes/Misc/ScriptInterfaces.js'
@@ -29,11 +28,13 @@ class SleeveManager implements Manager {
 
 		// TODO: Train first if stats are shit
 
-		return sleeve.commitCrime(ns, 'Homicide')
+		return sleeve.commitCrime(ns, 'homicide')
 	}
 
 	public async initialize(ns: NS) {
 		Utils.disableLogging(ns)
+
+		ns.atExit(this.destroy.bind(this, ns))
 	}
 
 	public async start(ns: NS): Promise<void> {
@@ -71,9 +72,7 @@ export async function main(ns: NS) {
 	await instance.initialize(ns)
 	await instance.start(ns)
 
-	while (!hasManagerKillRequest(ns)) {
+	while (true) {
 		await ns.sleep(CONSTANT.CONTROL_FLOW_CHECK_INTERVAL)
 	}
-
-	await instance.destroy(ns)
 }

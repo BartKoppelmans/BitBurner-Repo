@@ -6,7 +6,7 @@ import { CONSTANT }                           from '/src/lib/constants.js'
 import { Tools }                              from '/src/tools/Tools.js'
 import * as ServerUtils                       from '/src/util/ServerUtils.js'
 import * as ToolUtils                         from '/src/util/ToolUtils.js'
-import { ThreadSpread }                       from '/src/classes/Misc/HackInterfaces'
+import { ThreadSpread }                       from '/src/classes/Misc/HackInterfaces.js'
 
 export default class Job {
 	batchId: string

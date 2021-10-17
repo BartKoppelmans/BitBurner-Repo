@@ -4,6 +4,7 @@ import * as LogAPI from '/src/api/LogAPI.js';
 import * as ToolUtils from '/src/util/ToolUtils.js';
 import * as SerializationUtils from '/src/util/SerializationUtils.js';
 import { ServerStatus } from '/src/classes/Server/ServerInterfaces.js';
+import { Tools } from '/src/tools/Tools.js';
 export function getJobMap(ns) {
     return readJobMap(ns);
 }
@@ -84,11 +85,21 @@ export function getRunningProcesses(ns) {
     }
     return runningProcesses;
 }
-export function cancelAllJobs(ns) {
-    const jobMap = getJobMap(ns);
-    for (const batch of jobMap.batches) {
-        for (const job of batch.jobs) {
-            cancelJob(ns, job);
+export function cancelAllJobs(ns, force = false) {
+    if (!force) {
+        const jobMap = getJobMap(ns);
+        for (const batch of jobMap.batches) {
+            for (const job of batch.jobs) {
+                cancelJob(ns, job);
+            }
+        }
+    }
+    else {
+        const serverMap = ServerAPI.getServerMap(ns);
+        for (const server of serverMap.servers) {
+            ns.scriptKill(Tools.WEAKEN, server.characteristics.host);
+            ns.scriptKill(Tools.GROW, server.characteristics.host);
+            ns.scriptKill(Tools.HACK, server.characteristics.host);
         }
     }
     // TODO: Check whether there are still jobs left that are not cancelled

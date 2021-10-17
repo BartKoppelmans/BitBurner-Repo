@@ -3,7 +3,9 @@ import Server from '/src/classes/Server/Server.js';
 import { CONSTANT, } from '/src/lib/constants.js';
 import * as PlayerUtils from '/src/util/PlayerUtils.js';
 const PERCENTAGE_HACK_PURPOSE = 0.4;
-export default class PurchasedServer extends Server {
+export class PurchasedServer extends Server {
+    characteristics;
+    quarantinedInformation;
     constructor(ns, server) {
         super(ns, server);
         if (!server.characteristics)

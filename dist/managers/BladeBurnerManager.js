@@ -1,4 +1,3 @@
-import { hasManagerKillRequest } from '/src/api/ControlFlowAPI.js';
 import * as LogAPI from '/src/api/LogAPI.js';
 import * as Utils from '/src/util/Utils.js';
 import { CONSTANT } from '/src/lib/constants.js';
@@ -14,9 +13,11 @@ const SYNTH_POPULATION_THRESHOLD = 1e8;
 const CHAOS_THRESHOLD = 100;
 const FINAL_BLACK_OP_WARNING_INTERVAL = 10;
 class BladeBurnerManager {
-    constructor() {
-        this.iterationCounter = 1;
-    }
+    iterationCounter = 1;
+    managingLoopTimeout;
+    actions;
+    skills;
+    cities;
     static getStaminaPercentage(ns) {
         const [current, total] = ns.bladeburner.getStamina();
         return (current / total) * 100;
@@ -50,6 +51,7 @@ class BladeBurnerManager {
     }
     async initialize(ns) {
         Utils.disableLogging(ns);
+        ns.atExit(this.destroy.bind(this, ns));
         while (!ns.bladeburner.joinBladeburnerDivision()) {
             LogAPI.printLog(ns, `Waiting to join BladeBurner Division`);
             await ns.sleep(JOIN_DELAY);
@@ -196,8 +198,7 @@ export async function main(ns) {
     const instance = new BladeBurnerManager();
     await instance.initialize(ns);
     await instance.start(ns);
-    while (!hasManagerKillRequest(ns)) {
+    while (true) {
         await ns.sleep(CONSTANT.CONTROL_FLOW_CHECK_INTERVAL);
     }
-    await instance.destroy(ns);
 }

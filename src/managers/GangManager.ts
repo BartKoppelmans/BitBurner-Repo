@@ -1,5 +1,4 @@
 import type { BitBurner as NS, FactionName, GangGenInfo }             from 'Bitburner'
-import { hasManagerKillRequest }                                      from '/src/api/ControlFlowAPI.js'
 import * as LogAPI                                                    from '/src/api/LogAPI.js'
 import * as Utils                                                     from '/src/util/Utils.js'
 import * as GangUtils                                                 from '/src/util/GangUtils.js'
@@ -164,6 +163,8 @@ class GangManager implements Manager {
 
 	public async initialize(ns: NS) {
 		Utils.disableLogging(ns)
+
+		ns.atExit(this.destroy.bind(this, ns))
 
 		await GangManager.createGang(ns)
 
@@ -354,9 +355,7 @@ export async function main(ns: NS) {
 	await instance.initialize(ns)
 	await instance.start(ns)
 
-	while (!hasManagerKillRequest(ns)) {
+	while (true) {
 		await ns.sleep(CONSTANT.CONTROL_FLOW_CHECK_INTERVAL)
 	}
-
-	await instance.destroy(ns)
 }

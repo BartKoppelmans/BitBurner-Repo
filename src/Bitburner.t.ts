@@ -191,18 +191,18 @@ declare module 'Bitburner' {
 		| 'The Black Hand';
 	export type FactionWork = 'hacking' | 'field' | 'security';
 	export type Crime =
-		| 'Shoplift'
-		| 'Rob Store'
-		| 'Mug'
-		| 'Larceny'
-		| 'Deal Drugs'
-		| 'Bond Forgery'
-		| 'Traffick Arms'
-		| 'Homicide'
-		| 'Grand Theft Auto'
-		| 'Kidnap'
-		| 'Assassinate'
-		| 'Heist';
+		| 'shoplift'
+		| 'rob store'
+		| 'mug'
+		| 'larceny'
+		| 'deal drugs'
+		| 'bond forgery'
+		| 'traffick arms'
+		| 'homicide'
+		| 'grand theft auto'
+		| 'kidnap'
+		| 'assassinate'
+		| 'heist';
 	export type AugmentName =
 		| 'Augmented Targeting I'
 		| 'Augmented Targeting II'
@@ -4040,7 +4040,6 @@ declare module 'Bitburner' {
 		readonly sleeve: Sleeve;
 
 		readonly corporation: Corporation;
-
 		/**
 		 * Arguments passed into a script can be accessed using a normal
 		 * array using the [] operator (args[0], args[1], etc…).
@@ -4384,6 +4383,7 @@ declare module 'Bitburner' {
 					ramUsed: number,
 					maxRam: number,
 					core: number,
+					mult?: number,
 				) => number;
 
 				/**
@@ -4530,6 +4530,8 @@ declare module 'Bitburner' {
 				constants: () => HackNetServerConstants;
 			};
 		};
+
+		atExit(f: Function): void;
 
 		/**
 		 * Function that is used to try and hack servers to steal money and gain hacking experience.

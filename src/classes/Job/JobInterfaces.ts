@@ -2,7 +2,7 @@ import HackableServer   from '/src/classes/Server/HackableServer.js'
 import Job              from '/src/classes/Job/Job.js'
 import { Tools }        from '/src/tools/Tools.js'
 import Batch            from '/src/classes/Job/Batch.js'
-import { ThreadSpread } from '/src/classes/Misc/HackInterfaces'
+import { ThreadSpread } from '/src/classes/Misc/HackInterfaces.js'
 
 export type ExecArguments = [script: string, host: string, numThreads?: number, ...args: string[]];
 

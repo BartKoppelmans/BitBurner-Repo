@@ -5,17 +5,12 @@ export async function main(ns) {
     const flags = ns.flags([
         ['force', false],
     ]);
-    await ControlFlowAPI.killDaemon(ns);
-    await ns.sleep(1000); // TODO: Move this to a constant
-    // Clear the queue
-    ControlFlowAPI.clearPorts(ns);
+    ControlFlowAPI.killDaemon(ns);
     while (ns.isRunning('src/scripts/daemon.js', CONSTANT.HOME_SERVER_HOST)) {
         await ns.sleep(CONSTANT.SMALL_DELAY);
     }
-    await ControlFlowAPI.killAllManagers(ns);
-    await ns.sleep(1000); // TODO: Move this to a constant
-    // Clear the queue
-    ControlFlowAPI.clearPorts(ns);
+    ControlFlowAPI.killAllManagers(ns);
+    await ns.sleep(1000); // TODO: Change this to wait for the managers to not be running
     if (flags.force) {
         await ControlFlowAPI.killAllScripts(ns);
     }

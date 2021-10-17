@@ -46,7 +46,8 @@ export const CONSTANT = {
     CONTROL_FLOW_CHECK_INTERVAL: 1000,
     PORT_FULL_RETRY_TIME: 100,
     // Check if we can upgrade servers every 3 minutes
-    PURCHASED_SERVER_PREFIX: 'BartServer-',
+    PURCHASED_SERVER_PREFIX: 'bart-server-',
+    HACKNET_SERVER_PREFIX: 'hacknet-node-',
     PURCHASED_SERVER_ALLOWANCE_PERCENTAGE: 0.01,
     HACKNET_ALLOWANCE_PERCENTAGE: 0.01,
     CRIME_DELAY: 500,

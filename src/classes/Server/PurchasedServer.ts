@@ -14,10 +14,9 @@ import * as PlayerUtils                      from '/src/util/PlayerUtils.js'
 
 const PERCENTAGE_HACK_PURPOSE: number = 0.4
 
-export default class PurchasedServer extends Server {
+export class PurchasedServer extends Server implements IPurchasedServer {
 
 	characteristics: PurchasedServerCharacteristics
-
 	quarantinedInformation: QuarantinedInformation
 
 	constructor(ns: NS, server: Partial<IPurchasedServer>) {

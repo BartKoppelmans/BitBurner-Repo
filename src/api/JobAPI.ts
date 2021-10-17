@@ -9,6 +9,7 @@ import * as ToolUtils                        from '/src/util/ToolUtils.js'
 import * as SerializationUtils               from '/src/util/SerializationUtils.js'
 import { ServerMap, ServerStatus }           from '/src/classes/Server/ServerInterfaces.js'
 import { ThreadSpread }                      from '/src/classes/Misc/HackInterfaces.js'
+import { Tools }                             from '/src/tools/Tools.js'
 
 export function getJobMap(ns: NS): JobMap {
 	return readJobMap(ns)
@@ -116,15 +117,26 @@ export function getRunningProcesses(ns: NS): ProcessInfo[] {
 	return runningProcesses
 }
 
-export function cancelAllJobs(ns: NS): void {
+export function cancelAllJobs(ns: NS, force: boolean = false): void {
 
-	const jobMap: JobMap = getJobMap(ns)
+	if (!force) {
+		const jobMap: JobMap = getJobMap(ns)
 
-	for (const batch of jobMap.batches) {
-		for (const job of batch.jobs) {
-			cancelJob(ns, job)
+		for (const batch of jobMap.batches) {
+			for (const job of batch.jobs) {
+				cancelJob(ns, job)
+			}
+		}
+	} else {
+		const serverMap: ServerMap = ServerAPI.getServerMap(ns)
+
+		for (const server of serverMap.servers) {
+			ns.scriptKill(Tools.WEAKEN, server.characteristics.host)
+			ns.scriptKill(Tools.GROW, server.characteristics.host)
+			ns.scriptKill(Tools.HACK, server.characteristics.host)
 		}
 	}
+
 
 	// TODO: Check whether there are still jobs left that are not cancelled
 }

@@ -1,14 +1,15 @@
-import { hasManagerKillRequest } from '/src/api/ControlFlowAPI.js';
 import * as LogAPI from '/src/api/LogAPI.js';
 import * as Utils from '/src/util/Utils.js';
 import { CONSTANT } from '/src/lib/constants.js';
 const LOOP_DELAY = 1000;
 class CorporationManager {
+    managingLoopTimeout;
     static async createCorporation(ns) {
         // TODO: Not possible yet
     }
     async initialize(ns) {
         Utils.disableLogging(ns);
+        ns.atExit(this.destroy.bind(this, ns));
         await CorporationManager.createCorporation(ns);
     }
     async start(ns) {
@@ -31,8 +32,7 @@ export async function main(ns) {
     const instance = new CorporationManager();
     await instance.initialize(ns);
     await instance.start(ns);
-    while (!hasManagerKillRequest(ns)) {
+    while (true) {
         await ns.sleep(CONSTANT.CONTROL_FLOW_CHECK_INTERVAL);
     }
-    await instance.destroy(ns);
 }

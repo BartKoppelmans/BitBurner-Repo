@@ -1,12 +1,11 @@
-import type { BitBurner as NS }  from 'Bitburner'
-import { hasManagerKillRequest } from '/src/api/ControlFlowAPI.js'
-import * as LogAPI               from '/src/api/LogAPI.js'
-import * as Utils                from '/src/util/Utils.js'
-import * as PlayerUtils          from '/src/util/PlayerUtils.js'
-import { Manager }               from '/src/classes/Misc/ScriptInterfaces.js'
-import { CONSTANT }              from '/src/lib/constants.js'
-import Stock                     from '/src/classes/Stock/Stock.js'
-import { StockPosition }         from '/src/classes/Stock/StockInterfaces.js'
+import type { BitBurner as NS } from 'Bitburner'
+import * as LogAPI              from '/src/api/LogAPI.js'
+import * as Utils               from '/src/util/Utils.js'
+import * as PlayerUtils         from '/src/util/PlayerUtils.js'
+import { Manager }              from '/src/classes/Misc/ScriptInterfaces.js'
+import { CONSTANT }             from '/src/lib/constants.js'
+import Stock                    from '/src/classes/Stock/Stock.js'
+import { StockPosition }        from '/src/classes/Stock/StockInterfaces.js'
 
 const LOOP_DELAY: number                    = 1000 as const
 const STOCK_ALLOWANCE: number               = 0.05 as const
@@ -163,6 +162,8 @@ class StockManager implements Manager {
 	public async initialize(ns: NS) {
 		Utils.disableLogging(ns)
 
+		ns.atExit(this.destroy.bind(this, ns))
+
 		this.stocks = Stock.getStocks(ns)
 
 		this.startingCorpus = this.stocks.reduce((total, stock) => total + stock.getStockCorpus(), 0)
@@ -242,9 +243,7 @@ export async function main(ns: NS) {
 	await instance.initialize(ns)
 	await instance.start(ns)
 
-	while (!hasManagerKillRequest(ns)) {
+	while (true) {
 		await ns.sleep(CONSTANT.CONTROL_FLOW_CHECK_INTERVAL)
 	}
-
-	await instance.destroy(ns)
 }

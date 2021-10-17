@@ -19,6 +19,9 @@ export async function main(ns: NS) {
 		return
 	}
 
+	// TODO: Change the homicide flag to set the crime to commit
+	// This thing should be robust enough that casing etc don't matter
+
 	const flags = ns.flags([
 		['homicide', false],
 		['experience', false],
@@ -38,7 +41,7 @@ export async function main(ns: NS) {
 		}
 
 		let crime: Crime
-		if (flags.homicide) crime = crimes.find((c) => c.name === 'Homicide') as Crime
+		if (flags.homicide) crime = crimes.find((c) => c.name === 'homicide') as Crime
 		else {
 			// Evaluate the potential crimes afterwards
 			await Promise.all(crimes.map(async (c) => {
