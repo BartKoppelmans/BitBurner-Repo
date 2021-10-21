@@ -48,6 +48,10 @@ export function clearServerMap(ns: NS): void {
 	ns.clear(CONSTANT.SERVER_MAP_FILENAME)
 }
 
+export function getLastUpdated(ns: NS): Date {
+	return readServerMap(ns).lastUpdated
+}
+
 export async function writeServerMap(ns: NS, serverMap: ServerMap): Promise<void> {
 	// NOTE: Do we want to do this?
 	serverMap.lastUpdated = new Date()
@@ -68,6 +72,10 @@ export async function updateServer(ns: NS, server: Server): Promise<void> {
 export async function setPurpose(ns: NS, host: string, purpose: ServerPurpose, force: boolean = false): Promise<void> {
 	const server: Server = getServerByName(ns, host)
 
+	if (ServerUtils.isPurchasedServer(server) && server.quarantinedInformation.quarantined) {
+		if (server.quarantinedInformation.originalPurpose === purpose) return
+	} else if (server.purpose === purpose) return
+
 	if (ServerUtils.isPurchasedServer(server) && !force) {
 		if (server.quarantinedInformation.quarantined) {
 			server.quarantinedInformation.originalPurpose = purpose
@@ -79,7 +87,11 @@ export async function setPurpose(ns: NS, host: string, purpose: ServerPurpose, f
 
 export async function setStatus(ns: NS, host: string, status: ServerStatus): Promise<void> {
 	const server: Server = getServerByName(ns, host)
+
 	if (!ServerUtils.isHackableServer(server)) throw new Error('The server is not a hackable server')
+
+	if (server.status === status) return
+
 	server.status = status
 	await updateServer(ns, server)
 }

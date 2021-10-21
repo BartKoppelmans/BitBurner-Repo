@@ -26,9 +26,9 @@ import {
 	ServerType,
 }                                       from '/src/classes/Server/ServerInterfaces.js'
 
-const LOOP_DELAY: number        = 1000 as const
+const LOOP_DELAY: number        = 30000 as const
 const HACKNET_ALLOWANCE: number = 0.05 as const
-const PAYOFF_TIME: number       = 3600 as const // Should pay off in an hour
+const PAYOFF_TIME: number       = 600 as const // Should pay off within 10 minutes
 
 class HacknetManager implements Manager {
 
@@ -261,27 +261,27 @@ class HacknetManager implements Manager {
 				const server: HacknetServer                         = new HacknetServer(ns, { characteristics })
 				await ServerAPI.addServer(ns, server)
 
-				LogAPI.printLog(ns, `Purchased hacknet server ${CONSTANT.HACKNET_SERVER_PREFIX}${hacknetServerId}.`)
+				LogAPI.printLog(ns, `Purchased hacknet server ${CONSTANT.HACKNET_SERVER_PREFIX}${hacknetServerId} for ${ns.nFormat(upgrade.cost, '$0.000a')}.`)
 				break
 			case HacknetServerUpgradeType.RAM:
 				isSuccessful = ns.hacknet.upgradeRam(upgrade.server.characteristics.hacknetServerId, upgrade.levels)
 				if (!isSuccessful) throw new Error('We didn\'t manage to upgrade the ram.')
-				LogAPI.printLog(ns, `Upgraded ram of hacknet server ${upgrade.server.characteristics.host}.`)
+				LogAPI.printLog(ns, `Upgraded ram of hacknet server ${upgrade.server.characteristics.host} by ${upgrade.levels}. Spent ${ns.nFormat(upgrade.cost, '$0.000a')}.`)
 				break
 			case HacknetServerUpgradeType.CORES:
 				isSuccessful = ns.hacknet.upgradeCore(upgrade.server.characteristics.hacknetServerId, upgrade.levels)
 				if (!isSuccessful) throw new Error('We didn\'t manage to upgrade the cores.')
-				LogAPI.printLog(ns, `Upgraded cores of hacknet server ${upgrade.server.characteristics.host}.`)
+				LogAPI.printLog(ns, `Upgraded cores of hacknet server ${upgrade.server.characteristics.host} by ${upgrade.levels}. Spent ${ns.nFormat(upgrade.cost, '$0.000a')}.`)
 				break
 			case HacknetServerUpgradeType.LEVEL:
 				isSuccessful = ns.hacknet.upgradeLevel(upgrade.server.characteristics.hacknetServerId, upgrade.levels)
 				if (!isSuccessful) throw new Error('We didn\'t manage to upgrade the levels.')
-				LogAPI.printLog(ns, `Upgraded levels of hacknet server ${upgrade.server.characteristics.host}.`)
+				LogAPI.printLog(ns, `Upgraded levels of hacknet server ${upgrade.server.characteristics.host} by ${upgrade.levels}. Spent ${ns.nFormat(upgrade.cost, '$0.000a')}.`)
 				break
 			case HacknetServerUpgradeType.CACHE:
 				isSuccessful = ns.hacknet.upgradeCache(upgrade.server.characteristics.hacknetServerId, upgrade.levels)
 				if (!isSuccessful) throw new Error('We didn\'t manage to upgrade the cache.')
-				LogAPI.printLog(ns, `Upgraded cache of hacknet server ${upgrade.server.characteristics.host}.`)
+				LogAPI.printLog(ns, `Upgraded cache of hacknet server ${upgrade.server.characteristics.host} by ${upgrade.levels}. Spent ${ns.nFormat(upgrade.cost, '$0.000a')}.`)
 				break
 			default:
 				throw new Error('Upgrade type not recognized.')
@@ -289,7 +289,7 @@ class HacknetManager implements Manager {
 	}
 
 	private static hashesToMoney(ns: NS, hashes: number): number {
-		return 1e6 * hashes / 4;
+		return 1e6 * hashes / 4
 	}
 
 	public async initialize(ns: NS) {
@@ -340,7 +340,7 @@ class HacknetManager implements Manager {
 			if (hashUpgrade) {
 				budget -= hashUpgrade.cost
 				upgrades.push(hashUpgrade)
-			} else break; // No upgrades worth it
+			} else break // No upgrades worth it
 		}
 
 		const mergedUpgrades: HacknetServerUpgrade[] = HacknetManager.mergeUpgrades(ns, upgrades)

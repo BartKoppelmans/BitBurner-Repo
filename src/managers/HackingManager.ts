@@ -25,7 +25,8 @@ class HackingManager implements Manager {
 	private hackingLoopInterval?: ReturnType<typeof setTimeout>
 	private jobLoopInterval?: ReturnType<typeof setInterval>
 
-	private inFullAttackMode: boolean = false
+	private inFullAttackMode: boolean  = false
+	private serverMapLastUpdated: Date = CONSTANT.EPOCH_DATE
 
 	public async initialize(ns: NS) {
 		Utils.disableLogging(ns)
@@ -128,13 +129,17 @@ class HackingManager implements Manager {
 
 	private async updatePurposes(ns: NS, targets: HackableServer[]): Promise<void> {
 
+		const lastUpdated: Date   = ServerAPI.getLastUpdated(ns)
+		const wasUpdated: boolean = this.serverMapLastUpdated < lastUpdated
+		if (wasUpdated) this.serverMapLastUpdated = lastUpdated
+
 		// NOTE: Slice to make sure that we only check our actual targets
 		const allOptimal: boolean = targets.slice(0, CONSTANT.MAX_TARGET_COUNT)
 		                                   .every((target) => target.isOptimal(ns))
 
-		if (allOptimal && !this.inFullAttackMode) {
+		if ((wasUpdated && allOptimal) || (allOptimal && !this.inFullAttackMode)) {
 			await this.fullAttackMode(ns)
-		} else if (!allOptimal && this.inFullAttackMode) {
+		} else if ((wasUpdated && !allOptimal) || (!allOptimal && this.inFullAttackMode)) {
 			await this.resetServerPurposes(ns)
 		}
 	}

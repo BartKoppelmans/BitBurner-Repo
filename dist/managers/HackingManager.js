@@ -12,6 +12,7 @@ class HackingManager {
     hackingLoopInterval;
     jobLoopInterval;
     inFullAttackMode = false;
+    serverMapLastUpdated = CONSTANT.EPOCH_DATE;
     async initialize(ns) {
         Utils.disableLogging(ns);
         ns.atExit(this.destroy.bind(this, ns));
@@ -90,13 +91,17 @@ class HackingManager {
         }
     }
     async updatePurposes(ns, targets) {
+        const lastUpdated = ServerAPI.getLastUpdated(ns);
+        const wasUpdated = this.serverMapLastUpdated < lastUpdated;
+        if (wasUpdated)
+            this.serverMapLastUpdated = lastUpdated;
         // NOTE: Slice to make sure that we only check our actual targets
         const allOptimal = targets.slice(0, CONSTANT.MAX_TARGET_COUNT)
             .every((target) => target.isOptimal(ns));
-        if (allOptimal && !this.inFullAttackMode) {
+        if ((wasUpdated && allOptimal) || (allOptimal && !this.inFullAttackMode)) {
             await this.fullAttackMode(ns);
         }
-        else if (!allOptimal && this.inFullAttackMode) {
+        else if ((wasUpdated && !allOptimal) || (!allOptimal && this.inFullAttackMode)) {
             await this.resetServerPurposes(ns);
         }
     }
