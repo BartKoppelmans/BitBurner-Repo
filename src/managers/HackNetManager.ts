@@ -18,16 +18,16 @@ import {
 	HacknetServerHashUpgradeType,
 	HacknetServerUpgrade,
 	HacknetServerUpgradeType,
-}                                       from '/src/classes/Misc/HacknetServerInterfaces'
+}                                       from '/src/classes/Misc/HacknetServerInterfaces.js'
 import {
 	HacknetServerCharacteristics,
 	NodeInformation,
 	ServerPurpose,
 	ServerType,
-}                                       from '/src/classes/Server/ServerInterfaces'
+}                                       from '/src/classes/Server/ServerInterfaces.js'
 
 const LOOP_DELAY: number        = 1000 as const
-const HACKNET_ALLOWANCE: number = 0.25 as const
+const HACKNET_ALLOWANCE: number = 0.05 as const
 const PAYOFF_TIME: number       = 3600 as const // Should pay off in an hour
 
 class HacknetManager implements Manager {
@@ -185,17 +185,18 @@ class HacknetManager implements Manager {
 
 	private static mergeUpgrades(ns: NS, upgrades: HacknetServerUpgrade[]): HacknetServerUpgrade[] {
 		const mergedUpgrades: HacknetServerUpgrade[] = []
-		upgrades.forEach((upgrade) => {
+		upgrades.forEach((upgrade: HacknetServerUpgrade) => {
 			if (upgrade.type === HacknetServerUpgradeType.NEW) {
 				mergedUpgrades.push(upgrade)
 				return
 			}
 
-			upgrade = upgrade as HacknetServerCacheUpgrade | HacknetServerHashUpgrade
-
 			const index: number = mergedUpgrades.findIndex((u) => {
-				if (upgrade.type === HacknetServerUpgradeType.NEW) return false
-				u = u as HacknetServerCacheUpgrade | HacknetServerHashUpgrade
+				if (u.type === HacknetServerUpgradeType.NEW) return false
+
+				upgrade = upgrade as (HacknetServerCacheUpgrade | HacknetServerHashUpgrade)
+				u       = u as HacknetServerCacheUpgrade | HacknetServerHashUpgrade
+
 				return u.server.characteristics.host === upgrade.server.characteristics.host && u.type === upgrade.type
 			})
 
@@ -232,6 +233,10 @@ class HacknetManager implements Manager {
 		potentialUpgrades.push(newServerUpgrade)
 
 		return potentialUpgrades
+	}
+
+	private static isWorthIt(ns: NS, upgrade: HacknetServerHashUpgrade, payoffTime: number): boolean {
+		return this.hashesToMoney(ns, upgrade.hashDelta) * payoffTime >= upgrade.cost
 	}
 
 	private static async executeUpgrade(ns: NS, upgrade: HacknetServerUpgrade): Promise<void> {
@@ -283,6 +288,10 @@ class HacknetManager implements Manager {
 		}
 	}
 
+	private static hashesToMoney(ns: NS, hashes: number): number {
+		return 1e6 * hashes / 4;
+	}
+
 	public async initialize(ns: NS) {
 		Utils.disableLogging(ns)
 
@@ -327,9 +336,11 @@ class HacknetManager implements Manager {
 				continue
 			}
 
-			const hashUpgrade: HacknetServerHashUpgrade | HacknetServerAddition = this.findHashUpgrade(ns, potentialUpgrades, hypotheticalServers)
-			budget -= hashUpgrade.cost
-			upgrades.push(hashUpgrade)
+			const hashUpgrade: HacknetServerHashUpgrade | HacknetServerAddition | null = this.findHashUpgrade(ns, potentialUpgrades, hypotheticalServers)
+			if (hashUpgrade) {
+				budget -= hashUpgrade.cost
+				upgrades.push(hashUpgrade)
+			} else break; // No upgrades worth it
 		}
 
 		const mergedUpgrades: HacknetServerUpgrade[] = HacknetManager.mergeUpgrades(ns, upgrades)
@@ -340,7 +351,7 @@ class HacknetManager implements Manager {
 		this.managingLoopTimeout = setTimeout(this.managingLoop.bind(this, ns), LOOP_DELAY)
 	}
 
-	private findHashUpgrade(ns: NS, potentialUpgrades: HacknetServerUpgrade[], hypotheticalServers: HacknetServer[]): HacknetServerHashUpgrade | HacknetServerAddition {
+	private findHashUpgrade(ns: NS, potentialUpgrades: HacknetServerUpgrade[], hypotheticalServers: HacknetServer[]): HacknetServerHashUpgrade | HacknetServerAddition | null {
 		const hashUpgrades: (HacknetServerHashUpgrade | HacknetServerAddition)[] = potentialUpgrades.filter((upgrade) => {
 			return upgrade.type === HacknetServerUpgradeType.LEVEL ||
 				upgrade.type === HacknetServerUpgradeType.CORES ||
@@ -350,6 +361,11 @@ class HacknetManager implements Manager {
 		hashUpgrades.sort((a, b) => b.hashDelta - a.hashDelta)
 
 		const hashUpgrade: (HacknetServerHashUpgrade | HacknetServerAddition) = hashUpgrades[0]
+
+		if (hashUpgrade.type !== HacknetServerUpgradeType.NEW) {
+			const worthIt: boolean = HacknetManager.isWorthIt(ns, hashUpgrade, PAYOFF_TIME)
+			if (!worthIt) return null
+		}
 
 		switch (hashUpgrade.type) {
 			case HacknetServerUpgradeType.NEW:

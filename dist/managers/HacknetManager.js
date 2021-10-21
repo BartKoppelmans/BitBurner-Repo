@@ -5,10 +5,10 @@ import { CONSTANT } from '/src/lib/constants.js';
 import * as PlayerUtils from '/src/util/PlayerUtils.js';
 import { getPlayer } from '/src/util/PlayerUtils.js';
 import { HacknetServer, } from '/src/classes/Server/HacknetServer.js';
-import { HacknetServerUpgradeType, } from '/src/classes/Misc/HacknetServerInterfaces';
-import { ServerPurpose, ServerType, } from '/src/classes/Server/ServerInterfaces';
+import { HacknetServerUpgradeType, } from '/src/classes/Misc/HacknetServerInterfaces.js';
+import { ServerPurpose, ServerType, } from '/src/classes/Server/ServerInterfaces.js';
 const LOOP_DELAY = 1000;
-const HACKNET_ALLOWANCE = 0.25;
+const HACKNET_ALLOWANCE = 0.05;
 const PAYOFF_TIME = 3600; // Should pay off in an hour
 class HacknetManager {
     managingLoopTimeout;
@@ -136,10 +136,10 @@ class HacknetManager {
                 mergedUpgrades.push(upgrade);
                 return;
             }
-            upgrade = upgrade;
             const index = mergedUpgrades.findIndex((u) => {
-                if (upgrade.type === HacknetServerUpgradeType.NEW)
+                if (u.type === HacknetServerUpgradeType.NEW)
                     return false;
+                upgrade = upgrade;
                 u = u;
                 return u.server.characteristics.host === upgrade.server.characteristics.host && u.type === upgrade.type;
             });
@@ -173,6 +173,9 @@ class HacknetManager {
         };
         potentialUpgrades.push(newServerUpgrade);
         return potentialUpgrades;
+    }
+    static isWorthIt(ns, upgrade, payoffTime) {
+        return this.hashesToMoney(ns, upgrade.hashDelta) * payoffTime >= upgrade.cost;
     }
     static async executeUpgrade(ns, upgrade) {
         let isSuccessful;
@@ -224,6 +227,9 @@ class HacknetManager {
                 throw new Error('Upgrade type not recognized.');
         }
     }
+    static hashesToMoney(ns, hashes) {
+        return 1e6 * hashes / 4;
+    }
     async initialize(ns) {
         Utils.disableLogging(ns);
         ns.atExit(this.destroy.bind(this, ns));
@@ -258,8 +264,12 @@ class HacknetManager {
                 continue;
             }
             const hashUpgrade = this.findHashUpgrade(ns, potentialUpgrades, hypotheticalServers);
-            budget -= hashUpgrade.cost;
-            upgrades.push(hashUpgrade);
+            if (hashUpgrade) {
+                budget -= hashUpgrade.cost;
+                upgrades.push(hashUpgrade);
+            }
+            else
+                break; // No upgrades worth it
         }
         const mergedUpgrades = HacknetManager.mergeUpgrades(ns, upgrades);
         for (const upgrade of mergedUpgrades) {
@@ -276,6 +286,11 @@ class HacknetManager {
         });
         hashUpgrades.sort((a, b) => b.hashDelta - a.hashDelta);
         const hashUpgrade = hashUpgrades[0];
+        if (hashUpgrade.type !== HacknetServerUpgradeType.NEW) {
+            const worthIt = HacknetManager.isWorthIt(ns, hashUpgrade, PAYOFF_TIME);
+            if (!worthIt)
+                return null;
+        }
         switch (hashUpgrade.type) {
             case HacknetServerUpgradeType.NEW:
                 const hypotheticalServer = HacknetManager.getNewServer(ns);
