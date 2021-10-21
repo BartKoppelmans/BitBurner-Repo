@@ -6,7 +6,7 @@ import {
 	TreeStructure,
 }                                                  from '/src/classes/Server/ServerInterfaces.js'
 import Server                                      from '/src/classes/Server/Server.js'
-import { CONSTANT }                                from '/src/lib/constants.js'
+import { CONSTANT }                               from '/src/lib/constants.js'
 
 export class HacknetServer extends Server implements IHacknetServer {
 

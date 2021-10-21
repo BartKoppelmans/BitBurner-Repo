@@ -4471,13 +4471,11 @@ declare module 'Bitburner' {
 				 * @ramCost 0 GB
 				 * @param startingCache Cache level at the start the calculation.
 				 * @param extraCacheLevels Extra number of cache level you want to buy. Default to 1.
-				 * @param costMultiplier Aug multiplier that reduces cost. Defaults to 1.
 				 * @returns Money required to go from startingLevel to startingLevel+extraLevels.
 				 */
 				cacheUpgradeCost: (
 					startingCache: number,
 					extraCacheLevels: number,
-					costMultiplier: number,
 				) => number;
 
 				/**

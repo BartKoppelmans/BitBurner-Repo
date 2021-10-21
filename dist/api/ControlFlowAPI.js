@@ -1,7 +1,6 @@
 import { CONSTANT } from '/src/lib/constants.js';
 import * as ServerAPI from '/src/api/ServerAPI.js';
 import { Managers } from '/src/managers/Managers.js';
-// TODO: Move this all to the daemon
 export function killDaemon(ns) {
     ns.scriptKill('/src/scripts/daemon.js', CONSTANT.HOME_SERVER_HOST);
 }

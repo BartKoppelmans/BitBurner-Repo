@@ -21,6 +21,7 @@ class PurchasedServerRunner {
         return Math.log2(ram);
     }
     static getCost(ns, ram) {
+        // TODO: Update to facilitate new costs
         return ns.getPurchasedServerCost(ram);
     }
     static async purchaseNewServer(ns, ram, purchasedServerId) {

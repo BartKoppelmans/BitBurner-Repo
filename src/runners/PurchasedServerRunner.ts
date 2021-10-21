@@ -29,6 +29,7 @@ class PurchasedServerRunner {
 	}
 
 	private static getCost(ns: NS, ram: number): number {
+		// TODO: Update to facilitate new costs
 		return ns.getPurchasedServerCost(ram)
 	}
 
