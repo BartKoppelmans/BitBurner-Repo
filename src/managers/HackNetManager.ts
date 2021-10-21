@@ -235,7 +235,7 @@ class HacknetManager implements Manager {
 	}
 
 	private static async executeUpgrade(ns: NS, upgrade: HacknetServerUpgrade): Promise<void> {
-		let isSuccessful: boolean;
+		let isSuccessful: boolean
 		switch (upgrade.type) {
 			case HacknetServerUpgradeType.NEW:
 				const hacknetServerId: number = ns.hacknet.purchaseNode()
@@ -290,7 +290,7 @@ class HacknetManager implements Manager {
 	}
 
 	public async start(ns: NS): Promise<void> {
-		LogAPI.printTerminal(ns, `Starting the HackNetManager`)
+		LogAPI.printTerminal(ns, `Starting the HacknetManager`)
 
 		this.managingLoopTimeout = setTimeout(this.managingLoop.bind(this, ns), LOOP_DELAY)
 	}
@@ -298,7 +298,7 @@ class HacknetManager implements Manager {
 	public async destroy(ns: NS): Promise<void> {
 		if (this.managingLoopTimeout) clearTimeout(this.managingLoopTimeout)
 
-		LogAPI.printTerminal(ns, `Stopping the HackNetManager`)
+		LogAPI.printTerminal(ns, `Stopping the HacknetManager`)
 	}
 
 	private async managingLoop(ns: NS): Promise<void> {

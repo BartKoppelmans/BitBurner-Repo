@@ -37,7 +37,7 @@ async function initialize(ns) {
     if (flags.corporation)
         tasks.push(startManager(ns, Managers.CorporationManager));
     if (flags.hacknet)
-        tasks.push(startManager(ns, Managers.HackNetManager));
+        tasks.push(startManager(ns, Managers.HacknetManager));
     // Runners
     tasks.push(launchRunners(ns));
     await Promise.allSettled(tasks);

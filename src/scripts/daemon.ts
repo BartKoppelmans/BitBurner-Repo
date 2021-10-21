@@ -40,7 +40,7 @@ async function initialize(ns: NS) {
 	if (flags.sleeve) tasks.push(startManager(ns, Managers.SleeveManager))
 	if (flags.stock) tasks.push(startManager(ns, Managers.StockManager))
 	if (flags.corporation) tasks.push(startManager(ns, Managers.CorporationManager))
-	if (flags.hacknet) tasks.push(startManager(ns, Managers.HackNetManager))
+	if (flags.hacknet) tasks.push(startManager(ns, Managers.HacknetManager))
 
 	// Runners
 	tasks.push(launchRunners(ns))

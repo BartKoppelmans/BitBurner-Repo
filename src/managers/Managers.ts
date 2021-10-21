@@ -6,5 +6,5 @@ export enum Managers {
 	StockManager       = '/src/managers/StockManager.js',
 	HackingManager     = '/src/managers/HackingManager.js',
 	CorporationManager = '/src/managers/CorporationManager.js',
-	HackNetManager     = '/src/managers/HackNetManager.js'
+	HacknetManager     = '/src/managers/HacknetManager.js'
 }

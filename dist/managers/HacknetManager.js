@@ -229,13 +229,13 @@ class HacknetManager {
         ns.atExit(this.destroy.bind(this, ns));
     }
     async start(ns) {
-        LogAPI.printTerminal(ns, `Starting the HackNetManager`);
+        LogAPI.printTerminal(ns, `Starting the HacknetManager`);
         this.managingLoopTimeout = setTimeout(this.managingLoop.bind(this, ns), LOOP_DELAY);
     }
     async destroy(ns) {
         if (this.managingLoopTimeout)
             clearTimeout(this.managingLoopTimeout);
-        LogAPI.printTerminal(ns, `Stopping the HackNetManager`);
+        LogAPI.printTerminal(ns, `Stopping the HacknetManager`);
     }
     async managingLoop(ns) {
         const hacknetServers = ServerAPI.getHacknetServers(ns);
