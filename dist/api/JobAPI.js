@@ -50,6 +50,8 @@ export async function finishJobs(ns, jobs) {
     // NOTE: This function manually removes the jobs instead of using removeJob (for performance reasons)
     const jobMap = getJobMap(ns);
     for (const finishedJob of jobs) {
+        if (finishedJob.finished)
+            continue;
         const batchIndex = jobMap.batches.findIndex((b) => b.batchId === finishedJob.batchId);
         if (batchIndex === -1)
             throw new Error(`Could not find the batch`);

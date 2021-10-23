@@ -75,6 +75,8 @@ export async function finishJobs(ns: NS, jobs: Job[]): Promise<void> {
 	const jobMap: JobMap = getJobMap(ns)
 
 	for (const finishedJob of jobs) {
+		if (finishedJob.finished) continue
+
 		const batchIndex: number = jobMap.batches.findIndex((b) => b.batchId === finishedJob.batchId)
 		if (batchIndex === -1) throw new Error(`Could not find the batch`)
 

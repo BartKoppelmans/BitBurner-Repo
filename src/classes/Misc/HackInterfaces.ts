@@ -1,4 +1,5 @@
-import Job from '/src/classes/Job/Job.js'
+import Server from '../Server/Server.js'
+import Job    from '/src/classes/Job/Job.js'
 
 export interface HackSnapshot {
 	optimalBatchCost: number;
@@ -6,6 +7,17 @@ export interface HackSnapshot {
 }
 
 export type ThreadSpread = Map<string, number>;
+
+export interface CycleSpread {
+	source: Server,
+	numCycles: number
+}
+
+export interface PrepEffect {
+	source: Server,
+	threads: number,
+	amount: number
+}
 
 export interface Cycle {
 	hack: Job;

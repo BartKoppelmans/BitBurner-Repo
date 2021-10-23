@@ -78,15 +78,17 @@ export default class Job {
 	}
 
 	public onStart(ns: NS) {
-		this.print(ns, false, false)
+		// this.print(ns, false, false)
 	}
 
 	public onFinish(ns: NS) {
-		this.print(ns, true, false)
+		// this.print(ns, true, false)
+		const toolName: string = ToolUtils.getToolName(this.tool).padEnd(7,"")
+		LogAPI.printLog(ns, `${toolName} -> sec: ${ns.nFormat(this.target.getSecurityLevel(ns), '0.000')} / ${ns.nFormat(this.target.staticHackingProperties.minSecurityLevel, '0.000')} - money: ${ns.nFormat(this.target.getMoney(ns), '$0.000a')} / ${ns.nFormat(this.target.staticHackingProperties.maxMoney, '$0.000a')}`)
 	}
 
 	public onCancel(ns: NS) {
-		this.print(ns, false, true)
+		// this.print(ns, false, true)
 	}
 
 	public toJSON() {

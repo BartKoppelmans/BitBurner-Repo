@@ -4671,9 +4671,10 @@ declare module 'Bitburner' {
 		 * @ramCost 1 GB
 		 * @param host IP or hostname of the target server.
 		 * @param growthAmount Multiplicative factor by which the server is grown. Decimal form..
+		 * @param cores The number of cores available on the server
 		 * @returns The amount of {@link grow} calls needed to grow the specified server by the specified amount
 		 */
-		growthAnalyze(host: Host, growthAmount: number): number;
+		growthAnalyze(host: Host, growthAmount: number, cores?: number): number;
 
 		/**
 		 * Suspends the script for n milliseconds.
@@ -5693,7 +5694,7 @@ declare module 'Bitburner' {
 		 * @returns Amount of RAM required to run the specified script on the target server, and 0 if the script does
 		 *     not exist.
 		 */
-		getScriptRam(script: Script, host?: Host): Promise<number>;
+		getScriptRam(script: Script, host?: Host): number;
 
 		/**
 		 * Returns the amount of time in seconds it takes to execute the {@link hack} Netscript function on the target

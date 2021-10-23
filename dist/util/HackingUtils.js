@@ -9,7 +9,7 @@ import Batch from '/src/classes/Job/Batch.js';
 import * as JobAPI from '/src/api/JobAPI.js';
 import * as HackingCalculationUtils from '/src/util/HackingCalculationUtils.js';
 import * as LogAPI from '/src/api/LogAPI.js';
-const MAX_CYCLE_NUMBER = 50; // TODO: Find a way to determine this dynamically
+// const MAX_CYCLE_NUMBER: number = 50 as const // TODO: Find a way to determine this dynamically
 export async function hack(ns, target) {
     // If it is prepping or targeting, leave it
     if (target.status !== ServerStatus.NONE)
@@ -24,6 +24,49 @@ export async function hack(ns, target) {
     await attackServer(ns, target);
     return;
 }
+async function createJob(ns, target, tool, prepEffects, batchId, start, end) {
+    const threadSpread = new Map();
+    for (const prepEffect of prepEffects) {
+        threadSpread.set(prepEffect.source.characteristics.host, prepEffect.threads);
+        await ServerAPI.increaseReservation(ns, prepEffect.source.characteristics.host, prepEffect.threads * ToolUtils.getToolCost(ns, tool));
+    }
+    const threads = prepEffects.reduce((total, prepEffect) => total + prepEffect.threads, 0);
+    return new Job(ns, {
+        id: Utils.generateHash(),
+        batchId,
+        start,
+        end,
+        target,
+        threads,
+        threadSpread,
+        tool,
+        isPrep: true,
+    });
+}
+function calculateTimings(growthTime, weakenTime, firstStartTime) {
+    let growthStartTime;
+    let growthEndTime;
+    let compensationWeakenEndTime;
+    let compensationWeakenStartTime;
+    if ((growthTime + CONSTANT.JOB_DELAY) > weakenTime) {
+        growthStartTime = new Date(firstStartTime.getTime());
+        growthEndTime = new Date(growthStartTime.getTime() + growthTime);
+        compensationWeakenEndTime = new Date(growthEndTime.getTime() + CONSTANT.JOB_DELAY);
+        compensationWeakenStartTime = new Date(compensationWeakenEndTime.getTime() - weakenTime);
+    }
+    else {
+        compensationWeakenStartTime = new Date(firstStartTime.getTime());
+        compensationWeakenEndTime = new Date(compensationWeakenStartTime.getTime() + growthTime);
+        growthEndTime = new Date(compensationWeakenEndTime.getTime() - CONSTANT.JOB_DELAY);
+        growthStartTime = new Date(growthEndTime.getTime() - growthTime);
+    }
+    return {
+        growthStart: growthStartTime,
+        growthEnd: growthEndTime,
+        weakenStart: compensationWeakenStartTime,
+        weakenEnd: compensationWeakenEndTime
+    };
+}
 export async function prepServer(ns, target) {
     // If the server is optimal, we are done I guess
     if (target.isOptimal(ns))
@@ -35,111 +78,67 @@ export async function prepServer(ns, target) {
     let startTime;
     let endTime;
     const jobs = [];
-    let availableThreads = await HackingCalculationUtils.calculateMaxThreads(ns, Tools.WEAKEN, true);
-    if (availableThreads <= 0) {
-        // LogAPI.printLog(ns, 'Skipped a prep.')
-        return;
-    }
-    // TODO: Ideally we pick the server that can fit all our threads here immediately,
-    // then we can have everything on one source server
-    // TODO: Refactor this shitshow
     if (target.needsWeaken(ns)) {
-        const neededWeakenThreads = HackingCalculationUtils.calculateWeakenThreads(ns, target);
-        const weakenThreads = Math.min(neededWeakenThreads, availableThreads);
-        const weakenThreadSpread = await HackingCalculationUtils.computeThreadSpread(ns, Tools.WEAKEN, weakenThreads, true);
+        let weakenAmount = target.getSecurityLevel(ns) - target.staticHackingProperties.minSecurityLevel;
+        const prepEffects = [];
+        for (const preppingServer of ServerAPI.getPreppingServers(ns)) {
+            const potentialPrepEffect = HackingCalculationUtils.calculatePotentialPrepEffect(ns, Tools.WEAKEN, target, preppingServer, target.staticHackingProperties.minSecurityLevel + weakenAmount);
+            if (potentialPrepEffect.threads === 0)
+                continue;
+            weakenAmount -= potentialPrepEffect.amount;
+            prepEffects.push(potentialPrepEffect);
+            if (weakenAmount <= 0)
+                break;
+        }
         const weakenTime = target.getWeakenTime(ns);
         const weakenStart = new Date(Date.now() + CONSTANT.INITIAL_JOB_DELAY);
         const weakenEnd = new Date(weakenStart.getTime() + weakenTime);
+        initialWeakenJob = await createJob(ns, target, Tools.WEAKEN, prepEffects, batchId, weakenStart, weakenEnd);
         startTime = weakenStart;
         endTime = weakenEnd;
-        initialWeakenJob = new Job(ns, {
-            id: Utils.generateHash(),
-            batchId,
-            start: weakenStart,
-            end: weakenEnd,
-            target,
-            threads: weakenThreads,
-            threadSpread: weakenThreadSpread,
-            tool: Tools.WEAKEN,
-            isPrep: true,
-        });
         jobs.push(initialWeakenJob);
-        availableThreads -= weakenThreads;
-        for (const [server, threads] of weakenThreadSpread) {
-            await ServerAPI.increaseReservation(ns, server, threads * await ToolUtils.getToolCost(ns, Tools.WEAKEN));
-        }
     }
     // First grow, so that the amount of money is optimal
-    if (target.needsGrow(ns) && availableThreads > 0) {
-        const neededGrowthThreads = HackingCalculationUtils.calculateGrowthThreads(ns, target);
-        const compensationWeakenThreads = HackingCalculationUtils.calculateCompensationWeakenThreads(ns, target, Tools.GROW, neededGrowthThreads);
-        const totalThreads = neededGrowthThreads + compensationWeakenThreads;
-        const threadsFit = (totalThreads < availableThreads);
-        // NOTE: Here we do Math.floor, which could cause us not to execute enough weakens/grows
-        // However, we currently run into a lot of errors regarding too little threads available, which is why we do
-        // this.
-        const growthThreads = (threadsFit) ? neededGrowthThreads : Math.floor(neededGrowthThreads * (availableThreads / totalThreads));
-        const weakenThreads = (threadsFit) ? compensationWeakenThreads : Math.floor(compensationWeakenThreads * (availableThreads / totalThreads));
-        if (growthThreads > 0 && weakenThreads > 0) {
-            const weakenTime = target.getWeakenTime(ns);
-            const growthTime = target.getGrowTime(ns);
-            const firstStartTime = (initialWeakenJob) ? new Date(initialWeakenJob.end.getTime() + CONSTANT.JOB_DELAY) : new Date(Date.now() + CONSTANT.INITIAL_JOB_DELAY);
-            let growthStartTime;
-            let growthEndTime;
-            let compensationWeakenEndTime;
-            let compensationWeakenStartTime;
-            if ((growthTime + CONSTANT.JOB_DELAY) > weakenTime) {
-                growthStartTime = new Date(firstStartTime.getTime());
-                growthEndTime = new Date(growthStartTime.getTime() + growthTime);
-                compensationWeakenEndTime = new Date(growthEndTime.getTime() + CONSTANT.JOB_DELAY);
-                compensationWeakenStartTime = new Date(compensationWeakenEndTime.getTime() - weakenTime);
+    if (target.needsGrow(ns)) {
+        const weakenTime = target.getWeakenTime(ns);
+        const growthTime = target.getGrowTime(ns);
+        const firstStartTime = (initialWeakenJob) ? new Date(initialWeakenJob.end.getTime() + CONSTANT.JOB_DELAY) : new Date(Date.now() + CONSTANT.INITIAL_JOB_DELAY);
+        startTime = firstStartTime;
+        const timings = calculateTimings(growthTime, weakenTime, firstStartTime);
+        let growAmount = target.staticHackingProperties.maxMoney - target.getMoney(ns);
+        const growPrepEffects = [];
+        for (const preppingServer of ServerAPI.getPreppingServers(ns)) {
+            const potentialPrepEffect = HackingCalculationUtils.calculatePotentialPrepEffect(ns, Tools.GROW, target, preppingServer, target.staticHackingProperties.maxMoney - growAmount);
+            if (potentialPrepEffect.threads === 0)
+                continue;
+            growAmount -= potentialPrepEffect.amount;
+            growPrepEffects.push(potentialPrepEffect);
+            if (growAmount <= 0)
+                break;
+        }
+        endTime = timings.growthEnd;
+        growJob = await createJob(ns, target, Tools.GROW, growPrepEffects, batchId, timings.growthStart, timings.growthEnd);
+        jobs.push(growJob);
+        // We might still have room for the compensation weaken
+        if (growAmount === 0) {
+            const growThreads = growPrepEffects.reduce((total, prepEffect) => total + prepEffect.threads, 0);
+            let weakenAmount = growThreads * CONSTANT.GROW_HARDENING;
+            const weakenPrepEffects = [];
+            for (const preppingServer of ServerAPI.getPreppingServers(ns)) {
+                const potentialPrepEffect = HackingCalculationUtils.calculatePotentialPrepEffect(ns, Tools.WEAKEN, target, preppingServer, target.staticHackingProperties.minSecurityLevel + weakenAmount);
+                if (potentialPrepEffect.threads === 0)
+                    continue;
+                weakenAmount -= potentialPrepEffect.amount;
+                weakenPrepEffects.push(potentialPrepEffect);
+                if (weakenAmount <= 0)
+                    break;
             }
-            else {
-                compensationWeakenStartTime = new Date(firstStartTime.getTime());
-                compensationWeakenEndTime = new Date(compensationWeakenStartTime.getTime() + growthTime);
-                growthEndTime = new Date(compensationWeakenEndTime.getTime() - CONSTANT.JOB_DELAY);
-                growthStartTime = new Date(growthEndTime.getTime() - growthTime);
-            }
-            startTime = firstStartTime;
-            endTime = compensationWeakenEndTime;
-            const growthThreadSpread = await HackingCalculationUtils.computeThreadSpread(ns, Tools.GROW, growthThreads, true);
-            growJob = new Job(ns, {
-                id: Utils.generateHash(),
-                batchId,
-                target,
-                threads: growthThreads,
-                threadSpread: growthThreadSpread,
-                tool: Tools.GROW,
-                isPrep: true,
-                start: growthStartTime,
-                end: growthEndTime,
-            });
-            jobs.push(growJob);
-            for (const [server, threads] of growthThreadSpread) {
-                await ServerAPI.increaseReservation(ns, server, threads * await ToolUtils.getToolCost(ns, Tools.GROW));
-            }
-            const compensationWeakenThreadSpread = await HackingCalculationUtils.computeThreadSpread(ns, Tools.WEAKEN, weakenThreads, true);
-            compensationWeakenJob = new Job(ns, {
-                id: Utils.generateHash(),
-                batchId,
-                target,
-                threads: weakenThreads,
-                threadSpread: compensationWeakenThreadSpread,
-                tool: Tools.WEAKEN,
-                isPrep: true,
-                start: compensationWeakenStartTime,
-                end: compensationWeakenEndTime,
-            });
+            endTime = timings.weakenEnd;
+            compensationWeakenJob = await createJob(ns, target, Tools.WEAKEN, weakenPrepEffects, batchId, timings.weakenStart, timings.weakenEnd);
             jobs.push(compensationWeakenJob);
-            for (const [server, threads] of compensationWeakenThreadSpread) {
-                await ServerAPI.increaseReservation(ns, server, threads * await ToolUtils.getToolCost(ns, Tools.WEAKEN));
-            }
         }
     }
-    // We could not create any jobs, probably the RAM was already fully used.
-    // TODO: Filter this at the start, if we cannot start any threads, we should not even go here
-    if (jobs.length === 0)
-        return;
+    // NOTE: Unfortunately we need this for type safety
     if (!startTime || !endTime)
         throw new Error('How the fuck do we not have timings available?');
     const batchJob = new Batch(ns, {
@@ -152,17 +151,19 @@ export async function prepServer(ns, target) {
     await JobAPI.startBatch(ns, batchJob);
 }
 export async function attackServer(ns, target) {
-    const numPossibleCycles = await HackingCalculationUtils.computeCycles(ns, target);
-    const numCycles = Math.min(numPossibleCycles, MAX_CYCLE_NUMBER);
-    const batchId = Utils.generateHash();
+    const cycleSpreads = HackingCalculationUtils.computeCycleSpread(ns, target);
+    const numCycles = cycleSpreads.reduce((total, cycleSpread) => total + cycleSpread.numCycles, 0);
     if (numCycles === 0) {
         LogAPI.printLog(ns, 'Skipped an attack.');
         return;
     }
+    const batchId = Utils.generateHash();
     const cycles = [];
-    for (let i = 0; i < numCycles; i++) {
-        const cycle = await HackingCalculationUtils.scheduleCycle(ns, target, batchId, cycles[cycles.length - 1]);
-        cycles.push(cycle);
+    for (const cycleSpread of cycleSpreads) {
+        for (let i = 0; i < cycleSpread.numCycles; i++) {
+            const cycle = await HackingCalculationUtils.scheduleCycle(ns, target, cycleSpread.source, batchId, cycles[cycles.length - 1]);
+            cycles.push(cycle);
+        }
     }
     if (cycles.length === 0) {
         throw new Error('No cycles created');
@@ -192,9 +193,10 @@ export async function optimizePerformance(ns, target) {
     };
     for (let n = CONSTANT.MIN_PERCENTAGE_TO_STEAL; n <= CONSTANT.MAX_PERCENTAGE_TO_STEAL; n += CONSTANT.DELTA_PERCENTAGE_TO_STEAL) {
         target.percentageToSteal = n;
-        const cycles = await HackingCalculationUtils.computeCycles(ns, target, hackingServers);
-        const profit = target.staticHackingProperties.maxMoney * target.percentageToSteal * cycles;
-        const totalTime = HackingCalculationUtils.calculateTotalBatchTime(ns, target, cycles);
+        const cycleSpreads = HackingCalculationUtils.computeCycleSpread(ns, target, hackingServers);
+        const numCycles = cycleSpreads.reduce((total, cycleSpread) => total + cycleSpread.numCycles, 0);
+        const profit = target.staticHackingProperties.maxMoney * target.percentageToSteal * numCycles;
+        const totalTime = HackingCalculationUtils.calculateTotalBatchTime(ns, target, numCycles);
         const profitsPerSecond = profit / totalTime;
         if (profitsPerSecond > optimalTarget.profitsPerSecond) {
             optimalTarget = { percentageToSteal: n, profitsPerSecond };

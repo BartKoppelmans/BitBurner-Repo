@@ -81,7 +81,7 @@ class HacknetManager {
             return Infinity;
     }
     static getNewServer(ns) {
-        const hacknetServerId = ns.hacknet.numNodes() + 1;
+        const hacknetServerId = ns.hacknet.numNodes();
         return new HacknetServer(ns, {
             nodeInformation: {
                 level: 1,

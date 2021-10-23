@@ -48,8 +48,8 @@ export default class HackableServer extends Server {
 	}
 
 	public isOptimal(ns: NS): boolean {
-		return this.getSecurityLevel(ns) === this.staticHackingProperties.minSecurityLevel &&
-			this.getMoney(ns) === this.staticHackingProperties.maxMoney
+		return this.getSecurityLevel(ns) <= this.staticHackingProperties.minSecurityLevel &&
+			this.getMoney(ns) >= this.staticHackingProperties.maxMoney
 	}
 
 	public needsGrow(ns: NS): boolean {

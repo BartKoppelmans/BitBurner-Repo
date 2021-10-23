@@ -1,18 +1,32 @@
 import * as ServerAPI from '/src/api/ServerAPI.js';
-import { CONSTANT } from '/src/lib/constants.js';
-import { Tools } from '/src/tools/Tools.js';
+import { CONSTANT, } from '/src/lib/constants.js';
+import { Tools, } from '/src/tools/Tools.js';
 import * as PlayerUtils from '/src/util/PlayerUtils.js';
 import * as ToolUtils from '/src/util/ToolUtils.js';
 import * as Utils from '/src/util/Utils.js';
 import Job from '/src/classes/Job/Job.js';
-export async function computeCycles(ns, target, servers) {
+export function computeCycleSpread(ns, target, servers) {
     if (!servers)
         servers = ServerAPI.getHackingServers(ns);
-    const cycleCost = await getOptimalCycleCost(ns, target);
-    return Math.max(0, Math.min(CONSTANT.MAX_CYCLE_NUMBER, servers.reduce((threads, server) => threads + Math.floor(server.getAvailableRam(ns) / cycleCost), 0)));
+    let totalCycles = 0;
+    const cycleSpreads = [];
+    for (const source of servers) {
+        const cycleCost = getOptimalCycleCost(ns, target, source);
+        let numCycles = Math.floor(source.getAvailableRam(ns) / cycleCost);
+        if (numCycles + totalCycles > CONSTANT.MAX_CYCLE_NUMBER) {
+            numCycles -= CONSTANT.MAX_CYCLE_NUMBER - totalCycles;
+        }
+        totalCycles += numCycles;
+        if (numCycles > 0) {
+            cycleSpreads.push({ source, numCycles });
+        }
+        if (totalCycles >= CONSTANT.MAX_CYCLE_NUMBER)
+            break;
+    }
+    return cycleSpreads;
 }
-async function determineCycleThreadSpreads(ns, target, cycleThreads) {
-    const cost = await getOptimalCycleCost(ns, target);
+async function determineCycleThreadSpreads(ns, target, source, cycleThreads) {
+    const cost = getOptimalCycleCost(ns, target, source);
     const serverList = ServerAPI.getHackingServers(ns).filter((s) => s.getAvailableRam(ns) >= cost);
     // Get the server with the most available RAM
     const server = serverList[0];
@@ -48,20 +62,20 @@ export function calculateTotalBatchTime(ns, target, numCycles) {
     }
 }
 // Returns the number of threads
-export async function getOptimalCycleCost(ns, target) {
-    const cycleThreads = determineCycleThreads(ns, target);
+export function getOptimalCycleCost(ns, target, source) {
+    const cycleThreads = determineCycleThreads(ns, target, source);
     const hackThreads = cycleThreads.hack;
     const growthThreads = cycleThreads.growth;
     const weakenThreads = cycleThreads.weaken1 + cycleThreads.weaken2;
-    const hackCost = hackThreads * await ToolUtils.getToolCost(ns, Tools.HACK);
-    const growCost = growthThreads * await ToolUtils.getToolCost(ns, Tools.GROW);
-    const weakenCost = weakenThreads * await ToolUtils.getToolCost(ns, Tools.WEAKEN);
+    const hackCost = hackThreads * ToolUtils.getToolCost(ns, Tools.HACK);
+    const growCost = growthThreads * ToolUtils.getToolCost(ns, Tools.GROW);
+    const weakenCost = weakenThreads * ToolUtils.getToolCost(ns, Tools.WEAKEN);
     return hackCost + growCost + weakenCost;
 }
-export async function scheduleCycle(ns, target, batchId, previousCycle) {
+export async function scheduleCycle(ns, target, source, batchId, previousCycle) {
     const cycleTimings = determineCycleTimings(ns, target, previousCycle);
-    const cycleThreads = determineCycleThreads(ns, target);
-    const cycleThreadSpreads = await determineCycleThreadSpreads(ns, target, cycleThreads);
+    const cycleThreads = determineCycleThreads(ns, target, source);
+    const cycleThreadSpreads = await determineCycleThreadSpreads(ns, target, source, cycleThreads);
     const cycleId = Utils.generateHash();
     const hackJob = new Job(ns, {
         batchId,
@@ -165,11 +179,11 @@ function determineCycleTimings(ns, target, previousCycle) {
         weaken2: { start: weaken2Start, end: weaken2End },
     };
 }
-function determineCycleThreads(ns, target) {
+function determineCycleThreads(ns, target, source) {
     const hackThreads = Math.max(1, Math.floor(calculateHackThreads(ns, target)));
-    const weaken1Threads = Math.ceil(calculateCompensationWeakenThreads(ns, target, Tools.HACK, hackThreads));
-    const growthThreads = Math.ceil(calculateCompensationGrowthThreads(ns, target, hackThreads));
-    const weaken2Threads = Math.ceil(calculateCompensationWeakenThreads(ns, target, Tools.GROW, growthThreads));
+    const weaken1Threads = Math.ceil(calculateCompensationWeakenThreads(ns, target, source, Tools.HACK, hackThreads));
+    const growthThreads = Math.ceil(calculateCompensationGrowthThreads(ns, target, source, hackThreads));
+    const weaken2Threads = Math.ceil(calculateCompensationWeakenThreads(ns, target, source, Tools.GROW, growthThreads));
     return {
         hack: hackThreads,
         weaken1: weaken1Threads,
@@ -177,51 +191,57 @@ function determineCycleThreads(ns, target) {
         weaken2: weaken2Threads,
     };
 }
-export async function computeThreadSpread(ns, tool, threads, isPrep) {
-    const maxThreadsAvailable = await calculateMaxThreads(ns, tool, isPrep);
-    if (threads > maxThreadsAvailable) {
-        throw new Error('We don\'t have that much threads available.');
-    }
-    const cost = await ToolUtils.getToolCost(ns, tool);
-    let threadsLeft = threads;
-    const spreadMap = new Map();
-    const serverList = (isPrep) ? ServerAPI.getPreppingServers(ns) : ServerAPI.getHackingServers(ns);
-    for (const server of serverList) {
-        const serverThreads = Math.floor(server.getAvailableRam(ns) / cost);
-        // If we can't fit any more threads here, skip it
-        if (serverThreads <= 0)
-            continue;
-        // We can fit all our threads in here!
-        if (serverThreads >= threadsLeft) {
-            spreadMap.set(server.characteristics.host, threadsLeft);
-            break;
-        }
-        spreadMap.set(server.characteristics.host, serverThreads);
-        threadsLeft -= serverThreads;
-    }
-    return spreadMap;
-}
-// Here we allow thread spreading over multiple servers
-export async function calculateMaxThreads(ns, tool, isPrep) {
-    const serverList = (isPrep) ? ServerAPI.getPreppingServers(ns) : ServerAPI.getHackingServers(ns);
-    const cost = await ToolUtils.getToolCost(ns, tool);
-    return serverList.reduce((threads, server) => {
-        return threads + Math.floor(server.getAvailableRam(ns) / cost);
-    }, 0);
-}
 export function calculateHackThreads(ns, target) {
     const hackAmount = target.percentageToSteal * target.staticHackingProperties.maxMoney;
     return ns.hackAnalyzeThreads(target.characteristics.host, hackAmount);
 }
-export function calculateWeakenThreads(ns, target, start = target.getSecurityLevel(ns), goal = target.staticHackingProperties.minSecurityLevel) {
-    return Math.ceil((start - goal) / PlayerUtils.getWeakenPotency(ns));
+export function calculatePotentialPrepEffect(ns, tool, target, source, start, goal) {
+    const cost = ToolUtils.getToolCost(ns, tool);
+    const availableThreads = Math.floor(source.getAvailableRam(ns) / cost);
+    let neededThreads;
+    if (tool === Tools.WEAKEN) {
+        neededThreads = calculateWeakenThreads(ns, target, source, start, goal);
+    }
+    else if (tool === Tools.GROW) {
+        neededThreads = calculateGrowthThreads(ns, target, source, start, goal);
+    }
+    else
+        throw new Error('Incorrect setup');
+    const threads = Math.min(availableThreads, neededThreads);
+    let amount;
+    if (tool === Tools.WEAKEN) {
+        amount = calculateWeakenEffect(ns, target, source, threads);
+    }
+    else if (tool === Tools.GROW) {
+        amount = calculateGrowthEffect(ns, target, source, threads, start);
+    }
+    else
+        throw new Error('Incorrect setup');
+    return { source, threads, amount };
 }
-export function calculateGrowthThreads(ns, target, start = target.getMoney(ns), goal = target.staticHackingProperties.maxMoney) {
+export function calculateGrowthEffect(ns, target, source, threads, start = target.getMoney(ns)) {
+    const targetServerObject = ns.getServer(target.characteristics.host);
+    const sourceServerObject = ns.getServer(source.characteristics.host);
+    const playerObject = PlayerUtils.getPlayer(ns);
+    return start * ns.formulas.basic.growPercent(targetServerObject, threads, playerObject, sourceServerObject.cpuCores) - start;
+}
+export function calculateWeakenEffect(ns, target, source, threads) {
+    const sourceServerObject = ns.getServer(source.characteristics.host);
+    const coreBonus = 1 + (sourceServerObject.cpuCores - 1) / 16;
+    return PlayerUtils.getWeakenPotency(ns) * coreBonus * threads;
+}
+export function calculateWeakenThreads(ns, target, source, start = target.getSecurityLevel(ns), goal = target.staticHackingProperties.minSecurityLevel) {
+    const sourceServerObject = ns.getServer(source.characteristics.host);
+    const coreBonus = 1 + (sourceServerObject.cpuCores - 1) / 16;
+    return Math.ceil((start - goal) / (PlayerUtils.getWeakenPotency(ns) * coreBonus));
+}
+export function calculateGrowthThreads(ns, target, source, start = target.getMoney(ns), goal = target.staticHackingProperties.maxMoney) {
     // maxIterations prevents it from somehow looping indefinitely
     let guess = 1; // We can start with any number, really, but may as well make it simple.
     let previous = 0;
     let previous2 = 0; // The time before the time before; should identify cyclical outputs.
     let iteration = 0;
+    const sourceServerObject = ns.getServer(source.characteristics.host);
     start = Math.max(0, start); // Can't start with <0 cash.
     if (start >= goal) {
         return 0; // Good news! You're already there.
@@ -230,7 +250,7 @@ export function calculateGrowthThreads(ns, target, start = target.getMoney(ns), 
         previous = guess;
         const ratio = goal / (start + guess);
         if (ratio > 1) {
-            guess = Math.ceil(ns.growthAnalyze(target.characteristics.host, ratio));
+            guess = Math.ceil(ns.growthAnalyze(target.characteristics.host, ratio, sourceServerObject.cpuCores));
         }
         else {
             guess = 1; // We'd only need 1 thread to meet the goal if adding the guess is sufficient to reach goal.
@@ -246,19 +266,21 @@ export function calculateGrowthThreads(ns, target, start = target.getMoney(ns), 
     }
     return guess; // It successfully stabilized!
 }
-export function calculateCompensationWeakenThreads(ns, target, after, threads) {
+export function calculateCompensationWeakenThreads(ns, target, source, after, threads) {
+    const sourceServerObject = ns.getServer(source.characteristics.host);
+    const coreBonus = 1 + (sourceServerObject.cpuCores - 1) / 16;
     switch (after) {
         case Tools.GROW:
-            return Math.ceil(threads * CONSTANT.GROW_HARDENING / PlayerUtils.getWeakenPotency(ns));
+            return Math.ceil(threads * CONSTANT.GROW_HARDENING / (PlayerUtils.getWeakenPotency(ns) * coreBonus));
         case Tools.HACK:
-            return Math.ceil(threads * CONSTANT.HACK_HARDENING / PlayerUtils.getWeakenPotency(ns));
+            return Math.ceil(threads * CONSTANT.HACK_HARDENING / (PlayerUtils.getWeakenPotency(ns) * coreBonus));
         default:
             throw new Error('We did not recognize the tool');
     }
 }
 // This is always after a hack
-export function calculateCompensationGrowthThreads(ns, target, threads) {
+export function calculateCompensationGrowthThreads(ns, target, source, threads) {
     const hackAmount = ((threads * ns.hackAnalyzePercent(target.characteristics.host)) / 100) * target.staticHackingProperties.maxMoney;
     const startAmount = target.getMoney(ns) - hackAmount;
-    return calculateGrowthThreads(ns, target, startAmount);
+    return calculateGrowthThreads(ns, target, source, startAmount);
 }

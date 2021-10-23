@@ -7,7 +7,6 @@ import { ServerPurpose } from '/src/classes/Server/ServerInterfaces.js';
 import * as JobAPI from '/src/api/JobAPI.js';
 const JOB_MANAGING_LOOP_INTERVAL = 1000;
 const HACKING_LOOP_DELAY = 2000;
-const MAX_TARGET_COUNT = 30;
 class HackingManager {
     hackingLoopInterval;
     jobLoopInterval;
@@ -132,7 +131,7 @@ class HackingManager {
         for (const target of potentialTargets) {
             const currentTargets = ServerAPI.getCurrentTargets(ns);
             // Can't have too many targets at the same time
-            if (currentTargets.length >= MAX_TARGET_COUNT) {
+            if (currentTargets.length >= CONSTANT.MAX_TARGET_COUNT) {
                 break;
             }
             await HackingUtils.hack(ns, target);

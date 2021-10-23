@@ -15,6 +15,7 @@ export default class Server implements IServer {
 
 		this.characteristics = server.characteristics
 		this.reservation     = (server.reservation) ? server.reservation : 0
+
 		if (server.purpose) this.purpose = server.purpose
 	}
 

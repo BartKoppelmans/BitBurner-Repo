@@ -130,7 +130,7 @@ class HacknetManager implements Manager {
 	}
 
 	private static getNewServer(ns: NS): HacknetServer {
-		const hacknetServerId: number = ns.hacknet.numNodes() + 1
+		const hacknetServerId: number = ns.hacknet.numNodes()
 		return new HacknetServer(ns, {
 			nodeInformation: {
 				level: 1,

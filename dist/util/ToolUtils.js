@@ -1,6 +1,6 @@
 import { Tools } from '/src/tools/Tools.js';
-export async function getToolCost(ns, tool) {
-    return await ns.getScriptRam(tool);
+export function getToolCost(ns, tool) {
+    return ns.getScriptRam(tool);
 }
 export function getToolTime(ns, tool, server) {
     switch (tool) {

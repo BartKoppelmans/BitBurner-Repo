@@ -13,12 +13,10 @@ import * as JobAPI              from '/src/api/JobAPI.js'
 import { JobMap }               from '/src/classes/Job/JobInterfaces.js'
 import Server                   from '/src/classes/Server/Server.js'
 import { PurchasedServer }      from '/src/classes/Server/PurchasedServer'
-import { HacknetServer }        from '/src/classes/Server/HacknetServer'
+import { HacknetServer }        from '/src/classes/Server/HacknetServer.js'
 
 const JOB_MANAGING_LOOP_INTERVAL = 1000 as const
 const HACKING_LOOP_DELAY: number = 2000 as const
-
-const MAX_TARGET_COUNT: number = 30 as const
 
 class HackingManager implements Manager {
 
@@ -181,7 +179,7 @@ class HackingManager implements Manager {
 			const currentTargets: HackableServer[] = ServerAPI.getCurrentTargets(ns)
 
 			// Can't have too many targets at the same time
-			if (currentTargets.length >= MAX_TARGET_COUNT) {
+			if (currentTargets.length >= CONSTANT.MAX_TARGET_COUNT) {
 				break
 			}
 

@@ -125,7 +125,7 @@ export const CONSTANT = {
 	// THe amount that each operation changes the security level of the server
 	WEAKEN_POTENCY: 0.05,
 	HACK_HARDENING: 0.002,
-	GROW_HARDENING: 0.004,
+	GROW_HARDENING: 0.005, // TODO: Change this, because something aint right here
 
 
 } as const

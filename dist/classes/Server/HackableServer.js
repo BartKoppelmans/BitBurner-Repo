@@ -33,8 +33,8 @@ export default class HackableServer extends Server {
         return ns.getServerRequiredHackingLevel(this.characteristics.host) <= ns.getHackingLevel();
     }
     isOptimal(ns) {
-        return this.getSecurityLevel(ns) === this.staticHackingProperties.minSecurityLevel &&
-            this.getMoney(ns) === this.staticHackingProperties.maxMoney;
+        return this.getSecurityLevel(ns) <= this.staticHackingProperties.minSecurityLevel &&
+            this.getMoney(ns) >= this.staticHackingProperties.maxMoney;
     }
     needsGrow(ns) {
         return this.getMoney(ns) < this.staticHackingProperties.maxMoney;
