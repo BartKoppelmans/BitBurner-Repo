@@ -3,7 +3,7 @@ import * as Utils from '/src/util/Utils.js';
 import * as HackingUtils from '/src/util/HackingUtils.js';
 import { CONSTANT } from '/src/lib/constants.js';
 import * as ServerAPI from '/src/api/ServerAPI.js';
-import { ServerPurpose } from '/src/classes/Server/ServerInterfaces.js';
+import { ServerPurpose, ServerStatus } from '/src/classes/Server/ServerInterfaces.js';
 import * as JobAPI from '/src/api/JobAPI.js';
 const JOB_MANAGING_LOOP_INTERVAL = 1000;
 const HACKING_LOOP_DELAY = 2000;
@@ -95,7 +95,8 @@ class HackingManager {
         if (wasUpdated)
             this.serverMapLastUpdated = lastUpdated;
         // NOTE: Slice to make sure that we only check our actual targets
-        const allOptimal = targets.slice(0, CONSTANT.MAX_TARGET_COUNT)
+        const allOptimal = targets.filter((target) => target.status !== ServerStatus.TARGETING)
+            .slice(0, CONSTANT.MAX_TARGET_COUNT)
             .every((target) => target.isOptimal(ns));
         if ((wasUpdated && allOptimal) || (allOptimal && !this.inFullAttackMode)) {
             await this.fullAttackMode(ns);

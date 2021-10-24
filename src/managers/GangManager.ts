@@ -24,6 +24,7 @@ const CLASH_CHANCE_THRESHOLD: number         = 0.90 as const
 const CLASH_CHANCE_THRESHOLD_BUFFER: number  = 0.05 as const
 const POWER_THRESHOLD: number                = 500 as const
 const POWER_THRESHOLD_BUFFER: number         = 50 as const
+const RESPECT_THRESHOLD: number = 2.5e6 as const
 
 class GangManager implements Manager {
 
@@ -219,6 +220,9 @@ class GangManager implements Manager {
 	}
 
 	private async managingLoop(ns: NS): Promise<void> {
+
+		const reputation: number = ns.getFactionRep(this.homeGang.name)
+		this.focusOnRespect = (reputation < RESPECT_THRESHOLD)
 
 		if (!this.isIncreasingPower) {
 

@@ -1,19 +1,19 @@
-import type { BitBurner as NS } from 'Bitburner'
-import { ProcessInfo }          from 'Bitburner'
-import * as LogAPI              from '/src/api/LogAPI.js'
-import * as Utils               from '/src/util/Utils.js'
-import * as HackingUtils        from '/src/util/HackingUtils.js'
-import { Manager }              from '/src/classes/Misc/ScriptInterfaces.js'
-import { CONSTANT }             from '/src/lib/constants.js'
-import HackableServer           from '/src/classes/Server/HackableServer.js'
-import * as ServerAPI           from '/src/api/ServerAPI.js'
-import { ServerPurpose }        from '/src/classes/Server/ServerInterfaces.js'
-import Job                      from '/src/classes/Job/Job.js'
-import * as JobAPI              from '/src/api/JobAPI.js'
-import { JobMap }               from '/src/classes/Job/JobInterfaces.js'
-import Server                   from '/src/classes/Server/Server.js'
-import { PurchasedServer }      from '/src/classes/Server/PurchasedServer'
-import { HacknetServer }        from '/src/classes/Server/HacknetServer.js'
+import type { BitBurner as NS }        from 'Bitburner'
+import { ProcessInfo }                 from 'Bitburner'
+import * as LogAPI                     from '/src/api/LogAPI.js'
+import * as Utils                      from '/src/util/Utils.js'
+import * as HackingUtils               from '/src/util/HackingUtils.js'
+import { Manager }                     from '/src/classes/Misc/ScriptInterfaces.js'
+import { CONSTANT }                    from '/src/lib/constants.js'
+import HackableServer                  from '/src/classes/Server/HackableServer.js'
+import * as ServerAPI                  from '/src/api/ServerAPI.js'
+import { ServerPurpose, ServerStatus } from '/src/classes/Server/ServerInterfaces.js'
+import Job                             from '/src/classes/Job/Job.js'
+import * as JobAPI                     from '/src/api/JobAPI.js'
+import { JobMap }                      from '/src/classes/Job/JobInterfaces.js'
+import Server                          from '/src/classes/Server/Server.js'
+import { PurchasedServer }             from '/src/classes/Server/PurchasedServer'
+import { HacknetServer }               from '/src/classes/Server/HacknetServer.js'
 
 const JOB_MANAGING_LOOP_INTERVAL = 1000 as const
 const HACKING_LOOP_DELAY: number = 2000 as const
@@ -132,7 +132,8 @@ class HackingManager implements Manager {
 		if (wasUpdated) this.serverMapLastUpdated = lastUpdated
 
 		// NOTE: Slice to make sure that we only check our actual targets
-		const allOptimal: boolean = targets.slice(0, CONSTANT.MAX_TARGET_COUNT)
+		const allOptimal: boolean = targets.filter((target) => target.status !== ServerStatus.TARGETING)
+											.slice(0, CONSTANT.MAX_TARGET_COUNT)
 		                                   .every((target) => target.isOptimal(ns))
 
 		if ((wasUpdated && allOptimal) || (allOptimal && !this.inFullAttackMode)) {

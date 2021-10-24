@@ -104,30 +104,34 @@ export async function prepServer(ns: NS, target: HackableServer): Promise<void> 
 	if (target.needsWeaken(ns)) {
 		let weakenAmount: number = target.getSecurityLevel(ns) - target.staticHackingProperties.minSecurityLevel
 
-		const prepEffects: PrepEffect[] = []
+		const weakenPrepEffects: PrepEffect[] = []
 
 		for (const preppingServer of ServerAPI.getPreppingServers(ns)) {
 			const potentialPrepEffect: PrepEffect = HackingCalculationUtils.calculatePotentialPrepEffect(ns, Tools.WEAKEN, target, preppingServer, target.staticHackingProperties.minSecurityLevel + weakenAmount)
 
+			// TODO: This might be a problem if we do need to weaken, but for some reason we cannot put in a  full thread?
+
 			if (potentialPrepEffect.threads === 0) continue
 
 			weakenAmount -= potentialPrepEffect.amount
-			prepEffects.push(potentialPrepEffect)
+			weakenPrepEffects.push(potentialPrepEffect)
 
 			if (weakenAmount <= 0) break;
 		}
 
-		const weakenTime: number = target.getWeakenTime(ns)
+		if (weakenPrepEffects.length > 0) {
+			const weakenTime: number = target.getWeakenTime(ns)
 
-		const weakenStart: Date = new Date(Date.now() + CONSTANT.INITIAL_JOB_DELAY)
-		const weakenEnd: Date   = new Date(weakenStart.getTime() + weakenTime)
+			const weakenStart: Date = new Date(Date.now() + CONSTANT.INITIAL_JOB_DELAY)
+			const weakenEnd: Date   = new Date(weakenStart.getTime() + weakenTime)
 
-		initialWeakenJob = await createJob(ns, target, Tools.WEAKEN, prepEffects, batchId, weakenStart, weakenEnd)
+			initialWeakenJob = await createJob(ns, target, Tools.WEAKEN, weakenPrepEffects, batchId, weakenStart, weakenEnd)
 
-		startTime = weakenStart
-		endTime   = weakenEnd
+			startTime = weakenStart
+			endTime   = weakenEnd
 
-		jobs.push(initialWeakenJob)
+			jobs.push(initialWeakenJob)
+		}
 	}
 
 	// First grow, so that the amount of money is optimal
@@ -143,7 +147,6 @@ export async function prepServer(ns: NS, target: HackableServer): Promise<void> 
 
 		let growAmount: number =  target.staticHackingProperties.maxMoney - target.getMoney(ns)
 		const growPrepEffects: PrepEffect[] = []
-
 		for (const preppingServer of ServerAPI.getPreppingServers(ns)) {
 			const potentialPrepEffect: PrepEffect = HackingCalculationUtils.calculatePotentialPrepEffect(ns, Tools.GROW, target, preppingServer, target.staticHackingProperties.maxMoney - growAmount)
 
@@ -154,9 +157,12 @@ export async function prepServer(ns: NS, target: HackableServer): Promise<void> 
 
 			if (growAmount <= 0) break;
 		}
-		endTime   = timings.growthEnd
-		growJob = await createJob(ns, target, Tools.GROW, growPrepEffects, batchId, timings.growthStart, timings.growthEnd)
-		jobs.push(growJob)
+
+		if (growPrepEffects.length > 0) {
+			endTime   = timings.growthEnd
+			growJob = await createJob(ns, target, Tools.GROW, growPrepEffects, batchId, timings.growthStart, timings.growthEnd)
+			jobs.push(growJob)
+		}
 
 		// We might still have room for the compensation weaken
 		if (growAmount === 0) {
@@ -175,12 +181,17 @@ export async function prepServer(ns: NS, target: HackableServer): Promise<void> 
 
 				if (weakenAmount <= 0) break;
 			}
-			endTime   = timings.weakenEnd
-			compensationWeakenJob = await createJob(ns, target, Tools.WEAKEN, weakenPrepEffects, batchId, timings.weakenStart, timings.weakenEnd)
-			jobs.push(compensationWeakenJob)
+
+			if (weakenPrepEffects.length > 0) {
+				endTime   = timings.weakenEnd
+				compensationWeakenJob = await createJob(ns, target, Tools.WEAKEN, weakenPrepEffects, batchId, timings.weakenStart, timings.weakenEnd)
+				jobs.push(compensationWeakenJob)
+			}
 		}
 
 	}
+
+	if (jobs.length === 0) return; // All this work for nothing...
 
 	// NOTE: Unfortunately we need this for type safety
 	if (!startTime || !endTime) throw new Error('How the fuck do we not have timings available?')

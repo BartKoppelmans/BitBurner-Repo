@@ -20,6 +20,7 @@ const CLASH_CHANCE_THRESHOLD = 0.90;
 const CLASH_CHANCE_THRESHOLD_BUFFER = 0.05;
 const POWER_THRESHOLD = 500;
 const POWER_THRESHOLD_BUFFER = 50;
+const RESPECT_THRESHOLD = 2.5e6;
 class GangManager {
     managingLoopTimeout;
     gangs;
@@ -168,6 +169,8 @@ class GangManager {
             appendSwitch();
     }
     async managingLoop(ns) {
+        const reputation = ns.getFactionRep(this.homeGang.name);
+        this.focusOnRespect = (reputation < RESPECT_THRESHOLD);
         if (!this.isIncreasingPower) {
             // Check whether we still have sufficient power and sufficient chance to win a clash
             if (GangManager.hasSufficientPower(ns, this.homeGang) && GangManager.hasSufficientChanceToWinClash(ns, this.gangs)) {
