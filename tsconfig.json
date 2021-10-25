@@ -27,6 +27,9 @@
             "/src/*": [
                 "src/*"
             ]
-        }
+        },
+        "jsx": "react",
+        "jsxFactory": "DOMcreateElement"
+
     }
 }
