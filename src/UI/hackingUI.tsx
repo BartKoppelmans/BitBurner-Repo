@@ -4,6 +4,7 @@ import HackableServer           from '/src/classes/Server/HackableServer.js'
 import * as ServerAPI           from '/src/api/ServerAPI.js'
 import { DOMcreateElement }     from '/src/UI/API/index.js'
 import { styles }               from '/src/UI/hackingUIstyles.js'
+import { ServerStatus }         from '/src/classes/Server/ServerInterfaces.js'
 
 let box: HTMLElement;
 
@@ -36,8 +37,19 @@ function setContent(ns: NS, elements: JSX.Element[]): void {
 	contentElement.replaceChildren(...elements)
 }
 
+function getServerStatusClass(status: ServerStatus): string {
+	switch (status) {
+		case ServerStatus.NONE:
+			return 'status-none'
+		case ServerStatus.PREPPING:
+			return 'status-prep'
+		case ServerStatus.TARGETING:
+			return 'status-hack'
+	}
+}
+
 function createServerEntry(ns: NS, server: HackableServer): JSX.Element {
-	return <tr>
+	return <tr className={`serverEntry ${getServerStatusClass(server.status)}`}>
 			<td>{server.characteristics.host}</td>
 			<td>{ns.nFormat(server.getMoney(ns), '$0.000a')} / {ns.nFormat(server.staticHackingProperties.maxMoney, '$0.000a')}</td>
 			<td>{ns.nFormat(server.getSecurityLevel(ns), '0.000')} / {ns.nFormat(server.staticHackingProperties.minSecurityLevel, '0.000')}</td>
@@ -60,6 +72,6 @@ export async function main(ns: NS) {
 
 	while (true) {
 		await updateBox(ns)
-		await ns.sleep(1000)
+		await ns.sleep(100)
 	}
 }

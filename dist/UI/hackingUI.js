@@ -2,6 +2,7 @@ import { createBox } from '/src/UI/API/box.js';
 import * as ServerAPI from '/src/api/ServerAPI.js';
 import { DOMcreateElement } from '/src/UI/API/index.js';
 import { styles } from '/src/UI/hackingUIstyles.js';
+import { ServerStatus } from '/src/classes/Server/ServerInterfaces.js';
 let box;
 function getBoxHTML() {
     return DOMcreateElement("div", { className: 'resizable', style: "height: 520px; width: 720px; overflow:auto;" },
@@ -27,8 +28,18 @@ function setContent(ns, elements) {
     // @ts-ignore
     contentElement.replaceChildren(...elements);
 }
+function getServerStatusClass(status) {
+    switch (status) {
+        case ServerStatus.NONE:
+            return 'status-none';
+        case ServerStatus.PREPPING:
+            return 'status-prep';
+        case ServerStatus.TARGETING:
+            return 'status-hack';
+    }
+}
 function createServerEntry(ns, server) {
-    return DOMcreateElement("tr", null,
+    return DOMcreateElement("tr", { className: `serverEntry ${getServerStatusClass(server.status)}` },
         DOMcreateElement("td", null, server.characteristics.host),
         DOMcreateElement("td", null,
             ns.nFormat(server.getMoney(ns), '$0.000a'),
@@ -52,6 +63,6 @@ export async function main(ns) {
     await initialize(ns);
     while (true) {
         await updateBox(ns);
-        await ns.sleep(1000);
+        await ns.sleep(100);
     }
 }
