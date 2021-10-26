@@ -32,6 +32,7 @@ const files = [
     'classes/Server/Server.js',
     'classes/Server/ServerInterfaces.js',
     'classes/Sleeve/Sleeve.js',
+    'classes/Sleeve/SleeveInterfaces.js',
     'classes/Stock/Stock.js',
     'classes/Stock/StockInterfaces.js',
     'lib/constants.js',

@@ -9,7 +9,7 @@ import { HacknetServerUpgradeType, } from '/src/classes/Misc/HacknetServerInterf
 import { ServerPurpose, ServerType, } from '/src/classes/Server/ServerInterfaces.js';
 const LOOP_DELAY = 30000;
 const HACKNET_ALLOWANCE = 0.05;
-const PAYOFF_TIME = 600; // Should pay off within 10 minutes
+const PAYOFF_TIME = 3600; // Should pay off within 10 minutes
 class HacknetManager {
     managingLoopTimeout;
     static getServerOptimalGainRateTotal(ns, servers, player) {

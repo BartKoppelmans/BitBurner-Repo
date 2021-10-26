@@ -1,4 +1,5 @@
 import * as LogAPI from '/src/api/LogAPI.js';
+import { SleeveTrainStat, } from '/src/classes/Sleeve/SleeveInterfaces.js';
 export default class Sleeve {
     id;
     constructor(ns, id) {
@@ -28,6 +29,16 @@ export default class Sleeve {
         }
         ns.sleeve.setToSynchronize(this.id);
         LogAPI.printLog(ns, `Set sleeve ${this.id} to synchronize`);
+    }
+    setToTrain(ns, stat) {
+        if (stat === SleeveTrainStat.NONE)
+            return;
+        const task = this.getTask(ns);
+        if (task.gymStatType === stat) {
+            return;
+        }
+        ns.sleeve.setToGymWorkout(this.id, 'Powerhouse Gym', stat);
+        LogAPI.printLog(ns, `Set sleeve ${this.id} to train ${stat}`);
     }
     recoverShock(ns) {
         const task = this.getTask(ns);

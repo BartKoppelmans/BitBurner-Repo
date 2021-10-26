@@ -1,5 +1,8 @@
 import type { BitBurner as NS, Crime, SleeveInformation, SleeveStats, SleeveTask } from 'Bitburner'
 import * as LogAPI                                                                 from '/src/api/LogAPI.js'
+import {
+	SleeveTrainStat,
+}                                                                                  from '/src/classes/Sleeve/SleeveInterfaces.js'
 
 export default class Sleeve {
 
@@ -40,6 +43,18 @@ export default class Sleeve {
 
 		ns.sleeve.setToSynchronize(this.id)
 		LogAPI.printLog(ns, `Set sleeve ${this.id} to synchronize`)
+	}
+
+	public setToTrain(ns: NS, stat: SleeveTrainStat): void {
+		if (stat === SleeveTrainStat.NONE) return
+
+		const task: SleeveTask = this.getTask(ns)
+		if (task.gymStatType === stat) {
+			return
+		}
+
+		ns.sleeve.setToGymWorkout(this.id, 'Powerhouse Gym', stat)
+		LogAPI.printLog(ns, `Set sleeve ${this.id} to train ${stat}`)
 	}
 
 	public recoverShock(ns: NS): void {

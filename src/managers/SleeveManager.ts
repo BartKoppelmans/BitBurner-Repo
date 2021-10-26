@@ -4,12 +4,30 @@ import * as Utils                                               from '/src/util/
 import { Manager }                                              from '/src/classes/Misc/ScriptInterfaces.js'
 import { CONSTANT }                                             from '/src/lib/constants.js'
 import Sleeve                                                   from '/src/classes/Sleeve/Sleeve.js'
+import { SleeveTrainStat }                                      from '/src/classes/Sleeve/SleeveInterfaces.js'
 
 const LOOP_DELAY: number = 1000 as const
+const STAT_MUG_THRESHOLD: number = 25 as const
+const STAT_HOMICIDE_THRESHOLD: number = 100 as const
 
 class SleeveManager implements Manager {
 
 	private managingLoopTimeout?: ReturnType<typeof setTimeout>
+
+	private static shouldTrain(ns: NS, stats: SleeveStats): SleeveTrainStat {
+		if (stats.strength < STAT_MUG_THRESHOLD) return SleeveTrainStat.STRENGTH
+		else if (stats.defense < STAT_MUG_THRESHOLD) return SleeveTrainStat.DEFENSE
+		else if (stats.dexterity < STAT_MUG_THRESHOLD) return SleeveTrainStat.DEXTERITY
+		else if (stats.agility < STAT_MUG_THRESHOLD) return SleeveTrainStat.AGILITY
+		else return SleeveTrainStat.NONE
+	}
+
+	private static shouldMug(ns: NS, stats: SleeveStats): boolean {
+		return stats.strength < STAT_HOMICIDE_THRESHOLD ||
+			stats.defense < STAT_HOMICIDE_THRESHOLD ||
+			stats.dexterity < STAT_HOMICIDE_THRESHOLD ||
+			stats.agility < STAT_HOMICIDE_THRESHOLD
+	}
 
 	private static manageSleeve(ns: NS, sleeve: Sleeve): void {
 		const information: SleeveInformation = sleeve.getInformation(ns)
@@ -25,8 +43,14 @@ class SleeveManager implements Manager {
 		}
 
 		// TODO: Buy augments if possible
+		const trainStat: SleeveTrainStat = SleeveManager.shouldTrain(ns, stats)
+		if (trainStat !== SleeveTrainStat.NONE) {
+			return sleeve.setToTrain(ns, trainStat)
+		}
 
-		// TODO: Train first if stats are shit
+		if (SleeveManager.shouldMug(ns, stats)) {
+			return sleeve.commitCrime(ns, 'mug')
+		}
 
 		return sleeve.commitCrime(ns, 'homicide')
 	}

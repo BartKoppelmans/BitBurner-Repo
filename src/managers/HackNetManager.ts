@@ -28,7 +28,7 @@ import {
 
 const LOOP_DELAY: number        = 30000 as const
 const HACKNET_ALLOWANCE: number = 0.05 as const
-const PAYOFF_TIME: number       = 600 as const // Should pay off within 10 minutes
+const PAYOFF_TIME: number       = 3600 as const // Should pay off within 10 minutes
 
 class HacknetManager implements Manager {
 
