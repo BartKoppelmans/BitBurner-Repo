@@ -2,9 +2,6 @@ import { StockPosition } from '/src/classes/Stock/StockInterfaces.js';
 import * as LogAPI from '/src/api/LogAPI.js';
 const STOCK_COMMISSION = 100000;
 export default class Stock {
-    symbol;
-    position;
-    stockInformation;
     constructor(ns, symbol) {
         this.symbol = symbol;
         this.update(ns);

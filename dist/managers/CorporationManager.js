@@ -3,7 +3,6 @@ import * as Utils from '/src/util/Utils.js';
 import { CONSTANT } from '/src/lib/constants.js';
 const LOOP_DELAY = 1000;
 class CorporationManager {
-    managingLoopTimeout;
     static async createCorporation(ns) {
         // TODO: Not possible yet
     }

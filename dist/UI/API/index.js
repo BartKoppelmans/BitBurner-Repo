@@ -28,7 +28,11 @@ function DOMparseChildren(children) {
 function DOMparseNode(element, properties, children) {
     const el = doc.createElement(element);
     Object.keys(nonNull(properties, {})).forEach(key => {
-        el[key] = properties[key];
+        if (key.startsWith('on') && key.toLowerCase() in window) {
+            el.addEventListener(key.toLowerCase().substr(2), properties[key]);
+        }
+        else
+            el[key] = properties[key];
     });
     DOMparseChildren(children).forEach(child => {
         el.appendChild(child);

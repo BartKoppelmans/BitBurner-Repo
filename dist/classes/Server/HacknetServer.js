@@ -1,8 +1,6 @@
 import Server from '/src/classes/Server/Server.js';
 import { CONSTANT } from '/src/lib/constants.js';
 export class HacknetServer extends Server {
-    characteristics;
-    nodeInformation;
     constructor(ns, server) {
         super(ns, server);
         if (!server.characteristics)

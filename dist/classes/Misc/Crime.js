@@ -1,9 +1,5 @@
 const SUCCESS_THRESHOLD = 0.6;
 export default class Crime {
-    name;
-    crimeStats;
-    crimeChance;
-    crimeValue;
     constructor(ns, name) {
         this.name = name;
         this.crimeStats = ns.getCrimeStats(this.name);

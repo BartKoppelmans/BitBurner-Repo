@@ -1,9 +1,4 @@
 export class CodingContract {
-    filename;
-    server;
-    type;
-    description;
-    data;
     constructor(ns, filename, server) {
         this.filename = filename;
         this.server = server;

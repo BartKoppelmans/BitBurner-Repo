@@ -13,11 +13,9 @@ const SYNTH_POPULATION_THRESHOLD = 1e8;
 const CHAOS_THRESHOLD = 100;
 const FINAL_BLACK_OP_WARNING_INTERVAL = 10;
 class BladeBurnerManager {
-    iterationCounter = 1;
-    managingLoopTimeout;
-    actions;
-    skills;
-    cities;
+    constructor() {
+        this.iterationCounter = 1;
+    }
     static getStaminaPercentage(ns) {
         const [current, total] = ns.bladeburner.getStamina();
         return (current / total) * 100;

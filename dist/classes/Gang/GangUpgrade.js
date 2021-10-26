@@ -1,8 +1,4 @@
 export default class GangUpgrade {
-    name;
-    cost;
-    type;
-    multipliers;
     constructor(ns, name) {
         this.name = name;
         this.cost = ns.gang.getEquipmentCost(name);

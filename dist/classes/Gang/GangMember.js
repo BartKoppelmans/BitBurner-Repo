@@ -2,8 +2,6 @@ import GangTask from '/src/classes/Gang/GangTask.js';
 import GangUpgrade from '/src/classes/Gang/GangUpgrade.js';
 import * as LogAPI from '/src/api/LogAPI.js';
 export default class GangMember {
-    name;
-    upgrades;
     constructor(ns, name) {
         this.name = name;
         this.upgrades = GangUpgrade.getMemberUpgrades(ns, this.name);

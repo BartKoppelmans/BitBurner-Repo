@@ -22,12 +22,10 @@ const POWER_THRESHOLD = 500;
 const POWER_THRESHOLD_BUFFER = 50;
 const RESPECT_THRESHOLD = 2.5e6;
 class GangManager {
-    managingLoopTimeout;
-    gangs;
-    homeGang;
-    upgrades;
-    isIncreasingPower = false;
-    focusOnRespect = false;
+    constructor() {
+        this.isIncreasingPower = false;
+        this.focusOnRespect = false;
+    }
     static getBestMember(ns, members) {
         const isHacking = GangUtils.isHackingGang(ns);
         // TODO: Perhaps modify this to use the optimal respect gain?

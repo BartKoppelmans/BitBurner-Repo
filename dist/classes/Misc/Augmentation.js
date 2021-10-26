@@ -1,8 +1,4 @@
 export class Augmentation {
-    name;
-    stats;
-    reputationRequirement;
-    augmentationRequirement;
     constructor(ns, name) {
         this.name = name;
         this.stats = ns.getAugmentationStats(this.name);
