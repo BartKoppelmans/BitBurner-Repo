@@ -13,6 +13,7 @@ import * as ToolUtils                                           from '/src/util/
 import {
 	Cycle,
 	CycleSpread,
+	CycleTask,
 	CycleThreads,
 	CycleThreadSpreads,
 	CycleTimings,
@@ -52,25 +53,21 @@ async function determineCycleThreadSpreads(ns: NS, target: HackableServer, sourc
 
 	const cost: number = getOptimalCycleCost(ns, target, source)
 
-	const serverList: Server[] = ServerAPI.getHackingServers(ns).filter((s) => s.getAvailableRam(ns) >= cost)
-
-	// Get the server with the most available RAM
-	const server = serverList[0]
-	if (cost > server.getAvailableRam(ns)) {
+	if (cost > source.getAvailableRam(ns)) {
 		throw new Error('Not enough RAM available to create a cycle (on one server)')
 	}
 
-	await ServerAPI.increaseReservation(ns, server.characteristics.host, cost)
+	await ServerAPI.increaseReservation(ns, source.characteristics.host, cost)
 
 	const hackSpreadMap: ThreadSpread    = new Map<string, number>()
 	const growthSpreadMap: ThreadSpread  = new Map<string, number>()
 	const weaken1SpreadMap: ThreadSpread = new Map<string, number>()
 	const weaken2SpreadMap: ThreadSpread = new Map<string, number>()
 
-	hackSpreadMap.set(server.characteristics.host, cycleThreads.hack)
-	growthSpreadMap.set(server.characteristics.host, cycleThreads.growth)
-	weaken1SpreadMap.set(server.characteristics.host, cycleThreads.weaken1)
-	weaken2SpreadMap.set(server.characteristics.host, cycleThreads.weaken2)
+	hackSpreadMap.set(source.characteristics.host, cycleThreads.hack)
+	growthSpreadMap.set(source.characteristics.host, cycleThreads.growth)
+	weaken1SpreadMap.set(source.characteristics.host, cycleThreads.weaken1)
+	weaken2SpreadMap.set(source.characteristics.host, cycleThreads.weaken2)
 
 	return {
 		hack: hackSpreadMap,
@@ -120,6 +117,7 @@ export async function scheduleCycle(ns: NS, target: HackableServer, source: Serv
 	const hackJob = new Job(ns, {
 		batchId,
 		cycleId,
+		cycleTask: CycleTask.HACK,
 		id: Utils.generateHash(),
 		target,
 		tool: Tools.HACK,
@@ -130,22 +128,10 @@ export async function scheduleCycle(ns: NS, target: HackableServer, source: Serv
 		isPrep: false,
 	})
 
-	const growthJob = new Job(ns, {
-		batchId,
-		cycleId,
-		id: Utils.generateHash(),
-		target,
-		tool: Tools.GROW,
-		threads: cycleThreads.growth,
-		threadSpread: cycleThreadSpreads.growth,
-		start: cycleTimings.growth.start,
-		end: cycleTimings.growth.end,
-		isPrep: false,
-	})
-
 	const weaken1Job = new Job(ns, {
 		batchId,
 		cycleId,
+		cycleTask: CycleTask.WEAKEN1,
 		id: Utils.generateHash(),
 		target,
 		tool: Tools.WEAKEN,
@@ -156,9 +142,24 @@ export async function scheduleCycle(ns: NS, target: HackableServer, source: Serv
 		isPrep: false,
 	})
 
+	const growthJob = new Job(ns, {
+		batchId,
+		cycleId,
+		cycleTask: CycleTask.GROWTH,
+		id: Utils.generateHash(),
+		target,
+		tool: Tools.GROW,
+		threads: cycleThreads.growth,
+		threadSpread: cycleThreadSpreads.growth,
+		start: cycleTimings.growth.start,
+		end: cycleTimings.growth.end,
+		isPrep: false,
+	})
+
 	const weaken2Job = new Job(ns, {
 		batchId,
 		cycleId,
+		cycleTask: CycleTask.WEAKEN2,
 		id: Utils.generateHash(),
 		target,
 		tool: Tools.WEAKEN,

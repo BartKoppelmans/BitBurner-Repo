@@ -6,12 +6,13 @@ import { CONSTANT }                           from '/src/lib/constants.js'
 import { Tools }                              from '/src/tools/Tools.js'
 import * as ServerUtils                       from '/src/util/ServerUtils.js'
 import * as ToolUtils                         from '/src/util/ToolUtils.js'
-import { ThreadSpread }                       from '/src/classes/Misc/HackInterfaces.js'
+import { CycleTask, ThreadSpread }            from '/src/classes/Misc/HackInterfaces.js'
 
-export default class Job {
+export default class Job implements IJOb{
 	batchId: string
 	id: string
 	cycleId?: string
+	cycleTask?: CycleTask
 	pids: number[]
 
 	target: HackableServer
@@ -39,6 +40,7 @@ export default class Job {
 		this.pids     = (job.pids) ? job.pids : []
 
 		if (job.cycleId) this.cycleId = job.cycleId
+		if (job.cycleTask) this.cycleTask = job.cycleTask
 
 		if (this.threads <= 0) throw new Error('Cannot create a job with less than 1 thread')
 
@@ -97,6 +99,7 @@ export default class Job {
 			batchId: this.batchId,
 			id: this.id,
 			cycleId: this.cycleId,
+			cycleTask: this.cycleTask,
 			target: this.target,
 			threads: this.threads,
 			tool: this.tool,

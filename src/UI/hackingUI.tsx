@@ -2,9 +2,11 @@ import type { BitBurner as NS } from 'Bitburner'
 import { createBox }            from '/src/UI/API/box.js'
 import HackableServer           from '/src/classes/Server/HackableServer.js'
 import * as ServerAPI           from '/src/api/ServerAPI.js'
+import * as JobAPI              from '/src/api/JobAPI.js'
 import { DOMcreateElement }     from '/src/UI/API/index.js'
 import { styles }               from '/src/UI/hackingUIstyles.js'
 import { ServerStatus }         from '/src/classes/Server/ServerInterfaces.js'
+import Batch                    from '/src/classes/Job/Batch.js'
 
 let box: HTMLElement;
 
@@ -12,11 +14,6 @@ function getBoxHTML(): JSX.Element {
 	return <div className='resizable' style="height: 520px; width: 720px; overflow:auto;">
 			{styles}
 			<table style='width: 100%;'>
-				<tr>
-					<th>Server</th>
-					<th>Money</th>
-					<th>Security</th>
-				</tr>
 				<tbody id="boxContent"/>
 			</table>
 		</div>
@@ -49,10 +46,20 @@ function getServerStatusClass(status: ServerStatus): string {
 }
 
 function createServerEntry(ns: NS, server: HackableServer): JSX.Element {
+
+	let cyclesRow: JSX.Element | null = null
+	if (server.status === ServerStatus.TARGETING) {
+		const batch: Batch = JobAPI.getServerBatchJob(ns, server)
+		const finishedCycles: number = batch.getNumFinishedCycles()
+		const totalCycles: number = batch.getNumCycles()
+		cyclesRow = <td colspan={4}>Cycle {finishedCycles+1} / {totalCycles}</td>
+	}
+
 	return <tr className={`serverEntry ${getServerStatusClass(server.status)}`}>
-			<td>{server.characteristics.host}</td>
-			<td>{ns.nFormat(server.getMoney(ns), '$0.000a')} / {ns.nFormat(server.staticHackingProperties.maxMoney, '$0.000a')}</td>
-			<td>{ns.nFormat(server.getSecurityLevel(ns), '0.000')} / {ns.nFormat(server.staticHackingProperties.minSecurityLevel, '0.000')}</td>
+			<td colspan='4'>{server.characteristics.host}</td>
+			<td colspan='2'>{ns.nFormat(server.getMoney(ns), '$0.000a')} / {ns.nFormat(server.staticHackingProperties.maxMoney, '$0.000a')}</td>
+			<td colspan='2'>{ns.nFormat(server.getSecurityLevel(ns), '0.000')} / {ns.nFormat(server.staticHackingProperties.minSecurityLevel, '0.000')}</td>
+			{cyclesRow}
 		</tr>
 }
 

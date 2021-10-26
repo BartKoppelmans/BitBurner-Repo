@@ -10,6 +10,7 @@ import * as SerializationUtils               from '/src/util/SerializationUtils.
 import { ServerMap, ServerStatus }           from '/src/classes/Server/ServerInterfaces.js'
 import { ThreadSpread }                      from '/src/classes/Misc/HackInterfaces.js'
 import { Tools }                             from '/src/tools/Tools.js'
+import HackableServer                        from '/src/classes/Server/HackableServer'
 
 export function getJobMap(ns: NS): JobMap {
 	return readJobMap(ns)
@@ -68,6 +69,15 @@ async function startJob(ns: NS, job: Job): Promise<void> {
 		const reservation: number = threads * (await ToolUtils.getToolCost(ns, job.tool))
 		await ServerAPI.decreaseReservation(ns, server, reservation)
 	}
+}
+
+export function getServerBatchJob(ns: NS, server: HackableServer): Batch {
+	const jobMap: JobMap = getJobMap(ns)
+
+	const batch: Batch | undefined  = jobMap.batches.find((b) => b.target.characteristics.host === server.characteristics.host)
+	if (!batch) throw new Error(`Could not find the batch`)
+
+	return batch
 }
 
 export async function finishJobs(ns: NS, jobs: Job[]): Promise<void> {

@@ -46,6 +46,13 @@ async function startJob(ns, job) {
         await ServerAPI.decreaseReservation(ns, server, reservation);
     }
 }
+export function getServerBatchJob(ns, server) {
+    const jobMap = getJobMap(ns);
+    const batch = jobMap.batches.find((b) => b.target.characteristics.host === server.characteristics.host);
+    if (!batch)
+        throw new Error(`Could not find the batch`);
+    return batch;
+}
 export async function finishJobs(ns, jobs) {
     // NOTE: This function manually removes the jobs instead of using removeJob (for performance reasons)
     const jobMap = getJobMap(ns);

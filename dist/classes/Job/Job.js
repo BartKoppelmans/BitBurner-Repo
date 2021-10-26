@@ -6,6 +6,7 @@ export default class Job {
     batchId;
     id;
     cycleId;
+    cycleTask;
     pids;
     target;
     threads;
@@ -29,6 +30,8 @@ export default class Job {
         this.pids = (job.pids) ? job.pids : [];
         if (job.cycleId)
             this.cycleId = job.cycleId;
+        if (job.cycleTask)
+            this.cycleTask = job.cycleTask;
         if (this.threads <= 0)
             throw new Error('Cannot create a job with less than 1 thread');
     }
@@ -77,6 +80,7 @@ export default class Job {
             batchId: this.batchId,
             id: this.id,
             cycleId: this.cycleId,
+            cycleTask: this.cycleTask,
             target: this.target,
             threads: this.threads,
             tool: this.tool,

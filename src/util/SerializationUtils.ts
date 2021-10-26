@@ -40,6 +40,7 @@ export function jobFromJSON(ns: NS, json: any): Job {
 		batchId: json.batchId,
 		id: json.id,
 		cycleId: json.cycleId,
+		cycleTask: json.cycleTask,
 		threads: json.threads,
 		threadSpread: spreadMap,
 		tool: json.tool,
