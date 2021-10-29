@@ -34,7 +34,7 @@ export function computeCycleSpread(ns: NS, target: HackableServer, servers?: Ser
 		let numCycles: number = Math.floor(source.getAvailableRam(ns) / cycleCost)
 
 		if (numCycles + totalCycles > CONSTANT.MAX_CYCLE_NUMBER) {
-			numCycles -= CONSTANT.MAX_CYCLE_NUMBER - totalCycles
+			numCycles = CONSTANT.MAX_CYCLE_NUMBER - totalCycles
 		}
 
 		totalCycles += numCycles
