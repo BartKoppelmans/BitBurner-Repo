@@ -132,8 +132,8 @@ class HackingManager implements Manager {
 		if (wasUpdated) this.serverMapLastUpdated = lastUpdated
 
 		// NOTE: Slice to make sure that we only check our actual targets
-		const allOptimal: boolean = targets.filter((target) => target.status !== ServerStatus.TARGETING)
-											.slice(0, CONSTANT.MAX_TARGET_COUNT)
+		const allOptimal: boolean = targets.slice(0, CONSTANT.MAX_TARGET_COUNT)
+											.filter((target) => target.status !== ServerStatus.TARGETING)
 		                                   .every((target) => target.isOptimal(ns))
 
 		if ((wasUpdated && allOptimal) || (allOptimal && !this.inFullAttackMode)) {

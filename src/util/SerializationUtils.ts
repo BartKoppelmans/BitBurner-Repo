@@ -9,7 +9,7 @@ import { ThreadSpread }         from '/src/classes/Misc/HackInterfaces.js'
 import { HacknetServer }        from '/src/classes/Server/HacknetServer.js'
 
 export function serverFromJSON(ns: NS, json: any): Server {
-	switch (+json.characteristics.type) {
+	switch (json.characteristics.type) {
 		case ServerType.HackableServer:
 			return new HackableServer(ns, json)
 		case ServerType.PurchasedServer:

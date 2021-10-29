@@ -1,11 +1,11 @@
 export var ServerType;
 (function (ServerType) {
-    ServerType[ServerType["BasicServer"] = 0] = "BasicServer";
-    ServerType[ServerType["HackableServer"] = 1] = "HackableServer";
-    ServerType[ServerType["HomeServer"] = 2] = "HomeServer";
-    ServerType[ServerType["PurchasedServer"] = 3] = "PurchasedServer";
-    ServerType[ServerType["HacknetServer"] = 4] = "HacknetServer";
-    ServerType[ServerType["DarkWebServer"] = 5] = "DarkWebServer";
+    ServerType["BasicServer"] = "BasicServer";
+    ServerType["HackableServer"] = "HackableServer";
+    ServerType["HomeServer"] = "HomeServer";
+    ServerType["PurchasedServer"] = "PurchasedServer";
+    ServerType["HacknetServer"] = "HacknetServer";
+    ServerType["DarkWebServer"] = "DarkWebServer";
 })(ServerType || (ServerType = {}));
 export var ServerPurpose;
 (function (ServerPurpose) {
@@ -15,7 +15,7 @@ export var ServerPurpose;
 })(ServerPurpose || (ServerPurpose = {}));
 export var ServerStatus;
 (function (ServerStatus) {
-    ServerStatus[ServerStatus["NONE"] = 0] = "NONE";
-    ServerStatus[ServerStatus["PREPPING"] = 1] = "PREPPING";
-    ServerStatus[ServerStatus["TARGETING"] = 2] = "TARGETING";
+    ServerStatus["NONE"] = "None";
+    ServerStatus["PREPPING"] = "Prep";
+    ServerStatus["TARGETING"] = "Hack";
 })(ServerStatus || (ServerStatus = {}));
