@@ -3,6 +3,19 @@ import { CONSTANT } from '/src/lib/constants.js';
 import * as ServerUtils from '/src/util/ServerUtils.js';
 import * as ToolUtils from '/src/util/ToolUtils.js';
 export default class Job {
+    batchId;
+    id;
+    cycleId;
+    cycleTask;
+    pids;
+    target;
+    threads;
+    threadSpread;
+    tool;
+    isPrep;
+    start;
+    end;
+    finished;
     constructor(ns, job) {
         this.id = job.id;
         this.target = job.target;

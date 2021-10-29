@@ -1,6 +1,7 @@
 import * as GangUtils from '/src/util/GangUtils.js';
 import HomeGang from '/src/classes/Gang/HomeGang.js';
 export default class GangTask {
+    name;
     constructor(ns, name) {
         this.name = name;
     }

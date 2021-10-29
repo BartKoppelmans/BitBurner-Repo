@@ -122,11 +122,15 @@ export async function increaseReservation(ns, host, reservation) {
     server.increaseReservation(ns, reservation);
     await updateServer(ns, server);
 }
-export async function decreaseReservation(ns, host, reservation) {
-    const server = getServerByName(ns, host);
-    reservation = Math.round(reservation * 100) / 100;
-    server.decreaseReservation(ns, reservation);
-    await updateServer(ns, server);
+export async function decreaseReservations(ns, ramSpread, serverMap = getServerMap(ns)) {
+    for (const [host, ram] of ramSpread) {
+        const serverIndex = serverMap.servers.findIndex((server) => server.characteristics.host === host);
+        if (serverIndex === -1)
+            throw new Error('We could not find the server in the server map');
+        const reservation = Math.round(ram * 100) / 100;
+        serverMap.servers[serverIndex].decreaseReservation(ns, reservation);
+    }
+    await writeServerMap(ns, serverMap);
 }
 export function getServer(ns, id) {
     const server = getServerMap(ns).servers.find(s => s.characteristics.id === id);
@@ -134,8 +138,8 @@ export function getServer(ns, id) {
         throw new Error('Could not find that server.');
     return server;
 }
-export function getServerByName(ns, host) {
-    const server = getServerMap(ns).servers.find(s => s.characteristics.host === host);
+export function getServerByName(ns, host, serverMap = getServerMap(ns)) {
+    const server = serverMap.servers.find(s => s.characteristics.host === host);
     if (!server)
         throw new Error('Could not find that server.');
     return server;

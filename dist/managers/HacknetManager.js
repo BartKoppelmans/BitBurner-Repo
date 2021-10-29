@@ -11,6 +11,7 @@ const LOOP_DELAY = 30000;
 const HACKNET_ALLOWANCE = 0.05;
 const PAYOFF_TIME = 3600; // Should pay off within 10 minutes
 class HacknetManager {
+    managingLoopTimeout;
     static getServerOptimalGainRateTotal(ns, servers, player) {
         return servers.reduce((total, server) => total + this.calculateServerOptimalGainRate(ns, server.nodeInformation, player), 0);
     }

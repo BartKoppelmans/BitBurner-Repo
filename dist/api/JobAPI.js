@@ -31,20 +31,31 @@ export async function startBatch(ns, batch) {
     // TODO: We should do some checking in here
     const isPrep = batch.jobs[0].isPrep;
     await ServerAPI.setStatus(ns, batch.target.characteristics.host, (isPrep) ? ServerStatus.PREPPING : ServerStatus.TARGETING);
-    for (const job of batch.jobs) {
-        await startJob(ns, job);
-    }
+    await startJobs(ns, batch.jobs);
     await writeBatch(ns, batch);
 }
-async function startJob(ns, job) {
+async function startJobs(ns, jobs) {
     // TODO: We should do some checking in here
-    job.execute(ns);
-    job.onStart(ns);
-    const threadSpread = job.threadSpread;
-    for (const [server, threads] of threadSpread) {
-        const reservation = threads * (await ToolUtils.getToolCost(ns, job.tool));
-        await ServerAPI.decreaseReservation(ns, server, reservation);
+    for (const job of jobs) {
+        job.execute(ns);
+        job.onStart(ns);
     }
+    const ramSpread = createRamSpread(ns, jobs);
+    await ServerAPI.decreaseReservations(ns, ramSpread);
+}
+function createRamSpread(ns, jobs) {
+    const ramSpread = new Map();
+    for (const job of jobs) {
+        const threadCost = ToolUtils.getToolCost(ns, job.tool);
+        for (const [server, threads] of job.threadSpread) {
+            let ram = threads * threadCost;
+            if (ramSpread.has(server)) {
+                ram += ramSpread.get(server);
+            }
+            ramSpread.set(server, ram);
+        }
+    }
+    return ramSpread;
 }
 export function getServerBatchJob(ns, server) {
     const jobMap = getJobMap(ns);

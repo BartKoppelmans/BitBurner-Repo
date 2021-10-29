@@ -8,10 +8,10 @@ import * as JobAPI from '/src/api/JobAPI.js';
 const JOB_MANAGING_LOOP_INTERVAL = 1000;
 const HACKING_LOOP_DELAY = 2000;
 class HackingManager {
-    constructor() {
-        this.inFullAttackMode = false;
-        this.serverMapLastUpdated = CONSTANT.EPOCH_DATE;
-    }
+    hackingLoopInterval;
+    jobLoopInterval;
+    inFullAttackMode = false;
+    serverMapLastUpdated = CONSTANT.EPOCH_DATE;
     async initialize(ns) {
         Utils.disableLogging(ns);
         ns.atExit(this.destroy.bind(this, ns));

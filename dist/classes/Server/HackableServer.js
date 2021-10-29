@@ -3,6 +3,10 @@ import { ServerStatus } from '/src/classes/Server/ServerInterfaces.js';
 import { CONSTANT } from '/src/lib/constants.js';
 import { Heuristics } from '/src/util/Heuristics.js';
 export default class HackableServer extends Server {
+    status;
+    staticHackingProperties;
+    percentageToSteal;
+    serverValue;
     constructor(ns, server) {
         super(ns, server);
         this.status = (server.status) ? server.status : ServerStatus.NONE;

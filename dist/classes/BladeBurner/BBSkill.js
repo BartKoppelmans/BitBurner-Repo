@@ -1,5 +1,7 @@
 import { BBSkillPriority } from '/src/classes/BladeBurner/BBInterfaces.js';
 export class BBSkill {
+    name;
+    priority;
     // TODO: Include some prioritization for skills
     constructor(ns, name) {
         this.name = name;

@@ -1,5 +1,6 @@
 import * as LogAPI from '/src/api/LogAPI.js';
 export class BBCity {
+    name;
     // TODO: Include some prioritization for skills
     constructor(ns, name) {
         this.name = name;

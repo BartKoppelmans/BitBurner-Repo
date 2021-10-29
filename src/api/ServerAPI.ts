@@ -18,6 +18,9 @@ import {
 import {
 	HacknetServer,
 }                               from '/src/classes/Server/HacknetServer.js'
+import {
+	RamSpread,
+}                               from '/src/classes/Misc/HackInterfaces'
 
 const MIN_NUMBER_PURPOSED_SERVERS: number = 2 as const
 
@@ -166,11 +169,14 @@ export async function increaseReservation(ns: NS, host: string, reservation: num
 	await updateServer(ns, server)
 }
 
-export async function decreaseReservation(ns: NS, host: string, reservation: number): Promise<void> {
-	const server: Server = getServerByName(ns, host)
-	reservation          = Math.round(reservation * 100) / 100
-	server.decreaseReservation(ns, reservation)
-	await updateServer(ns, server)
+export async function decreaseReservations(ns: NS, ramSpread: RamSpread, serverMap: ServerMap = getServerMap(ns)): Promise<void> {
+	for (const [host, ram] of ramSpread) {
+		const serverIndex: number = serverMap.servers.findIndex((server) => server.characteristics.host === host)
+		if (serverIndex === -1) throw new Error('We could not find the server in the server map')
+		const reservation: number          = Math.round(ram * 100) / 100
+		serverMap.servers[serverIndex].decreaseReservation(ns, reservation)
+	}
+	await writeServerMap(ns, serverMap)
 }
 
 export function getServer(ns: NS, id: string): Server {
@@ -179,8 +185,8 @@ export function getServer(ns: NS, id: string): Server {
 	return server
 }
 
-export function getServerByName(ns: NS, host: string): Server {
-	const server: Server | undefined = getServerMap(ns).servers.find(s => s.characteristics.host === host)
+export function getServerByName(ns: NS, host: string, serverMap: ServerMap = getServerMap(ns)): Server {
+	const server: Server | undefined = serverMap.servers.find(s => s.characteristics.host === host)
 	if (!server) throw new Error('Could not find that server.')
 	return server
 }

@@ -1,4 +1,5 @@
 export default class Gang {
+    name;
     constructor(ns, name) {
         this.name = name;
     }

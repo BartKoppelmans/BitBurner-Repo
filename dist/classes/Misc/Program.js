@@ -6,6 +6,9 @@ export var ProgramType;
     ProgramType[ProgramType["Util"] = 1] = "Util";
 })(ProgramType || (ProgramType = {}));
 export class Program {
+    name;
+    price;
+    type;
     constructor(ns, name, price, type) {
         this.name = name;
         this.price = price;

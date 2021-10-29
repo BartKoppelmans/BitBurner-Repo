@@ -1,6 +1,7 @@
 import Gang from '/src/classes/Gang/Gang.js';
 import * as LogAPI from '/src/api/LogAPI.js';
 export default class HomeGang extends Gang {
+    isInWarfare;
     constructor(ns, name) {
         super(ns, name);
         const clashChance = this.getGangInformation(ns).territoryClashChance;

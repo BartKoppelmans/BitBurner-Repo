@@ -8,7 +8,7 @@ import * as LogAPI                           from '/src/api/LogAPI.js'
 import * as ToolUtils                        from '/src/util/ToolUtils.js'
 import * as SerializationUtils               from '/src/util/SerializationUtils.js'
 import { ServerMap, ServerStatus }           from '/src/classes/Server/ServerInterfaces.js'
-import { ThreadSpread }                      from '/src/classes/Misc/HackInterfaces.js'
+import { RamSpread }                         from '/src/classes/Misc/HackInterfaces.js'
 import { Tools }                             from '/src/tools/Tools.js'
 import HackableServer                        from '/src/classes/Server/HackableServer'
 
@@ -49,26 +49,38 @@ export async function startBatch(ns: NS, batch: Batch): Promise<void> {
 
 	await ServerAPI.setStatus(ns, batch.target.characteristics.host, (isPrep) ? ServerStatus.PREPPING : ServerStatus.TARGETING)
 
-	for (const job of batch.jobs) {
-		await startJob(ns, job)
-	}
+	await startJobs(ns, batch.jobs)
 
 	await writeBatch(ns, batch)
 }
 
-async function startJob(ns: NS, job: Job): Promise<void> {
+async function startJobs(ns: NS, jobs: Job[]): Promise<void> {
 
 	// TODO: We should do some checking in here
 
-	job.execute(ns)
-
-	job.onStart(ns)
-
-	const threadSpread: ThreadSpread = job.threadSpread
-	for (const [server, threads] of threadSpread) {
-		const reservation: number = threads * (await ToolUtils.getToolCost(ns, job.tool))
-		await ServerAPI.decreaseReservation(ns, server, reservation)
+	for (const job of jobs) {
+		job.execute(ns)
+		job.onStart(ns)
 	}
+
+	const ramSpread: RamSpread = createRamSpread(ns, jobs)
+	await ServerAPI.decreaseReservations(ns, ramSpread)
+
+}
+
+function createRamSpread(ns: NS, jobs: Job[]): RamSpread {
+	const ramSpread: RamSpread = new Map<string, number>()
+	for (const job of jobs) {
+		const threadCost: number = ToolUtils.getToolCost(ns, job.tool)
+		for (const [server, threads] of job.threadSpread) {
+			let ram: number = threads * threadCost
+			if (ramSpread.has(server)) {
+				ram += ramSpread.get(server)!
+			}
+			ramSpread.set(server, ram)
+		}
+	}
+	return ramSpread
 }
 
 export function getServerBatchJob(ns: NS, server: HackableServer): Batch {

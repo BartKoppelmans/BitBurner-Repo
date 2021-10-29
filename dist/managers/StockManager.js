@@ -13,13 +13,12 @@ const EXPECTED_RETURN_BUY_THRESHOLD = 0.0002; // Buy anything forecasted to earn
 const EXPECTED_RETURN_SELL_THRESHOLD = 0.0001; // Buy anything forecasted to earn better than a 0.02%
 // return
 class StockManager {
-    constructor() {
-        this.stocks = [];
-        this.startingCorpus = 0;
-        this.lastCorpus = 0;
-        this.runningProfit = 0;
-        this.lastRunningProfit = 0;
-    }
+    managingLoopTimeout;
+    stocks = [];
+    startingCorpus = 0;
+    lastCorpus = 0;
+    runningProfit = 0;
+    lastRunningProfit = 0;
     static getBudget(ns, stocks) {
         const corpus = stocks.reduce((total, stock) => total + stock.getStockCorpus(), 0);
         const totalBudget = STOCK_ALLOWANCE * PlayerUtils.getMoney(ns);

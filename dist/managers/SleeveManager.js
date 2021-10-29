@@ -7,6 +7,7 @@ const LOOP_DELAY = 1000;
 const STAT_MUG_THRESHOLD = 25;
 const STAT_HOMICIDE_THRESHOLD = 100;
 class SleeveManager {
+    managingLoopTimeout;
     static shouldTrain(ns, stats) {
         if (stats.strength < STAT_MUG_THRESHOLD)
             return SleeveTrainStat.STRENGTH;

@@ -8,6 +8,8 @@ export interface HackSnapshot {
 
 export type ThreadSpread = Map<string, number>;
 
+export type RamSpread = Map<string, number>;
+
 export interface CycleSpread {
 	source: Server,
 	numCycles: number

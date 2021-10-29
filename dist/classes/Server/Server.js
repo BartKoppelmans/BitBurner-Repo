@@ -2,8 +2,10 @@ import { ServerPurpose } from '/src/classes/Server/ServerInterfaces.js';
 import { CONSTANT } from '/src/lib/constants.js';
 import * as ServerUtils from '/src/util/ServerUtils.js';
 export default class Server {
+    characteristics;
+    purpose = ServerPurpose.NONE;
+    reservation;
     constructor(ns, server) {
-        this.purpose = ServerPurpose.NONE;
         if (!server.characteristics)
             throw new Error('Cannot initialize the server without its characteristics');
         this.characteristics = server.characteristics;
