@@ -17,7 +17,7 @@ export default class Stock {
 	}
 
 	public static getStocks(ns: NS): Stock[] {
-		const symbols: StockSymbol[] = ns.getStockSymbols()
+		const symbols: StockSymbol[] = ns.stock.getStockSymbols()
 		return symbols.map((symbol) => new Stock(ns, symbol))
 	}
 
@@ -36,7 +36,7 @@ export default class Stock {
 	public buyShorts(ns: NS, numShares: number): void {
 		// TODO: Check whether we can buy that many shares
 
-		const value: number = ns.shortStock(this.symbol, numShares)
+		const value: number = ns.stock.shortStock(this.symbol, numShares)
 		LogAPI.printLog(ns, `Bought ${numShares} shorts for ${ns.nFormat(value, '$0.000a')}. Invested: ${ns.nFormat((value * numShares), '$0.000a')}`)
 		this.update(ns)
 	}
@@ -44,7 +44,7 @@ export default class Stock {
 	public buyLongs(ns: NS, numShares: number): void {
 		// TODO: Check whether we can buy that many shares
 
-		const value: number = ns.buyStock(this.symbol, numShares)
+		const value: number = ns.stock.buyStock(this.symbol, numShares)
 		LogAPI.printLog(ns, `Bought ${numShares} longs for ${ns.nFormat(value, '$0.000a')}. Invested: ${ns.nFormat((value * numShares), '$0.000a')}`)
 		this.update(ns)
 	}
@@ -57,7 +57,7 @@ export default class Stock {
 	public sellShorts(ns: NS): number {
 		if (this.stockInformation.ownedShort <= 0) throw new Error(`No owned short shares for ${this.symbol}`)
 
-		const value: number = ns.sellShort(this.symbol, this.stockInformation.ownedShort)
+		const value: number = ns.stock.sellShort(this.symbol, this.stockInformation.ownedShort)
 		if (value) {
 			const profit: number = this.stockInformation.ownedShort * (this.stockInformation.averageShortPrice - value) - 2 * STOCK_COMMISSION
 			LogAPI.printLog(ns, `Sold ${this.stockInformation.ownedShort} shorts for ${ns.nFormat(value, '$0.000a')}. Profit: ${ns.nFormat(profit, '$0.000a')}`)
@@ -70,7 +70,7 @@ export default class Stock {
 	public sellLongs(ns: NS): number {
 		if (this.stockInformation.ownedLong <= 0) throw new Error(`No owned long shares for ${this.symbol}`)
 
-		const value: number = ns.sellStock(this.symbol, this.stockInformation.ownedLong)
+		const value: number = ns.stock.sellStock(this.symbol, this.stockInformation.ownedLong)
 		if (value) {
 			const profit: number = this.stockInformation.ownedLong * (value - this.stockInformation.averageLongPrice) - 2 * STOCK_COMMISSION
 			LogAPI.printLog(ns, `Sold ${this.stockInformation.ownedLong} longs for ${ns.nFormat(value, '$0.000a')}. Profit: ${ns.nFormat(profit, '$0.000a')}`)
@@ -82,9 +82,9 @@ export default class Stock {
 
 	// TODO: Keep the last moment of update to make sure that we update in time
 	public update(ns: NS): void {
-		const volatility: number                                           = ns.getStockVolatility(this.symbol)
-		const probability: number                                          = 2 * (ns.getStockForecast(this.symbol) - 0.5)
-		const [ownedLong, averageLongPrice, ownedShort, averageShortPrice] = ns.getStockPosition(this.symbol)
+		const volatility: number                                           = ns.stock.getStockVolatility(this.symbol)
+		const probability: number                                          = 2 * (ns.stock.getStockForecast(this.symbol) - 0.5)
+		const [ownedLong, averageLongPrice, ownedShort, averageShortPrice] = ns.stock.getStockPosition(this.symbol)
 
 		this.stockInformation = {
 			ownedLong,
@@ -93,10 +93,10 @@ export default class Stock {
 			averageShortPrice,
 			volatility,
 			probability,
-			price: ns.getStockPrice(this.symbol),
-			maxShares: ns.getStockMaxShares(this.symbol),
-			askPrice: ns.getStockAskPrice(this.symbol),
-			bidPrice: ns.getStockBidPrice(this.symbol),
+			price: ns.stock.getStockPrice(this.symbol),
+			maxShares: ns.stock.getStockMaxShares(this.symbol),
+			askPrice: ns.stock.getStockAskPrice(this.symbol),
+			bidPrice: ns.stock.getStockBidPrice(this.symbol),
 			expectedReturn: volatility * probability / 2,
 		}
 	}

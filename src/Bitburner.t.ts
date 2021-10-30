@@ -4011,7 +4011,7 @@ declare module 'Bitburner' {
 		getEmployee(division: string, city: City, employeeName: string): CorporationEmployee
 	}
 
-	export interface BitBurner extends TIX, Singularity {
+	export interface BitBurner extends Singularity {
 		/**
 		 * Not all functions in the Hacknet Node API are immediately available.
 		 *
@@ -4034,6 +4034,7 @@ declare module 'Bitburner' {
 		 * @ramCost 0 GB
 		 */
 		readonly gang: Gang;
+		readonly stock: TIX;
 		/**
 		 * @ramCost 0 GB
 		 */

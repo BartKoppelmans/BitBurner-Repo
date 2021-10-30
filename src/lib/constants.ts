@@ -98,8 +98,8 @@ export const CONSTANT = {
 	 */
 
 	// TODO: Change this back to 20 after early game.
-	MAX_TARGET_COUNT: 30,
-	MAX_CYCLE_NUMBER: 50, // TODO: Find a way to determine this dynamically
+	MAX_TARGET_COUNT: 40,
+	MAX_CYCLE_NUMBER: 100, // TODO: Find a way to determine this dynamically
 
 	// Max server growth rate, higher than this will be throttled
 	MAX_GROWTH_RATE: 1.0035,

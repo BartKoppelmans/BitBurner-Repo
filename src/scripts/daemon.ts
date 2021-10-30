@@ -1,9 +1,9 @@
-import type { BitBurner as NS } from 'Bitburner'
-import * as LogAPI              from '/src/api/LogAPI.js'
-import { CONSTANT }             from '/src/lib/constants.js'
-import * as Utils               from '/src/util/Utils.js'
-import { Managers }             from '/src/managers/Managers.js'
-import * as ServerAPI           from '/src/api/ServerAPI.js'
+import { BitBurner as NS, Player } from 'Bitburner'
+import * as LogAPI                 from '/src/api/LogAPI.js'
+import { CONSTANT }                from '/src/lib/constants.js'
+import * as Utils                  from '/src/util/Utils.js'
+import { Managers }                from '/src/managers/Managers.js'
+import * as ServerAPI              from '/src/api/ServerAPI.js'
 
 let runnerInterval: ReturnType<typeof setInterval>
 const RUNNER_INTERVAL: number     = 60000 as const
@@ -27,20 +27,33 @@ async function initialize(ns: NS) {
 		['stock', false],
 		['corporation', false],
 		['hacknet', false],
+		['auto', false]
 	])
 
 	await ServerAPI.initializeServerMap(ns)
 
 	const tasks: Promise<void>[] = []
 
-	// Managers
-	if (flags.hacking) tasks.push(startManager(ns, Managers.HackingManager))
-	if (flags.bladeburner) tasks.push(startManager(ns, Managers.BladeBurnerManager))
-	if (flags.gang) tasks.push(startManager(ns, Managers.GangManager))
-	if (flags.sleeve) tasks.push(startManager(ns, Managers.SleeveManager))
-	if (flags.stock) tasks.push(startManager(ns, Managers.StockManager))
-	if (flags.corporation) tasks.push(startManager(ns, Managers.CorporationManager))
-	if (flags.hacknet) tasks.push(startManager(ns, Managers.HacknetManager))
+	if (flags.auto) {
+		tasks.push(startManager(ns, Managers.HackingManager))
+		if (flags.hacknet) tasks.push(startManager(ns, Managers.HacknetManager))
+
+		const player: Player = ns.getPlayer()
+
+		if (ns.bladeburner.joinBladeburnerDivision()) tasks.push(startManager(ns, Managers.BladeBurnerManager))
+		if (ns.gang.inGang()) tasks.push(startManager(ns, Managers.GangManager))
+		if (ns.sleeve.getNumSleeves() > 0) tasks.push(startManager(ns, Managers.SleeveManager))
+		if (player.hasWseAccount && player.hasTixApiAccess && player.has4SData && player.has4SDataTixApi) tasks.push(startManager(ns, Managers.StockManager))
+	} else {
+		// Managers
+		if (flags.hacking) tasks.push(startManager(ns, Managers.HackingManager))
+		if (flags.bladeburner) tasks.push(startManager(ns, Managers.BladeBurnerManager))
+		if (flags.gang) tasks.push(startManager(ns, Managers.GangManager))
+		if (flags.sleeve) tasks.push(startManager(ns, Managers.SleeveManager))
+		if (flags.stock) tasks.push(startManager(ns, Managers.StockManager))
+		if (flags.corporation) tasks.push(startManager(ns, Managers.CorporationManager))
+		if (flags.hacknet) tasks.push(startManager(ns, Managers.HacknetManager))
+	}
 
 	// Runners
 	tasks.push(launchRunners(ns))

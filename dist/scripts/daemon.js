@@ -20,24 +20,41 @@ async function initialize(ns) {
         ['stock', false],
         ['corporation', false],
         ['hacknet', false],
+        ['auto', false]
     ]);
     await ServerAPI.initializeServerMap(ns);
     const tasks = [];
-    // Managers
-    if (flags.hacking)
+    if (flags.auto) {
         tasks.push(startManager(ns, Managers.HackingManager));
-    if (flags.bladeburner)
-        tasks.push(startManager(ns, Managers.BladeBurnerManager));
-    if (flags.gang)
-        tasks.push(startManager(ns, Managers.GangManager));
-    if (flags.sleeve)
-        tasks.push(startManager(ns, Managers.SleeveManager));
-    if (flags.stock)
-        tasks.push(startManager(ns, Managers.StockManager));
-    if (flags.corporation)
-        tasks.push(startManager(ns, Managers.CorporationManager));
-    if (flags.hacknet)
-        tasks.push(startManager(ns, Managers.HacknetManager));
+        if (flags.hacknet)
+            tasks.push(startManager(ns, Managers.HacknetManager));
+        const player = ns.getPlayer();
+        if (ns.bladeburner.joinBladeburnerDivision())
+            tasks.push(startManager(ns, Managers.BladeBurnerManager));
+        if (ns.gang.inGang())
+            tasks.push(startManager(ns, Managers.GangManager));
+        if (ns.sleeve.getNumSleeves() > 0)
+            tasks.push(startManager(ns, Managers.SleeveManager));
+        if (player.hasWseAccount && player.hasTixApiAccess && player.has4SData && player.has4SDataTixApi)
+            tasks.push(startManager(ns, Managers.StockManager));
+    }
+    else {
+        // Managers
+        if (flags.hacking)
+            tasks.push(startManager(ns, Managers.HackingManager));
+        if (flags.bladeburner)
+            tasks.push(startManager(ns, Managers.BladeBurnerManager));
+        if (flags.gang)
+            tasks.push(startManager(ns, Managers.GangManager));
+        if (flags.sleeve)
+            tasks.push(startManager(ns, Managers.SleeveManager));
+        if (flags.stock)
+            tasks.push(startManager(ns, Managers.StockManager));
+        if (flags.corporation)
+            tasks.push(startManager(ns, Managers.CorporationManager));
+        if (flags.hacknet)
+            tasks.push(startManager(ns, Managers.HacknetManager));
+    }
     // Runners
     tasks.push(launchRunners(ns));
     await Promise.allSettled(tasks);

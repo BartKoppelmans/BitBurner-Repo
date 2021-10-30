@@ -64,8 +64,8 @@ export const CONSTANT = {
      * Hacking manager constants
      */
     // TODO: Change this back to 20 after early game.
-    MAX_TARGET_COUNT: 30,
-    MAX_CYCLE_NUMBER: 50,
+    MAX_TARGET_COUNT: 40,
+    MAX_CYCLE_NUMBER: 100,
     // Max server growth rate, higher than this will be throttled
     MAX_GROWTH_RATE: 1.0035,
     // Unadjusted server growth rate, this is higher than actually possible
