@@ -11,7 +11,6 @@ const LOOP_DELAY = 30000;
 const HACKNET_ALLOWANCE = 0.05;
 const PAYOFF_TIME = 3600; // Should pay off within 10 minutes
 class HacknetManager {
-    managingLoopTimeout;
     static getServerOptimalGainRateTotal(ns, servers, player) {
         return servers.reduce((total, server) => total + this.calculateServerOptimalGainRate(ns, server.nodeInformation, player), 0);
     }
@@ -149,6 +148,13 @@ class HacknetManager {
                 mergedUpgrades[index].levels += 1;
             }
         });
+        // Make sure that we have the purchases first
+        mergedUpgrades.sort((a, b) => {
+            if (a.type === b.type)
+                return 0;
+            else
+                return (a.type === HacknetServerUpgradeType.NEW) ? -1 : 1;
+        });
         return mergedUpgrades;
     }
     static generatePotentialUpgrades(ns, hypotheticalServers, player) {
@@ -236,11 +242,8 @@ class HacknetManager {
     }
     async start(ns) {
         LogAPI.printTerminal(ns, `Starting the HacknetManager`);
-        this.managingLoopTimeout = setTimeout(this.managingLoop.bind(this, ns), LOOP_DELAY);
     }
     async destroy(ns) {
-        if (this.managingLoopTimeout)
-            clearTimeout(this.managingLoopTimeout);
         LogAPI.printTerminal(ns, `Stopping the HacknetManager`);
     }
     async managingLoop(ns) {
@@ -275,7 +278,6 @@ class HacknetManager {
         for (const upgrade of mergedUpgrades) {
             await HacknetManager.executeUpgrade(ns, upgrade);
         }
-        this.managingLoopTimeout = setTimeout(this.managingLoop.bind(this, ns), LOOP_DELAY);
     }
     findHashUpgrade(ns, potentialUpgrades, hypotheticalServers) {
         const hashUpgrades = potentialUpgrades.filter((upgrade) => {
@@ -332,6 +334,7 @@ export async function main(ns) {
     await instance.initialize(ns);
     await instance.start(ns);
     while (true) {
-        await ns.sleep(CONSTANT.CONTROL_FLOW_CHECK_INTERVAL);
+        await instance.managingLoop(ns);
+        await ns.sleep(LOOP_DELAY);
     }
 }

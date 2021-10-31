@@ -6,7 +6,7 @@ import * as PlayerUtils from '/src/util/PlayerUtils.js';
 import { BBSkillPriority } from '/src/classes/BladeBurner/BBInterfaces.js';
 const MONEY_THRESHOLD = 1e9; // 1 billion
 const JOIN_DELAY = 60000;
-const MANAGING_LOOP_DELAY = 100;
+const LOOP_DELAY = 100;
 const BUSY_RETRY_DELAY = 1000;
 const SYNTH_POPULATION_THRESHOLD = 1e8;
 // const SYNTH_COMMUNITY_THRESHOLD: number       = 5 as const
@@ -14,7 +14,6 @@ const CHAOS_THRESHOLD = 100;
 const FINAL_BLACK_OP_WARNING_INTERVAL = 10;
 class BladeBurnerManager {
     iterationCounter = 1;
-    managingLoopTimeout;
     actions;
     skills;
     cities;
@@ -62,13 +61,10 @@ class BladeBurnerManager {
     }
     async start(ns) {
         LogAPI.printTerminal(ns, `Starting the BladeBurnerManager`);
-        this.managingLoopTimeout = setTimeout(this.managingLoop.bind(this, ns), MANAGING_LOOP_DELAY);
     }
     async destroy(ns) {
-        if (this.managingLoopTimeout)
-            clearTimeout(this.managingLoopTimeout);
-        ns.bladeburner.stopBladeburnerAction();
         LogAPI.printTerminal(ns, `Stopping the BladeBurnerManager`);
+        ns.bladeburner.stopBladeburnerAction();
     }
     shouldPreferContracts(ns) {
         return this.canFinishBitNode(ns) || PlayerUtils.getMoney(ns) < MONEY_THRESHOLD;
@@ -84,18 +80,12 @@ class BladeBurnerManager {
         return false;
     }
     async managingLoop(ns) {
-        const nextLoop = (isIteration) => {
-            if (isIteration)
-                this.iterationCounter++;
-            this.managingLoopTimeout = setTimeout(this.managingLoop.bind(this, ns), MANAGING_LOOP_DELAY);
-            return;
-        };
         ns.bladeburner.joinBladeburnerFaction();
         this.upgradeSkills(ns);
         // NOTE: This might still have some problems
         if (BladeBurnerManager.shouldSkipIteration(ns)) {
             await ns.sleep(BUSY_RETRY_DELAY);
-            return nextLoop(false);
+            return;
         }
         if (this.canFinishBitNode(ns) && ((this.iterationCounter) % FINAL_BLACK_OP_WARNING_INTERVAL === 0)) {
             LogAPI.printLog(ns, `We are ready to finish the final BlackOp`);
@@ -103,7 +93,7 @@ class BladeBurnerManager {
         // We start our regen if we are tired
         if (BladeBurnerManager.isTired(ns)) {
             const regenAction = BladeBurnerUtils.getAction(ns, this.actions, 'Hyperbolic Regeneration Chamber');
-            return regenAction.execute(ns, this.iterationCounter).then(nextLoop.bind(this, false));
+            return regenAction.execute(ns, this.iterationCounter);
         }
         // Check whether we have enough Synths, otherwise move or search for new ones
         const currentCity = this.cities.find((city) => city.isCurrent(ns));
@@ -117,12 +107,13 @@ class BladeBurnerManager {
         }
         const currentAction = this.getCurrentAction(ns);
         const nextAction = this.findOptimalAction(ns);
+        this.iterationCounter++;
         // This makes sure that we don't unnecessarily stop our current action to start the same one
         if (currentAction && currentAction.name === nextAction.name) {
-            return nextAction.continue(ns, this.iterationCounter).then(nextLoop.bind(this, true));
+            return nextAction.continue(ns, this.iterationCounter);
         }
         else
-            return nextAction.execute(ns, this.iterationCounter).then(nextLoop.bind(this, true));
+            return nextAction.execute(ns, this.iterationCounter);
     }
     getCurrentAction(ns) {
         const currentAction = ns.bladeburner.getCurrentAction();
@@ -199,6 +190,7 @@ export async function main(ns) {
     await instance.initialize(ns);
     await instance.start(ns);
     while (true) {
-        await ns.sleep(CONSTANT.CONTROL_FLOW_CHECK_INTERVAL);
+        await instance.managingLoop(ns);
+        await ns.sleep(LOOP_DELAY);
     }
 }

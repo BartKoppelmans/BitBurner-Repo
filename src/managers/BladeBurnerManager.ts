@@ -12,7 +12,7 @@ import { BBCity }                                     from '/src/classes/BladeBu
 
 const MONEY_THRESHOLD: number                 = 1e9 as const // 1 billion
 const JOIN_DELAY: number                      = 60000 as const
-const MANAGING_LOOP_DELAY: number             = 100 as const
+const LOOP_DELAY: number             = 100 as const
 const BUSY_RETRY_DELAY: number                = 1000 as const
 const SYNTH_POPULATION_THRESHOLD: number      = 1e8 as const
 // const SYNTH_COMMUNITY_THRESHOLD: number       = 5 as const
@@ -22,8 +22,6 @@ const FINAL_BLACK_OP_WARNING_INTERVAL: number = 10 as const
 class BladeBurnerManager implements Manager {
 
 	private iterationCounter: number = 1
-
-	private managingLoopTimeout?: ReturnType<typeof setTimeout>
 
 	private actions!: BBAction[]
 	private skills!: BBSkill[]
@@ -86,16 +84,11 @@ class BladeBurnerManager implements Manager {
 
 	public async start(ns: NS): Promise<void> {
 		LogAPI.printTerminal(ns, `Starting the BladeBurnerManager`)
-
-		this.managingLoopTimeout = setTimeout(this.managingLoop.bind(this, ns), MANAGING_LOOP_DELAY)
 	}
 
 	public async destroy(ns: NS): Promise<void> {
-		if (this.managingLoopTimeout) clearTimeout(this.managingLoopTimeout)
-
-		ns.bladeburner.stopBladeburnerAction()
-
 		LogAPI.printTerminal(ns, `Stopping the BladeBurnerManager`)
+		ns.bladeburner.stopBladeburnerAction()
 	}
 
 	private shouldPreferContracts(ns: NS): boolean {
@@ -112,13 +105,7 @@ class BladeBurnerManager implements Manager {
 		return false
 	}
 
-	private async managingLoop(ns: NS): Promise<void> {
-
-		const nextLoop = (isIteration: boolean) => {
-			if (isIteration) this.iterationCounter++
-			this.managingLoopTimeout = setTimeout(this.managingLoop.bind(this, ns), MANAGING_LOOP_DELAY)
-			return
-		}
+	public async managingLoop(ns: NS): Promise<void> {
 
 		ns.bladeburner.joinBladeburnerFaction()
 
@@ -127,7 +114,7 @@ class BladeBurnerManager implements Manager {
 		// NOTE: This might still have some problems
 		if (BladeBurnerManager.shouldSkipIteration(ns)) {
 			await ns.sleep(BUSY_RETRY_DELAY)
-			return nextLoop(false)
+			return
 		}
 
 		if (this.canFinishBitNode(ns) && ((this.iterationCounter) % FINAL_BLACK_OP_WARNING_INTERVAL === 0)) {
@@ -137,7 +124,7 @@ class BladeBurnerManager implements Manager {
 		// We start our regen if we are tired
 		if (BladeBurnerManager.isTired(ns)) {
 			const regenAction: BBAction = BladeBurnerUtils.getAction(ns, this.actions, 'Hyperbolic Regeneration Chamber')
-			return regenAction.execute(ns, this.iterationCounter).then(nextLoop.bind(this, false))
+			return regenAction.execute(ns, this.iterationCounter)
 		}
 
 		// Check whether we have enough Synths, otherwise move or search for new ones
@@ -154,10 +141,12 @@ class BladeBurnerManager implements Manager {
 		const currentAction: BBAction | undefined = this.getCurrentAction(ns)
 		const nextAction: BBAction                = this.findOptimalAction(ns)
 
+		this.iterationCounter++
+
 		// This makes sure that we don't unnecessarily stop our current action to start the same one
 		if (currentAction && currentAction.name === nextAction.name) {
-			return nextAction.continue(ns, this.iterationCounter).then(nextLoop.bind(this, true))
-		} else return nextAction.execute(ns, this.iterationCounter).then(nextLoop.bind(this, true))
+			return nextAction.continue(ns, this.iterationCounter)
+		} else return nextAction.execute(ns, this.iterationCounter)
 	}
 
 	private getCurrentAction(ns: NS): BBAction | undefined {
@@ -256,6 +245,7 @@ export async function main(ns: NS) {
 	await instance.start(ns)
 
 	while (true) {
-		await ns.sleep(CONSTANT.CONTROL_FLOW_CHECK_INTERVAL)
+		await instance.managingLoop(ns)
+		await ns.sleep(LOOP_DELAY)
 	}
 }

@@ -1,13 +1,11 @@
 import * as LogAPI from '/src/api/LogAPI.js';
 import * as Utils from '/src/util/Utils.js';
-import { CONSTANT } from '/src/lib/constants.js';
 import Sleeve from '/src/classes/Sleeve/Sleeve.js';
 import { SleeveTrainStat } from '/src/classes/Sleeve/SleeveInterfaces.js';
-const LOOP_DELAY = 1000;
+const LOOP_DELAY = 10000;
 const STAT_MUG_THRESHOLD = 25;
 const STAT_HOMICIDE_THRESHOLD = 100;
 class SleeveManager {
-    managingLoopTimeout;
     static shouldTrain(ns, stats) {
         if (stats.strength < STAT_MUG_THRESHOLD)
             return SleeveTrainStat.STRENGTH;
@@ -52,11 +50,8 @@ class SleeveManager {
     }
     async start(ns) {
         LogAPI.printTerminal(ns, `Starting the SleeveManager`);
-        this.managingLoopTimeout = setTimeout(this.managingLoop.bind(this, ns), LOOP_DELAY);
     }
     async destroy(ns) {
-        if (this.managingLoopTimeout)
-            clearTimeout(this.managingLoopTimeout);
         LogAPI.printTerminal(ns, `Stopping the SleeveManager`);
     }
     async managingLoop(ns) {
@@ -64,7 +59,6 @@ class SleeveManager {
         for (const sleeve of sleeves) {
             SleeveManager.manageSleeve(ns, sleeve);
         }
-        this.managingLoopTimeout = setTimeout(this.managingLoop.bind(this, ns), LOOP_DELAY);
     }
 }
 export async function main(ns) {
@@ -75,6 +69,7 @@ export async function main(ns) {
     await instance.initialize(ns);
     await instance.start(ns);
     while (true) {
-        await ns.sleep(CONSTANT.CONTROL_FLOW_CHECK_INTERVAL);
+        await instance.managingLoop(ns);
+        await ns.sleep(LOOP_DELAY);
     }
 }

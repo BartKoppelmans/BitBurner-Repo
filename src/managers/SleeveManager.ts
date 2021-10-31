@@ -2,17 +2,14 @@ import type { BitBurner as NS, SleeveInformation, SleeveStats } from 'Bitburner'
 import * as LogAPI                                              from '/src/api/LogAPI.js'
 import * as Utils                                               from '/src/util/Utils.js'
 import { Manager }                                              from '/src/classes/Misc/ScriptInterfaces.js'
-import { CONSTANT }                                             from '/src/lib/constants.js'
 import Sleeve                                                   from '/src/classes/Sleeve/Sleeve.js'
 import { SleeveTrainStat }                                      from '/src/classes/Sleeve/SleeveInterfaces.js'
 
-const LOOP_DELAY: number = 1000 as const
+const LOOP_DELAY: number = 10000 as const
 const STAT_MUG_THRESHOLD: number = 25 as const
 const STAT_HOMICIDE_THRESHOLD: number = 100 as const
 
 class SleeveManager implements Manager {
-
-	private managingLoopTimeout?: ReturnType<typeof setTimeout>
 
 	private static shouldTrain(ns: NS, stats: SleeveStats): SleeveTrainStat {
 		if (stats.strength < STAT_MUG_THRESHOLD) return SleeveTrainStat.STRENGTH
@@ -63,25 +60,18 @@ class SleeveManager implements Manager {
 
 	public async start(ns: NS): Promise<void> {
 		LogAPI.printTerminal(ns, `Starting the SleeveManager`)
-
-		this.managingLoopTimeout = setTimeout(this.managingLoop.bind(this, ns), LOOP_DELAY)
 	}
 
 	public async destroy(ns: NS): Promise<void> {
-		if (this.managingLoopTimeout) clearTimeout(this.managingLoopTimeout)
-
 		LogAPI.printTerminal(ns, `Stopping the SleeveManager`)
 	}
 
-	private async managingLoop(ns: NS): Promise<void> {
-
+	public async managingLoop(ns: NS): Promise<void> {
 		const sleeves: Sleeve[] = Sleeve.getSleeves(ns)
 
 		for (const sleeve of sleeves) {
 			SleeveManager.manageSleeve(ns, sleeve)
 		}
-
-		this.managingLoopTimeout = setTimeout(this.managingLoop.bind(this, ns), LOOP_DELAY)
 	}
 
 }
@@ -97,6 +87,7 @@ export async function main(ns: NS) {
 	await instance.start(ns)
 
 	while (true) {
-		await ns.sleep(CONSTANT.CONTROL_FLOW_CHECK_INTERVAL)
+		await instance.managingLoop(ns)
+		await ns.sleep(LOOP_DELAY)
 	}
 }

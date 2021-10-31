@@ -22,7 +22,6 @@ const POWER_THRESHOLD = 500;
 const POWER_THRESHOLD_BUFFER = 50;
 const RESPECT_THRESHOLD = 2.5e6;
 class GangManager {
-    managingLoopTimeout;
     gangs;
     homeGang;
     upgrades;
@@ -136,15 +135,12 @@ class GangManager {
     }
     async start(ns) {
         LogAPI.printTerminal(ns, `Starting the GangManager`);
-        this.managingLoopTimeout = setTimeout(this.managingLoop.bind(this, ns), LOOP_DELAY);
     }
     async destroy(ns) {
-        if (this.managingLoopTimeout)
-            clearTimeout(this.managingLoopTimeout);
+        LogAPI.printTerminal(ns, `Stopping the GangManager`);
         const members = GangMember.getAllGangMembers(ns);
         members.forEach((member) => member.startTask(ns, GangTask.getUnassignedTask(ns)));
         // GangManager.removeFocusSwitch()
-        LogAPI.printTerminal(ns, `Stopping the GangManager`);
     }
     createFocusSwitch() {
         const doc = eval('document');
@@ -201,7 +197,6 @@ class GangManager {
         const otherMembers = members.filter((member) => member.name !== bestMember.name);
         this.manageBestMember(ns, bestMember);
         otherMembers.forEach((member) => this.manageMember(ns, member));
-        this.managingLoopTimeout = setTimeout(this.managingLoop.bind(this, ns), LOOP_DELAY);
     }
     async reduceWantedLevel(ns, members) {
         LogAPI.printLog(ns, `Reducing wanted level`);
@@ -278,6 +273,7 @@ export async function main(ns) {
     await instance.initialize(ns);
     await instance.start(ns);
     while (true) {
-        await ns.sleep(CONSTANT.CONTROL_FLOW_CHECK_INTERVAL);
+        await instance.managingLoop(ns);
+        await ns.sleep(LOOP_DELAY);
     }
 }

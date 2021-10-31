@@ -1711,7 +1711,7 @@ declare module 'Bitburner' {
 		 * @ramCost 2 GB
 		 * @returns Array of the symbols of the tradable stocks.
 		 */
-		getStockSymbols(): StockSymbol[];
+		getSymbols(): StockSymbol[];
 
 		/**
 		 * Returns the price of a stock, given its symbol (NOT the company name).
@@ -1727,7 +1727,7 @@ declare module 'Bitburner' {
 		 * @param sym Stock symbol.
 		 * @returns The price of a stock.
 		 */
-		getStockPrice(sym: StockSymbol): number;
+		getPrice(sym: StockSymbol): number;
 
 		/**
 		 * Given a stock’s symbol (NOT the company name), returns the ask price of that stock.
@@ -1737,7 +1737,7 @@ declare module 'Bitburner' {
 		 * @param sym Stock symbol.
 		 * @returns The ask price of a stock.
 		 */
-		getStockAskPrice(sym: StockSymbol): number;
+		getAskPrice(sym: StockSymbol): number;
 
 		/**
 		 * Given a stock’s symbol (NOT the company name), returns the bid price of that stock.
@@ -1747,7 +1747,7 @@ declare module 'Bitburner' {
 		 * @param sym Stock symbol.
 		 * @returns The bid price of a stock.
 		 */
-		getStockBidPrice(sym: StockSymbol): number;
+		getBidPrice(sym: StockSymbol): number;
 
 		/**
 		 * Returns an array of four elements that represents the player’s position in a stock.
@@ -1774,7 +1774,7 @@ declare module 'Bitburner' {
 		 * @param sym Stock symbol.
 		 * @returns Array of four elements that represents the player’s position in a stock.
 		 */
-		getStockPosition(sym: StockSymbol): [number, number, number, number];
+		getPosition(sym: StockSymbol): [number, number, number, number];
 
 		/**
 		 * Returns the maximum number of shares that the stock has.
@@ -1785,7 +1785,7 @@ declare module 'Bitburner' {
 		 * @param sym Stock symbol.
 		 * @returns Maximum number of shares that the stock has.
 		 */
-		getStockMaxShares(sym: StockSymbol): number;
+		getMaxShares(sym: StockSymbol): number;
 
 		/**
 		 * Calculates and returns how much it would cost to buy a given number of shares of a stock.
@@ -1797,7 +1797,7 @@ declare module 'Bitburner' {
 		 * @param posType Specifies whether the order is a “Long” or “Short” position.
 		 * @returns Cost to buy a given number of shares of a stock.
 		 */
-		getStockPurchaseCost(
+		getPurchaseCost(
 			sym: StockSymbol,
 			shares: number,
 			posType: OrderPos,
@@ -1813,7 +1813,7 @@ declare module 'Bitburner' {
 		 * @param posType Specifies whether the order is a “Long” or “Short” position.
 		 * @returns Gain from selling a given number of shares of a stock.
 		 */
-		getStockSaleGain(sym: StockSymbol, shares: number, posType: OrderPos): number;
+		getSaleGain(sym: StockSymbol, shares: number, posType: OrderPos): number;
 
 		/**
 		 * Attempts to purchase shares of a stock using a Market Order.
@@ -1830,7 +1830,7 @@ declare module 'Bitburner' {
 		 * @param shares Number of shares to purchased. Must be positive. Will be rounded to nearest integer.
 		 * @returns The stock price at which each share was purchased, otherwise 0 if the shares weren't purchased.
 		 */
-		buyStock(sym: StockSymbol, shares: number): number;
+		buy(sym: StockSymbol, shares: number): number;
 
 		/**
 		 * Attempts to sell shares of a stock using a Market Order.
@@ -1852,7 +1852,7 @@ declare module 'Bitburner' {
 		 * @param shares Number of shares to sell. Must be positive. Will be rounded to nearest integer.
 		 * @returns The stock price at which each share was sold, otherwise 0 if the shares weren't sold.
 		 */
-		sellStock(sym: StockSymbol, shares: number): number;
+		sell(sym: StockSymbol, shares: number): number;
 
 		/**
 		 * Attempts to purchase a short position of a stock using a Market Order.
@@ -1872,7 +1872,7 @@ declare module 'Bitburner' {
 		 * @param shares Number of shares to short. Must be positive. Will be rounded to nearest integer.
 		 * @returns The stock price at which each share was purchased, otherwise 0 if the shares weren't purchased.
 		 */
-		shortStock(sym: StockSymbol, shares: number): number;
+		short(sym: StockSymbol, shares: number): number;
 
 		/**
 		 * Attempts to sell a short position of a stock using a Market Order.
@@ -2018,7 +2018,7 @@ declare module 'Bitburner' {
 		 * @param sym Stock symbol.
 		 * @returns Volatility of the specified stock.
 		 */
-		getStockVolatility(sym: StockSymbol): number;
+		getVolatility(sym: StockSymbol): number;
 
 		/**
 		 * Returns the probability that the specified stock’s price will increase (as opposed to decrease) during the
@@ -2037,7 +2037,7 @@ declare module 'Bitburner' {
 		 * @returns Probability that the specified stock’s price will increase (as opposed to decrease) during the next
 		 *     tick.
 		 */
-		getStockForecast(sym: StockSymbol): number;
+		getForecast(sym: StockSymbol): number;
 
 		/**
 		 * Purchase 4S Market Data Access.

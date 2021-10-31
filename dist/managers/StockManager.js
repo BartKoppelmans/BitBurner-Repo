@@ -1,7 +1,6 @@
 import * as LogAPI from '/src/api/LogAPI.js';
 import * as Utils from '/src/util/Utils.js';
 import * as PlayerUtils from '/src/util/PlayerUtils.js';
-import { CONSTANT } from '/src/lib/constants.js';
 import Stock from '/src/classes/Stock/Stock.js';
 import { StockPosition } from '/src/classes/Stock/StockInterfaces.js';
 const LOOP_DELAY = 1000;
@@ -13,7 +12,6 @@ const EXPECTED_RETURN_BUY_THRESHOLD = 0.0002; // Buy anything forecasted to earn
 const EXPECTED_RETURN_SELL_THRESHOLD = 0.0001; // Buy anything forecasted to earn better than a 0.02%
 // return
 class StockManager {
-    managingLoopTimeout;
     stocks = [];
     startingCorpus = 0;
     lastCorpus = 0;
@@ -38,12 +36,12 @@ class StockManager {
             // Skip over this stock if we can't buy any more shares
             if (stock.hasMaxShares())
                 continue;
-            if (stock.stockInformation.expectedReturn <= EXPECTED_RETURN_BUY_THRESHOLD)
+            if (Math.abs(stock.stockInformation.expectedReturn) <= EXPECTED_RETURN_BUY_THRESHOLD)
                 continue;
             const remainingShares = stock.stockInformation.maxShares - stock.stockInformation.ownedLong - stock.stockInformation.ownedShort;
             // TODO: Refactor this below
             if (!StockManager.hasShortAccess(ns)) {
-                const purchasableShares = Math.max(0, Math.min(remainingShares, Math.floor(budget / stock.stockInformation.askPrice)));
+                const purchasableShares = Math.max(0, Math.min(remainingShares, Math.floor(budget / stock.stockInformation.bidPrice)));
                 if (purchasableShares) {
                     if (purchasableShares * stock.stockInformation.expectedReturn * stock.stockInformation.price < 2 * STOCK_COMMISSION)
                         continue;
@@ -74,22 +72,30 @@ class StockManager {
             if (stock.stockInformation.ownedShort) {
                 if (stock.stockInformation.expectedReturn > EXPECTED_RETURN_SELL_THRESHOLD)
                     continue;
-                const potentialProfit = stock.stockInformation.ownedShort * (stock.stockInformation.averageShortPrice - stock.stockInformation.askPrice);
+                totalProfit += stock.sellShorts(ns);
+                soldStocks.push(stock);
+                /*
                 // Only sell if we would make a profit
+                const potentialProfit: number = stock.stockInformation.ownedShort * (stock.stockInformation.averageShortPrice - stock.stockInformation.askPrice)
                 if (potentialProfit > 2 * STOCK_COMMISSION) {
-                    totalProfit += stock.sellShorts(ns);
-                    soldStocks.push(stock);
+                    totalProfit += stock.sellShorts(ns)
+                    soldStocks.push(stock)
                 }
+                 */
             }
             if (stock.stockInformation.ownedLong) {
                 if (stock.stockInformation.expectedReturn > EXPECTED_RETURN_SELL_THRESHOLD)
                     continue;
-                const potentialProfit = stock.stockInformation.ownedLong * (stock.stockInformation.bidPrice - stock.stockInformation.averageLongPrice);
+                totalProfit += stock.sellLongs(ns);
+                soldStocks.push(stock);
+                /*
                 // Only sell if we would make a profit
+                const potentialProfit: number = stock.stockInformation.ownedLong * (stock.stockInformation.bidPrice - stock.stockInformation.averageLongPrice)
                 if (potentialProfit > 2 * STOCK_COMMISSION) {
-                    totalProfit += stock.sellLongs(ns);
-                    soldStocks.push(stock);
+                    totalProfit += stock.sellLongs(ns)
+                    soldStocks.push(stock)
                 }
+                 */
             }
         }
         soldStocks.forEach((soldStock) => {
@@ -135,11 +141,9 @@ class StockManager {
     async start(ns) {
         LogAPI.printTerminal(ns, `Starting the StockManager`);
         LogAPI.printLog(ns, `Starting corpus value of ${ns.nFormat(this.startingCorpus, '$0.000a')}`);
-        this.managingLoopTimeout = setTimeout(this.managingLoop.bind(this, ns), LOOP_DELAY);
     }
     async destroy(ns) {
-        if (this.managingLoopTimeout)
-            clearTimeout(this.managingLoopTimeout);
+        LogAPI.printTerminal(ns, `Stopping the StockManager`);
         // TODO: Do we want to do this?
         /*
          this.stocks.forEach((stock) => {
@@ -147,7 +151,6 @@ class StockManager {
          stock.sellAll(ns)
          })
          */
-        LogAPI.printTerminal(ns, `Stopping the StockManager`);
     }
     async managingLoop(ns) {
         StockManager.updateStocks(ns, this.stocks);
@@ -173,7 +176,6 @@ class StockManager {
             this.lastRunningProfit = this.runningProfit;
             LogAPI.printLog(ns, this.runningProfit > 0 ? `Total profit so far: ${ns.nFormat(this.runningProfit, '$0.000a')}` : `Total loss so far: ${ns.nFormat(-this.runningProfit, '$0.000a')}}`);
         }
-        this.managingLoopTimeout = setTimeout(this.managingLoop.bind(this, ns), LOOP_DELAY);
     }
 }
 export async function main(ns) {
@@ -184,6 +186,7 @@ export async function main(ns) {
     await instance.initialize(ns);
     await instance.start(ns);
     while (true) {
-        await ns.sleep(CONSTANT.CONTROL_FLOW_CHECK_INTERVAL);
+        await instance.managingLoop(ns);
+        await ns.sleep(LOOP_DELAY);
     }
 }

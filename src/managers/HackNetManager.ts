@@ -32,8 +32,6 @@ const PAYOFF_TIME: number       = 3600 as const // Should pay off within 10 minu
 
 class HacknetManager implements Manager {
 
-	private managingLoopTimeout?: ReturnType<typeof setTimeout>
-
 	private static getServerOptimalGainRateTotal(ns: NS, servers: HacknetServer[], player: Player): number {
 		return servers.reduce((total, server) => total + this.calculateServerOptimalGainRate(ns, server.nodeInformation, player), 0)
 	}
@@ -205,6 +203,14 @@ class HacknetManager implements Manager {
 				(mergedUpgrades[index] as HacknetServerCacheUpgrade | HacknetServerHashUpgrade).levels += 1
 			}
 		})
+
+		// Make sure that we have the purchases first
+		mergedUpgrades.sort((a,b) => {
+			if (a.type === b.type) return 0
+			else return (a.type === HacknetServerUpgradeType.NEW) ? -1 : 1
+
+		})
+
 		return mergedUpgrades
 	}
 
@@ -300,17 +306,12 @@ class HacknetManager implements Manager {
 
 	public async start(ns: NS): Promise<void> {
 		LogAPI.printTerminal(ns, `Starting the HacknetManager`)
-
-		this.managingLoopTimeout = setTimeout(this.managingLoop.bind(this, ns), LOOP_DELAY)
 	}
 
-	public async destroy(ns: NS): Promise<void> {
-		if (this.managingLoopTimeout) clearTimeout(this.managingLoopTimeout)
-
-		LogAPI.printTerminal(ns, `Stopping the HacknetManager`)
+	public async destroy(ns: NS): Promise<void> {LogAPI.printTerminal(ns, `Stopping the HacknetManager`)
 	}
 
-	private async managingLoop(ns: NS): Promise<void> {
+	public async managingLoop(ns: NS): Promise<void> {
 		const hacknetServers: HacknetServer[] = ServerAPI.getHacknetServers(ns)
 		const player: Player                  = getPlayer(ns)
 		let budget: number                    = HacknetManager.getBudget(ns)
@@ -347,8 +348,6 @@ class HacknetManager implements Manager {
 		for (const upgrade of mergedUpgrades) {
 			await HacknetManager.executeUpgrade(ns, upgrade)
 		}
-
-		this.managingLoopTimeout = setTimeout(this.managingLoop.bind(this, ns), LOOP_DELAY)
 	}
 
 	private findHashUpgrade(ns: NS, potentialUpgrades: HacknetServerUpgrade[], hypotheticalServers: HacknetServer[]): HacknetServerHashUpgrade | HacknetServerAddition | null {
@@ -413,6 +412,7 @@ export async function main(ns: NS) {
 	await instance.start(ns)
 
 	while (true) {
-		await ns.sleep(CONSTANT.CONTROL_FLOW_CHECK_INTERVAL)
+		await instance.managingLoop(ns)
+		await ns.sleep(LOOP_DELAY)
 	}
 }

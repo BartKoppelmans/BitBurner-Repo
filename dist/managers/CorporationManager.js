@@ -1,9 +1,7 @@
 import * as LogAPI from '/src/api/LogAPI.js';
 import * as Utils from '/src/util/Utils.js';
-import { CONSTANT } from '/src/lib/constants.js';
 const LOOP_DELAY = 1000;
 class CorporationManager {
-    managingLoopTimeout;
     static async createCorporation(ns) {
         // TODO: Not possible yet
     }
@@ -14,15 +12,12 @@ class CorporationManager {
     }
     async start(ns) {
         LogAPI.printTerminal(ns, `Starting the CorporationManager`);
-        this.managingLoopTimeout = setTimeout(this.managingLoop.bind(this, ns), LOOP_DELAY);
     }
     async destroy(ns) {
-        if (this.managingLoopTimeout)
-            clearTimeout(this.managingLoopTimeout);
         LogAPI.printTerminal(ns, `Stopping the CorporationManager`);
     }
     async managingLoop(ns) {
-        this.managingLoopTimeout = setTimeout(this.managingLoop.bind(this, ns), LOOP_DELAY);
+        return;
     }
 }
 export async function main(ns) {
@@ -33,6 +28,7 @@ export async function main(ns) {
     await instance.initialize(ns);
     await instance.start(ns);
     while (true) {
-        await ns.sleep(CONSTANT.CONTROL_FLOW_CHECK_INTERVAL);
+        await instance.managingLoop(ns);
+        await ns.sleep(LOOP_DELAY);
     }
 }

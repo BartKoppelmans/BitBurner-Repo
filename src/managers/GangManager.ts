@@ -28,8 +28,6 @@ const RESPECT_THRESHOLD: number = 2.5e6 as const
 
 class GangManager implements Manager {
 
-	private managingLoopTimeout?: ReturnType<typeof setTimeout>
-
 	private gangs!: Gang[]
 	private homeGang!: HomeGang
 	private upgrades!: GangUpgrade[]
@@ -178,19 +176,15 @@ class GangManager implements Manager {
 
 	public async start(ns: NS): Promise<void> {
 		LogAPI.printTerminal(ns, `Starting the GangManager`)
-
-		this.managingLoopTimeout = setTimeout(this.managingLoop.bind(this, ns), LOOP_DELAY)
 	}
 
 	public async destroy(ns: NS): Promise<void> {
-		if (this.managingLoopTimeout) clearTimeout(this.managingLoopTimeout)
+		LogAPI.printTerminal(ns, `Stopping the GangManager`)
 
 		const members: GangMember[] = GangMember.getAllGangMembers(ns)
 		members.forEach((member) => member.startTask(ns, GangTask.getUnassignedTask(ns)))
 
 		// GangManager.removeFocusSwitch()
-
-		LogAPI.printTerminal(ns, `Stopping the GangManager`)
 	}
 
 	private createFocusSwitch(): void {
@@ -219,7 +213,7 @@ class GangManager implements Manager {
 		if (!doc.getElementById('gangFocusSwitchContainer')) appendSwitch()
 	}
 
-	private async managingLoop(ns: NS): Promise<void> {
+	public async managingLoop(ns: NS): Promise<void> {
 
 		const reputation: number = ns.getFactionRep(this.homeGang.name)
 		this.focusOnRespect = (reputation < RESPECT_THRESHOLD)
@@ -259,12 +253,9 @@ class GangManager implements Manager {
 
 		this.manageBestMember(ns, bestMember)
 		otherMembers.forEach((member) => this.manageMember(ns, member))
-
-		this.managingLoopTimeout = setTimeout(this.managingLoop.bind(this, ns), LOOP_DELAY)
 	}
 
 	private async reduceWantedLevel(ns: NS, members: GangMember[]): Promise<void> {
-
 		LogAPI.printLog(ns, `Reducing wanted level`)
 
 		members.forEach((member) => {
@@ -360,6 +351,7 @@ export async function main(ns: NS) {
 	await instance.start(ns)
 
 	while (true) {
-		await ns.sleep(CONSTANT.CONTROL_FLOW_CHECK_INTERVAL)
+		await instance.managingLoop(ns)
+		await ns.sleep(LOOP_DELAY)
 	}
 }
