@@ -1,8 +1,7 @@
-import type { BitBurner as NS, Crime, SleeveInformation, SleeveStats, SleeveTask } from 'Bitburner'
-import * as LogAPI                                                                 from '/src/api/LogAPI.js'
-import {
-	SleeveTrainStat,
-}                                                                                  from '/src/classes/Sleeve/SleeveInterfaces.js'
+import type { NS, SleeveInformation, SleeveTask } from 'Bitburner'
+import { SleeveSkills }                           from 'Bitburner'
+import * as LogAPI                                from '/src/api/LogAPI.js'
+import { SleeveTrainStat }                        from '/src/classes/Sleeve/SleeveInterfaces.js'
 
 export default class Sleeve {
 
@@ -26,7 +25,7 @@ export default class Sleeve {
 		return ns.sleeve.getInformation(this.id)
 	}
 
-	public getStats(ns: NS): SleeveStats {
+	public getStats(ns: NS): SleeveSkills {
 		return ns.sleeve.getSleeveStats(this.id)
 	}
 
@@ -67,7 +66,7 @@ export default class Sleeve {
 		LogAPI.printLog(ns, `Set sleeve ${this.id} to recover from shock`)
 	}
 
-	public commitCrime(ns: NS, crime: Crime): void {
+	public commitCrime(ns: NS, crime: string): void {
 		const task: SleeveTask = this.getTask(ns)
 		if (task.task === 'Crime' && task.crime === crime) {
 			return

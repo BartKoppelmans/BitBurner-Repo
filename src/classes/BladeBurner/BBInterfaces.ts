@@ -1,16 +1,7 @@
-import {
-	BladeburnerActTypes,
-	BladeburnerBlackOps,
-	BladeburnerContracts,
-	BladeburnerGenActions,
-	BladeburnerOperations,
-	BladeburnerSkills,
-} from 'Bitburner'
+export type BBActionName = string
+export type BBActionType = string
 
-export type BBActionName = BladeburnerContracts | BladeburnerOperations | BladeburnerBlackOps | BladeburnerGenActions
-export type BBActionType = BladeburnerActTypes;
-
-export type BBSkillName = BladeburnerSkills
+export type BBSkillName = string
 
 export type BBActionChance = { lower: number, upper: number }
 

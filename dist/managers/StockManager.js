@@ -187,6 +187,6 @@ export async function main(ns) {
     await instance.start(ns);
     while (true) {
         await instance.managingLoop(ns);
-        await ns.sleep(LOOP_DELAY);
+        await ns.asleep(LOOP_DELAY);
     }
 }

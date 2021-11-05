@@ -1,15 +1,15 @@
-import type { BitBurner as NS, Player, Server as ServerObject } from 'Bitburner'
-import * as ServerAPI                                           from '/src/api/ServerAPI.js'
-import HackableServer                                           from '/src/classes/Server/HackableServer.js'
-import Server                                                   from '/src/classes/Server/Server.js'
+import type { NS, Player, Server as ServerObject } from 'Bitburner'
+import * as ServerAPI                              from '/src/api/ServerAPI.js'
+import HackableServer                              from '/src/classes/Server/HackableServer.js'
+import Server                                      from '/src/classes/Server/Server.js'
 import {
 	CONSTANT,
-}                                                               from '/src/lib/constants.js'
+}                                                  from '/src/lib/constants.js'
 import {
 	Tools,
-}                                                               from '/src/tools/Tools.js'
-import * as PlayerUtils                                         from '/src/util/PlayerUtils.js'
-import * as ToolUtils                                           from '/src/util/ToolUtils.js'
+}                                                  from '/src/tools/Tools.js'
+import * as PlayerUtils                            from '/src/util/PlayerUtils.js'
+import * as ToolUtils                              from '/src/util/ToolUtils.js'
 import {
 	Cycle,
 	CycleSpread,
@@ -19,19 +19,19 @@ import {
 	CycleTimings,
 	PrepEffect,
 	ThreadSpread,
-}                                                               from '/src/classes/Misc/HackInterfaces.js'
-import * as Utils                                               from '/src/util/Utils.js'
-import Job                                                      from '/src/classes/Job/Job.js'
+}                                                  from '/src/classes/Misc/HackInterfaces.js'
+import * as Utils                                  from '/src/util/Utils.js'
+import Job                                         from '/src/classes/Job/Job.js'
 
 export function computeCycleSpread(ns: NS, target: HackableServer, servers?: Server[]): CycleSpread[] {
 
 	if (!servers) servers = ServerAPI.getHackingServers(ns)
 
-	let totalCycles: number = 0
+	let totalCycles: number           = 0
 	const cycleSpreads: CycleSpread[] = []
 	for (const source of servers) {
 		const cycleCost: number = getOptimalCycleCost(ns, target, source)
-		let numCycles: number = Math.floor(source.getAvailableRam(ns) / cycleCost)
+		let numCycles: number   = Math.floor(source.getAvailableRam(ns) / cycleCost)
 
 		if (numCycles + totalCycles > CONSTANT.MAX_CYCLE_NUMBER) {
 			numCycles = CONSTANT.MAX_CYCLE_NUMBER - totalCycles
@@ -283,7 +283,7 @@ export function calculateGrowthEffect(ns: NS, target: HackableServer, source: Se
 	const targetServerObject: ServerObject = ns.getServer(target.characteristics.host)
 	const sourceServerObject: ServerObject = ns.getServer(source.characteristics.host)
 	const playerObject: Player = PlayerUtils.getPlayer(ns)
-	return start * ns.formulas.basic.growPercent(targetServerObject, threads, playerObject, sourceServerObject.cpuCores) - start
+	return start * ns.formulas.hacking.growPercent(targetServerObject, threads, playerObject, sourceServerObject.cpuCores) - start
 }
 
 export function calculateWeakenEffect(ns: NS, target: HackableServer, source: Server, threads: number): number {
@@ -347,7 +347,7 @@ export function calculateCompensationWeakenThreads(ns: NS, target: HackableServe
 
 // This is always after a hack
 export function calculateCompensationGrowthThreads(ns: NS, target: HackableServer, source: Server, threads: number): number {
-	const hackAmount: number  = ((threads * ns.hackAnalyzePercent(target.characteristics.host)) / 100) * target.staticHackingProperties.maxMoney
+	const hackAmount: number  = (threads * ns.hackAnalyze(target.characteristics.host)) * target.staticHackingProperties.maxMoney
 	const startAmount: number = target.getMoney(ns) - hackAmount
 
 	return calculateGrowthThreads(ns, target, source, startAmount)

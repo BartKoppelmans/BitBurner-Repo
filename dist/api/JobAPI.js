@@ -37,7 +37,7 @@ export async function startBatch(ns, batch) {
 async function startJobs(ns, jobs) {
     // TODO: We should do some checking in here
     for (const job of jobs) {
-        job.execute(ns);
+        await job.execute(ns);
         job.onStart(ns);
     }
     const ramSpread = createRamSpread(ns, jobs);

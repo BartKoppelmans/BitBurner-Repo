@@ -7,10 +7,10 @@ export async function main(ns) {
     ]);
     ControlFlowAPI.killDaemon(ns);
     while (ns.isRunning('src/scripts/daemon.js', CONSTANT.HOME_SERVER_HOST)) {
-        await ns.sleep(CONSTANT.SMALL_DELAY);
+        await ns.asleep(CONSTANT.SMALL_DELAY);
     }
     ControlFlowAPI.killAllManagers(ns);
-    await ns.sleep(1000); // TODO: Change this to wait for the managers to not be running
+    await ns.asleep(1000); // TODO: Change this to wait for the managers to not be running
     if (flags.force) {
         await ControlFlowAPI.killAllScripts(ns);
     }

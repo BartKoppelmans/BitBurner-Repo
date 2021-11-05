@@ -1,13 +1,13 @@
-import type { AugmentationStats, AugmentName, BitBurner as NS } from 'Bitburner'
+import type { AugmentationStats, NS } from 'Bitburner'
 
 export class Augmentation {
 
-	name: AugmentName
+	name: string
 	stats: AugmentationStats
 	reputationRequirement: number
-	augmentationRequirement: AugmentName[]
+	augmentationRequirement: string[]
 
-	public constructor(ns: NS, name: AugmentName) {
+	public constructor(ns: NS, name: string) {
 		this.name                    = name
 		this.stats                   = ns.getAugmentationStats(this.name)
 		this.reputationRequirement   = ns.getAugmentationRepReq(this.name)

@@ -1,16 +1,16 @@
-import type { BitBurner as NS, GangName, GangOtherInfo, GangOtherInfoObject } from 'Bitburner'
+import type { GangOtherInfo, GangOtherInfoObject, NS } from 'Bitburner'
 
 export default class Gang {
 
-	name: GangName
+	name: string
 
-	public constructor(ns: NS, name: GangName) {
+	public constructor(ns: NS, name: string) {
 		this.name = name
 	}
 
 	public static getGangs(ns: NS): Gang[] {
-		const gangNames: GangName[]  = ['Slum Snakes', 'Tetrads', 'The Syndicate', 'The Dark Army', 'Speakers for the Dead', 'NiteSec', 'The Black Hand']
-		const homeGangName: GangName = ns.gang.getGangInformation().faction
+		const gangNames: string[]  = ['Slum Snakes', 'Tetrads', 'The Syndicate', 'The Dark Army', 'Speakers for the Dead', 'NiteSec', 'The Black Hand']
+		const homeGangName: string = ns.gang.getGangInformation().faction
 
 		return gangNames.filter((gangName) => gangName !== homeGangName).map((name) => new Gang(ns, name))
 	}

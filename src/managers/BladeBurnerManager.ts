@@ -1,18 +1,18 @@
-import type { BitBurner as NS, BladeburnerCurAction } from 'Bitburner'
-import * as LogAPI                                    from '/src/api/LogAPI.js'
-import * as Utils                                     from '/src/util/Utils.js'
-import { Manager }                                    from '/src/classes/Misc/ScriptInterfaces.js'
-import { CONSTANT }                                   from '/src/lib/constants.js'
-import BBAction                                       from '/src/classes/BladeBurner/BBAction.js'
-import { BBSkill }                                    from '/src/classes/BladeBurner/BBSkill.js'
-import * as BladeBurnerUtils                          from '/src/util/BladeBurnerUtils.js'
-import * as PlayerUtils                               from '/src/util/PlayerUtils.js'
-import { BBActionChance, BBSkillPriority }            from '/src/classes/BladeBurner/BBInterfaces.js'
-import { BBCity }                                     from '/src/classes/BladeBurner/BBCity.js'
+import type { BladeburnerCurAction, NS }   from 'Bitburner'
+import * as LogAPI                         from '/src/api/LogAPI.js'
+import * as Utils                          from '/src/util/Utils.js'
+import { Manager }                         from '/src/classes/Misc/ScriptInterfaces.js'
+import { CONSTANT }                        from '/src/lib/constants.js'
+import BBAction                            from '/src/classes/BladeBurner/BBAction.js'
+import { BBSkill }                         from '/src/classes/BladeBurner/BBSkill.js'
+import * as BladeBurnerUtils               from '/src/util/BladeBurnerUtils.js'
+import * as PlayerUtils                    from '/src/util/PlayerUtils.js'
+import { BBActionChance, BBSkillPriority } from '/src/classes/BladeBurner/BBInterfaces.js'
+import { BBCity }                          from '/src/classes/BladeBurner/BBCity.js'
 
 const MONEY_THRESHOLD: number                 = 1e9 as const // 1 billion
 const JOIN_DELAY: number                      = 60000 as const
-const LOOP_DELAY: number             = 100 as const
+const LOOP_DELAY: number                      = 100 as const
 const BUSY_RETRY_DELAY: number                = 1000 as const
 const SYNTH_POPULATION_THRESHOLD: number      = 1e8 as const
 // const SYNTH_COMMUNITY_THRESHOLD: number       = 5 as const
@@ -74,7 +74,7 @@ class BladeBurnerManager implements Manager {
 
 		while (!ns.bladeburner.joinBladeburnerDivision()) {
 			LogAPI.printLog(ns, `Waiting to join BladeBurner Division`)
-			await ns.sleep(JOIN_DELAY)
+			await ns.asleep(JOIN_DELAY)
 		}
 
 		this.actions = BladeBurnerUtils.createActions(ns)
@@ -113,7 +113,7 @@ class BladeBurnerManager implements Manager {
 
 		// NOTE: This might still have some problems
 		if (BladeBurnerManager.shouldSkipIteration(ns)) {
-			await ns.sleep(BUSY_RETRY_DELAY)
+			await ns.asleep(BUSY_RETRY_DELAY)
 			return
 		}
 
@@ -246,6 +246,6 @@ export async function main(ns: NS) {
 
 	while (true) {
 		await instance.managingLoop(ns)
-		await ns.sleep(LOOP_DELAY)
+		await ns.asleep(LOOP_DELAY)
 	}
 }

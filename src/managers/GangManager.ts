@@ -1,4 +1,4 @@
-import type { BitBurner as NS, FactionName, GangGenInfo }             from 'Bitburner'
+import type { GangGenInfo, NS }                                       from 'Bitburner'
 import * as LogAPI                                                    from '/src/api/LogAPI.js'
 import * as Utils                                                     from '/src/util/Utils.js'
 import * as GangUtils                                                 from '/src/util/GangUtils.js'
@@ -117,19 +117,19 @@ class GangManager implements Manager {
 
 	private static async createGang(ns: NS): Promise<void> {
 		while (!ns.gang.inGang()) {
-			const factions: FactionName[] = ns.getPlayer().factions
+			const factions: string[] = ns.getPlayer().factions
 
 			if (!factions.includes('Slum Snakes')) {
-				const invitations: FactionName[] = ns.checkFactionInvitations()
+				const invitations: string[] = ns.checkFactionInvitations()
 				if (!invitations.includes('Slum Snakes')) {
-					await ns.sleep(CREATE_GANG_DELAY)
+					await ns.asleep(CREATE_GANG_DELAY)
 					continue
 				}
 
 				ns.joinFaction('Slum Snakes')
 			}
 			const hasCreatedGang: boolean = ns.gang.createGang('Slum Snakes')
-			if (!hasCreatedGang) await ns.sleep(CREATE_GANG_DELAY)
+			if (!hasCreatedGang) await ns.asleep(CREATE_GANG_DELAY)
 		}
 	}
 
@@ -239,7 +239,7 @@ class GangManager implements Manager {
 		while (ns.gang.canRecruitMember()) {
 			const newMember: GangMember | null = GangManager.recruitMember(ns)
 			if (newMember) this.upgradeMember(ns, newMember)
-			await ns.sleep(CONSTANT.SMALL_DELAY)
+			await ns.asleep(CONSTANT.SMALL_DELAY)
 		}
 
 		const members: GangMember[] = GangMember.getAllGangMembers(ns)
@@ -263,7 +263,7 @@ class GangManager implements Manager {
 		})
 
 		while (!GangManager.hasMinimumWantedLevel(ns)) {
-			await ns.sleep(LOOP_DELAY)
+			await ns.asleep(LOOP_DELAY)
 		}
 
 		LogAPI.printLog(ns, `Finished reducing wanted level`)
@@ -352,6 +352,6 @@ export async function main(ns: NS) {
 
 	while (true) {
 		await instance.managingLoop(ns)
-		await ns.sleep(LOOP_DELAY)
+		await ns.asleep(LOOP_DELAY)
 	}
 }

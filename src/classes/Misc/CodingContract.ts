@@ -1,5 +1,5 @@
-import type { BitBurner as NS, CodingContractTypes } from 'Bitburner'
-import Server                                        from '/src/classes/Server/Server.js'
+import type { NS } from 'Bitburner'
+import Server      from '/src/classes/Server/Server.js'
 
 export type CodingContractAnswer = string | string[] | number;
 export type CodingContractAttemptResult =
@@ -18,7 +18,7 @@ interface CodingContractUnsuccessfulAttemptResult {
 export class CodingContract {
 	filename: string
 	server: Server
-	type: CodingContractTypes
+	type: string
 	description: string
 	data: string | number | number[] | number[][]
 

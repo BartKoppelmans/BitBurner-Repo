@@ -1,8 +1,7 @@
-import { GangAugmentations, GangEquipment, GangEquipmentType, GangTasks } from 'Bitburner'
-import GangMember                                                         from '/src/classes/Gang/GangMember.js'
-import GangTask                                                           from '/src/classes/Gang/GangTask.js'
+import GangMember from '/src/classes/Gang/GangMember.js'
+import GangTask   from '/src/classes/Gang/GangTask.js'
 
-export type GangTaskName = GangTasks
+export type GangTaskName = string
 
 export interface GangMemberStats {
 	hack: number,
@@ -31,8 +30,8 @@ export interface GangAscensionMultipliers {
 	cha: number;
 }
 
-export type GangUpgradeName = GangEquipment | GangAugmentations
-export type GangUpgradeType = GangEquipmentType
+export type GangUpgradeName = string
+export type GangUpgradeType = string
 
 export type GangMemberEvaluation = { member: GangMember, score: number }
 

@@ -1,17 +1,17 @@
-import type { BitBurner as NS, SleeveInformation, SleeveStats } from 'Bitburner'
-import * as LogAPI                                              from '/src/api/LogAPI.js'
-import * as Utils                                               from '/src/util/Utils.js'
-import { Manager }                                              from '/src/classes/Misc/ScriptInterfaces.js'
-import Sleeve                                                   from '/src/classes/Sleeve/Sleeve.js'
-import { SleeveTrainStat }                                      from '/src/classes/Sleeve/SleeveInterfaces.js'
+import type { NS, SleeveInformation, SleeveSkills } from 'Bitburner'
+import * as LogAPI                                  from '/src/api/LogAPI.js'
+import * as Utils                                   from '/src/util/Utils.js'
+import { Manager }                                  from '/src/classes/Misc/ScriptInterfaces.js'
+import Sleeve                                       from '/src/classes/Sleeve/Sleeve.js'
+import { SleeveTrainStat }                          from '/src/classes/Sleeve/SleeveInterfaces.js'
 
-const LOOP_DELAY: number = 10000 as const
-const STAT_MUG_THRESHOLD: number = 25 as const
+const LOOP_DELAY: number              = 10000 as const
+const STAT_MUG_THRESHOLD: number      = 25 as const
 const STAT_HOMICIDE_THRESHOLD: number = 100 as const
 
 class SleeveManager implements Manager {
 
-	private static shouldTrain(ns: NS, stats: SleeveStats): SleeveTrainStat {
+	private static shouldTrain(ns: NS, stats: SleeveSkills): SleeveTrainStat {
 		if (stats.strength < STAT_MUG_THRESHOLD) return SleeveTrainStat.STRENGTH
 		else if (stats.defense < STAT_MUG_THRESHOLD) return SleeveTrainStat.DEFENSE
 		else if (stats.dexterity < STAT_MUG_THRESHOLD) return SleeveTrainStat.DEXTERITY
@@ -19,7 +19,7 @@ class SleeveManager implements Manager {
 		else return SleeveTrainStat.NONE
 	}
 
-	private static shouldMug(ns: NS, stats: SleeveStats): boolean {
+	private static shouldMug(ns: NS, stats: SleeveSkills): boolean {
 		return stats.strength < STAT_HOMICIDE_THRESHOLD ||
 			stats.defense < STAT_HOMICIDE_THRESHOLD ||
 			stats.dexterity < STAT_HOMICIDE_THRESHOLD ||
@@ -28,7 +28,7 @@ class SleeveManager implements Manager {
 
 	private static manageSleeve(ns: NS, sleeve: Sleeve): void {
 		const information: SleeveInformation = sleeve.getInformation(ns)
-		const stats: SleeveStats             = sleeve.getStats(ns)
+		const stats: SleeveSkills            = sleeve.getStats(ns)
 
 		if (stats.shock > 0) {
 			return sleeve.recoverShock(ns)
@@ -88,6 +88,6 @@ export async function main(ns: NS) {
 
 	while (true) {
 		await instance.managingLoop(ns)
-		await ns.sleep(LOOP_DELAY)
+		await ns.asleep(LOOP_DELAY)
 	}
 }

@@ -1,6 +1,6 @@
 import { CONSTANT } from '/src/lib/constants.js';
+// TODO: Move this to a seperate file that is fetched from GitHub and used as index.
 const files = [
-    'Bitburner.t.js',
     'import.js',
     'api/ControlFlowAPI.js',
     'api/JobAPI.js',

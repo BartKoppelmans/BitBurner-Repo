@@ -1,4 +1,4 @@
-import type { BitBurner as NS }                                     from 'Bitburner'
+import type { NS }                                                  from 'Bitburner'
 import { GangMemberInfo }                                           from 'Bitburner'
 import { GangUpgradeMultipliers, GangUpgradeName, GangUpgradeType } from '/src/classes/Gang/GangInterfaces.js'
 

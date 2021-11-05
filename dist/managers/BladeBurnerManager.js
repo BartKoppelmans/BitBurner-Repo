@@ -53,7 +53,7 @@ class BladeBurnerManager {
         ns.atExit(this.destroy.bind(this, ns));
         while (!ns.bladeburner.joinBladeburnerDivision()) {
             LogAPI.printLog(ns, `Waiting to join BladeBurner Division`);
-            await ns.sleep(JOIN_DELAY);
+            await ns.asleep(JOIN_DELAY);
         }
         this.actions = BladeBurnerUtils.createActions(ns);
         this.skills = BladeBurnerUtils.createSkills(ns);
@@ -84,7 +84,7 @@ class BladeBurnerManager {
         this.upgradeSkills(ns);
         // NOTE: This might still have some problems
         if (BladeBurnerManager.shouldSkipIteration(ns)) {
-            await ns.sleep(BUSY_RETRY_DELAY);
+            await ns.asleep(BUSY_RETRY_DELAY);
             return;
         }
         if (this.canFinishBitNode(ns) && ((this.iterationCounter) % FINAL_BLACK_OP_WARNING_INTERVAL === 0)) {
@@ -191,6 +191,6 @@ export async function main(ns) {
     await instance.start(ns);
     while (true) {
         await instance.managingLoop(ns);
-        await ns.sleep(LOOP_DELAY);
+        await ns.asleep(LOOP_DELAY);
     }
 }

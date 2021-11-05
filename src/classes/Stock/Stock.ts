@@ -1,23 +1,23 @@
-import type { BitBurner as NS, StockSymbol } from 'Bitburner'
-import { StockInformation, StockPosition }   from '/src/classes/Stock/StockInterfaces.js'
-import * as LogAPI                           from '/src/api/LogAPI.js'
+import type { NS }                         from 'Bitburner'
+import { StockInformation, StockPosition } from '/src/classes/Stock/StockInterfaces.js'
+import * as LogAPI                         from '/src/api/LogAPI.js'
 
 const STOCK_COMMISSION: number = 100000 as const
 
 export default class Stock {
 
-	symbol: StockSymbol
+	symbol: string
 	position: StockPosition
 	stockInformation!: StockInformation
 
-	public constructor(ns: NS, symbol: StockSymbol) {
+	public constructor(ns: NS, symbol: string) {
 		this.symbol = symbol
 		this.update(ns)
 		this.position = this.stockInformation.probability >= 0 ? StockPosition.LONG : StockPosition.SHORT
 	}
 
 	public static getStocks(ns: NS): Stock[] {
-		const symbols: StockSymbol[] = ns.stock.getSymbols()
+		const symbols: string[] = ns.stock.getSymbols()
 		return symbols.map((symbol) => new Stock(ns, symbol))
 	}
 

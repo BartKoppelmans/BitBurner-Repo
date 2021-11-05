@@ -1,9 +1,9 @@
-import type { BitBurner as NS } from 'Bitburner'
-import * as ServerAPI           from '/src/api/ServerAPI.js'
-import * as LogAPI              from '/src/api/LogAPI.js'
-import Server                   from '/src/classes/Server/Server.js'
-import * as ServerUtils         from '/src/util/ServerUtils.js'
-import { CONSTANT }             from '/src/lib/constants.js'
+import type { NS }      from 'Bitburner'
+import * as ServerAPI   from '/src/api/ServerAPI.js'
+import * as LogAPI      from '/src/api/LogAPI.js'
+import Server           from '/src/classes/Server/Server.js'
+import * as ServerUtils from '/src/util/ServerUtils.js'
+import { CONSTANT }     from '/src/lib/constants.js'
 
 enum PrintColor {
 	PLAYER             = 'White',

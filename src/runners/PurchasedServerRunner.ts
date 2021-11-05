@@ -1,4 +1,4 @@
-import type { BitBurner as NS }                                      from 'Bitburner'
+import type { NS }                                                   from 'Bitburner'
 import * as LogAPI                                                   from '/src/api/LogAPI.js'
 import * as ServerAPI                                                from '/src/api/ServerAPI.js'
 import { PurchasedServerCharacteristics, ServerPurpose, ServerType } from '/src/classes/Server/ServerInterfaces.js'

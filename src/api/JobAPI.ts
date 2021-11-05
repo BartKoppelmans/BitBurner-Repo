@@ -1,16 +1,16 @@
-import type { BitBurner as NS, ProcessInfo } from 'Bitburner'
-import Batch                                 from '/src/classes/Job/Batch.js'
-import Job                                   from '/src/classes/Job/Job.js'
-import { CONSTANT }                          from '/src/lib/constants.js'
-import { JobMap }                            from '/src/classes/Job/JobInterfaces.js'
-import * as ServerAPI                        from '/src/api/ServerAPI.js'
-import * as LogAPI                           from '/src/api/LogAPI.js'
-import * as ToolUtils                        from '/src/util/ToolUtils.js'
-import * as SerializationUtils               from '/src/util/SerializationUtils.js'
-import { ServerMap, ServerStatus }           from '/src/classes/Server/ServerInterfaces.js'
-import { RamSpread }                         from '/src/classes/Misc/HackInterfaces.js'
-import { Tools }                             from '/src/tools/Tools.js'
-import HackableServer                        from '/src/classes/Server/HackableServer'
+import type { NS, ProcessInfo }    from 'Bitburner'
+import Batch                       from '/src/classes/Job/Batch.js'
+import Job                         from '/src/classes/Job/Job.js'
+import { CONSTANT }                from '/src/lib/constants.js'
+import { JobMap }                  from '/src/classes/Job/JobInterfaces.js'
+import * as ServerAPI              from '/src/api/ServerAPI.js'
+import * as LogAPI                 from '/src/api/LogAPI.js'
+import * as ToolUtils              from '/src/util/ToolUtils.js'
+import * as SerializationUtils     from '/src/util/SerializationUtils.js'
+import { ServerMap, ServerStatus } from '/src/classes/Server/ServerInterfaces.js'
+import { RamSpread }               from '/src/classes/Misc/HackInterfaces.js'
+import { Tools }                   from '/src/tools/Tools.js'
+import HackableServer              from '/src/classes/Server/HackableServer.js'
 
 export function getJobMap(ns: NS): JobMap {
 	return readJobMap(ns)
@@ -59,7 +59,7 @@ async function startJobs(ns: NS, jobs: Job[]): Promise<void> {
 	// TODO: We should do some checking in here
 
 	for (const job of jobs) {
-		job.execute(ns)
+		await job.execute(ns)
 		job.onStart(ns)
 	}
 

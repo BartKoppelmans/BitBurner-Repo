@@ -1,15 +1,15 @@
-import type { BitBurner as NS, Crime as CrimeName, CrimeStats } from 'Bitburner'
+import type { CrimeStats, NS } from 'Bitburner'
 
 const SUCCESS_THRESHOLD: number = 0.6 as const
 
 export default class Crime {
 
-	name: CrimeName
+	name: string
 	crimeStats: CrimeStats
 	crimeChance!: number
 	crimeValue?: number
 
-	public constructor(ns: NS, name: CrimeName) {
+	public constructor(ns: NS, name: string) {
 		this.name       = name
 		this.crimeStats = ns.getCrimeStats(this.name)
 		this.updateCrimeChance(ns)

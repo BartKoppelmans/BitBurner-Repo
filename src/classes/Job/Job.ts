@@ -1,4 +1,4 @@
-import type { BitBurner as NS }               from 'Bitburner'
+import type { NS }                            from 'Bitburner'
 import * as LogAPI                            from '/src/api/LogAPI.js'
 import HackableServer                         from '/src/classes/Server/HackableServer.js'
 import { ExecArguments, IJOb, ToolArguments } from '/src/classes/Job/JobInterfaces.js'
@@ -51,12 +51,16 @@ export default class Job implements IJOb{
 			args.script,
 			args.server,
 			args.threads,
+
+			'--target',
 			args.target.characteristics.host,
+
+			'--start',
 			args.start.getTime().toString(),
 		]
 	}
 
-	public execute(ns: NS): void {
+	public async execute(ns: NS): Promise<void> {
 
 		const commonArgs = {
 			script: this.tool,
@@ -68,7 +72,7 @@ export default class Job implements IJOb{
 
 			// We have to copy the tool to the server if it is not available yet
 			if (!ServerUtils.isHome(server)) {
-				ns.scp(this.tool, CONSTANT.HOME_SERVER_HOST, server)
+				await ns.scp(this.tool, CONSTANT.HOME_SERVER_HOST, server)
 			}
 
 			const args: ToolArguments = { ...commonArgs, threads, server }

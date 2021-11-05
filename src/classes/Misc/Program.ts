@@ -1,7 +1,7 @@
-import type { BitBurner as NS, PurchaseableProgram } from 'Bitburner'
-import * as LogAPI                                   from '/src/api/LogAPI.js'
-import Server                                        from '/src/classes/Server/Server.js'
-import * as PlayerUtils                              from '/src/util/PlayerUtils.js'
+import type { NS }      from 'Bitburner'
+import * as LogAPI      from '/src/api/LogAPI.js'
+import Server           from '/src/classes/Server/Server.js'
+import * as PlayerUtils from '/src/util/PlayerUtils.js'
 
 export enum ProgramType {
 	Crack,
@@ -19,8 +19,8 @@ export class Program {
 		this.type  = type
 	}
 
-	private static toValidString(name: string): PurchaseableProgram {
-		return (name.toLowerCase() as PurchaseableProgram)
+	private static toValidString(name: string): string {
+		return (name.toLowerCase() as string)
 	}
 
 	public hasProgram(ns: NS) {

@@ -1,5 +1,5 @@
-import type { BitBurner as NS } from 'Bitburner'
-import * as Utils               from '/src/util/Utils.js'
+import type { NS } from 'Bitburner'
+import * as Utils  from '/src/util/Utils.js'
 
 export function printLog(ns: NS, message: string): void {
 	ns.print(`${Utils.formatTime()} ${message}`)

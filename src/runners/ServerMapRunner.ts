@@ -1,4 +1,4 @@
-import type { BitBurner as NS }              from 'Bitburner'
+import type { NS }                           from 'Bitburner'
 import HackableServer                        from '/src/classes/Server/HackableServer.js'
 import Server                                from '/src/classes/Server/Server.js'
 import { ServerCharacteristics, ServerType } from '/src/classes/Server/ServerInterfaces.js'

@@ -1,16 +1,16 @@
-import type { BitBurner as NS, Player } from 'Bitburner'
-import * as LogAPI                      from '/src/api/LogAPI.js'
-import * as ServerAPI                   from '/src/api/ServerAPI.js'
-import * as Utils                       from '/src/util/Utils.js'
+import type { NS, Player } from 'Bitburner'
+import * as LogAPI         from '/src/api/LogAPI.js'
+import * as ServerAPI      from '/src/api/ServerAPI.js'
+import * as Utils          from '/src/util/Utils.js'
 import {
 	Manager,
-}                                       from '/src/classes/Misc/ScriptInterfaces.js'
-import { CONSTANT }                     from '/src/lib/constants.js'
-import * as PlayerUtils                 from '/src/util/PlayerUtils.js'
-import { getPlayer }                    from '/src/util/PlayerUtils.js'
+}                          from '/src/classes/Misc/ScriptInterfaces.js'
+import { CONSTANT }        from '/src/lib/constants.js'
+import * as PlayerUtils    from '/src/util/PlayerUtils.js'
+import { getPlayer }       from '/src/util/PlayerUtils.js'
 import {
 	HacknetServer,
-}                                       from '/src/classes/Server/HacknetServer.js'
+}                          from '/src/classes/Server/HacknetServer.js'
 import {
 	HacknetServerAddition,
 	HacknetServerCacheUpgrade,
@@ -18,13 +18,13 @@ import {
 	HacknetServerHashUpgradeType,
 	HacknetServerUpgrade,
 	HacknetServerUpgradeType,
-}                                       from '/src/classes/Misc/HacknetServerInterfaces.js'
+}                          from '/src/classes/Misc/HacknetServerInterfaces.js'
 import {
 	HacknetServerCharacteristics,
 	NodeInformation,
 	ServerPurpose,
 	ServerType,
-}                                       from '/src/classes/Server/ServerInterfaces.js'
+}                          from '/src/classes/Server/ServerInterfaces.js'
 
 const LOOP_DELAY: number        = 30000 as const
 const HACKNET_ALLOWANCE: number = 0.05 as const
@@ -413,6 +413,6 @@ export async function main(ns: NS) {
 
 	while (true) {
 		await instance.managingLoop(ns)
-		await ns.sleep(LOOP_DELAY)
+		await ns.asleep(LOOP_DELAY)
 	}
 }

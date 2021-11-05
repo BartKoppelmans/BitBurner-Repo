@@ -1,4 +1,3 @@
-import { CONSTANT } from '/src/lib/constants.js';
 import * as LogAPI from '/src/api/LogAPI.js';
 import { BBCity } from '/src/classes/BladeBurner/BBCity.js';
 export const CHANCE_THRESHOLD = 0.95;
@@ -26,7 +25,7 @@ export default class BBAction {
             actualTime = Math.ceil(time / 5);
         else
             actualTime = Math.ceil(bonusTime / 5) + (time - bonusTime);
-        return actualTime * CONSTANT.MILLISECONDS_IN_SECOND + ACTION_SLACK;
+        return actualTime + ACTION_SLACK;
     }
     getChance(ns) {
         const [lower, upper] = ns.bladeburner.getActionEstimatedSuccessChance(this.type, this.name);
@@ -53,11 +52,11 @@ export default class BBAction {
     async continue(ns, iteration) {
         // TODO: Decide whether we want to log continuing actions
         LogAPI.printLog(ns, `${ns.nFormat(iteration, '000000')} - Continuing ${this.type} action '${this.name}'`);
-        await ns.sleep(this.getDuration(ns));
+        await ns.asleep(this.getDuration(ns));
     }
     async execute(ns, iteration) {
         ns.bladeburner.startAction(this.type, this.name);
         LogAPI.printLog(ns, `${ns.nFormat(iteration, '000000')} - Executing  ${this.type} action '${this.name}'`);
-        await ns.sleep(this.getDuration(ns));
+        await ns.asleep(this.getDuration(ns));
     }
 }

@@ -1,9 +1,9 @@
-import type { BitBurner as NS } from 'Bitburner'
-import * as ServerAPI           from '/src/api/ServerAPI.js'
-import * as LogAPI              from '/src/api/LogAPI.js'
-import Server                   from '/src/classes/Server/Server.js'
-import { CONSTANT }             from '/src/lib/constants.js'
-import { ServerMap }            from '/src/classes/Server/ServerInterfaces.js'
+import type { NS }    from 'Bitburner'
+import * as ServerAPI from '/src/api/ServerAPI.js'
+import * as LogAPI    from '/src/api/LogAPI.js'
+import Server         from '/src/classes/Server/Server.js'
+import { CONSTANT }   from '/src/lib/constants.js'
+import { ServerMap }  from '/src/classes/Server/ServerInterfaces.js'
 
 async function findPath(ns: NS, server: Server): Promise<Server[]> {
 
@@ -25,7 +25,7 @@ async function findPath(ns: NS, server: Server): Promise<Server[]> {
 
 export async function main(ns: NS) {
 
-	const serverName: string = ns.args[0]
+	const serverName: (string | number) = ns.args[0]
 
 	if (!serverName) {
 		LogAPI.printTerminal(ns, 'Please provide a server to connect with.')

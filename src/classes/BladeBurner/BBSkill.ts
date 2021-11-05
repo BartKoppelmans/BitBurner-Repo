@@ -1,5 +1,5 @@
 import { BBSkillName, BBSkillPriority } from '/src/classes/BladeBurner/BBInterfaces.js'
-import { BitBurner as NS }              from 'Bitburner'
+import { NS }                           from 'Bitburner'
 
 export class BBSkill {
 	name: BBSkillName

@@ -1,4 +1,4 @@
-import type { BitBurner as NS }                   from 'Bitburner'
+import type { NS }                                from 'Bitburner'
 import { createBox }                              from '/src/UI/API/box.js'
 import HackableServer                             from '/src/classes/Server/HackableServer.js'
 import * as ServerAPI                             from '/src/api/ServerAPI.js'

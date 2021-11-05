@@ -1,8 +1,8 @@
-import type { BitBurner as NS } from 'Bitburner'
-import HackableServer           from '/src/classes/Server/HackableServer.js'
-import Job                      from '/src/classes/Job/Job.js'
-import { IBatch }               from '/src/classes/Job/JobInterfaces.js'
-import { Cycle, CycleTask }     from '/src/classes/Misc/HackInterfaces.js'
+import type { NS }          from 'Bitburner'
+import HackableServer       from '/src/classes/Server/HackableServer.js'
+import Job                  from '/src/classes/Job/Job.js'
+import { IBatch }           from '/src/classes/Job/JobInterfaces.js'
+import { Cycle, CycleTask } from '/src/classes/Misc/HackInterfaces.js'
 
 export default class Batch {
 

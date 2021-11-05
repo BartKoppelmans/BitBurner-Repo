@@ -1,8 +1,9 @@
-import type { BitBurner as NS } from 'Bitburner'
-import { CONSTANT }             from '/src/lib/constants.js'
+import type { NS }  from 'Bitburner'
+import { CONSTANT } from '/src/lib/constants.js'
+
+// TODO: Move this to a seperate file that is fetched from GitHub and used as index.
 
 const files: string[] = [
-	'Bitburner.t.js',
 	'import.js',
 	'api/ControlFlowAPI.js',
 	'api/JobAPI.js',

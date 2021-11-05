@@ -1,5 +1,5 @@
-import Server         from '/src/classes/Server/Server.js'
-import { Heuristics } from '/src/util/Heuristics.js'
+import Server             from '/src/classes/Server/Server.js'
+import { HeuristicValue } from '/src/util/Heuristics.js'
 
 export type ServerSortingOrder = 'ram' | 'server-value' | 'alphabetic'
 
@@ -23,7 +23,7 @@ export interface IHackableServer extends IServer {
 	status: ServerStatus
 	staticHackingProperties: StaticHackingProperties
 	percentageToSteal: number,
-	serverValue: Heuristics.HeuristicValue
+	serverValue: HeuristicValue
 }
 
 // This only contains the id's
@@ -87,7 +87,6 @@ export type QuarantinedInformation = {
 
 export interface StaticHackingProperties {
 	minSecurityLevel: number;
-	baseSecurityLevel: number;
 	ports: number;
 	hackingLevel: number;
 	maxMoney: number;

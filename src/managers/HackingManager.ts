@@ -1,4 +1,4 @@
-import type { BitBurner as NS }        from 'Bitburner'
+import type { NS }                     from 'Bitburner'
 import { ProcessInfo }                 from 'Bitburner'
 import * as LogAPI                     from '/src/api/LogAPI.js'
 import * as Utils                      from '/src/util/Utils.js'
@@ -12,16 +12,12 @@ import Job                             from '/src/classes/Job/Job.js'
 import * as JobAPI                     from '/src/api/JobAPI.js'
 import { JobMap }                      from '/src/classes/Job/JobInterfaces.js'
 import Server                          from '/src/classes/Server/Server.js'
-import { PurchasedServer }             from '/src/classes/Server/PurchasedServer'
+import { PurchasedServer }             from '/src/classes/Server/PurchasedServer.js'
 import { HacknetServer }               from '/src/classes/Server/HacknetServer.js'
 
-const JOB_MANAGING_LOOP_INTERVAL = 1000 as const
-const HACKING_LOOP_DELAY: number = 2000 as const
+const LOOP_DELAY: number = 2000 as const
 
 class HackingManager implements Manager {
-
-	private hackingLoopInterval?: ReturnType<typeof setTimeout>
-	private jobLoopInterval?: ReturnType<typeof setInterval>
 
 	private inFullAttackMode: boolean  = false
 	private serverMapLastUpdated: Date = CONSTANT.EPOCH_DATE
@@ -39,17 +35,10 @@ class HackingManager implements Manager {
 	}
 
 	public async start(ns: NS): Promise<void> {
-		LogAPI.printTerminal(ns, `Starting the JobManager`)
-		this.jobLoopInterval = setInterval(this.jobLoop.bind(this, ns), JOB_MANAGING_LOOP_INTERVAL)
-
 		LogAPI.printTerminal(ns, `Starting the HackingManager`)
-		this.hackingLoopInterval = setTimeout(this.hackingLoop.bind(this, ns), HACKING_LOOP_DELAY)
 	}
 
 	public async destroy(ns: NS): Promise<void> {
-		if (this.hackingLoopInterval) clearTimeout(this.hackingLoopInterval)
-		if (this.jobLoopInterval) clearInterval(this.jobLoopInterval)
-
 		await JobAPI.cancelAllJobs(ns)
 		await JobAPI.clearJobMap(ns)
 
@@ -143,7 +132,7 @@ class HackingManager implements Manager {
 		}
 	}
 
-	private async jobLoop(ns: NS): Promise<void> {
+	public async jobLoop(ns: NS): Promise<void> {
 		const jobMap: JobMap                  = JobAPI.getJobMap(ns)
 		const runningProcesses: ProcessInfo[] = JobAPI.getRunningProcesses(ns)
 
@@ -158,7 +147,7 @@ class HackingManager implements Manager {
 		if (finishedJobs.length > 0) await JobAPI.finishJobs(ns, finishedJobs)
 	}
 
-	private async hackingLoop(ns: NS): Promise<void> {
+	public async hackingLoop(ns: NS): Promise<void> {
 		// TODO: Set all hackable servers to prep
 
 		// Get the potential targets
@@ -186,8 +175,6 @@ class HackingManager implements Manager {
 
 			await HackingUtils.hack(ns, target)
 		}
-
-		this.hackingLoopInterval = setTimeout(this.hackingLoop.bind(this, ns), HACKING_LOOP_DELAY)
 	}
 
 }
@@ -203,6 +190,8 @@ export async function main(ns: NS) {
 	await instance.start(ns)
 
 	while (true) {
-		await ns.sleep(CONSTANT.CONTROL_FLOW_CHECK_INTERVAL)
+		await instance.jobLoop(ns)
+		await instance.hackingLoop(ns)
+		await ns.asleep(LOOP_DELAY)
 	}
 }

@@ -1,11 +1,10 @@
-import { BitBurner as NS, Player } from 'Bitburner'
-import * as LogAPI                 from '/src/api/LogAPI.js'
-import { CONSTANT }                from '/src/lib/constants.js'
-import * as Utils                  from '/src/util/Utils.js'
-import { Managers }                from '/src/managers/Managers.js'
-import * as ServerAPI              from '/src/api/ServerAPI.js'
+import { NS, Player } from 'Bitburner'
+import * as LogAPI    from '/src/api/LogAPI.js'
+import { CONSTANT }   from '/src/lib/constants.js'
+import * as Utils     from '/src/util/Utils.js'
+import { Managers }   from '/src/managers/Managers.js'
+import * as ServerAPI from '/src/api/ServerAPI.js'
 
-let runnerInterval: ReturnType<typeof setInterval>
 const RUNNER_INTERVAL: number     = 60000 as const
 const MANAGER_START_DELAY: number = 50 as const
 
@@ -15,19 +14,15 @@ async function initialize(ns: NS) {
 
 	ns.atExit(destroy.bind(null, ns))
 
-	/*
-	 TODO: Remove the hacking flag as is. Replace it with a flag that allows you to set the goal (none, hack, prep).
-	 */
-
 	const flags = ns.flags([
-		['hacking', true],
+		['hacking', false],
 		['bladeburner', false],
 		['gang', false],
 		['sleeve', false],
 		['stock', false],
 		['corporation', false],
 		['hacknet', false],
-		['auto', false]
+		['auto', false],
 	])
 
 	await ServerAPI.initializeServerMap(ns)
@@ -36,6 +31,8 @@ async function initialize(ns: NS) {
 
 	if (flags.auto) {
 		tasks.push(startManager(ns, Managers.HackingManager))
+
+		// The hacknet flag should be set, as it often is not needed as much
 		if (flags.hacknet) tasks.push(startManager(ns, Managers.HacknetManager))
 
 		const player: Player = ns.getPlayer()
@@ -83,14 +80,12 @@ async function launchRunner(ns: NS, script: string): Promise<void> {
 	}
 
 	while (ns.isRunning(pid)) {
-		await ns.sleep(CONSTANT.SMALL_DELAY)
+		await ns.asleep(CONSTANT.SMALL_DELAY)
 	}
 }
 
 
 function destroy(ns: NS): void {
-	clearTimeout(runnerInterval)
-
 	LogAPI.printTerminal(ns, 'Stopping the daemon')
 }
 
@@ -102,7 +97,7 @@ export async function startManager(ns: NS, manager: Managers): Promise<void> {
 	ns.exec(manager, CONSTANT.HOME_SERVER_HOST)
 
 	while (!isManagerRunning(ns, manager)) {
-		await ns.sleep(MANAGER_START_DELAY)
+		await ns.asleep(MANAGER_START_DELAY)
 	}
 }
 
@@ -124,10 +119,8 @@ export async function main(ns: NS) {
 
 	LogAPI.printTerminal(ns, 'Starting the daemon')
 
-	runnerInterval = setInterval(launchRunners.bind(null, ns), RUNNER_INTERVAL)
-
-	// TODO: Here we should check whether we are still running the hackloop
 	while (true) {
-		await ns.sleep(CONSTANT.CONTROL_FLOW_CHECK_INTERVAL)
+		await launchRunners(ns)
+		await ns.asleep(RUNNER_INTERVAL)
 	}
 }

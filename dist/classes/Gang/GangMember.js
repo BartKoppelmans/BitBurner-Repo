@@ -44,7 +44,7 @@ export default class GangMember {
     ascend(ns) {
         const results = ns.gang.ascendMember(this.name);
         if (!results)
-            LogAPI.printTerminal(ns, `Could not ascend${this.name}`);
+            throw new Error(`Could not ascend${this.name}`);
         else {
             LogAPI.printLog(ns, `Ascended ${this.name}`);
             this.upgrades = this.upgrades.filter((upgrade) => upgrade.type === 'Augmentation');

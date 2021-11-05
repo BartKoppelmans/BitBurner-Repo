@@ -1,12 +1,12 @@
-import type { BitBurner as NS, GangGenInfo, GangName } from 'Bitburner'
-import Gang                                            from '/src/classes/Gang/Gang.js'
-import * as LogAPI                                     from '/src/api/LogAPI.js'
+import type { GangGenInfo, NS } from 'Bitburner'
+import Gang                     from '/src/classes/Gang/Gang.js'
+import * as LogAPI              from '/src/api/LogAPI.js'
 
 export default class HomeGang extends Gang {
 
 	isInWarfare: boolean
 
-	public constructor(ns: NS, name: GangName) {
+	public constructor(ns: NS, name: string) {
 		super(ns, name)
 
 		const clashChance: number = this.getGangInformation(ns).territoryClashChance
@@ -14,7 +14,7 @@ export default class HomeGang extends Gang {
 	}
 
 	public static getHomeGang(ns: NS): HomeGang {
-		const name: GangName = ns.gang.getGangInformation().faction
+		const name: string = ns.gang.getGangInformation().faction
 		return new HomeGang(ns, name)
 	}
 

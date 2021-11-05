@@ -1,4 +1,4 @@
-import { BitBurner as NS } from 'Bitburner'
+import { NS } from 'Bitburner'
 
 const GANG_MEMBER_NAME_FILE: string = '/src/lib/names.txt' as const
 

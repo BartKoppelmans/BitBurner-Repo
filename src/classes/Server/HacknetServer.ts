@@ -1,12 +1,12 @@
-import type { BitBurner as NS, NodeStats, Player } from 'Bitburner'
+import type { NodeStats, NS, Player } from 'Bitburner'
 import {
 	HacknetServerCharacteristics,
 	IHacknetServer,
 	NodeInformation,
 	TreeStructure,
-}                                                  from '/src/classes/Server/ServerInterfaces.js'
-import Server                                      from '/src/classes/Server/Server.js'
-import { CONSTANT }                               from '/src/lib/constants.js'
+}                                     from '/src/classes/Server/ServerInterfaces.js'
+import Server                         from '/src/classes/Server/Server.js'
+import { CONSTANT }                   from '/src/lib/constants.js'
 
 export class HacknetServer extends Server implements IHacknetServer {
 

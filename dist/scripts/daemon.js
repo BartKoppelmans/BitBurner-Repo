@@ -3,29 +3,26 @@ import { CONSTANT } from '/src/lib/constants.js';
 import * as Utils from '/src/util/Utils.js';
 import { Managers } from '/src/managers/Managers.js';
 import * as ServerAPI from '/src/api/ServerAPI.js';
-let runnerInterval;
 const RUNNER_INTERVAL = 60000;
 const MANAGER_START_DELAY = 50;
 async function initialize(ns) {
     Utils.disableLogging(ns);
     ns.atExit(destroy.bind(null, ns));
-    /*
-     TODO: Remove the hacking flag as is. Replace it with a flag that allows you to set the goal (none, hack, prep).
-     */
     const flags = ns.flags([
-        ['hacking', true],
+        ['hacking', false],
         ['bladeburner', false],
         ['gang', false],
         ['sleeve', false],
         ['stock', false],
         ['corporation', false],
         ['hacknet', false],
-        ['auto', false]
+        ['auto', false],
     ]);
     await ServerAPI.initializeServerMap(ns);
     const tasks = [];
     if (flags.auto) {
         tasks.push(startManager(ns, Managers.HackingManager));
+        // The hacknet flag should be set, as it often is not needed as much
         if (flags.hacknet)
             tasks.push(startManager(ns, Managers.HacknetManager));
         const player = ns.getPlayer();
@@ -76,11 +73,10 @@ async function launchRunner(ns, script) {
         LogAPI.printLog(ns, `Running the ${match[1]}`);
     }
     while (ns.isRunning(pid)) {
-        await ns.sleep(CONSTANT.SMALL_DELAY);
+        await ns.asleep(CONSTANT.SMALL_DELAY);
     }
 }
 function destroy(ns) {
-    clearTimeout(runnerInterval);
     LogAPI.printTerminal(ns, 'Stopping the daemon');
 }
 export async function startManager(ns, manager) {
@@ -89,7 +85,7 @@ export async function startManager(ns, manager) {
     // TODO: Check whether there is enough ram available
     ns.exec(manager, CONSTANT.HOME_SERVER_HOST);
     while (!isManagerRunning(ns, manager)) {
-        await ns.sleep(MANAGER_START_DELAY);
+        await ns.asleep(MANAGER_START_DELAY);
     }
 }
 export function isManagerRunning(ns, manager) {
@@ -104,9 +100,8 @@ export async function main(ns) {
     // or whether we want to start hacking using our main hacker
     await initialize(ns);
     LogAPI.printTerminal(ns, 'Starting the daemon');
-    runnerInterval = setInterval(launchRunners.bind(null, ns), RUNNER_INTERVAL);
-    // TODO: Here we should check whether we are still running the hackloop
     while (true) {
-        await ns.sleep(CONSTANT.CONTROL_FLOW_CHECK_INTERVAL);
+        await launchRunners(ns);
+        await ns.asleep(RUNNER_INTERVAL);
     }
 }

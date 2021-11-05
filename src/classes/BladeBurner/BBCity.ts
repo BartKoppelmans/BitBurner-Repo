@@ -1,13 +1,13 @@
-import { BitBurner as NS, City } from 'Bitburner'
-import * as LogAPI               from '/src/api/LogAPI.js'
+import { NS }      from 'Bitburner'
+import * as LogAPI from '/src/api/LogAPI.js'
 
 export class BBCity {
 
-	name: City
+	name: string
 
 	// TODO: Include some prioritization for skills
 
-	public constructor(ns: NS, name: City) {
+	public constructor(ns: NS, name: string) {
 		this.name = name
 	}
 

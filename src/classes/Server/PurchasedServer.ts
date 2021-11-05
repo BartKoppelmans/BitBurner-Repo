@@ -1,16 +1,16 @@
-import type { BitBurner as NS, ProcessInfo } from 'Bitburner'
+import type { NS, ProcessInfo } from 'Bitburner'
 import {
 	IPurchasedServer,
 	PurchasedServerCharacteristics,
 	QuarantinedInformation,
 	ServerPurpose,
 	TreeStructure,
-}                                            from '/src/classes/Server/ServerInterfaces.js'
-import Server                                from '/src/classes/Server/Server.js'
+}                               from '/src/classes/Server/ServerInterfaces.js'
+import Server                   from '/src/classes/Server/Server.js'
 import {
 	CONSTANT,
-}                                            from '/src/lib/constants.js'
-import * as PlayerUtils                      from '/src/util/PlayerUtils.js'
+}                               from '/src/lib/constants.js'
+import * as PlayerUtils         from '/src/util/PlayerUtils.js'
 
 const PERCENTAGE_HACK_PURPOSE: number = 0.4
 

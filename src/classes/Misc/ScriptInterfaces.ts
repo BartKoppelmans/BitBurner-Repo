@@ -1,4 +1,4 @@
-import type { BitBurner as NS } from 'Bitburner'
+import type { NS } from 'Bitburner'
 
 export interface Manager {
 	initialize(ns: NS): Promise<void>

@@ -89,14 +89,14 @@ class GangManager {
             if (!factions.includes('Slum Snakes')) {
                 const invitations = ns.checkFactionInvitations();
                 if (!invitations.includes('Slum Snakes')) {
-                    await ns.sleep(CREATE_GANG_DELAY);
+                    await ns.asleep(CREATE_GANG_DELAY);
                     continue;
                 }
                 ns.joinFaction('Slum Snakes');
             }
             const hasCreatedGang = ns.gang.createGang('Slum Snakes');
             if (!hasCreatedGang)
-                await ns.sleep(CREATE_GANG_DELAY);
+                await ns.asleep(CREATE_GANG_DELAY);
         }
     }
     static shouldAscend(ns, member) {
@@ -187,7 +187,7 @@ class GangManager {
             const newMember = GangManager.recruitMember(ns);
             if (newMember)
                 this.upgradeMember(ns, newMember);
-            await ns.sleep(CONSTANT.SMALL_DELAY);
+            await ns.asleep(CONSTANT.SMALL_DELAY);
         }
         const members = GangMember.getAllGangMembers(ns);
         if (GangManager.shouldReduceWantedLevel(ns)) {
@@ -204,7 +204,7 @@ class GangManager {
             member.startTask(ns, GangTask.getWantedLevelReductionTask(ns, member));
         });
         while (!GangManager.hasMinimumWantedLevel(ns)) {
-            await ns.sleep(LOOP_DELAY);
+            await ns.asleep(LOOP_DELAY);
         }
         LogAPI.printLog(ns, `Finished reducing wanted level`);
     }
@@ -274,6 +274,6 @@ export async function main(ns) {
     await instance.start(ns);
     while (true) {
         await instance.managingLoop(ns);
-        await ns.sleep(LOOP_DELAY);
+        await ns.asleep(LOOP_DELAY);
     }
 }

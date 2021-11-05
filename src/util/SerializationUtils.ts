@@ -1,12 +1,12 @@
-import type { BitBurner as NS } from 'Bitburner'
-import Server                   from '/src/classes/Server/Server.js'
-import { ServerType }           from '/src/classes/Server/ServerInterfaces.js'
-import HackableServer           from '/src/classes/Server/HackableServer.js'
-import { PurchasedServer }      from '/src/classes/Server/PurchasedServer.js'
-import Job                      from '/src/classes/Job/Job.js'
-import Batch                    from '/src/classes/Job/Batch.js'
-import { ThreadSpread }         from '/src/classes/Misc/HackInterfaces.js'
-import { HacknetServer }        from '/src/classes/Server/HacknetServer.js'
+import type { NS }         from 'Bitburner'
+import Server              from '/src/classes/Server/Server.js'
+import { ServerType }      from '/src/classes/Server/ServerInterfaces.js'
+import HackableServer      from '/src/classes/Server/HackableServer.js'
+import { PurchasedServer } from '/src/classes/Server/PurchasedServer.js'
+import Job                 from '/src/classes/Job/Job.js'
+import Batch               from '/src/classes/Job/Batch.js'
+import { ThreadSpread }    from '/src/classes/Misc/HackInterfaces.js'
+import { HacknetServer }   from '/src/classes/Server/HacknetServer.js'
 
 export function serverFromJSON(ns: NS, json: any): Server {
 	switch (json.characteristics.type) {

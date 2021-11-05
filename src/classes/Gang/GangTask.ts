@@ -1,8 +1,8 @@
-import type { BitBurner as NS, GangGenInfo, GangTasksStats } from 'Bitburner'
-import { GangMemberStats, GangTaskGain, GangTaskName }       from '/src/classes/Gang/GangInterfaces.js'
-import * as GangUtils                                        from '/src/util/GangUtils.js'
-import GangMember                                            from '/src/classes/Gang/GangMember.js'
-import HomeGang                                              from '/src/classes/Gang/HomeGang.js'
+import type { GangGenInfo, GangTaskStats, NS }         from 'Bitburner'
+import { GangMemberStats, GangTaskGain, GangTaskName } from '/src/classes/Gang/GangInterfaces.js'
+import * as GangUtils                                  from '/src/util/GangUtils.js'
+import GangMember                                      from '/src/classes/Gang/GangMember.js'
+import HomeGang                                        from '/src/classes/Gang/HomeGang.js'
 
 export default class GangTask {
 
@@ -61,7 +61,7 @@ export default class GangTask {
 		return GangTask.getTask(ns, 'Unassigned')
 	}
 
-	private static calculateStatWeight(taskStats: GangTasksStats, memberStats: GangMemberStats): number {
+	private static calculateStatWeight(taskStats: GangTaskStats, memberStats: GangMemberStats): number {
 		return (taskStats.hackWeight / 100) * memberStats.hack +
 			(taskStats.strWeight / 100) * memberStats.str +
 			(taskStats.defWeight / 100) * memberStats.def +
@@ -71,7 +71,7 @@ export default class GangTask {
 	}
 
 	private static calculateRespectGain(ns: NS, task: GangTask, member: GangMember): number {
-		const taskStats: GangTasksStats    = task.getTaskStats(ns)
+		const taskStats: GangTaskStats     = task.getTaskStats(ns)
 		const memberStats: GangMemberStats = member.getGangMemberStats(ns)
 		const gangInformation: GangGenInfo = ns.gang.getGangInformation()
 
@@ -91,7 +91,7 @@ export default class GangTask {
 	}
 
 	private static calculateMoneyGain(ns: NS, task: GangTask, member: GangMember): number {
-		const taskStats: GangTasksStats    = task.getTaskStats(ns)
+		const taskStats: GangTaskStats     = task.getTaskStats(ns)
 		const memberStats: GangMemberStats = member.getGangMemberStats(ns)
 		const gangInformation: GangGenInfo = ns.gang.getGangInformation()
 
@@ -111,7 +111,7 @@ export default class GangTask {
 	}
 
 	private static calculateWantedLevelGain(ns: NS, task: GangTask, member: GangMember): number {
-		const taskStats: GangTasksStats    = task.getTaskStats(ns)
+		const taskStats: GangTaskStats     = task.getTaskStats(ns)
 		const memberStats: GangMemberStats = member.getGangMemberStats(ns)
 		const gangInformation: GangGenInfo = ns.gang.getGangInformation()
 
@@ -135,7 +135,7 @@ export default class GangTask {
 		return Math.min(100, calc)
 	}
 
-	public getTaskStats(ns: NS): GangTasksStats {
+	public getTaskStats(ns: NS): GangTaskStats {
 		return ns.gang.getTaskStats(this.name)
 	}
 }

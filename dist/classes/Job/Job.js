@@ -40,11 +40,13 @@ export default class Job {
             args.script,
             args.server,
             args.threads,
+            '--target',
             args.target.characteristics.host,
+            '--start',
             args.start.getTime().toString(),
         ];
     }
-    execute(ns) {
+    async execute(ns) {
         const commonArgs = {
             script: this.tool,
             target: this.target,
@@ -53,7 +55,7 @@ export default class Job {
         for (const [server, threads] of this.threadSpread) {
             // We have to copy the tool to the server if it is not available yet
             if (!ServerUtils.isHome(server)) {
-                ns.scp(this.tool, CONSTANT.HOME_SERVER_HOST, server);
+                await ns.scp(this.tool, CONSTANT.HOME_SERVER_HOST, server);
             }
             const args = { ...commonArgs, threads, server };
             const pid = ns.exec.apply(null, Job.createArgumentArray(ns, args));

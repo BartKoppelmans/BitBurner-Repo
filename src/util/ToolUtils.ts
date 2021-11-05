@@ -1,6 +1,6 @@
-import type { BitBurner as NS } from 'Bitburner'
-import HackableServer           from '/src/classes/Server/HackableServer.js'
-import { Tools }                from '/src/tools/Tools.js'
+import type { NS }    from 'Bitburner'
+import HackableServer from '/src/classes/Server/HackableServer.js'
+import { Tools }      from '/src/tools/Tools.js'
 
 export function getToolCost(ns: NS, tool: Tools): number {
 	return ns.getScriptRam(tool)

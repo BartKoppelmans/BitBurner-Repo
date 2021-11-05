@@ -26,7 +26,7 @@ export async function main(ns) {
     let iterations = 0;
     while (!isCancelled && (hasFoundCancelButton || iterations < MAX_NUM_ITERATIONS)) {
         if (ns.isBusy()) {
-            await ns.sleep(CONSTANT.CRIME_DELAY);
+            await ns.asleep(CONSTANT.CRIME_DELAY);
             continue;
         }
         let crime;
@@ -54,7 +54,7 @@ export async function main(ns) {
             hasFoundCancelButton = false;
             LogAPI.printTerminal(ns, `Could not find the cancel button, doing ${MAX_NUM_ITERATIONS - iterations} more iterations`);
         }
-        await ns.sleep(crime.crimeStats.time);
+        await ns.asleep(crime.crimeStats.time);
         iterations++;
     }
 }

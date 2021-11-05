@@ -1,8 +1,8 @@
-import type { BitBurner as NS } from 'Bitburner'
-import Crime                    from '/src/classes/Misc/Crime.js'
-import { CONSTANT }             from '/src/lib/constants.js'
-import * as CrimeUtils          from '/src/util/CrimeUtils.js'
-import * as LogAPI              from '/src/api/LogAPI.js'
+import type { NS }     from 'Bitburner'
+import Crime           from '/src/classes/Misc/Crime.js'
+import { CONSTANT }    from '/src/lib/constants.js'
+import * as CrimeUtils from '/src/util/CrimeUtils.js'
+import * as LogAPI     from '/src/api/LogAPI.js'
 
 const MAX_NUM_ITERATIONS: number = 5 as const
 
@@ -36,7 +36,7 @@ export async function main(ns: NS) {
 
 	while (!isCancelled && (hasFoundCancelButton || iterations < MAX_NUM_ITERATIONS)) {
 		if (ns.isBusy()) {
-			await ns.sleep(CONSTANT.CRIME_DELAY)
+			await ns.asleep(CONSTANT.CRIME_DELAY)
 			continue
 		}
 
@@ -69,7 +69,7 @@ export async function main(ns: NS) {
 			LogAPI.printTerminal(ns, `Could not find the cancel button, doing ${MAX_NUM_ITERATIONS - iterations} more iterations`)
 		}
 
-		await ns.sleep(crime.crimeStats.time)
+		await ns.asleep(crime.crimeStats.time)
 
 		iterations++
 	}

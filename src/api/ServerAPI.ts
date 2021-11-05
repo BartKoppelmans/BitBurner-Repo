@@ -1,26 +1,26 @@
-import type { BitBurner as NS } from 'Bitburner'
-import HackableServer           from '/src/classes/Server/HackableServer.js'
-import Server                   from '/src/classes/Server/Server.js'
+import type { NS }             from 'Bitburner'
+import HackableServer          from '/src/classes/Server/HackableServer.js'
+import Server                  from '/src/classes/Server/Server.js'
 import {
 	ServerMap,
 	ServerPurpose,
 	ServerSortingOrder,
 	ServerStatus,
 	ServerType,
-}                               from '/src/classes/Server/ServerInterfaces.js'
-import { CONSTANT }             from '/src/lib/constants.js'
-import * as ServerUtils         from '/src/util/ServerUtils.js'
-import * as SerializationUtils  from '/src/util/SerializationUtils.js'
-import * as LogAPI              from '/src/api/LogAPI.js'
+}                              from '/src/classes/Server/ServerInterfaces.js'
+import { CONSTANT }            from '/src/lib/constants.js'
+import * as ServerUtils        from '/src/util/ServerUtils.js'
+import * as SerializationUtils from '/src/util/SerializationUtils.js'
+import * as LogAPI             from '/src/api/LogAPI.js'
 import {
 	PurchasedServer,
-}                               from '/src/classes/Server/PurchasedServer.js'
+}                              from '/src/classes/Server/PurchasedServer.js'
 import {
 	HacknetServer,
-}                               from '/src/classes/Server/HacknetServer.js'
+}                              from '/src/classes/Server/HacknetServer.js'
 import {
 	RamSpread,
-}                               from '/src/classes/Misc/HackInterfaces'
+}                              from '/src/classes/Misc/HackInterfaces.js'
 
 const MIN_NUMBER_PURPOSED_SERVERS: number = 2 as const
 
@@ -304,7 +304,7 @@ export async function initializeServerMap(ns: NS): Promise<void> {
 
 	// Wait until the server map runner has finished
 	while (ns.isRunning(pid)) {
-		await ns.sleep(CONSTANT.SMALL_DELAY)
+		await ns.asleep(CONSTANT.SMALL_DELAY)
 	}
 
 	return

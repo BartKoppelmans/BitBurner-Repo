@@ -1,13 +1,13 @@
-import type { BitBurner as NS, GangMemberAscension, GangMemberInfo } from 'Bitburner'
-import GangTask                                                      from '/src/classes/Gang/GangTask.js'
+import type { GangMemberAscension, GangMemberInfo, NS } from 'Bitburner'
+import GangTask                                         from '/src/classes/Gang/GangTask.js'
 import {
 	GangAscensionMultipliers,
 	GangAscensionPoints,
 	GangMemberStats,
 	GangTaskName,
-}                                                                    from '/src/classes/Gang/GangInterfaces.js'
-import GangUpgrade                                                   from '/src/classes/Gang/GangUpgrade.js'
-import * as LogAPI                                                   from '/src/api/LogAPI.js'
+}                                                       from '/src/classes/Gang/GangInterfaces.js'
+import GangUpgrade                                      from '/src/classes/Gang/GangUpgrade.js'
+import * as LogAPI                                      from '/src/api/LogAPI.js'
 
 
 export default class GangMember {
@@ -60,9 +60,9 @@ export default class GangMember {
 	}
 
 	public ascend(ns: NS): GangMemberAscension {
-		const results: GangMemberAscension = ns.gang.ascendMember(this.name)
+		const results: GangMemberAscension | undefined = ns.gang.ascendMember(this.name)
 
-		if (!results) LogAPI.printTerminal(ns, `Could not ascend${this.name}`)
+		if (!results) throw new Error(`Could not ascend${this.name}`)
 		else {
 			LogAPI.printLog(ns, `Ascended ${this.name}`)
 			this.upgrades = this.upgrades.filter((upgrade) => upgrade.type === 'Augmentation')

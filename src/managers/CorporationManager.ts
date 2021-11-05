@@ -1,7 +1,7 @@
-import type { BitBurner as NS } from 'Bitburner'
-import * as LogAPI              from '/src/api/LogAPI.js'
-import * as Utils               from '/src/util/Utils.js'
-import { Manager }              from '/src/classes/Misc/ScriptInterfaces.js'
+import type { NS } from 'Bitburner'
+import * as LogAPI from '/src/api/LogAPI.js'
+import * as Utils  from '/src/util/Utils.js'
+import { Manager } from '/src/classes/Misc/ScriptInterfaces.js'
 
 const LOOP_DELAY: number = 1000 as const
 
@@ -45,6 +45,6 @@ export async function main(ns: NS) {
 
 	while (true) {
 		await instance.managingLoop(ns)
-		await ns.sleep(LOOP_DELAY)
+		await ns.asleep(LOOP_DELAY)
 	}
 }

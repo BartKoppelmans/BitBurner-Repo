@@ -1,11 +1,11 @@
-import type { BitBurner as NS } from 'Bitburner'
-import HackableServer           from '/src/classes/Server/HackableServer.js'
-import { ServerStatus }         from '/src/classes/Server/ServerInterfaces.js'
-import Batch                    from '/src/classes/Job/Batch.js'
-import * as JobAPI              from '/src/api/JobAPI.js'
-import * as ServerAPI           from '/src/api/ServerAPI.js'
-import { DOMcreateElement }     from '/src/UI/API/index.js'
-import { Styles }               from '/src/UI/styles/hackingUIstyles.js'
+import type { NS }          from 'Bitburner'
+import HackableServer       from '/src/classes/Server/HackableServer.js'
+import { ServerStatus }     from '/src/classes/Server/ServerInterfaces.js'
+import Batch                from '/src/classes/Job/Batch.js'
+import * as JobAPI          from '/src/api/JobAPI.js'
+import * as ServerAPI       from '/src/api/ServerAPI.js'
+import { DOMcreateElement } from '/src/UI/API/index.js'
+import { Styles }           from '/src/UI/styles/hackingUIstyles.js'
 import Element = JSX.Element
 
 export const collapsedStates: Record<string, boolean> = {}

@@ -5,11 +5,8 @@ import { CONSTANT } from '/src/lib/constants.js';
 import * as ServerAPI from '/src/api/ServerAPI.js';
 import { ServerPurpose, ServerStatus } from '/src/classes/Server/ServerInterfaces.js';
 import * as JobAPI from '/src/api/JobAPI.js';
-const JOB_MANAGING_LOOP_INTERVAL = 1000;
-const HACKING_LOOP_DELAY = 2000;
+const LOOP_DELAY = 2000;
 class HackingManager {
-    hackingLoopInterval;
-    jobLoopInterval;
     inFullAttackMode = false;
     serverMapLastUpdated = CONSTANT.EPOCH_DATE;
     async initialize(ns) {
@@ -21,16 +18,9 @@ class HackingManager {
         await JobAPI.cancelAllJobs(ns, true);
     }
     async start(ns) {
-        LogAPI.printTerminal(ns, `Starting the JobManager`);
-        this.jobLoopInterval = setInterval(this.jobLoop.bind(this, ns), JOB_MANAGING_LOOP_INTERVAL);
         LogAPI.printTerminal(ns, `Starting the HackingManager`);
-        this.hackingLoopInterval = setTimeout(this.hackingLoop.bind(this, ns), HACKING_LOOP_DELAY);
     }
     async destroy(ns) {
-        if (this.hackingLoopInterval)
-            clearTimeout(this.hackingLoopInterval);
-        if (this.jobLoopInterval)
-            clearInterval(this.jobLoopInterval);
         await JobAPI.cancelAllJobs(ns);
         await JobAPI.clearJobMap(ns);
         LogAPI.printTerminal(ns, `Stopping the JobManager`);
@@ -137,7 +127,6 @@ class HackingManager {
             }
             await HackingUtils.hack(ns, target);
         }
-        this.hackingLoopInterval = setTimeout(this.hackingLoop.bind(this, ns), HACKING_LOOP_DELAY);
     }
 }
 export async function main(ns) {
@@ -148,6 +137,8 @@ export async function main(ns) {
     await instance.initialize(ns);
     await instance.start(ns);
     while (true) {
-        await ns.sleep(CONSTANT.CONTROL_FLOW_CHECK_INTERVAL);
+        await instance.jobLoop(ns);
+        await instance.hackingLoop(ns);
+        await ns.asleep(LOOP_DELAY);
     }
 }

@@ -1,12 +1,4 @@
-import {
-	BitBurner as NS,
-	BladeburnerBlackOps,
-	BladeburnerContracts,
-	BladeburnerGenActions,
-	BladeburnerOperations,
-	BladeburnerSkills,
-	City,
-}                                                      from 'Bitburner'
+import { NS }                                          from 'BitBurner'
 import BBAction                                        from '/src/classes/BladeBurner/BBAction.js'
 import { BBSkill }                                     from '/src/classes/BladeBurner/BBSkill.js'
 import { BBActionName, BBActionType, BBSkillPriority } from '/src/classes/BladeBurner/BBInterfaces.js'
@@ -14,17 +6,17 @@ import { BBCity }                                      from '/src/classes/BladeB
 
 
 export function createCities(ns: NS): BBCity[] {
-	const cities: City[] = ['Sector-12', 'New Tokyo', 'Volhaven', 'Aevum', 'Chongqing', 'Ishima']
+	const cities: string[] = ['Sector-12', 'New Tokyo', 'Volhaven', 'Aevum', 'Chongqing', 'Ishima']
 	return cities.map((city) => new BBCity(ns, city))
 }
 
 export function createActions(ns: NS): BBAction[] {
 	const actions: BBAction[] = []
 
-	const generalActionNames: BladeburnerGenActions[]   = ns.bladeburner.getGeneralActionNames()
-	const contractActionNames: BladeburnerContracts[]   = ns.bladeburner.getContractNames()
-	const operationActionNames: BladeburnerOperations[] = ns.bladeburner.getOperationNames()
-	const blackOpsActionNames: BladeburnerBlackOps[]    = ns.bladeburner.getBlackOpNames()
+	const generalActionNames: string[]   = ns.bladeburner.getGeneralActionNames()
+	const contractActionNames: string[]  = ns.bladeburner.getContractNames()
+	const operationActionNames: string[] = ns.bladeburner.getOperationNames()
+	const blackOpsActionNames: string[]  = ns.bladeburner.getBlackOpNames()
 
 	generalActionNames.forEach((name) => actions.push(new BBAction(ns, name, 'general')))
 	contractActionNames.forEach((name) => actions.push(new BBAction(ns, name, 'contracts')))
@@ -84,8 +76,8 @@ export function getAchievableActions(ns: NS, actions: BBAction[], type?: BBActio
 }
 
 export function createSkills(ns: NS): BBSkill[] {
-	const skills: BBSkill[]               = []
-	const skillNames: BladeburnerSkills[] = ns.bladeburner.getSkillNames()
+	const skills: BBSkill[]    = []
+	const skillNames: string[] = ns.bladeburner.getSkillNames()
 	skillNames.forEach((name) => skills.push(new BBSkill(ns, name)))
 	return skills
 }

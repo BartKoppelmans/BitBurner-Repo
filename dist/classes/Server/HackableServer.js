@@ -1,7 +1,7 @@
 import Server from '/src/classes/Server/Server.js';
 import { ServerStatus } from '/src/classes/Server/ServerInterfaces.js';
 import { CONSTANT } from '/src/lib/constants.js';
-import { Heuristics } from '/src/util/Heuristics.js';
+import { DiscordHeuristic } from '/src/util/Heuristics.js';
 export default class HackableServer extends Server {
     status;
     staticHackingProperties;
@@ -11,7 +11,7 @@ export default class HackableServer extends Server {
         super(ns, server);
         this.status = (server.status) ? server.status : ServerStatus.NONE;
         this.staticHackingProperties = (server.staticHackingProperties) ? server.staticHackingProperties : this.getStaticHackingProperties(ns);
-        this.serverValue = (server.serverValue) ? server.serverValue : Heuristics.DiscordHeuristic(ns, this);
+        this.serverValue = (server.serverValue) ? server.serverValue : DiscordHeuristic(ns, this);
         this.percentageToSteal = CONSTANT.DEFAULT_PERCENTAGE_TO_STEAL;
     }
     getSecurityLevel(ns) {
@@ -21,13 +21,13 @@ export default class HackableServer extends Server {
         return ns.getServerMoneyAvailable(this.characteristics.host);
     }
     getWeakenTime(ns) {
-        return ns.getWeakenTime(this.characteristics.host) * 1000;
+        return ns.getWeakenTime(this.characteristics.host);
     }
     getHackTime(ns) {
-        return ns.getHackTime(this.characteristics.host) * 1000;
+        return ns.getHackTime(this.characteristics.host);
     }
     getGrowTime(ns) {
-        return ns.getGrowTime(this.characteristics.host) * 1000;
+        return ns.getGrowTime(this.characteristics.host);
     }
     isHackable(ns) {
         return ns.getServerRequiredHackingLevel(this.characteristics.host) <= ns.getHackingLevel();
@@ -58,7 +58,6 @@ export default class HackableServer extends Server {
             maxMoney: ns.getServerMaxMoney(this.characteristics.host),
             growth: ns.getServerGrowth(this.characteristics.host),
             minSecurityLevel: ns.getServerMinSecurityLevel(this.characteristics.host),
-            baseSecurityLevel: ns.getServerBaseSecurityLevel(this.characteristics.host),
         };
     }
 }

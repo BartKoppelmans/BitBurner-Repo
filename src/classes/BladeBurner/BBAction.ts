@@ -1,6 +1,5 @@
-import type { BitBurner as NS, BladeburnerBlackOps }  from 'Bitburner'
+import type { NS }                                    from 'Bitburner'
 import { BBActionChance, BBActionName, BBActionType } from '/src/classes/BladeBurner/BBInterfaces.js'
-import { CONSTANT }                                   from '/src/lib/constants.js'
 import * as LogAPI                                    from '/src/api/LogAPI.js'
 import { BBCity }                                     from '/src/classes/BladeBurner/BBCity.js'
 
@@ -37,7 +36,7 @@ export default class BBAction {
 		else if (bonusTime > time) actualTime = Math.ceil(time / 5)
 		else actualTime = Math.ceil(bonusTime / 5) + (time - bonusTime)
 
-		return actualTime * CONSTANT.MILLISECONDS_IN_SECOND + ACTION_SLACK
+		return actualTime + ACTION_SLACK
 	}
 
 	public getChance(ns: NS): BBActionChance {
@@ -47,7 +46,7 @@ export default class BBAction {
 
 	public isAchievable(ns: NS): boolean {
 		if (this.type === 'black ops') {
-			if (ns.bladeburner.getRank() < ns.bladeburner.getBlackOpRank(this.name as BladeburnerBlackOps)) {
+			if (ns.bladeburner.getRank() < ns.bladeburner.getBlackOpRank(this.name)) {
 				return false
 			}
 		}
@@ -60,7 +59,7 @@ export default class BBAction {
 
 	public getBlackOpRank(ns: NS): number {
 		if (this.type !== 'black ops') throw new Error('Cannot get the BlackOps rank for other actions')
-		return ns.bladeburner.getBlackOpRank(this.name as BladeburnerBlackOps)
+		return ns.bladeburner.getBlackOpRank(this.name)
 	}
 
 	public async continue(ns: NS, iteration: number): Promise<void> {
@@ -68,12 +67,12 @@ export default class BBAction {
 		// TODO: Decide whether we want to log continuing actions
 		LogAPI.printLog(ns, `${ns.nFormat(iteration, '000000')} - Continuing ${this.type} action '${this.name}'`)
 
-		await ns.sleep(this.getDuration(ns))
+		await ns.asleep(this.getDuration(ns))
 	}
 
 	public async execute(ns: NS, iteration: number): Promise<void> {
 		ns.bladeburner.startAction(this.type, this.name)
 		LogAPI.printLog(ns, `${ns.nFormat(iteration, '000000')} - Executing  ${this.type} action '${this.name}'`)
-		await ns.sleep(this.getDuration(ns))
+		await ns.asleep(this.getDuration(ns))
 	}
 }

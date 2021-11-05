@@ -225,7 +225,7 @@ export function calculateGrowthEffect(ns, target, source, threads, start = targe
     const targetServerObject = ns.getServer(target.characteristics.host);
     const sourceServerObject = ns.getServer(source.characteristics.host);
     const playerObject = PlayerUtils.getPlayer(ns);
-    return start * ns.formulas.basic.growPercent(targetServerObject, threads, playerObject, sourceServerObject.cpuCores) - start;
+    return start * ns.formulas.hacking.growPercent(targetServerObject, threads, playerObject, sourceServerObject.cpuCores) - start;
 }
 export function calculateWeakenEffect(ns, target, source, threads) {
     const sourceServerObject = ns.getServer(source.characteristics.host);
@@ -282,7 +282,7 @@ export function calculateCompensationWeakenThreads(ns, target, source, after, th
 }
 // This is always after a hack
 export function calculateCompensationGrowthThreads(ns, target, source, threads) {
-    const hackAmount = ((threads * ns.hackAnalyzePercent(target.characteristics.host)) / 100) * target.staticHackingProperties.maxMoney;
+    const hackAmount = (threads * ns.hackAnalyze(target.characteristics.host)) * target.staticHackingProperties.maxMoney;
     const startAmount = target.getMoney(ns) - hackAmount;
     return calculateGrowthThreads(ns, target, source, startAmount);
 }

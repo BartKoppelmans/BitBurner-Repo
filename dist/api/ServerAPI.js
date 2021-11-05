@@ -254,7 +254,7 @@ export async function initializeServerMap(ns) {
         throw new Error('Cannot start the ServerMapRunner');
     // Wait until the server map runner has finished
     while (ns.isRunning(pid)) {
-        await ns.sleep(CONSTANT.SMALL_DELAY);
+        await ns.asleep(CONSTANT.SMALL_DELAY);
     }
     return;
 }

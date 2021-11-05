@@ -1,5 +1,5 @@
-import type { BitBurner as NS } from 'Bitburner'
-import { CONSTANT }             from '/src/lib/constants.js'
+import type { NS }  from 'Bitburner'
+import { CONSTANT } from '/src/lib/constants.js'
 
 export function getPlayer(ns: NS) {
 	return (ns as any).getPlayer()

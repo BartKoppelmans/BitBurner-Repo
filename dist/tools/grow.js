@@ -1,7 +1,11 @@
 export async function main(ns) {
-    const target = ns.args[0];
-    const start = parseInt(ns.args[1]);
+    const flags = ns.flags([
+        ['target', ''],
+        ['start', Date.now()],
+    ]);
+    const target = flags.target;
+    const start = flags.start;
     const wait = start - Date.now();
-    await ns.sleep(wait);
+    await ns.asleep(wait);
     await ns.grow(target);
 }

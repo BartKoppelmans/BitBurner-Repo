@@ -1,4 +1,4 @@
-import type { BitBurner as NS } from 'Bitburner'
+import type { NS } from 'Bitburner'
 
 export function formatTime(date: Date = new Date()): string {
 	return `[${date.toLocaleTimeString('nl-NL')}]`

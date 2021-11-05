@@ -1,4 +1,4 @@
-import type { BitBurner as NS }                 from 'Bitburner'
+import type { NS }                              from 'Bitburner'
 import { CodingContract, CodingContractAnswer } from '/src/classes/Misc/CodingContract.js'
 
 export function findSolution(ns: NS, contract: CodingContract): CodingContractAnswer | null {
