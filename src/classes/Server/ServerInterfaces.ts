@@ -57,12 +57,12 @@ export interface NodeInformation {
 }
 
 export enum ServerType {
-	BasicServer = 'BasicServer',
-	HackableServer = 'HackableServer',
-	HomeServer = 'HomeServer',
+	BasicServer     = 'BasicServer',
+	HackableServer  = 'HackableServer',
+	HomeServer      = 'HomeServer',
 	PurchasedServer = 'PurchasedServer',
-	HacknetServer = 'HacknetServer',
-	DarkWebServer = 'DarkWebServer',
+	HacknetServer   = 'HacknetServer',
+	DarkWebServer   = 'DarkWebServer',
 }
 
 export enum ServerPurpose {
@@ -72,8 +72,8 @@ export enum ServerPurpose {
 }
 
 export enum ServerStatus {
-	NONE= 'None',
-	PREPPING = 'Prep',
+	NONE      = 'None',
+	PREPPING  = 'Prep',
 	TARGETING = 'Hack',
 }
 

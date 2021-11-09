@@ -27,7 +27,7 @@ export const Colors = {
     'cha': '#f8f',
     'int': '#f08',
     'rep': '#fff',
-    'disabled': '#CC2222'
+    'disabled': '#CC2222',
 };
 export const Styles = (DOMcreateElement("style", null, css `
       .box table {

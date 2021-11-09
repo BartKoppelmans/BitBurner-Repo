@@ -3,13 +3,13 @@ import * as Utils from '/src/util/Utils.js';
 import * as PlayerUtils from '/src/util/PlayerUtils.js';
 import Stock from '/src/classes/Stock/Stock.js';
 import { StockPosition } from '/src/classes/Stock/StockInterfaces.js';
-const LOOP_DELAY = 1000;
+const LOOP_DELAY = 6000;
 const STOCK_ALLOWANCE = 0.05;
 const STOCK_COMMISSION = 100000;
 const MINIMUM_MONEY_TO_INVEST = 10 * STOCK_COMMISSION;
-const EXPECTED_RETURN_BUY_THRESHOLD = 0.0002; // Buy anything forecasted to earn better than a 0.02%
+const EXPECTED_RETURN_BUY_THRESHOLD = 0.0005; // Buy anything forecasted to earn better than a 0.02%
 // return
-const EXPECTED_RETURN_SELL_THRESHOLD = 0.0001; // Buy anything forecasted to earn better than a 0.02%
+const EXPECTED_RETURN_SELL_THRESHOLD = 0.0002; // Buy anything forecasted to earn better than a 0.02%
 // return
 class StockManager {
     stocks = [];
@@ -75,12 +75,12 @@ class StockManager {
                 totalProfit += stock.sellShorts(ns);
                 soldStocks.push(stock);
                 /*
-                // Only sell if we would make a profit
-                const potentialProfit: number = stock.stockInformation.ownedShort * (stock.stockInformation.averageShortPrice - stock.stockInformation.askPrice)
-                if (potentialProfit > 2 * STOCK_COMMISSION) {
-                    totalProfit += stock.sellShorts(ns)
-                    soldStocks.push(stock)
-                }
+                 // Only sell if we would make a profit
+                 const potentialProfit: number = stock.stockInformation.ownedShort * (stock.stockInformation.averageShortPrice - stock.stockInformation.askPrice)
+                 if (potentialProfit > 2 * STOCK_COMMISSION) {
+                 totalProfit += stock.sellShorts(ns)
+                 soldStocks.push(stock)
+                 }
                  */
             }
             if (stock.stockInformation.ownedLong) {
@@ -89,12 +89,12 @@ class StockManager {
                 totalProfit += stock.sellLongs(ns);
                 soldStocks.push(stock);
                 /*
-                // Only sell if we would make a profit
-                const potentialProfit: number = stock.stockInformation.ownedLong * (stock.stockInformation.bidPrice - stock.stockInformation.averageLongPrice)
-                if (potentialProfit > 2 * STOCK_COMMISSION) {
-                    totalProfit += stock.sellLongs(ns)
-                    soldStocks.push(stock)
-                }
+                 // Only sell if we would make a profit
+                 const potentialProfit: number = stock.stockInformation.ownedLong * (stock.stockInformation.bidPrice - stock.stockInformation.averageLongPrice)
+                 if (potentialProfit > 2 * STOCK_COMMISSION) {
+                 totalProfit += stock.sellLongs(ns)
+                 soldStocks.push(stock)
+                 }
                  */
             }
         }

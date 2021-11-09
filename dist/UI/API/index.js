@@ -2,8 +2,9 @@ const doc = eval('document');
 /**
  * A helper function that ensures we won't work with null values
  */
-function nonNull(val, fallback) { return Boolean(val) ? val : fallback; }
-;
+function nonNull(val, fallback) {
+    return Boolean(val) ? val : fallback;
+}
 /**
  * How do we handle children. Children can either be:
  * 1. Calls to DOMcreateElement, returns a Node
@@ -50,7 +51,7 @@ export function DOMcreateElement(element, properties, ...children) {
     if (typeof element === 'function') {
         return element({
             ...nonNull(properties, {}),
-            children
+            children,
         });
     }
     return DOMparseNode(element, properties, children);

@@ -24,7 +24,7 @@ const CLASH_CHANCE_THRESHOLD: number         = 0.90 as const
 const CLASH_CHANCE_THRESHOLD_BUFFER: number  = 0.05 as const
 const POWER_THRESHOLD: number                = 500 as const
 const POWER_THRESHOLD_BUFFER: number         = 50 as const
-const RESPECT_THRESHOLD: number = 2.5e6 as const
+const RESPECT_THRESHOLD: number              = 2.5e6 as const
 
 class GangManager implements Manager {
 
@@ -187,36 +187,10 @@ class GangManager implements Manager {
 		// GangManager.removeFocusSwitch()
 	}
 
-	private createFocusSwitch(): void {
-		const doc: Document = eval('document')
-
-		const appendSwitch = () => {
-			// ----- Create a Container -----
-			const gangFocusSwitchContainer     = doc.createElement('tr')
-			gangFocusSwitchContainer.id        = 'gangFocusSwitchContainer'
-			gangFocusSwitchContainer.innerHTML =
-				`<input id="focus-respect" type="checkbox" value="respect" class="optionCheckbox"/>` +
-				`<label for="focus-respect">Focus on respect</label>`
-
-			gangFocusSwitchContainer.addEventListener('change', (event: Event) => {
-				const target: HTMLInputElement = event.target as HTMLInputElement
-				this.focusOnRespect            = target.checked
-			})
-
-			// Append container to DOM
-
-			// @ts-ignore
-			const element = doc.getElementById('character-overview-text').firstChild.firstChild
-			if (element) element.appendChild(gangFocusSwitchContainer)
-		}
-
-		if (!doc.getElementById('gangFocusSwitchContainer')) appendSwitch()
-	}
-
 	public async managingLoop(ns: NS): Promise<void> {
 
 		const reputation: number = ns.getFactionRep(this.homeGang.name)
-		this.focusOnRespect = (reputation < RESPECT_THRESHOLD)
+		this.focusOnRespect      = (reputation < RESPECT_THRESHOLD)
 
 		if (!this.isIncreasingPower) {
 
@@ -253,6 +227,32 @@ class GangManager implements Manager {
 
 		this.manageBestMember(ns, bestMember)
 		otherMembers.forEach((member) => this.manageMember(ns, member))
+	}
+
+	private createFocusSwitch(): void {
+		const doc: Document = eval('document')
+
+		const appendSwitch = () => {
+			// ----- Create a Container -----
+			const gangFocusSwitchContainer     = doc.createElement('tr')
+			gangFocusSwitchContainer.id        = 'gangFocusSwitchContainer'
+			gangFocusSwitchContainer.innerHTML =
+				`<input id="focus-respect" type="checkbox" value="respect" class="optionCheckbox"/>` +
+				`<label for="focus-respect">Focus on respect</label>`
+
+			gangFocusSwitchContainer.addEventListener('change', (event: Event) => {
+				const target: HTMLInputElement = event.target as HTMLInputElement
+				this.focusOnRespect            = target.checked
+			})
+
+			// Append container to DOM
+
+			// @ts-ignore
+			const element = doc.getElementById('character-overview-text').firstChild.firstChild
+			if (element) element.appendChild(gangFocusSwitchContainer)
+		}
+
+		if (!doc.getElementById('gangFocusSwitchContainer')) appendSwitch()
 	}
 
 	private async reduceWantedLevel(ns: NS, members: GangMember[]): Promise<void> {

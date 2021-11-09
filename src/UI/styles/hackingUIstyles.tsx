@@ -29,11 +29,11 @@ export const Colors: Record<string, string> = {
 	'cha': '#f8f',
 	'int': '#f08',
 	'rep': '#fff',
-	'disabled':'#CC2222'
+	'disabled': '#CC2222',
 }
 
 export const Styles = (
-    <style>{css`
+	<style>{css`
       .box table {
         border-collapse: collapse;
       }
@@ -87,4 +87,4 @@ export const Styles = (
       }
     \`));
     `}</style>
-);
+)

@@ -8,7 +8,7 @@ import * as ServerUtils                       from '/src/util/ServerUtils.js'
 import * as ToolUtils                         from '/src/util/ToolUtils.js'
 import { CycleTask, ThreadSpread }            from '/src/classes/Misc/HackInterfaces.js'
 
-export default class Job implements IJOb{
+export default class Job implements IJOb {
 	batchId: string
 	id: string
 	cycleId?: string
@@ -89,7 +89,7 @@ export default class Job implements IJOb{
 
 	public onFinish(ns: NS) {
 		// this.print(ns, true, false)
-		const toolName: string = ToolUtils.getToolName(this.tool).padEnd(7,"")
+		const toolName: string = ToolUtils.getToolName(this.tool).padEnd(7, '')
 		LogAPI.printLog(ns, `${toolName} -> sec: ${ns.nFormat(this.target.getSecurityLevel(ns), '0.000')} / ${ns.nFormat(this.target.staticHackingProperties.minSecurityLevel, '0.000')} - money: ${ns.nFormat(this.target.getMoney(ns), '$0.000a')} / ${ns.nFormat(this.target.staticHackingProperties.maxMoney, '$0.000a')}`)
 	}
 

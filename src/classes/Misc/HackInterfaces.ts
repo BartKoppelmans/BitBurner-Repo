@@ -62,8 +62,8 @@ export interface CycleThreadSpreads {
 }
 
 export enum CycleTask {
-	HACK = 'hack',
+	HACK    = 'hack',
 	WEAKEN1 = 'weaken1',
-	GROWTH = 'growth',
+	GROWTH  = 'growth',
 	WEAKEN2 = 'weaken2',
 }

@@ -91,20 +91,6 @@ class BladeBurnerManager implements Manager {
 		ns.bladeburner.stopBladeburnerAction()
 	}
 
-	private shouldPreferContracts(ns: NS): boolean {
-		return this.canFinishBitNode(ns) || PlayerUtils.getMoney(ns) < MONEY_THRESHOLD
-	}
-
-	private canFinishBitNode(ns: NS): boolean {
-		// We try to do the next BlackOp if possible
-		const achievableBlackOps: BBAction[] | undefined = BladeBurnerUtils.getAchievableBlackOps(ns, this.actions)
-		if (achievableBlackOps.length > 0) {
-			const nextBlackOp: BBAction = achievableBlackOps[0]
-			if (nextBlackOp.name === 'Operation Daedalus') return true
-		}
-		return false
-	}
-
 	public async managingLoop(ns: NS): Promise<void> {
 
 		ns.bladeburner.joinBladeburnerFaction()
@@ -147,6 +133,20 @@ class BladeBurnerManager implements Manager {
 		if (currentAction && currentAction.name === nextAction.name) {
 			return nextAction.continue(ns, this.iterationCounter)
 		} else return nextAction.execute(ns, this.iterationCounter)
+	}
+
+	private shouldPreferContracts(ns: NS): boolean {
+		return this.canFinishBitNode(ns) || PlayerUtils.getMoney(ns) < MONEY_THRESHOLD
+	}
+
+	private canFinishBitNode(ns: NS): boolean {
+		// We try to do the next BlackOp if possible
+		const achievableBlackOps: BBAction[] | undefined = BladeBurnerUtils.getAchievableBlackOps(ns, this.actions)
+		if (achievableBlackOps.length > 0) {
+			const nextBlackOp: BBAction = achievableBlackOps[0]
+			if (nextBlackOp.name === 'Operation Daedalus') return true
+		}
+		return false
 	}
 
 	private getCurrentAction(ns: NS): BBAction | undefined {

@@ -30,8 +30,11 @@ export let createBox = (title, mainContent, id = `box${doc.querySelectorAll(".bo
     doc.getElementById("boxCSS") || doc.head.insertAdjacentHTML('beforeend', `<style id='boxCSS'>${css}</style>`);
     doc.body.insertAdjacentHTML('beforeend', `<div class="box" id="${id}"><h2 class="boxhead"><div class="boxdrag"></div>${title}<span class="boxclose">✕</span></h2>${mainContent.outerHTML}</div>`);
     let box = doc.getElementById(`${id}`);
-    box.querySelectorAll('.resizable').forEach(r => r.addEventListener("mousedown", resizeStart.bind(null, r, r.style)));
+    box.querySelectorAll('.resizable')
+        .forEach(r => r.addEventListener("mousedown", resizeStart.bind(null, r, r.style)));
     box.querySelectorAll('.log').forEach(l => l.addLog = addLog.bind(null, l));
-    box.querySelector(".boxdrag").addEventListener('mousedown', boxDragStart.bind(null, box, box.style)), box.querySelector(".boxclose").addEventListener('click', () => box.remove()), setInterval(() => edgeDetection(box), 300);
+    box.querySelector(".boxdrag")
+        .addEventListener('mousedown', boxDragStart.bind(null, box, box.style)), box.querySelector(".boxclose")
+        .addEventListener('click', () => box.remove()), setInterval(() => edgeDetection(box), 300);
     return box;
 };

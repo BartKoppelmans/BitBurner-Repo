@@ -40,10 +40,10 @@ export function computeCycleSpread(ns: NS, target: HackableServer, servers?: Ser
 		totalCycles += numCycles
 
 		if (numCycles > 0) {
-			cycleSpreads.push({source, numCycles})
+			cycleSpreads.push({ source, numCycles })
 		}
 
-		if (totalCycles >= CONSTANT.MAX_CYCLE_NUMBER) break;
+		if (totalCycles >= CONSTANT.MAX_CYCLE_NUMBER) break
 	}
 
 	return cycleSpreads
@@ -257,10 +257,10 @@ export function calculateHackThreads(ns: NS, target: HackableServer): number {
 }
 
 export function calculatePotentialPrepEffect(ns: NS, tool: Tools, target: HackableServer, source: Server, start?: number, goal?: number): PrepEffect {
-	const cost: number = ToolUtils.getToolCost(ns, tool)
+	const cost: number             = ToolUtils.getToolCost(ns, tool)
 	const availableThreads: number = Math.floor(source.getAvailableRam(ns) / cost)
 
-	let neededThreads: number;
+	let neededThreads: number
 	if (tool === Tools.WEAKEN) {
 		neededThreads = calculateWeakenThreads(ns, target, source, start, goal)
 	} else if (tool === Tools.GROW) {
@@ -269,7 +269,7 @@ export function calculatePotentialPrepEffect(ns: NS, tool: Tools, target: Hackab
 
 	const threads: number = Math.min(availableThreads, neededThreads)
 
-	let amount: number;
+	let amount: number
 	if (tool === Tools.WEAKEN) {
 		amount = calculateWeakenEffect(ns, target, source, threads)
 	} else if (tool === Tools.GROW) {
@@ -282,20 +282,20 @@ export function calculatePotentialPrepEffect(ns: NS, tool: Tools, target: Hackab
 export function calculateGrowthEffect(ns: NS, target: HackableServer, source: Server, threads: number, start: number = target.getMoney(ns)): number {
 	const targetServerObject: ServerObject = ns.getServer(target.characteristics.host)
 	const sourceServerObject: ServerObject = ns.getServer(source.characteristics.host)
-	const playerObject: Player = PlayerUtils.getPlayer(ns)
+	const playerObject: Player             = PlayerUtils.getPlayer(ns)
 	return start * ns.formulas.hacking.growPercent(targetServerObject, threads, playerObject, sourceServerObject.cpuCores) - start
 }
 
 export function calculateWeakenEffect(ns: NS, target: HackableServer, source: Server, threads: number): number {
 	const sourceServerObject: ServerObject = ns.getServer(source.characteristics.host)
-	const coreBonus: number = 1 + (sourceServerObject.cpuCores - 1) / 16
+	const coreBonus: number                = 1 + (sourceServerObject.cpuCores - 1) / 16
 	return PlayerUtils.getWeakenPotency(ns) * coreBonus * threads
 }
 
 
 export function calculateWeakenThreads(ns: NS, target: HackableServer, source: Server, start: number = target.getSecurityLevel(ns), goal: number = target.staticHackingProperties.minSecurityLevel): number {
 	const sourceServerObject: ServerObject = ns.getServer(source.characteristics.host)
-	const coreBonus: number = 1 + (sourceServerObject.cpuCores - 1) / 16
+	const coreBonus: number                = 1 + (sourceServerObject.cpuCores - 1) / 16
 	return Math.ceil((start - goal) / (PlayerUtils.getWeakenPotency(ns) * coreBonus))
 }
 
@@ -334,7 +334,7 @@ export function calculateGrowthThreads(ns: NS, target: HackableServer, source: S
 
 export function calculateCompensationWeakenThreads(ns: NS, target: HackableServer, source: Server, after: Tools, threads: number): number {
 	const sourceServerObject: ServerObject = ns.getServer(source.characteristics.host)
-	const coreBonus: number = 1 + (sourceServerObject.cpuCores - 1) / 16
+	const coreBonus: number                = 1 + (sourceServerObject.cpuCores - 1) / 16
 	switch (after) {
 		case Tools.GROW:
 			return Math.ceil(threads * CONSTANT.GROW_HARDENING / (PlayerUtils.getWeakenPotency(ns) * coreBonus))

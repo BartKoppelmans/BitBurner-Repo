@@ -25,7 +25,7 @@ export default class Batch {
 		for (const job of this.jobs) {
 			if (!job.cycleId) throw new Error('The batch is not an attack batch.')
 
-			const currentCycle: Partial<Cycle> | undefined=  (cycles.has(job.cycleId)) ? cycles.get(job.cycleId) : {};
+			const currentCycle: Partial<Cycle> | undefined = (cycles.has(job.cycleId)) ? cycles.get(job.cycleId) : {}
 			if (!currentCycle) throw new Error('The fuck happened here?')
 
 			if (job.cycleTask === CycleTask.HACK) currentCycle.hack = job

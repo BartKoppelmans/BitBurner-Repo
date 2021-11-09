@@ -66,19 +66,6 @@ class BladeBurnerManager {
         LogAPI.printTerminal(ns, `Stopping the BladeBurnerManager`);
         ns.bladeburner.stopBladeburnerAction();
     }
-    shouldPreferContracts(ns) {
-        return this.canFinishBitNode(ns) || PlayerUtils.getMoney(ns) < MONEY_THRESHOLD;
-    }
-    canFinishBitNode(ns) {
-        // We try to do the next BlackOp if possible
-        const achievableBlackOps = BladeBurnerUtils.getAchievableBlackOps(ns, this.actions);
-        if (achievableBlackOps.length > 0) {
-            const nextBlackOp = achievableBlackOps[0];
-            if (nextBlackOp.name === 'Operation Daedalus')
-                return true;
-        }
-        return false;
-    }
     async managingLoop(ns) {
         ns.bladeburner.joinBladeburnerFaction();
         this.upgradeSkills(ns);
@@ -114,6 +101,19 @@ class BladeBurnerManager {
         }
         else
             return nextAction.execute(ns, this.iterationCounter);
+    }
+    shouldPreferContracts(ns) {
+        return this.canFinishBitNode(ns) || PlayerUtils.getMoney(ns) < MONEY_THRESHOLD;
+    }
+    canFinishBitNode(ns) {
+        // We try to do the next BlackOp if possible
+        const achievableBlackOps = BladeBurnerUtils.getAchievableBlackOps(ns, this.actions);
+        if (achievableBlackOps.length > 0) {
+            const nextBlackOp = achievableBlackOps[0];
+            if (nextBlackOp.name === 'Operation Daedalus')
+                return true;
+        }
+        return false;
     }
     getCurrentAction(ns) {
         const currentAction = ns.bladeburner.getCurrentAction();

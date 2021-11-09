@@ -173,7 +173,7 @@ export async function decreaseReservations(ns: NS, ramSpread: RamSpread, serverM
 	for (const [host, ram] of ramSpread) {
 		const serverIndex: number = serverMap.servers.findIndex((server) => server.characteristics.host === host)
 		if (serverIndex === -1) throw new Error('We could not find the server in the server map')
-		const reservation: number          = Math.round(ram * 100) / 100
+		const reservation: number = Math.round(ram * 100) / 100
 		serverMap.servers[serverIndex].decreaseReservation(ns, reservation)
 	}
 	await writeServerMap(ns, serverMap)

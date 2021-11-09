@@ -3,7 +3,9 @@ const doc: Document = eval('document')
 /**
  * A helper function that ensures we won't work with null values
  */
-function nonNull(val: any, fallback: any) { return Boolean(val) ? val : fallback };
+function nonNull(val: any, fallback: any) {
+	return Boolean(val) ? val : fallback
+}
 
 /**
  * How do we handle children. Children can either be:
@@ -14,10 +16,10 @@ function nonNull(val: any, fallback: any) { return Boolean(val) ? val : fallback
  */
 function DOMparseChildren(children: any[]) {
 	return children.map(child => {
-		if(typeof child === 'string') {
-			return doc.createTextNode(child);
+		if (typeof child === 'string') {
+			return doc.createTextNode(child)
 		}
-		return child;
+		return child
 	})
 }
 
@@ -28,16 +30,16 @@ function DOMparseChildren(children: any[]) {
  * 3. If available, we append all children.
  */
 function DOMparseNode(element: any, properties: { [x: string]: any; }, children: any[]) {
-	const el = doc.createElement(element);
+	const el = doc.createElement(element)
 	Object.keys(nonNull(properties, {})).forEach(key => {
 		if (key.startsWith('on') && key.toLowerCase() in window) {
 			el.addEventListener(key.toLowerCase().substr(2), properties[key])
-		} else el[key] = properties[key];
+		} else el[key] = properties[key]
 	})
 	DOMparseChildren(children).forEach(child => {
-		el.appendChild(child);
-	});
-	return el;
+		el.appendChild(child)
+	})
+	return el
 }
 
 /**
@@ -48,11 +50,11 @@ function DOMparseNode(element: any, properties: { [x: string]: any; }, children:
  * 2. If the element is a string, we parse a regular node
  */
 export function DOMcreateElement(element: (arg0: any) => any, properties: { [x: string]: any; }, ...children: any[]) {
-	if(typeof element === 'function') {
+	if (typeof element === 'function') {
 		return element({
 			...nonNull(properties, {}),
-			children
-		});
+			children,
+		})
 	}
-	return DOMparseNode(element, properties, children);
+	return DOMparseNode(element, properties, children)
 }

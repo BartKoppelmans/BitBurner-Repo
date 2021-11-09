@@ -35,6 +35,7 @@ const files = [
     'classes/Sleeve/SleeveInterfaces.js',
     'classes/Stock/Stock.js',
     'classes/Stock/StockInterfaces.js',
+    'classes/Storage/JobStorage.js',
     'lib/constants.js',
     'lib/names.txt',
     'managers/BladeBurnerManager.js',

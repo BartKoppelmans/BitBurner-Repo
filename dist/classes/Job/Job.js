@@ -70,7 +70,7 @@ export default class Job {
     }
     onFinish(ns) {
         // this.print(ns, true, false)
-        const toolName = ToolUtils.getToolName(this.tool).padEnd(7, "");
+        const toolName = ToolUtils.getToolName(this.tool).padEnd(7, '');
         LogAPI.printLog(ns, `${toolName} -> sec: ${ns.nFormat(this.target.getSecurityLevel(ns), '0.000')} / ${ns.nFormat(this.target.staticHackingProperties.minSecurityLevel, '0.000')} - money: ${ns.nFormat(this.target.getMoney(ns), '$0.000a')} / ${ns.nFormat(this.target.staticHackingProperties.maxMoney, '$0.000a')}`);
     }
     onCancel(ns) {

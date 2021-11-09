@@ -13,23 +13,24 @@ import Batch                                            from '/src/classes/Job/B
 import * as JobAPI                                      from '/src/api/JobAPI.js'
 import * as HackingCalculationUtils                     from '/src/util/HackingCalculationUtils.js'
 import * as LogAPI                                      from '/src/api/LogAPI.js'
+import { JobStorage }                                   from '/src/classes/Storage/JobStorage'
 
 // const MAX_CYCLE_NUMBER: number = 50 as const // TODO: Find a way to determine this dynamically
 
-export async function hack(ns: NS, target: HackableServer): Promise<void> {
+export async function hack(ns: NS, jobStorage: JobStorage, target: HackableServer): Promise<void> {
 	// If it is prepping or targeting, leave it
 	if (target.status !== ServerStatus.NONE) return
 
 // The server is not optimal, so we have to prep it first
 	if (!target.isOptimal(ns)) {
-		await prepServer(ns, target)
+		await prepServer(ns, jobStorage, target)
 		return
 	}
 
 // Make sure that the percentage that we steal is optimal
 	await optimizePerformance(ns, target)
 
-	await attackServer(ns, target)
+	await attackServer(ns, jobStorage, target)
 
 	return
 }
@@ -58,7 +59,7 @@ async function createJob(ns: NS, target: HackableServer, tool: Tools, prepEffect
 
 }
 
-function calculateTimings(growthTime: number, weakenTime: number, firstStartTime: Date): {growthStart: Date, growthEnd: Date, weakenStart: Date, weakenEnd: Date} {
+function calculateTimings(growthTime: number, weakenTime: number, firstStartTime: Date): { growthStart: Date, growthEnd: Date, weakenStart: Date, weakenEnd: Date } {
 	let growthStartTime: Date
 	let growthEndTime: Date
 	let compensationWeakenEndTime: Date
@@ -82,11 +83,11 @@ function calculateTimings(growthTime: number, weakenTime: number, firstStartTime
 		growthStart: growthStartTime,
 		growthEnd: growthEndTime,
 		weakenStart: compensationWeakenStartTime,
-		weakenEnd: compensationWeakenEndTime
+		weakenEnd: compensationWeakenEndTime,
 	}
 }
 
-export async function prepServer(ns: NS, target: HackableServer): Promise<void> {
+export async function prepServer(ns: NS, jobStorage: JobStorage, target: HackableServer): Promise<void> {
 
 	// If the server is optimal, we are done I guess
 	if (target.isOptimal(ns)) return
@@ -109,14 +110,15 @@ export async function prepServer(ns: NS, target: HackableServer): Promise<void> 
 		for (const preppingServer of ServerAPI.getPreppingServers(ns)) {
 			const potentialPrepEffect: PrepEffect = HackingCalculationUtils.calculatePotentialPrepEffect(ns, Tools.WEAKEN, target, preppingServer, target.staticHackingProperties.minSecurityLevel + weakenAmount)
 
-			// TODO: This might be a problem if we do need to weaken, but for some reason we cannot put in a  full thread?
+			// TODO: This might be a problem if we do need to weaken, but for some reason we cannot put in a  full
+			// thread?
 
 			if (potentialPrepEffect.threads === 0) continue
 
 			weakenAmount -= potentialPrepEffect.amount
 			weakenPrepEffects.push(potentialPrepEffect)
 
-			if (weakenAmount <= 0) break;
+			if (weakenAmount <= 0) break
 		}
 
 		if (weakenPrepEffects.length > 0) {
@@ -141,25 +143,25 @@ export async function prepServer(ns: NS, target: HackableServer): Promise<void> 
 		const growthTime: number = target.getGrowTime(ns)
 
 		const firstStartTime: Date = (initialWeakenJob) ? new Date(initialWeakenJob.end.getTime() + CONSTANT.JOB_DELAY) : new Date(Date.now() + CONSTANT.INITIAL_JOB_DELAY)
-		startTime = firstStartTime
+		startTime                  = firstStartTime
 
 		const timings = calculateTimings(growthTime, weakenTime, firstStartTime)
 
-		let growAmount: number =  target.staticHackingProperties.maxMoney - target.getMoney(ns)
+		let growAmount: number              = target.staticHackingProperties.maxMoney - target.getMoney(ns)
 		const growPrepEffects: PrepEffect[] = []
 		for (const preppingServer of ServerAPI.getPreppingServers(ns)) {
 			const potentialPrepEffect: PrepEffect = HackingCalculationUtils.calculatePotentialPrepEffect(ns, Tools.GROW, target, preppingServer, target.staticHackingProperties.maxMoney - growAmount)
 
-			if (potentialPrepEffect.threads === 0) continue;
+			if (potentialPrepEffect.threads === 0) continue
 
 			growAmount -= potentialPrepEffect.amount
 			growPrepEffects.push(potentialPrepEffect)
 
-			if (growAmount <= 0) break;
+			if (growAmount <= 0) break
 		}
 
 		if (growPrepEffects.length > 0) {
-			endTime   = timings.growthEnd
+			endTime = timings.growthEnd
 			growJob = await createJob(ns, target, Tools.GROW, growPrepEffects, batchId, timings.growthStart, timings.growthEnd)
 			jobs.push(growJob)
 		}
@@ -168,22 +170,22 @@ export async function prepServer(ns: NS, target: HackableServer): Promise<void> 
 		if (growAmount === 0) {
 			const growThreads: number = growPrepEffects.reduce((total, prepEffect) => total + prepEffect.threads, 0)
 
-			let weakenAmount: number = growThreads * CONSTANT.GROW_HARDENING
+			let weakenAmount: number              = growThreads * CONSTANT.GROW_HARDENING
 			const weakenPrepEffects: PrepEffect[] = []
 
 			for (const preppingServer of ServerAPI.getPreppingServers(ns)) {
 				const potentialPrepEffect: PrepEffect = HackingCalculationUtils.calculatePotentialPrepEffect(ns, Tools.WEAKEN, target, preppingServer, target.staticHackingProperties.minSecurityLevel + weakenAmount)
 
-				if (potentialPrepEffect.threads === 0) continue;
+				if (potentialPrepEffect.threads === 0) continue
 
 				weakenAmount -= potentialPrepEffect.amount
 				weakenPrepEffects.push(potentialPrepEffect)
 
-				if (weakenAmount <= 0) break;
+				if (weakenAmount <= 0) break
 			}
 
 			if (weakenPrepEffects.length > 0) {
-				endTime   = timings.weakenEnd
+				endTime               = timings.weakenEnd
 				compensationWeakenJob = await createJob(ns, target, Tools.WEAKEN, weakenPrepEffects, batchId, timings.weakenStart, timings.weakenEnd)
 				jobs.push(compensationWeakenJob)
 			}
@@ -191,7 +193,7 @@ export async function prepServer(ns: NS, target: HackableServer): Promise<void> 
 
 	}
 
-	if (jobs.length === 0) return; // All this work for nothing...
+	if (jobs.length === 0) return // All this work for nothing...
 
 	// NOTE: Unfortunately we need this for type safety
 	if (!startTime || !endTime) throw new Error('How the fuck do we not have timings available?')
@@ -204,10 +206,10 @@ export async function prepServer(ns: NS, target: HackableServer): Promise<void> 
 		end: endTime,
 	})
 
-	await JobAPI.startBatch(ns, batchJob)
+	await JobAPI.startBatch(ns, jobStorage, batchJob)
 }
 
-export async function attackServer(ns: NS, target: HackableServer): Promise<void> {
+export async function attackServer(ns: NS, jobStorage: JobStorage, target: HackableServer): Promise<void> {
 
 	const cycleSpreads: CycleSpread[] = HackingCalculationUtils.computeCycleSpread(ns, target)
 
@@ -246,7 +248,7 @@ export async function attackServer(ns: NS, target: HackableServer): Promise<void
 		end: endTime,
 	})
 
-	await JobAPI.startBatch(ns, batchJob)
+	await JobAPI.startBatch(ns, jobStorage, batchJob)
 }
 
 export async function optimizePerformance(ns: NS, target: HackableServer): Promise<void> {
@@ -267,10 +269,10 @@ export async function optimizePerformance(ns: NS, target: HackableServer): Promi
 	}
 
 	for (let n = CONSTANT.MIN_PERCENTAGE_TO_STEAL; n <= CONSTANT.MAX_PERCENTAGE_TO_STEAL; n += CONSTANT.DELTA_PERCENTAGE_TO_STEAL) {
-		target.percentageToSteal = n
+		target.percentageToSteal          = n
 		const cycleSpreads: CycleSpread[] = HackingCalculationUtils.computeCycleSpread(ns, target, hackingServers)
-		const numCycles: number = cycleSpreads.reduce((total, cycleSpread) => total + cycleSpread.numCycles, 0)
-		const profit: number     = target.staticHackingProperties.maxMoney * target.percentageToSteal * numCycles
+		const numCycles: number           = cycleSpreads.reduce((total, cycleSpread) => total + cycleSpread.numCycles, 0)
+		const profit: number              = target.staticHackingProperties.maxMoney * target.percentageToSteal * numCycles
 
 		const totalTime: number = HackingCalculationUtils.calculateTotalBatchTime(ns, target, numCycles)
 

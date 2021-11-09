@@ -10,18 +10,18 @@ import * as JobAPI from '/src/api/JobAPI.js';
 import * as HackingCalculationUtils from '/src/util/HackingCalculationUtils.js';
 import * as LogAPI from '/src/api/LogAPI.js';
 // const MAX_CYCLE_NUMBER: number = 50 as const // TODO: Find a way to determine this dynamically
-export async function hack(ns, target) {
+export async function hack(ns, jobStorage, target) {
     // If it is prepping or targeting, leave it
     if (target.status !== ServerStatus.NONE)
         return;
     // The server is not optimal, so we have to prep it first
     if (!target.isOptimal(ns)) {
-        await prepServer(ns, target);
+        await prepServer(ns, jobStorage, target);
         return;
     }
     // Make sure that the percentage that we steal is optimal
     await optimizePerformance(ns, target);
-    await attackServer(ns, target);
+    await attackServer(ns, jobStorage, target);
     return;
 }
 async function createJob(ns, target, tool, prepEffects, batchId, start, end) {
@@ -64,10 +64,10 @@ function calculateTimings(growthTime, weakenTime, firstStartTime) {
         growthStart: growthStartTime,
         growthEnd: growthEndTime,
         weakenStart: compensationWeakenStartTime,
-        weakenEnd: compensationWeakenEndTime
+        weakenEnd: compensationWeakenEndTime,
     };
 }
-export async function prepServer(ns, target) {
+export async function prepServer(ns, jobStorage, target) {
     // If the server is optimal, we are done I guess
     if (target.isOptimal(ns))
         return;
@@ -83,7 +83,8 @@ export async function prepServer(ns, target) {
         const weakenPrepEffects = [];
         for (const preppingServer of ServerAPI.getPreppingServers(ns)) {
             const potentialPrepEffect = HackingCalculationUtils.calculatePotentialPrepEffect(ns, Tools.WEAKEN, target, preppingServer, target.staticHackingProperties.minSecurityLevel + weakenAmount);
-            // TODO: This might be a problem if we do need to weaken, but for some reason we cannot put in a  full thread?
+            // TODO: This might be a problem if we do need to weaken, but for some reason we cannot put in a  full
+            // thread?
             if (potentialPrepEffect.threads === 0)
                 continue;
             weakenAmount -= potentialPrepEffect.amount;
@@ -157,9 +158,9 @@ export async function prepServer(ns, target) {
         start: startTime,
         end: endTime,
     });
-    await JobAPI.startBatch(ns, batchJob);
+    await JobAPI.startBatch(ns, jobStorage, batchJob);
 }
-export async function attackServer(ns, target) {
+export async function attackServer(ns, jobStorage, target) {
     const cycleSpreads = HackingCalculationUtils.computeCycleSpread(ns, target);
     const numCycles = cycleSpreads.reduce((total, cycleSpread) => total + cycleSpread.numCycles, 0);
     if (numCycles === 0) {
@@ -188,7 +189,7 @@ export async function attackServer(ns, target) {
         start: startTime,
         end: endTime,
     });
-    await JobAPI.startBatch(ns, batchJob);
+    await JobAPI.startBatch(ns, jobStorage, batchJob);
 }
 export async function optimizePerformance(ns, target) {
     // PERFORMANCE: This is a very expensive function call

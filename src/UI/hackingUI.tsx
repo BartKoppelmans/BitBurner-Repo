@@ -7,18 +7,17 @@ import { Colors }                                 from '/src/UI/styles/hackingUI
 import { ServerStatus }                           from '/src/classes/Server/ServerInterfaces.js'
 import { initializeStates, MainBox, ServerEntry } from '/src/UI/elements/hackingUIelements.js'
 
-let box: HTMLElement;
+let box: HTMLElement
 const sortOrder: ServerStatus[] = [ServerStatus.TARGETING, ServerStatus.PREPPING, ServerStatus.NONE]
 
 
-
 async function initialize(ns: NS): Promise<void> {
-	box = createBox('Hacking analysis tool', MainBox());
+	box = createBox('Hacking analysis tool', MainBox())
 
 	initializeStates(ns)
 
-	const closeButton = box.querySelector(".boxclose");
-	if (closeButton) closeButton.addEventListener('click',()=>ns.exit())
+	const closeButton = box.querySelector('.boxclose')
+	if (closeButton) closeButton.addEventListener('click', () => ns.exit())
 
 	for (const key in Colors) {
 		if (Colors.hasOwnProperty(key)) {
@@ -39,8 +38,8 @@ function setContent(ns: NS, elements: JSX.Element[]): void {
 
 async function updateBox(ns: NS): Promise<void> {
 	const servers: HackableServer[] = ServerAPI.getHackableServers(ns)
-	servers.sort((a,b)=>sortOrder.indexOf(a.status)-sortOrder.indexOf(b.status));
-	const content: JSX.Element[] = [];
+	servers.sort((a, b) => sortOrder.indexOf(a.status) - sortOrder.indexOf(b.status))
+	const content: JSX.Element[] = []
 	for (const server of servers) {
 		const serverEntry: JSX.Element = ServerEntry(ns, server)
 		content.push(serverEntry)

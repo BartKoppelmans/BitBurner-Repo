@@ -8,7 +8,7 @@ const sortOrder = [ServerStatus.TARGETING, ServerStatus.PREPPING, ServerStatus.N
 async function initialize(ns) {
     box = createBox('Hacking analysis tool', MainBox());
     initializeStates(ns);
-    const closeButton = box.querySelector(".boxclose");
+    const closeButton = box.querySelector('.boxclose');
     if (closeButton)
         closeButton.addEventListener('click', () => ns.exit());
     for (const key in Colors) {

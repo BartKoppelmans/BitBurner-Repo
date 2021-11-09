@@ -6,9 +6,14 @@ export let main = async (ns) => {
     cssBox.querySelector(`#css-load1-button`).addEventListener('click', () => cssText.value = cssElem.innerHTML);
     cssBox.querySelector(`#css-load-button`).addEventListener('click', loadFromFile);
     cssBox.querySelector(`#css-save1-button`).addEventListener('click', () => cssElem.innerHTML = cssText.value);
-    cssBox.querySelector(`#css-save-button`).addEventListener('click', async () => await ns.write("/API/box/css.ns", `export let css=\`${cssText.value}\`;`, "w"));
-    cssBox.querySelector(`#css-minify-button`).addEventListener('click', () => cssText.value = cssText.value.replace(/(?<=[{:;}])\s+/g, "").replace(/\s+(?={)|;(?=})/g, ""));
-    cssBox.querySelector(`#css-beautify-button`).addEventListener('click', () => cssText.value = cssText.value.replace(/(?<=[{;}])|(?=})/g, "\n  ").replace(/\n  }\s+/g, ";\n}\n"));
+    cssBox.querySelector(`#css-save-button`)
+        .addEventListener('click', async () => await ns.write("/API/box/css.ns", `export let css=\`${cssText.value}\`;`, "w"));
+    cssBox.querySelector(`#css-minify-button`)
+        .addEventListener('click', () => cssText.value = cssText.value.replace(/(?<=[{:;}])\s+/g, "")
+        .replace(/\s+(?={)|;(?=})/g, ""));
+    cssBox.querySelector(`#css-beautify-button`)
+        .addEventListener('click', () => cssText.value = cssText.value.replace(/(?<=[{;}])|(?=})/g, "\n  ")
+        .replace(/\n  }\s+/g, ";\n}\n"));
     loadFromFile();
     while (doc.body.contains(cssBox))
         await ns.sleep(1000);

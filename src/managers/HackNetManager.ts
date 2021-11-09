@@ -205,7 +205,7 @@ class HacknetManager implements Manager {
 		})
 
 		// Make sure that we have the purchases first
-		mergedUpgrades.sort((a,b) => {
+		mergedUpgrades.sort((a, b) => {
 			if (a.type === b.type) return 0
 			else return (a.type === HacknetServerUpgradeType.NEW) ? -1 : 1
 
@@ -308,7 +308,8 @@ class HacknetManager implements Manager {
 		LogAPI.printTerminal(ns, `Starting the HacknetManager`)
 	}
 
-	public async destroy(ns: NS): Promise<void> {LogAPI.printTerminal(ns, `Stopping the HacknetManager`)
+	public async destroy(ns: NS): Promise<void> {
+		LogAPI.printTerminal(ns, `Stopping the HacknetManager`)
 	}
 
 	public async managingLoop(ns: NS): Promise<void> {
