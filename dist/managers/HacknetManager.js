@@ -260,6 +260,7 @@ class HacknetManager {
             // Stop if there are no potential upgrades
             if (potentialUpgrades.length === 0)
                 break;
+            // TODO: We should only do this if the storage is getting full
             const cacheUpgrade = this.findCacheUpgrade(potentialUpgrades);
             if (cacheUpgrade) {
                 budget -= cacheUpgrade.cost;

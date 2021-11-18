@@ -199,7 +199,7 @@ class BladeBurnerManager implements Manager {
 		}
 
 		// Our final resort is to just do some training
-		return BladeBurnerUtils.getAction(ns, this.actions, 'Training')
+		return BladeBurnerUtils.getAction(ns, this.actions, 'Incite Violence')
 	}
 
 	private upgradeSkills(ns: NS): void {

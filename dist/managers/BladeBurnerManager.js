@@ -156,7 +156,7 @@ class BladeBurnerManager {
             return achievableContracts[0];
         }
         // Our final resort is to just do some training
-        return BladeBurnerUtils.getAction(ns, this.actions, 'Training');
+        return BladeBurnerUtils.getAction(ns, this.actions, 'Incite Violence');
     }
     upgradeSkills(ns) {
         const highPrioritySkills = BladeBurnerUtils.filterSkills(ns, this.skills, BBSkillPriority.HIGH);

@@ -11,3 +11,10 @@ export interface Manager {
 export interface Runner {
 	run(ns: NS): Promise<void>
 }
+
+export interface AutocompleteData {
+	servers: string[],
+	txts: string[],
+	scripts: string[],
+	flags: string[]
+}

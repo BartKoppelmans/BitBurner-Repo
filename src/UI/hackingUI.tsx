@@ -19,6 +19,9 @@ async function initialize(ns: NS): Promise<void> {
 	const closeButton = box.querySelector('.boxclose')
 	if (closeButton) closeButton.addEventListener('click', () => ns.exit())
 
+	// TODO: Load the theme dynamically
+	// https://discord.com/channels/415207508303544321/415207923506216971/908147540996792370
+
 	for (const key in Colors) {
 		if (Colors.hasOwnProperty(key)) {
 			const value = Colors[key]
