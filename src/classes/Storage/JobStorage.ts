@@ -1,8 +1,8 @@
-import Batch          from '/src/classes/Job/Batch'
-import { JobMap }     from '/src/classes/Job/JobInterfaces'
-import { CONSTANT }   from '/src/lib/constants'
-import HackableServer from '/src/classes/Server/HackableServer'
-import Job            from '/src/classes/Job/Job'
+import Batch          from '/src/classes/Job/Batch.js'
+import { JobMap }     from '/src/classes/Job/JobInterfaces.js'
+import { CONSTANT }   from '/src/lib/constants.js'
+import HackableServer from '/src/classes/Server/HackableServer.js'
+import Job            from '/src/classes/Job/Job.js'
 
 export class JobStorage {
 

@@ -19,6 +19,7 @@ async function initialize(ns: NS) {
 		['bladeburner', false],
 		['gang', false],
 		['sleeve', false],
+		['stanek', false],
 		['stock', false],
 		['corporation', false],
 		['hacknet', false],
@@ -31,6 +32,7 @@ async function initialize(ns: NS) {
 
 	if (flags.auto) {
 		tasks.push(startManager(ns, Managers.HackingManager))
+		tasks.push(startManager(ns, Managers.StanekManager))
 
 		// The hacknet flag should be set, as it often is not needed as much
 		if (flags.hacknet) tasks.push(startManager(ns, Managers.HacknetManager))
@@ -50,6 +52,7 @@ async function initialize(ns: NS) {
 		if (flags.stock) tasks.push(startManager(ns, Managers.StockManager))
 		if (flags.corporation) tasks.push(startManager(ns, Managers.CorporationManager))
 		if (flags.hacknet) tasks.push(startManager(ns, Managers.HacknetManager))
+		if (flags.stanek) tasks.push(startManager(ns, Managers.StanekManager))
 	}
 
 	// Runners

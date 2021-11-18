@@ -5,7 +5,7 @@ import { CONSTANT } from '/src/lib/constants.js';
 import * as ServerAPI from '/src/api/ServerAPI.js';
 import { ServerPurpose, ServerStatus } from '/src/classes/Server/ServerInterfaces.js';
 import * as JobAPI from '/src/api/JobAPI.js';
-import { JobStorage } from '/src/classes/Storage/JobStorage';
+import { JobStorage } from '/src/classes/Storage/JobStorage.js';
 const LOOP_DELAY = 2000;
 class HackingManager {
     inFullAttackMode = false;

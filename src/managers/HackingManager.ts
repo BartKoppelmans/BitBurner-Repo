@@ -13,7 +13,7 @@ import * as JobAPI                     from '/src/api/JobAPI.js'
 import Server                          from '/src/classes/Server/Server.js'
 import { PurchasedServer }             from '/src/classes/Server/PurchasedServer.js'
 import { HacknetServer }               from '/src/classes/Server/HacknetServer.js'
-import { JobStorage }                  from '/src/classes/Storage/JobStorage'
+import { JobStorage }                  from '/src/classes/Storage/JobStorage.js'
 
 const LOOP_DELAY: number = 2000 as const
 

@@ -1,4 +1,4 @@
-import { CONSTANT } from '/src/lib/constants';
+import { CONSTANT } from '/src/lib/constants.js';
 export class JobStorage {
     lastUpdated = CONSTANT.EPOCH_DATE;
     batches = [];

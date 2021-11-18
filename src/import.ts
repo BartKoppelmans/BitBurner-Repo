@@ -48,6 +48,7 @@ const files: string[] = [
 	'managers/HacknetManager.js',
 	'managers/Managers.js',
 	'managers/SleeveManager.js',
+	'managers/StanekManager.js',
 	'managers/StockManager.js',
 	'runners/CodingContractRunner.js',
 	'runners/ProgramRunner.js',
