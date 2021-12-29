@@ -42,10 +42,10 @@ export const Styles = (DOMcreateElement("style", null, css `
         text-align: left;
         font-size: 16px;
       }
-      
+
       .box tbody.serverEntry {
-      	width: 100%;
-      	display: contents;
+        width: 100%;
+        display: contents;
       }
 
       .box tr.serverEntryOverview {
@@ -68,18 +68,19 @@ export const Styles = (DOMcreateElement("style", null, css `
       }
 
       .box tr.serverEntryOverview td {
-        padding-top:8px;
-        padding-bottom:8px;
-        padding-right:8px;
+        padding-top: 8px;
+        padding-bottom: 8px;
+        padding-right: 8px;
       }
 
       .box tr.serverEntryOverview td:first-child {
-        padding-left:8px;
-        padding-right:0;
+        padding-left: 8px;
+        padding-right: 0;
       }
-      
+
       .box tr.serverEntryDetails.collapsed {
-      	display: none;
+        display: none;
       }
-    \`));
+
+    \` ));
     `));

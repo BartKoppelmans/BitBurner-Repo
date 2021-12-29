@@ -1,5 +1,4 @@
-import { MAX_PRICE_HISTORY_LENGTH, } from '/src/managers/StockManager.js';
-export const STOCK_COMMISSION = 100000;
+import { STOCK_CONSTANT, } from '/src/classes/Stock/StockConstants.js';
 export default class Stock {
     symbol;
     stockInformation;
@@ -32,8 +31,8 @@ export default class Stock {
     }
     addToPriceHistory(price) {
         this.priceHistory.unshift(price);
-        if (this.priceHistory.length > MAX_PRICE_HISTORY_LENGTH) {
-            this.priceHistory.splice(MAX_PRICE_HISTORY_LENGTH, 1);
+        if (this.priceHistory.length > STOCK_CONSTANT.MAX_PRICE_HISTORY_LENGTH) {
+            this.priceHistory.splice(STOCK_CONSTANT.MAX_PRICE_HISTORY_LENGTH, 1);
         }
     }
     getMoneyInvested() {
@@ -134,8 +133,8 @@ export default class Stock {
         let money = 0;
         let profit = 0;
         for (const purchase of this.stockInformation.purchases) {
-            profit += (purchase.numShares * (purchase.price - price)) - 2 * STOCK_COMMISSION;
-            money += (price * numShares) - STOCK_COMMISSION;
+            profit += (purchase.numShares * (purchase.price - price)) - 2 * STOCK_CONSTANT.STOCK_COMMISSION;
+            money += (price * numShares) - STOCK_CONSTANT.STOCK_COMMISSION;
         }
         this.stockInformation.purchases = [];
         return {
@@ -160,8 +159,8 @@ export default class Stock {
         let money = 0;
         let profit = 0;
         for (const purchase of this.stockInformation.purchases) {
-            profit += (purchase.numShares * (price - purchase.price)) - 2 * STOCK_COMMISSION;
-            money += (price * numShares) - STOCK_COMMISSION;
+            profit += (purchase.numShares * (price - purchase.price)) - 2 * STOCK_CONSTANT.STOCK_COMMISSION;
+            money += (price * numShares) - STOCK_CONSTANT.STOCK_COMMISSION;
         }
         this.stockInformation.purchases = [];
         // TODO: Log

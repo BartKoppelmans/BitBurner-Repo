@@ -1,13 +1,12 @@
 import { CONSTANT } from '/src/lib/constants.js';
 import * as LogAPI from '/src/api/LogAPI.js';
 import Stock from '/src/classes/Stock/Stock.js';
-import { MAX_PRICE_HISTORY_LENGTH, NEAR_TERM_FORECAST_WINDOW_LENGTH, } from '/src/managers/StockManager.js';
+import { STOCK_CONSTANT, } from '/src/classes/Stock/StockConstants.js';
 const LAST_UPDATED_THRESHOLD = 2500;
 const MARKET_CYCLE_LENGTH = 75;
-export const PRICE_HISTORY_THRESHOLD = 21;
 const INVERSION_AGREEMENT_THRESHOLD_DEFAULT = 6;
 const INVERSION_AGREEMENT_THRESHOLD_CAP = 14;
-export class StockStorage {
+export default class StockStorage {
     lastUpdated = CONSTANT.EPOCH_DATE;
     marketCycleDetected = false;
     cycleTick = 0;
@@ -36,13 +35,13 @@ export class StockStorage {
         return this.stocks.filter((stock) => stock.stockInformation.ownedShares > 0);
     }
     detectMarketCycle(ns, stockInversionDict, has4s) {
-        const historyLength = Math.min(this.totalTicks, MAX_PRICE_HISTORY_LENGTH);
+        const historyLength = Math.min(this.totalTicks, STOCK_CONSTANT.MAX_PRICE_HISTORY_LENGTH);
         const numInversionsDetected = Object.keys(stockInversionDict)
             .reduce((total, key) => total + +stockInversionDict[key], 0);
         if (numInversionsDetected > 0) {
             // We detected the market cycle!
-            if (numInversionsDetected >= this.inversionAgreementThreshold && (has4s || historyLength >= PRICE_HISTORY_THRESHOLD)) {
-                const predictedCycleTick = has4s ? 0 : NEAR_TERM_FORECAST_WINDOW_LENGTH;
+            if (numInversionsDetected >= this.inversionAgreementThreshold && (has4s || historyLength >= STOCK_CONSTANT.PRICE_HISTORY_THRESHOLD)) {
+                const predictedCycleTick = has4s ? 0 : STOCK_CONSTANT.NEAR_TERM_FORECAST_WINDOW_LENGTH;
                 LogAPI.printLog(ns, `Threshold for changing predicted market cycle met (${numInversionsDetected} >= ${this.inversionAgreementThreshold}).\nChanging current market tick from ${this.cycleTick} to ${predictedCycleTick}`);
                 this.marketCycleDetected = true;
                 this.cycleTick = predictedCycleTick;
@@ -70,10 +69,10 @@ export class StockStorage {
         return MARKET_CYCLE_LENGTH - this.getEstimatedTick();
     }
     hasEnoughHistory() {
-        return this.getHistoryLength() >= PRICE_HISTORY_THRESHOLD;
+        return this.getHistoryLength() >= STOCK_CONSTANT.PRICE_HISTORY_THRESHOLD;
     }
     getHistoryLength() {
-        return Math.min(this.totalTicks, MAX_PRICE_HISTORY_LENGTH);
+        return Math.min(this.totalTicks, STOCK_CONSTANT.MAX_PRICE_HISTORY_LENGTH);
     }
     getCorpus() {
         let corpus = 0;
@@ -81,6 +80,12 @@ export class StockStorage {
             corpus += stock.getMoneyInvested();
         }
         return corpus;
+    }
+    addPurchase(ns, stock, purchase) {
+        const index = this.stocks.findIndex((s) => s.symbol === stock.symbol);
+        if (index === -1)
+            throw new Error(`Couldn't find the stock`);
+        this.stocks[index].stockInformation.purchases.push(purchase);
     }
     getTotalStockValue() {
         let totalStockValue = 0;
@@ -95,12 +100,12 @@ export class StockStorage {
         this.stocks.forEach((stock) => stock.addToPriceHistory(stock.stockInformation.priceInformation.price));
         // Update the ticks held for our purchases
         for (const stock of this.stocks) {
-            stock.stockInformation.purchases.forEach((purchase, index) => {
-                this[index] = {
+            stock.stockInformation.purchases.forEach((purchase, index, purchases) => {
+                purchases[index] = {
                     ...purchase,
                     ticksHeld: purchase.ticksHeld + 1,
                 };
-            }, this);
+            });
         }
         // TODO: Verify that all our stocks are still valid, this means:
         //       - That we only have one type of share, amongst possible other things

@@ -10,20 +10,17 @@ import {
 }                   from '/src/classes/Stock/StockInterfaces.js'
 import type { NS }  from 'Bitburner'
 import {
-	MAX_PRICE_HISTORY_LENGTH,
-	NEAR_TERM_FORECAST_WINDOW_LENGTH,
-}                   from '/src/managers/StockManager.js'
+	STOCK_CONSTANT,
+}                   from '/src/classes/Stock/StockConstants.js'
 
 const LAST_UPDATED_THRESHOLD: number = 2500 as const
 
 const MARKET_CYCLE_LENGTH: number = 75 as const
 
-export const PRICE_HISTORY_THRESHOLD: number = 21 as const
-
 const INVERSION_AGREEMENT_THRESHOLD_DEFAULT: number = 6 as const
 const INVERSION_AGREEMENT_THRESHOLD_CAP: number     = 14 as const
 
-export class StockStorage {
+export default class StockStorage {
 
 	lastUpdated: Date                   = CONSTANT.EPOCH_DATE
 	marketCycleDetected: boolean        = false
@@ -55,7 +52,7 @@ export class StockStorage {
 	}
 
 	public detectMarketCycle(ns: NS, stockInversionDict: StockInversionDict, has4s: boolean): void {
-		const historyLength: number = Math.min(this.totalTicks, MAX_PRICE_HISTORY_LENGTH)
+		const historyLength: number = Math.min(this.totalTicks, STOCK_CONSTANT.MAX_PRICE_HISTORY_LENGTH)
 
 		const numInversionsDetected: number = Object.keys(stockInversionDict)
 		                                            .reduce((total, key) => total + +stockInversionDict[key], 0)
@@ -63,8 +60,8 @@ export class StockStorage {
 		if (numInversionsDetected > 0) {
 
 			// We detected the market cycle!
-			if (numInversionsDetected >= this.inversionAgreementThreshold && (has4s || historyLength >= PRICE_HISTORY_THRESHOLD)) {
-				const predictedCycleTick = has4s ? 0 : NEAR_TERM_FORECAST_WINDOW_LENGTH
+			if (numInversionsDetected >= this.inversionAgreementThreshold && (has4s || historyLength >= STOCK_CONSTANT.PRICE_HISTORY_THRESHOLD)) {
+				const predictedCycleTick = has4s ? 0 : STOCK_CONSTANT.NEAR_TERM_FORECAST_WINDOW_LENGTH
 
 				LogAPI.printLog(ns, `Threshold for changing predicted market cycle met (${numInversionsDetected} >= ${this.inversionAgreementThreshold}).\nChanging current market tick from ${this.cycleTick} to ${predictedCycleTick}`)
 
@@ -97,11 +94,11 @@ export class StockStorage {
 	}
 
 	public hasEnoughHistory(): boolean {
-		return this.getHistoryLength() >= PRICE_HISTORY_THRESHOLD
+		return this.getHistoryLength() >= STOCK_CONSTANT.PRICE_HISTORY_THRESHOLD
 	}
 
 	public getHistoryLength(): number {
-		return Math.min(this.totalTicks, MAX_PRICE_HISTORY_LENGTH)
+		return Math.min(this.totalTicks, STOCK_CONSTANT.MAX_PRICE_HISTORY_LENGTH)
 	}
 
 	public getCorpus(): number {
@@ -110,6 +107,12 @@ export class StockStorage {
 			corpus += stock.getMoneyInvested()
 		}
 		return corpus
+	}
+
+	public addPurchase(ns: NS, stock: Stock, purchase: StockPurchase): void {
+		const index: number = this.stocks.findIndex((s) => s.symbol === stock.symbol)
+		if (index === -1) throw new Error(`Couldn't find the stock`)
+		this.stocks[index].stockInformation.purchases.push(purchase)
 	}
 
 	public getTotalStockValue(): number {
@@ -129,12 +132,12 @@ export class StockStorage {
 
 		// Update the ticks held for our purchases
 		for (const stock of this.stocks) {
-			stock.stockInformation.purchases.forEach((purchase: StockPurchase, index) => {
-				this[index] = {
+			stock.stockInformation.purchases.forEach((purchase: StockPurchase, index, purchases) => {
+				purchases[index] = {
 					...purchase,
 					ticksHeld: purchase.ticksHeld + 1,
 				}
-			}, this)
+			})
 		}
 
 		// TODO: Verify that all our stocks are still valid, this means:

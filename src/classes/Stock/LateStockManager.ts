@@ -4,15 +4,15 @@
 
 import type { NS }                  from 'Bitburner'
 import * as LogAPI                  from '/src/api/LogAPI.js'
-import { StockManager }             from '/src/managers/StockManager.js'
 import { StockForecastInformation } from '/src/classes/Stock/StockInterfaces.js'
 import Stock                        from '/src/classes/Stock/Stock.js'
+import BaseStockManager             from '/src/classes/Stock/BaseStockManager.js'
 
 
 const BUY_RETURN_THRESHOLD: number  = 0.0001 as const
 const SELL_RETURN_THRESHOLD: number = 0 as const
 
-export class LateStockManager extends StockManager {
+export default class LateStockManager extends BaseStockManager {
 
 	has4s: boolean = true
 
@@ -38,7 +38,7 @@ export class LateStockManager extends StockManager {
 
 	protected preDetectPossibleInversion(ns: NS, stock: Stock): boolean {
 		const probability: number = ns.stock.getForecast(stock.symbol)
-		return StockManager.detectInversion(probability, stock.stockForecastInformation.probability || probability)
+		return BaseStockManager.detectInversion(probability, stock.stockForecastInformation.probability || probability) // TODO: We should not refer back to the base stock manager
 	}
 
 	protected verifyStockInversion(ns: NS): boolean {
@@ -54,8 +54,8 @@ export class LateStockManager extends StockManager {
 			volatility,
 			probability,
 			tools: {
-				lastTickProbability: stock.stockForecastInformation.probability,
-				lastInversion: stock.stockForecastInformation.tools.lastInversion,
+				lastTickProbability: stock.stockForecastInformation?.probability || 0,
+				lastInversion: stock.stockForecastInformation?.tools?.lastInversion || 0,
 			},
 		}
 	}

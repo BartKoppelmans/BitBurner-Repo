@@ -34,7 +34,7 @@ async function initialize(ns) {
             tasks.push(startManager(ns, Managers.GangManager));
         if (ns.sleeve.getNumSleeves() > 0)
             tasks.push(startManager(ns, Managers.SleeveManager));
-        if (player.hasWseAccount)
+        if (player.hasWseAccount && player.hasTixApiAccess)
             tasks.push(startManager(ns, Managers.StockManager));
     }
     else {

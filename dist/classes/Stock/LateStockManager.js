@@ -2,10 +2,10 @@
  CREDITS: This script was heavily influenced by the amazing work of @Insight.
  */
 import * as LogAPI from '/src/api/LogAPI.js';
-import { StockManager } from '/src/managers/StockManager.js';
+import BaseStockManager from '/src/classes/Stock/BaseStockManager.js';
 const BUY_RETURN_THRESHOLD = 0.0001;
 const SELL_RETURN_THRESHOLD = 0;
-export class LateStockManager extends StockManager {
+export default class LateStockManager extends BaseStockManager {
     has4s = true;
     async initialize(ns) {
         await super.initialize(ns);
@@ -24,7 +24,7 @@ export class LateStockManager extends StockManager {
     }
     preDetectPossibleInversion(ns, stock) {
         const probability = ns.stock.getForecast(stock.symbol);
-        return StockManager.detectInversion(probability, stock.stockForecastInformation.probability || probability);
+        return BaseStockManager.detectInversion(probability, stock.stockForecastInformation.probability || probability); // TODO: We should not refer back to the base stock manager
     }
     verifyStockInversion(ns) {
         return this.stockStorage.cycleTick === 0;
@@ -37,8 +37,8 @@ export class LateStockManager extends StockManager {
             volatility,
             probability,
             tools: {
-                lastTickProbability: stock.stockForecastInformation.probability,
-                lastInversion: stock.stockForecastInformation.tools.lastInversion,
+                lastTickProbability: stock.stockForecastInformation?.probability || 0,
+                lastInversion: stock.stockForecastInformation?.tools?.lastInversion || 0,
             },
         };
     }

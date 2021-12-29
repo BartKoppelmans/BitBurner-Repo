@@ -42,7 +42,7 @@ async function initialize(ns: NS) {
 		if (ns.bladeburner.joinBladeburnerDivision()) tasks.push(startManager(ns, Managers.BladeBurnerManager))
 		if (ns.gang.inGang()) tasks.push(startManager(ns, Managers.GangManager))
 		if (ns.sleeve.getNumSleeves() > 0) tasks.push(startManager(ns, Managers.SleeveManager))
-		if (player.hasWseAccount) tasks.push(startManager(ns, Managers.StockManager))
+		if (player.hasWseAccount && player.hasTixApiAccess) tasks.push(startManager(ns, Managers.StockManager))
 	} else {
 		// Managers
 		if (flags.hacking) tasks.push(startManager(ns, Managers.HackingManager))
