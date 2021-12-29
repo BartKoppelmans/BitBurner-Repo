@@ -23,7 +23,7 @@ class StanekManager implements Manager {
 
 	public async managingLoop(ns: NS): Promise<void> {
 
-		const fragments: ActiveFragment[] = ns.stanek.activeFragments().sort((a,b) => a.numCharge-b.numCharge)
+		const fragments: ActiveFragment[] = ns.stanek.activeFragments().sort((a, b) => a.numCharge - b.numCharge)
 
 		const lowestCharged: ActiveFragment = fragments[0]
 		await ns.stanek.charge(lowestCharged.x, lowestCharged.y)

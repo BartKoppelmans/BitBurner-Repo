@@ -14,9 +14,6 @@ async function findPath(ns, server) {
     }
     return path;
 }
-export function autocomplete(data, args) {
-    return [...data.servers];
-}
 export async function main(ns) {
     const serverName = ns.args[0];
     if (!serverName) {

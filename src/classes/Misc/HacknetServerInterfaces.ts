@@ -1,4 +1,4 @@
-import { HacknetServer } from '/src/classes/Server/HacknetServer'
+import { HacknetServer } from '/src/classes/Server/HacknetServer.js'
 
 export enum HacknetServerUpgradeType {
 	LEVEL,

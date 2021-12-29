@@ -1,191 +1,292 @@
+/*
+ CREDITS: This script was heavily influenced by the amazing work of @Insight.
+
+ NOTE: This script forms the main entry point for the @EarlyStockManager and @LateStockManager classes
+ */
 import * as LogAPI from '/src/api/LogAPI.js';
 import * as Utils from '/src/util/Utils.js';
+import { EarlyStockManager } from '/src/classes/Stock/EarlyStockManager.js';
+import { LateStockManager } from '/src/classes/Stock/LateStockManager.js';
 import * as PlayerUtils from '/src/util/PlayerUtils.js';
-import Stock from '/src/classes/Stock/Stock.js';
-import { StockPosition } from '/src/classes/Stock/StockInterfaces.js';
-const LOOP_DELAY = 6000;
-const STOCK_ALLOWANCE = 0.05;
-const STOCK_COMMISSION = 100000;
-const MINIMUM_MONEY_TO_INVEST = 10 * STOCK_COMMISSION;
-const EXPECTED_RETURN_BUY_THRESHOLD = 0.0005; // Buy anything forecasted to earn better than a 0.02%
-// return
-const EXPECTED_RETURN_SELL_THRESHOLD = 0.0002; // Buy anything forecasted to earn better than a 0.02%
-// return
-class StockManager {
-    stocks = [];
-    startingCorpus = 0;
-    lastCorpus = 0;
-    runningProfit = 0;
-    lastRunningProfit = 0;
-    static getBudget(ns, stocks) {
-        const corpus = stocks.reduce((total, stock) => total + stock.getStockCorpus(), 0);
-        const totalBudget = STOCK_ALLOWANCE * PlayerUtils.getMoney(ns);
-        return totalBudget - corpus;
+import { PRICE_HISTORY_THRESHOLD, StockStorage } from '/src/classes/Storage/StockStorage.js';
+import { STOCK_COMMISSION } from '/src/classes/Stock/Stock.js';
+// TODO: Manage the exports better, because this is just shit
+const LOOP_DELAY = 1000;
+const INVERSION_DETECTION_TOLERANCE = 0.10;
+const DIVERSIFICATION_FACTOR = 0.33;
+export const INVERSION_LAG_TOLERANCE = 5;
+export const MAX_PRICE_HISTORY_LENGTH = 151;
+export const NEAR_TERM_FORECAST_WINDOW_LENGTH = 10;
+export const LONG_TERM_FORECAST_WINDOW_LENGTH = 51;
+const FOUR_SIGMA_MARKET_DATA_COST = 5000000000;
+const FOUR_SIGMA_MARKET_DATA_API_COST = 25000000000;
+const WORKING_ASSET_RATIO_TARGET = 0.6;
+const USE_SHORTS = false;
+export class StockManager {
+    stockStorage;
+    totalProfit = 0;
+    BUY_RETURN_THRESHOLD = 0;
+    SELL_RETURN_THRESHOLD = 0;
+    has4s = false;
+    static calculateForecast(priceHistory) {
+        return priceHistory.reduce((ups, price, idx) => idx === 0 ? 0 : (priceHistory[idx - 1] > price ? ups + 1 : ups), 0) / (priceHistory.length - 1);
     }
-    static hasShortAccess(ns) {
-        return ns.getPlayer().bitNodeN === 8 ||
-            ns.getOwnedSourceFiles().includes({ n: 8, lvl: 2 }) ||
-            ns.getOwnedSourceFiles().includes({ n: 8, lvl: 3 });
+    static detectInversion(a, b) {
+        return ((a >= 0.5 + (INVERSION_DETECTION_TOLERANCE / 2)) && (b <= 0.5 - (INVERSION_DETECTION_TOLERANCE / 2)) && b <= (1 - a) + INVERSION_DETECTION_TOLERANCE)
+            || ((a <= 0.5 - (INVERSION_DETECTION_TOLERANCE / 2)) && (b >= 0.5 + (INVERSION_DETECTION_TOLERANCE / 2)) && b >= (1 - a) - INVERSION_DETECTION_TOLERANCE);
     }
-    static buyShares(ns, stocks) {
-        for (const stock of stocks) {
-            const budget = StockManager.getBudget(ns, stocks);
-            // Just stop if we can't buy any stocks
-            if (budget < MINIMUM_MONEY_TO_INVEST)
-                break;
-            // Skip over this stock if we can't buy any more shares
-            if (stock.hasMaxShares())
-                continue;
-            if (Math.abs(stock.stockInformation.expectedReturn) <= EXPECTED_RETURN_BUY_THRESHOLD)
-                continue;
-            const remainingShares = stock.stockInformation.maxShares - stock.stockInformation.ownedLong - stock.stockInformation.ownedShort;
-            // TODO: Refactor this below
-            if (!StockManager.hasShortAccess(ns)) {
-                const purchasableShares = Math.max(0, Math.min(remainingShares, Math.floor(budget / stock.stockInformation.bidPrice)));
-                if (purchasableShares) {
-                    if (purchasableShares * stock.stockInformation.expectedReturn * stock.stockInformation.price < 2 * STOCK_COMMISSION)
-                        continue;
-                    stock.buyLongs(ns, purchasableShares);
+    static attemptPurchasing4s(ns) {
+        const player = PlayerUtils.getPlayer(ns);
+        const bitnodeMultipliers = ns.getBitNodeMultipliers();
+        const cost4sData = bitnodeMultipliers.FourSigmaMarketDataCost * FOUR_SIGMA_MARKET_DATA_COST;
+        const cost4sApi = bitnodeMultipliers.FourSigmaMarketDataApiCost * FOUR_SIGMA_MARKET_DATA_API_COST;
+        const totalCost = (player.has4SData ? 0 : cost4sData) + cost4sApi;
+        if (player.money > totalCost) {
+            if (!player.has4SData) {
+                if (ns.stock.purchase4SMarketData()) {
+                    LogAPI.printLog(ns, 'Purchased the 4S Market Data.');
                 }
             }
-            else {
-                if (stock.position === StockPosition.LONG) {
-                    const purchasableShares = Math.max(0, Math.min(remainingShares, Math.floor(budget / stock.stockInformation.askPrice)));
-                    if (purchasableShares) {
-                        stock.buyLongs(ns, purchasableShares);
-                    }
-                }
-                else {
-                    const purchasableShares = Math.max(0, Math.min(remainingShares, Math.floor(budget / stock.stockInformation.bidPrice)));
-                    if (purchasableShares) {
-                        stock.buyShorts(ns, purchasableShares);
-                    }
-                }
+            if (ns.stock.purchase4SMarketDataTixApi()) {
+                LogAPI.printLog(ns, 'Purchased the 4S Market Data Tix API.');
             }
         }
     }
-    static sellUnderperforming(ns, stocks) {
-        const soldStocks = [];
-        let totalProfit = 0;
-        for (const stock of stocks) {
-            // TODO: Check the conditions for selling (especially when making a loss)
-            if (stock.stockInformation.ownedShort) {
-                if (stock.stockInformation.expectedReturn > EXPECTED_RETURN_SELL_THRESHOLD)
-                    continue;
-                totalProfit += stock.sellShorts(ns);
-                soldStocks.push(stock);
-                /*
-                 // Only sell if we would make a profit
-                 const potentialProfit: number = stock.stockInformation.ownedShort * (stock.stockInformation.averageShortPrice - stock.stockInformation.askPrice)
-                 if (potentialProfit > 2 * STOCK_COMMISSION) {
-                 totalProfit += stock.sellShorts(ns)
-                 soldStocks.push(stock)
-                 }
-                 */
-            }
-            if (stock.stockInformation.ownedLong) {
-                if (stock.stockInformation.expectedReturn > EXPECTED_RETURN_SELL_THRESHOLD)
-                    continue;
-                totalProfit += stock.sellLongs(ns);
-                soldStocks.push(stock);
-                /*
-                 // Only sell if we would make a profit
-                 const potentialProfit: number = stock.stockInformation.ownedLong * (stock.stockInformation.bidPrice - stock.stockInformation.averageLongPrice)
-                 if (potentialProfit > 2 * STOCK_COMMISSION) {
-                 totalProfit += stock.sellLongs(ns)
-                 soldStocks.push(stock)
-                 }
-                 */
-            }
+    static async getStockInformation(ns, stockStorage) {
+        const dict = {};
+        for (const stock of stockStorage.stocks) {
+            const position = ns.stock.getPosition(stock.symbol);
+            const askPrice = ns.stock.getAskPrice(stock.symbol);
+            const bidPrice = ns.stock.getBidPrice(stock.symbol);
+            const ownedShares = position[0] + position[2];
+            // TODO: Read these values from files if we have them, otherwise use a runner
+            dict[stock.symbol] = {
+                maxShares: ns.stock.getMaxShares(stock.symbol),
+                ownedShares,
+                sharesLong: position[0],
+                sharesShort: position[2],
+                priceInformation: {
+                    askPrice,
+                    bidPrice,
+                    spread: askPrice - bidPrice,
+                    spreadPercentage: (askPrice - bidPrice) / askPrice,
+                    price: (askPrice + bidPrice) / 2,
+                    boughtPrice: position[1],
+                    boughtPriceShort: position[3],
+                },
+                position,
+                // NOTE: This requires us to always make sure that the purchases are up-to-date
+                purchases: stock.stockInformation.purchases,
+            };
+            // TODO: Assert that the purchases and owned shares line up
         }
-        soldStocks.forEach((soldStock) => {
-            const index = stocks.findIndex((stock) => stock.symbol === soldStock.symbol);
-            if (index === -1)
-                return; // It was already removed
-            else
-                stocks.splice(index, 1);
-        });
-        return totalProfit;
-    }
-    static sellIncorrectPositions(ns, stocks) {
-        const soldStocks = [];
-        let totalProfit = 0;
-        for (const stock of stocks) {
-            if (stock.position === StockPosition.LONG && stock.stockInformation.ownedShort) {
-                totalProfit += stock.sellShorts(ns);
-                soldStocks.push(stock);
-            }
-            if (stock.position === StockPosition.SHORT && stock.stockInformation.ownedLong) {
-                totalProfit += stock.sellLongs(ns);
-                soldStocks.push(stock);
-            }
-        }
-        soldStocks.forEach((soldStock) => {
-            const index = stocks.findIndex((stock) => stock.symbol === soldStock.symbol);
-            if (index === -1)
-                return; // It was already removed
-            else
-                stocks.splice(index, 1);
-        });
-        return totalProfit;
-    }
-    static updateStocks(ns, stocks) {
-        stocks.forEach((stock) => stock.update(ns));
+        return dict;
     }
     async initialize(ns) {
         Utils.disableLogging(ns);
         ns.atExit(this.destroy.bind(this, ns));
-        this.stocks = Stock.getStocks(ns);
-        this.startingCorpus = this.stocks.reduce((total, stock) => total + stock.getStockCorpus(), 0);
+        // TODO: This should be done differently
+        this.stockStorage = new StockStorage(ns); // TODO: Here we should read the stock file
     }
     async start(ns) {
-        LogAPI.printTerminal(ns, `Starting the StockManager`);
-        LogAPI.printLog(ns, `Starting corpus value of ${ns.nFormat(this.startingCorpus, '$0.000a')}`);
+        // Inherited
     }
     async destroy(ns) {
-        LogAPI.printTerminal(ns, `Stopping the StockManager`);
-        // TODO: Do we want to do this?
-        /*
-         this.stocks.forEach((stock) => {
-         stock.update(ns)
-         stock.sellAll(ns)
-         })
-         */
+        // Inherited, but we do nothing
     }
     async managingLoop(ns) {
-        StockManager.updateStocks(ns, this.stocks);
-        this.stocks.sort((a, b) => {
-            if (b.stockInformation.expectedReturn === a.stockInformation.expectedReturn) {
-                return Math.abs(b.stockInformation.probability) - Math.abs(a.stockInformation.probability);
-            }
-            return b.stockInformation.expectedReturn - a.stockInformation.expectedReturn;
-        });
-        const ownedStocks = this.stocks.filter((stock) => stock.hasShares());
-        const corpus = ownedStocks.reduce((total, stock) => total + stock.getStockCorpus(), 0);
-        if (corpus !== this.lastCorpus) {
-            this.lastCorpus = corpus;
-            LogAPI.printLog(ns, `Holding ${ownedStocks.length} stocks (of ${this.stocks.length} total stocks). Total corpus value of ${ns.nFormat(corpus, '$0.000a')}`);
+        if (!this.has4s) {
+            StockManager.attemptPurchasing4s(ns);
         }
-        // We update the ownedStocks in-place in the coming function calls
-        this.runningProfit += StockManager.sellUnderperforming(ns, ownedStocks);
-        if (StockManager.hasShortAccess(ns)) {
-            this.runningProfit += StockManager.sellIncorrectPositions(ns, ownedStocks);
+        const stockInformationDict = await StockManager.getStockInformation(ns, this.stockStorage);
+        const hasTicked = this.stockStorage.stocks.some((stock) => stock.stockInformation.priceInformation.askPrice !== stockInformationDict[stock.symbol].priceInformation.askPrice);
+        this.stockStorage.updateStockInformation(stockInformationDict);
+        if (hasTicked) {
+            this.stockStorage.tick();
+            const stockInversionDict = this.getPossibleInversions(ns, this.stockStorage);
+            this.stockStorage.detectMarketCycle(ns, stockInversionDict, this.has4s);
+            const stockForecastDict = this.getStockForecast(ns, this.stockStorage, stockInversionDict);
+            this.stockStorage.updateStockForecast(stockForecastDict);
         }
-        StockManager.buyShares(ns, this.stocks);
-        if (this.runningProfit !== this.lastRunningProfit) {
-            this.lastRunningProfit = this.runningProfit;
-            LogAPI.printLog(ns, this.runningProfit > 0 ? `Total profit so far: ${ns.nFormat(this.runningProfit, '$0.000a')}` : `Total loss so far: ${ns.nFormat(-this.runningProfit, '$0.000a')}}`);
+        if (!this.has4s && !this.stockStorage.hasEnoughHistory()) {
+            LogAPI.printLog(ns, `Building a history of stock prices, currently at ${this.stockStorage.getHistoryLength()}/${PRICE_HISTORY_THRESHOLD}`);
+            return;
+        }
+        this.printSummary(ns);
+        const sales = this.sellUnderperformingStocks(ns);
+        // If we sold anything, we will have to refresh our stats before making any purchases
+        if (sales.length > 0) {
+            this.totalProfit += sales.reduce((total, sale) => total + sale.profit, 0);
+            return;
+        }
+        const workingAssetRatio = this.getWorkingAssetRatio(ns);
+        if (workingAssetRatio < WORKING_ASSET_RATIO_TARGET) {
+            // NOTE: We don't have to remove the costs from the total profits here. We will incorporate that in our
+            // sales
+            const purchases = await this.buyStocks(ns);
         }
     }
+    sellUnderperformingStocks(ns) {
+        const sales = [];
+        for (const stock of this.stockStorage.stocks) {
+            if (!this.willUnderperform(stock))
+                continue;
+            if (!this.shouldSell(stock)) {
+                const currentHoldTimes = stock.stockInformation.purchases.map((purchase) => purchase.ticksHeld);
+                LogAPI.printLog(ns, `Thinking about selling ${stock.symbol}, but waiting for the minimum hold time. Current time(s): ${currentHoldTimes}.`);
+                continue;
+            }
+            const sale = stock.sellAll(ns);
+            // TODO: Verify the sale and check whether everything went well
+            sales.push(sale);
+        }
+        return sales;
+    }
+    shouldSell(stock) {
+        return true;
+    }
+    shouldBuy(stock) {
+        if (stock.getBlackoutWindow() >= this.stockStorage.getTicksUntilMarketCycle())
+            return false;
+        if (stock.stockInformation.ownedShares === stock.stockInformation.maxShares)
+            return false;
+        if (Math.abs(stock.getExpectedReturn()) <= this.BUY_RETURN_THRESHOLD)
+            return false;
+        if (!USE_SHORTS && stock.willDecrease())
+            return false;
+        return true;
+    }
+    willUnderperform(stock) {
+        return Math.abs(stock.getExpectedReturn()) <= this.getSellThreshold() ||
+            (stock.willIncrease() && stock.stockInformation.sharesShort > 0) ||
+            (stock.willDecrease() && stock.stockInformation.sharesLong > 0);
+    }
+    // Calculates the earning assets to total assets ratio
+    getWorkingAssetRatio(ns) {
+        const cash = PlayerUtils.getPlayer(ns).money;
+        const corpus = this.stockStorage.getCorpus();
+        return corpus / cash;
+    }
+    getBudget(ns) {
+        const cash = PlayerUtils.getPlayer(ns).money;
+        const corpus = this.stockStorage.getCorpus();
+        return (WORKING_ASSET_RATIO_TARGET - (corpus / cash)) * cash;
+    }
+    async buyStocks(ns) {
+        const prioritizedStocks = this.prioritizeStocks(this.stockStorage.stocks);
+        const purchases = [];
+        for (const stock of prioritizedStocks) {
+            let budget = this.getBudget(ns);
+            if (budget <= 0)
+                break;
+            if (!this.shouldBuy(stock))
+                continue;
+            // Ensure that we have a diversified portfolio
+            const remainingStockBudget = (DIVERSIFICATION_FACTOR - (stock.getMoneyInvested() / this.stockStorage.getCorpus())) * this.stockStorage.getCorpus();
+            budget = Math.min(budget, remainingStockBudget);
+            const price = (stock.willIncrease()) ? stock.stockInformation.priceInformation.askPrice : stock.stockInformation.priceInformation.bidPrice;
+            let numShares = Math.floor((budget - STOCK_COMMISSION) / price);
+            numShares = Math.min(numShares, stock.stockInformation.maxShares - stock.stockInformation.ownedShares);
+            if (numShares <= 0)
+                continue;
+            // We might not be able to earn our money back
+            const profitableTicksBeforeCycleEnd = this.stockStorage.getTicksUntilMarketCycle() - stock.getTimeToCoverSpread();
+            if (profitableTicksBeforeCycleEnd < 1)
+                continue;
+            const estimatedEndOfCycleValue = numShares * price * ((Math.abs(stock.getExpectedReturn()) + 1) ** profitableTicksBeforeCycleEnd - 1);
+            if (estimatedEndOfCycleValue <= 2 * STOCK_COMMISSION) {
+                LogAPI.printLog(ns, `Despite attractive ER of ${Math.abs(stock.getExpectedReturn()) * 100 * 100}, ${stock.symbol} was not bought.`);
+                continue;
+            }
+            let purchase;
+            if (stock.willIncrease()) {
+                purchase = await stock.buyLongs(ns, numShares);
+            }
+            else if (stock.willDecrease()) {
+                purchase = await stock.buyShorts(ns, numShares);
+            }
+            else
+                continue;
+            purchases.push(purchase);
+        }
+        return purchases;
+    }
+    printSummary(ns) {
+        const ownedStocks = this.stockStorage.getOwnedStocks();
+        const maxReturnBP = 10000 * Math.max(...ownedStocks.map((stock) => Math.abs(stock.getExpectedReturn())));
+        const minReturnBP = 10000 * Math.min(...ownedStocks.map((stock) => Math.abs(stock.getExpectedReturn())));
+        const estimatedHoldingsCost = ownedStocks.reduce((total, stock) => {
+            return stock.stockInformation.purchases.reduce((subtotal, purchase) => {
+                return subtotal + STOCK_COMMISSION + purchase.numShares * purchase.price;
+            }, 0);
+        }, 0);
+        const liquidationValue = ownedStocks.reduce((total, stock) => total - STOCK_COMMISSION + stock.getValue(), 0);
+        const numLongs = ownedStocks.filter((stock) => stock.stockInformation.sharesLong > 0).length;
+        const numShorts = ownedStocks.filter((stock) => stock.stockInformation.sharesShort > 0).length;
+        LogAPI.printLog(ns, `Currently holding ${numLongs} longs and ${numShorts} shorts of ${this.stockStorage.stocks.length} total stocks.`);
+        if (ownedStocks.length > 0) {
+            LogAPI.printLog(ns, `Expected return is ${minReturnBP}-${maxReturnBP} BP.\n` +
+                `Achieved profit: ${this.totalProfit}; Holdings: ${liquidationValue} with cost: ${estimatedHoldingsCost}\n` +
+                `Current profit: ${this.totalProfit + liquidationValue - estimatedHoldingsCost}`);
+        }
+    }
+    prioritizeStocks(stocks) {
+        return stocks.sort((a, b) => {
+            return (Math.ceil(a.getTimeToCoverSpread()) - Math.ceil(b.getTimeToCoverSpread())) ||
+                (Math.abs(b.getExpectedReturn()) - Math.abs(a.getExpectedReturn()));
+        });
+    }
+    getPossibleInversions(ns, stockStorage) {
+        // TODO: We first have to update the price history for this
+        const dict = {};
+        for (const stock of stockStorage.stocks) {
+            dict[stock.symbol] = this.preDetectPossibleInversion(ns, stock);
+        }
+        return dict;
+    }
+    // Also updates the stockStorage if we detected a new tick
+    getStockForecast(ns, stockStorage, stockInversionDict) {
+        const stockForecastDict = {};
+        // TODO: Find a way to prevent pre-detecting, in order to reduce calls made
+        for (const stock of stockStorage.stocks) {
+            // NOTE: We have to keep the last inversion in the calculation of the stock forecast information
+            // Perhaps make this a parameter in the calculation function
+            if (stockInversionDict[stock.symbol] && this.verifyStockInversion(ns)) {
+                stock.stockForecastInformation.tools.lastInversion = this.stockStorage.cycleTick;
+            }
+            else
+                stock.stockForecastInformation.tools.lastInversion++;
+            stockForecastDict[stock.symbol] = this.calculateStockForecastInformation(ns, stock);
+        }
+        return stockForecastDict;
+    }
+}
+async function startStockManager(ns, StockManagerClass) {
+    const instance = new StockManagerClass();
+    // TODO: Read the passed flags and apply them in the initialize call
+    await instance.initialize(ns);
+    await instance.start(ns);
+    return instance;
+}
+async function stopStockManager(ns, instance) {
+    await instance.destroy(ns);
 }
 export async function main(ns) {
     if (ns.getHostname() !== 'home') {
         throw new Error('Run the script from home');
     }
-    const instance = new StockManager();
-    await instance.initialize(ns);
-    await instance.start(ns);
+    let player = PlayerUtils.getPlayer(ns);
+    if (!player.hasWseAccount) {
+        throw new Error('Cannot run a StockManager without WSE access');
+    }
+    let instance = await startStockManager(ns, (player.has4SDataTixApi) ? LateStockManager : EarlyStockManager);
     while (true) {
+        player = PlayerUtils.getPlayer(ns);
+        if (player.has4SDataTixApi && instance instanceof EarlyStockManager) {
+            await stopStockManager(ns, instance);
+            instance = await startStockManager(ns, LateStockManager);
+            LogAPI.printLog(ns, `Restarting the StockManager.`);
+        }
         await instance.managingLoop(ns);
         await ns.asleep(LOOP_DELAY);
     }

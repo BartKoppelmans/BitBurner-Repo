@@ -34,7 +34,7 @@ async function initialize(ns) {
             tasks.push(startManager(ns, Managers.GangManager));
         if (ns.sleeve.getNumSleeves() > 0)
             tasks.push(startManager(ns, Managers.SleeveManager));
-        if (player.hasWseAccount && player.hasTixApiAccess && player.has4SData && player.has4SDataTixApi)
+        if (player.hasWseAccount)
             tasks.push(startManager(ns, Managers.StockManager));
     }
     else {
@@ -49,12 +49,12 @@ async function initialize(ns) {
             tasks.push(startManager(ns, Managers.SleeveManager));
         if (flags.stock)
             tasks.push(startManager(ns, Managers.StockManager));
-        if (flags.corporation)
-            tasks.push(startManager(ns, Managers.CorporationManager));
         if (flags.hacknet)
             tasks.push(startManager(ns, Managers.HacknetManager));
         if (flags.stanek)
             tasks.push(startManager(ns, Managers.StanekManager));
+        // NOTE: Removed this because it costs too much RAM
+        // if (flags.corporation) tasks.push(startManager(ns, Managers.CorporationManager))
     }
     // Runners
     tasks.push(launchRunners(ns));

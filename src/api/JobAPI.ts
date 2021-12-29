@@ -7,10 +7,10 @@ import * as ToolUtils              from '/src/util/ToolUtils.js'
 import { ServerMap, ServerStatus } from '/src/classes/Server/ServerInterfaces.js'
 import { RamSpread }               from '/src/classes/Misc/HackInterfaces.js'
 import { Tools }                   from '/src/tools/Tools.js'
-import { JobStorage }              from '/src/classes/Storage/JobStorage'
+import { JobStorage }              from '/src/classes/Storage/JobStorage.js'
 
 export async function startBatch(ns: NS, jobStorage: JobStorage, batch: Batch): Promise<void> {
-	// TODO: We should do some checking in here
+	// TODO: Possibly validate the batch jobs before starting them
 
 	const isPrep: boolean = batch.jobs[0].isPrep
 
@@ -23,7 +23,7 @@ export async function startBatch(ns: NS, jobStorage: JobStorage, batch: Batch): 
 
 async function startJobs(ns: NS, jobs: Job[]): Promise<void> {
 
-	// TODO: We should do some checking in here
+	// TODO: Possibly validate the jobs before starting them
 
 	for (const job of jobs) {
 		await job.execute(ns)
@@ -99,7 +99,7 @@ export function cancelAllJobs(ns: NS, jobStorage?: JobStorage): void {
 }
 
 export function cancelJob(ns: NS, jobStorage: JobStorage, job: Job): void {
-	// TODO: We should do some checking here
+	// TODO: Validate whether the job is still running?
 
 	if (job.finished) return // The job has already finished so meh
 

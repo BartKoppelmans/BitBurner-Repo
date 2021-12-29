@@ -42,7 +42,7 @@ async function initialize(ns: NS) {
 		if (ns.bladeburner.joinBladeburnerDivision()) tasks.push(startManager(ns, Managers.BladeBurnerManager))
 		if (ns.gang.inGang()) tasks.push(startManager(ns, Managers.GangManager))
 		if (ns.sleeve.getNumSleeves() > 0) tasks.push(startManager(ns, Managers.SleeveManager))
-		if (player.hasWseAccount && player.hasTixApiAccess && player.has4SData && player.has4SDataTixApi) tasks.push(startManager(ns, Managers.StockManager))
+		if (player.hasWseAccount) tasks.push(startManager(ns, Managers.StockManager))
 	} else {
 		// Managers
 		if (flags.hacking) tasks.push(startManager(ns, Managers.HackingManager))
@@ -50,9 +50,11 @@ async function initialize(ns: NS) {
 		if (flags.gang) tasks.push(startManager(ns, Managers.GangManager))
 		if (flags.sleeve) tasks.push(startManager(ns, Managers.SleeveManager))
 		if (flags.stock) tasks.push(startManager(ns, Managers.StockManager))
-		if (flags.corporation) tasks.push(startManager(ns, Managers.CorporationManager))
 		if (flags.hacknet) tasks.push(startManager(ns, Managers.HacknetManager))
 		if (flags.stanek) tasks.push(startManager(ns, Managers.StanekManager))
+
+		// NOTE: Removed this because it costs too much RAM
+		// if (flags.corporation) tasks.push(startManager(ns, Managers.CorporationManager))
 	}
 
 	// Runners

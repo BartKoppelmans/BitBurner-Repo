@@ -3,16 +3,16 @@ import * as LogAPI from '/src/api/LogAPI.js';
 import * as ToolUtils from '/src/util/ToolUtils.js';
 import { ServerStatus } from '/src/classes/Server/ServerInterfaces.js';
 import { Tools } from '/src/tools/Tools.js';
-import { JobStorage } from '/src/classes/Storage/JobStorage';
+import { JobStorage } from '/src/classes/Storage/JobStorage.js';
 export async function startBatch(ns, jobStorage, batch) {
-    // TODO: We should do some checking in here
+    // TODO: Possibly validate the batch jobs before starting them
     const isPrep = batch.jobs[0].isPrep;
     await ServerAPI.setStatus(ns, batch.target.characteristics.host, (isPrep) ? ServerStatus.PREPPING : ServerStatus.TARGETING);
     await startJobs(ns, batch.jobs);
     jobStorage.addBatch(batch);
 }
 async function startJobs(ns, jobs) {
-    // TODO: We should do some checking in here
+    // TODO: Possibly validate the jobs before starting them
     for (const job of jobs) {
         await job.execute(ns);
         job.onStart(ns);
@@ -77,7 +77,7 @@ export function cancelAllJobs(ns, jobStorage) {
     }
 }
 export function cancelJob(ns, jobStorage, job) {
-    // TODO: We should do some checking here
+    // TODO: Validate whether the job is still running?
     if (job.finished)
         return; // The job has already finished so meh
     if (job.pids.length === 0)

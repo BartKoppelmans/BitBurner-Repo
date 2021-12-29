@@ -1,10 +1,9 @@
-import type { NS }          from 'Bitburner'
-import * as ServerAPI       from '/src/api/ServerAPI.js'
-import * as LogAPI          from '/src/api/LogAPI.js'
-import Server               from '/src/classes/Server/Server.js'
-import { CONSTANT }         from '/src/lib/constants.js'
-import { ServerMap }        from '/src/classes/Server/ServerInterfaces.js'
-import { AutocompleteData } from '/src/classes/Misc/ScriptInterfaces'
+import type { NS }    from 'Bitburner'
+import * as ServerAPI from '/src/api/ServerAPI.js'
+import * as LogAPI    from '/src/api/LogAPI.js'
+import Server         from '/src/classes/Server/Server.js'
+import { CONSTANT }   from '/src/lib/constants.js'
+import { ServerMap }  from '/src/classes/Server/ServerInterfaces.js'
 
 async function findPath(ns: NS, server: Server): Promise<Server[]> {
 
@@ -22,10 +21,6 @@ async function findPath(ns: NS, server: Server): Promise<Server[]> {
 	}
 
 	return path
-}
-
-export function autocomplete(data: AutocompleteData, args: string[]): string[] {
-	return [...data.servers]
 }
 
 export async function main(ns: NS) {

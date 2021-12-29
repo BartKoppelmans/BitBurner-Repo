@@ -1,4 +1,3 @@
-
 // For use with Flags
 type UnionToIntersection<T> = (T extends T ? (p: T) => void : never) extends (
 		p: infer U,
@@ -11,6 +10,10 @@ type FromEntries<T extends readonly [PropertyKey, any]> = T extends T
 type Flatten<T> = {} & {
 	[P in keyof T]: T[P];
 };
+type FlagsKey = string
+type FlagsConfig<Key extends FlagsKey> = (readonly [Key, string | number | boolean | string[]] | (readonly [Key, any]))[]
+type Flags<Key extends FlagsKey, Config extends FlagsConfig<Key>> = Flatten<UnionToIntersection<FromEntries<Config[number]>>>
+
 
 /**
  * @public
@@ -1161,8 +1164,9 @@ export interface TIX {
 	 *  ...
 	 * }
 	 * ```
-	 * The “Order type” property can have one of the following four values: "Limit Buy Order", "Limit Sell Order", "Stop Buy Order", "Stop Sell Order".
-	 * Note that the order book will only contain information for stocks that you actually have orders in.
+	 * The “Order type” property can have one of the following four values: "Limit Buy Order", "Limit Sell Order",
+	 *     "Stop Buy Order", "Stop Sell Order". Note that the order book will only contain information for stocks that
+	 *     you actually have orders in.
 	 *
 	 * @example
 	 * ```ts
@@ -1212,7 +1216,8 @@ export interface TIX {
 	getVolatility(sym: string): number;
 
 	/**
-	 * Returns the probability that the specified stock’s price will increase (as opposed to decrease) during the next tick.
+	 * Returns the probability that the specified stock’s price will increase (as opposed to decrease) during the next
+	 * tick.
 	 * @remarks
 	 * RAM cost: 2.5 GB
 	 * The probability is returned as a decimal value, NOT a percentage
@@ -1224,7 +1229,8 @@ export interface TIX {
 	 * In order to use this function, you must first purchase access to the Four Sigma (4S) Market Data TIX API.
 	 *
 	 * @param sym - Stock symbol.
-	 * @returns Probability that the specified stock’s price will increase (as opposed to decrease) during the next tick.
+	 * @returns Probability that the specified stock’s price will increase (as opposed to decrease) during the next
+	 *     tick.
 	 */
 	getForecast(sym: string): number;
 
@@ -1457,18 +1463,19 @@ export interface Singularity {
 	 *
 	 * This function will return true if the player starts working, and false otherwise.
 	 *
-	 * Note that when you are working for a company, you will not actually receive your earnings (reputation, money, experience) until you FINISH the action.
+	 * Note that when you are working for a company, you will not actually receive your earnings (reputation, money,
+	 *     experience) until you FINISH the action.
 	 *
 	 * @example
 	 * ```ts
-	 * //If you only want to work until you get 100,000 company reputation. One small hack to get around this is to continuously restart the action to receive your earnings:
-	 * while (getCompanyRep(COMPANY HERE) < VALUE) {
-	 *    workForCompany();
-	 *    sleep(60000);
+	 * //If you only want to work until you get 100,000 company reputation. One small hack to get around this is to
+	 *     continuously restart the action to receive your earnings: while (getCompanyRep(COMPANY HERE) < VALUE) {
+	 *     workForCompany(); sleep(60000);
 	 * }
 	 * //This way, your company reputation will be updated every minute.
 	 * ```
-	 * @param companyName - Name of company to work for. Must be an exact match. Optional. If not specified, this argument defaults to the last job that you worked
+	 * @param companyName - Name of company to work for. Must be an exact match. Optional. If not specified, this
+	 *     argument defaults to the last job that you worked
 	 * @returns True if the player starts working, and false otherwise.
 	 */
 	workForCompany(companyName?: string): boolean;
@@ -1582,14 +1589,14 @@ export interface Singularity {
 	 *
 	 * This function will return true if you successfully start working for the specified faction, and false otherwise.
 	 *
-	 * Note that when you are working for a faction, you will not actually receive your earnings (reputation, experience) until you FINISH the action.
+	 * Note that when you are working for a faction, you will not actually receive your earnings (reputation,
+	 *     experience) until you FINISH the action.
 	 *
 	 * @example
 	 * ```ts
-	 * //If you only want to work until you get 100,000 faction reputation. One small hack to get around this is to continuously restart the action to receive your earnings:
-	 * while (getFactionRep(FACTION NAME) < VALUE) {
-	 *    workForFaction(FACNAME, WORKTYPE);
-	 *    sleep(60000);
+	 * //If you only want to work until you get 100,000 faction reputation. One small hack to get around this is to
+	 *     continuously restart the action to receive your earnings: while (getFactionRep(FACTION NAME) < VALUE) {
+	 *     workForFaction(FACNAME, WORKTYPE); sleep(60000);
 	 * }
 	 * //This way, your faction reputation will be updated every minute.
 	 * ```
@@ -1673,7 +1680,8 @@ export interface Singularity {
 	 *
 	 * This function returns true if you successfully start working on the specified program, and false otherwise.
 	 *
-	 * Note that creating a program using this function has the same hacking level requirements as it normally would. These level requirements are:
+	 * Note that creating a program using this function has the same hacking level requirements as it normally would.
+	 *     These level requirements are:
 	 * * BruteSSH.exe: 50
 	 * * FTPCrack.exe: 100
 	 * * relaySMTP.exe: 250
@@ -1758,7 +1766,9 @@ export interface Singularity {
 	 *
 	 * This function returns an array containing the names (as strings) of all Augmentations you have.
 	 *
-	 * @param purchased - Specifies whether the returned array should include Augmentations you have purchased but not yet installed. By default, this argument is false which means that the return value will NOT have the purchased Augmentations.
+	 * @param purchased - Specifies whether the returned array should include Augmentations you have purchased but not
+	 *     yet installed. By default, this argument is false which means that the return value will NOT have the
+	 *     purchased Augmentations.
 	 * @returns Array containing the names (as strings) of all Augmentations you have.
 	 */
 	getOwnedAugmentations(purchased?: boolean): string[];
@@ -1891,7 +1901,8 @@ export interface Singularity {
 	 *
 	 * This function will automatically install your Augmentations, resetting the game as usual.
 	 *
-	 * @param cbScript - This is a script that will automatically be run after Augmentations are installed (after the reset). This script will be run with no arguments and 1 thread. It must be located on your home computer.
+	 * @param cbScript - This is a script that will automatically be run after Augmentations are installed (after the
+	 *     reset). This script will be run with no arguments and 1 thread. It must be located on your home computer.
 	 */
 	installAugmentations(cbScript?: string): void;
 
@@ -1946,7 +1957,8 @@ export interface Singularity {
 	 *
 	 * This function will perform a reset even if you don’t have any augmentation installed.
 	 *
-	 * @param cbScript - This is a script that will automatically be run after Augmentations are installed (after the reset). This script will be run with no arguments and 1 thread. It must be located on your home computer.
+	 * @param cbScript - This is a script that will automatically be run after Augmentations are installed (after the
+	 *     reset). This script will be run with no arguments and 1 thread. It must be located on your home computer.
 	 */
 	softReset(cbScript: string): void;
 
@@ -2050,7 +2062,8 @@ export interface Hacknet {
 	 *
 	 * If the player cannot afford to purchase a new Hacknet Node then the function will return -1.
 	 *
-	 * @returns The index of the Hacknet Node or if the player cannot afford to purchase a new Hacknet Node the function will return -1.
+	 * @returns The index of the Hacknet Node or if the player cannot afford to purchase a new Hacknet Node the
+	 *     function will return -1.
 	 */
 	purchaseNode(): number;
 
@@ -2281,8 +2294,8 @@ export interface Hacknet {
 	 * Returns a boolean value - true if the upgrade is successfully purchased, and false otherwise.
 	 *
 	 * The name of the upgrade must be an exact match.
-	 * The `upgTarget` argument is used for upgrades such as `Reduce Minimum Security`, which applies to a specific server.
-	 * In this case, the `upgTarget` argument must be the hostname of the server.
+	 * The `upgTarget` argument is used for upgrades such as `Reduce Minimum Security`, which applies to a specific
+	 *     server. In this case, the `upgTarget` argument must be the hostname of the server.
 	 *
 	 * @example
 	 * ```ts
@@ -2422,7 +2435,8 @@ export interface Bladeburner {
 	 * RAM cost: 1 GB
 	 *
 	 * Returns an object that represents the player’s current Bladeburner action.
-	 * If the player is not performing an action, the function will return an object with the ‘type’ property set to “Idle”.
+	 * If the player is not performing an action, the function will return an object with the ‘type’ property set to
+	 *     “Idle”.
 	 *
 	 * @returns Object that represents the player’s current Bladeburner action.
 	 */
@@ -2646,7 +2660,8 @@ export interface Bladeburner {
 	 *
 	 * Returns the number of Bladeburner team members you have assigned to the specified action.
 	 *
-	 * Setting a team is only applicable for Operations and BlackOps. This function will return 0 for other action types.
+	 * Setting a team is only applicable for Operations and BlackOps. This function will return 0 for other action
+	 *     types.
 	 *
 	 * @param type - Type of action.
 	 * @param name - Name of action. Must be an exact match.
@@ -2813,7 +2828,9 @@ export interface CodingContract {
 	 * @param fn - Filename of the contract.
 	 * @param host - Host of the server containing the contract. Optional. Defaults to current server if not provided.
 	 * @param opts - Optional parameters for configuring function behavior.
-	 * @returns True if the solution was correct, false otherwise. If the returnReward option is configured, then the function will instead return a string. If the contract is successfully solved, the string will contain a description of the contract’s reward. Otherwise, it will be an empty string.
+	 * @returns True if the solution was correct, false otherwise. If the returnReward option is configured, then the
+	 *     function will instead return a string. If the contract is successfully solved, the string will contain a
+	 *     description of the contract’s reward. Otherwise, it will be an empty string.
 	 */
 	attempt(answer: string | string[] | number, fn: string, host?: string, opts?: CodingAttemptOptions): boolean | string;
 
@@ -3097,7 +3114,8 @@ export interface Gang {
 	 * @remarks
 	 * RAM cost: 4 GB
 	 *
-	 * Returns the chance you have to win a clash with the specified gang. The chance is returned in decimal form, not percentage
+	 * Returns the chance you have to win a clash with the specified gang. The chance is returned in decimal form, not
+	 *     percentage
 	 *
 	 * @param gangName - Target gang
 	 * @returns Chance you have to win a clash with the specified gang.
@@ -3324,6 +3342,7 @@ export interface Sleeve {
  */
 interface SkillsFormulas {
 	calculateSkill(exp: number, mult?: number): number;
+
 	calculateExp(skill: number, mult?: number): number;
 }
 
@@ -3332,11 +3351,17 @@ interface SkillsFormulas {
  */
 interface HackingFormulas {
 	hackChance(server: Server, player: Player): number;
+
 	hackExp(server: Server, player: Player): number;
+
 	hackPercent(server: Server, player: Player): number;
+
 	growPercent(server: Server, threads: number, player: Player, cores?: number): number;
+
 	hackTime(server: Server, player: Player): number;
+
 	growTime(server: Server, player: Player): number;
+
 	weakenTime(server: Server, player: Player): number;
 }
 
@@ -3345,10 +3370,15 @@ interface HackingFormulas {
  */
 interface HacknetNodesFormulas {
 	moneyGainRate(level: number, ram: number, cores: number, mult?: number): number;
+
 	levelUpgradeCost(startingLevel: number, extraLevels?: number, costMult?: number): number;
+
 	ramUpgradeCost(startingRam: number, extraLevels?: number, costMult?: number): number;
+
 	coreUpgradeCost(startingCore: number, extraCores?: number, costMult?: number): number;
+
 	hacknetNodeCost(n: number, mult: number): number;
+
 	constants(): number;
 }
 
@@ -3357,12 +3387,19 @@ interface HacknetNodesFormulas {
  */
 interface HacknetServersFormulas {
 	hashGainRate(level: number, ramUsed: number, maxRam: number, cores: number, mult?: number): number;
+
 	levelUpgradeCost(startingLevel: number, extraLevels?: number, costMult?: number): number;
+
 	ramUpgradeCost(startingRam: number, extraLevels?: number, costMult?: number): number;
+
 	coreUpgradeCost(startingCore: number, extraCores?: number, costMult?: number): number;
+
 	cacheUpgradeCost(startingCache: number, extraCache?: number): number;
+
 	hashUpgradeCost(upgName: number, level: number): number;
+
 	hacknetServerCost(n: number, mult: number): number;
+
 	constants(): any;
 }
 
@@ -3405,6 +3442,7 @@ interface Stanek {
 	 * @returns The width of the gift.
 	 */
 	width(): number;
+
 	/**
 	 * Stanek's Gift height.
 	 * @remarks
@@ -3460,6 +3498,7 @@ interface Stanek {
 	 * @returns true if the fragment can be placed at that position. false otherwise.
 	 */
 	canPlace(rootX: number, rootY: number, rotation: number, fragmentId: number): boolean;
+
 	/**
 	 * Place fragment on Stanek's Gift.
 	 * @remarks
@@ -3472,6 +3511,7 @@ interface Stanek {
 	 * @returns true if the fragment can be placed at that position. false otherwise.
 	 */
 	place(rootX: number, rootY: number, rotation: number, fragmentId: number): boolean;
+
 	/**
 	 * Get placed fragment at location.
 	 * @remarks
@@ -3639,7 +3679,8 @@ export interface NS extends Singularity {
 	 * ```
 	 * @param host - Hostname of the target server to weaken.
 	 * @param opts - Optional parameters for configuring function behavior.
-	 * @returns The amount by which the target server’s security level was decreased. This is equivalent to 0.05 multiplied by the number of script threads.
+	 * @returns The amount by which the target server’s security level was decreased. This is equivalent to 0.05
+	 *     multiplied by the number of script threads.
 	 */
 	weaken(host: string, opts?: BasicHGWOptions): Promise<number>;
 
@@ -3672,7 +3713,8 @@ export interface NS extends Singularity {
 	 * ```ts
 	 * //For example, let’s say the foodnstuff server has $10m and you run:
 	 * hackAnalyzeThreads("foodnstuff", 1e6);
-	 * //If this function returns 50, this means that if your next hack call is run on a script with 50 threads, it will steal $1m from the foodnstuff server.
+	 * //If this function returns 50, this means that if your next hack call is run on a script with 50 threads, it
+	 *     will steal $1m from the foodnstuff server.
 	 * ```
 	 * @param host - Hostname of the target server to analyze.
 	 * @param hackAmount - Amount of money you want to hack from the server.
@@ -3693,7 +3735,8 @@ export interface NS extends Singularity {
 	 * ```ts
 	 * //For example, assume the following returns 1:
 	 * hackAnalyze("foodnstuff");
-	 * //This means that if hack the foodnstuff server, then you will steal 1% of its total money. If you hack using N threads, then you will steal N% of its total money.
+	 * //This means that if hack the foodnstuff server, then you will steal 1% of its total money. If you hack using N
+	 *     threads, then you will steal N% of its total money.
 	 * ```
 	 * @param host - Hostname of the target server.
 	 * @returns The percentage of money you will steal from the target server with a single hack.
@@ -3739,9 +3782,10 @@ export interface NS extends Singularity {
 	 *
 	 * @example
 	 * ```ts
-	 * //For example, if you want to determine how many grow calls you need to double the amount of money on foodnstuff, you would use:
-	 * growthAnalyze("foodnstuff", 2);
-	 * //If this returns 100, then this means you need to call grow 100 times in order to double the money (or once with 100 threads).
+	 * //For example, if you want to determine how many grow calls you need to double the amount of money on
+	 *     foodnstuff, you would use: growthAnalyze("foodnstuff", 2);
+	 * //If this returns 100, then this means you need to call grow 100 times in order to double the money (or once
+	 *     with 100 threads).
 	 * ```
 	 * @param host - Hostname of the target server.
 	 * @param growthAmount - Multiplicative factor by which the server is grown. Decimal form..
@@ -3862,8 +3906,8 @@ export interface NS extends Singularity {
 	 *
 	 * Returns a script’s logs. The logs are returned as an array, where each line is an element in the array.
 	 * The most recently logged line is at the end of the array.
-	 * Note that there is a maximum number of lines that a script stores in its logs. This is configurable in the game’s options.
-	 * If the function is called with no arguments, it will return the current script’s logs.
+	 * Note that there is a maximum number of lines that a script stores in its logs. This is configurable in the
+	 *     game’s options. If the function is called with no arguments, it will return the current script’s logs.
 	 *
 	 * Otherwise, the fn, hostname/ip, and args… arguments can be used to get the logs from another script.
 	 * Remember that scripts are uniquely identified by both their names and arguments.
@@ -3886,7 +3930,8 @@ export interface NS extends Singularity {
 	 * @param fn - Optional. Filename of script to get logs from.
 	 * @param host - Optional. Hostname of the server that the script is on.
 	 * @param args - Arguments to identify which scripts to get logs for.
-	 * @returns Returns an string array, where each line is an element in the array. The most recently logged line is at the end of the array.
+	 * @returns Returns an string array, where each line is an element in the array. The most recently logged line is
+	 *     at the end of the array.
 	 */
 	getScriptLogs(fn?: string, host?: string, ...args: any[]): string[];
 
@@ -3918,7 +3963,8 @@ export interface NS extends Singularity {
 	 * tail("foo.script", "foodnstuff", 1, "test");
 	 * ```
 	 * @param fn - Optional. Filename of the script being tailed. If omitted, the current script is tailed.
-	 * @param host - Optional. Hostname of the script being tailed. Defaults to the server this script is running on. If args are specified, this is not optional.
+	 * @param host - Optional. Hostname of the script being tailed. Defaults to the server this script is running on.
+	 *     If args are specified, this is not optional.
 	 * @param args - Arguments for the script being tailed.
 	 */
 	tail(fn?: string, host?: string, ...args: any[]): void;
@@ -3933,7 +3979,8 @@ export interface NS extends Singularity {
 	 * array are strings.
 	 *
 	 * @param host - Hostname of the server to scan.
-	 * @param hostnames - Optional boolean specifying whether the function should output hostnames (if true) or IP addresses (if false).
+	 * @param hostnames - Optional boolean specifying whether the function should output hostnames (if true) or IP
+	 *     addresses (if false).
 	 * @returns Returns an string of hostnames or IP.
 	 */
 	scan(host: string, hostnames?: boolean): string[];
@@ -4049,8 +4096,8 @@ export interface NS extends Singularity {
 	 *
 	 * @example
 	 * ```ts
-	 * //The simplest way to use the run command is to call it with just the script name. The following example will run ‘foo.script’ single-threaded with no arguments:
-	 * run("foo.script");
+	 * //The simplest way to use the run command is to call it with just the script name. The following example will
+	 *     run ‘foo.script’ single-threaded with no arguments: run("foo.script");
 	 * ```
 	 * @example
 	 * ```ts
@@ -4059,12 +4106,14 @@ export interface NS extends Singularity {
 	 * ```
 	 * @example
 	 * ```ts
-	 * //This next example will run ‘foo.script’ single-threaded, and will pass the string ‘foodnstuff’ into the script as an argument:
-	 * run("foo.script", 1, 'foodnstuff');
+	 * //This next example will run ‘foo.script’ single-threaded, and will pass the string ‘foodnstuff’ into the script
+	 *     as an argument: run("foo.script", 1, 'foodnstuff');
 	 * ```
 	 * @param script - Filename of script to run.
-	 * @param numThreads - Optional thread count for new script. Set to 1 by default. Will be rounded to nearest integer.
-	 * @param args - Additional arguments to pass into the new script that is being run. Note that if any arguments are being passed into the new script, then the second argument numThreads must be filled in with a value.
+	 * @param numThreads - Optional thread count for new script. Set to 1 by default. Will be rounded to nearest
+	 *     integer.
+	 * @param args - Additional arguments to pass into the new script that is being run. Note that if any arguments are
+	 *     being passed into the new script, then the second argument numThreads must be filled in with a value.
 	 * @returns Returns the PID of a successfully started script, and 0 otherwise.
 	 */
 	run(script: string, numThreads?: number, ...args: string[]): number;
@@ -4088,8 +4137,9 @@ export interface NS extends Singularity {
 	 *
 	 * @example
 	 * ```ts
-	 * //The simplest way to use the exec command is to call it with just the script name and the target server. The following example will try to run generic-hack.script on the foodnstuff server:
-	 * exec("generic-hack.script", "foodnstuff");
+	 * //The simplest way to use the exec command is to call it with just the script name and the target server. The
+	 *     following example will try to run generic-hack.script on the foodnstuff server: exec("generic-hack.script",
+	 *     "foodnstuff");
 	 * ```
 	 * @example
 	 * ```ts
@@ -4098,13 +4148,16 @@ export interface NS extends Singularity {
 	 * ```
 	 * @example
 	 * ```ts
-	 * //This last example will try to run the script foo.script on the foodnstuff server with 5 threads. It will also pass the number 1 and the string “test” in as arguments to the script:
-	 * exec("foo.script", "foodnstuff", 5, 1, "test");
+	 * //This last example will try to run the script foo.script on the foodnstuff server with 5 threads. It will also
+	 *     pass the number 1 and the string “test” in as arguments to the script: exec("foo.script", "foodnstuff", 5,
+	 *     1, "test");
 	 * ```
 	 * @param script - Filename of script to execute.
 	 * @param host - Hostname of the `target server` on which to execute the script.
-	 * @param numThreads - Optional thread count for new script. Set to 1 by default. Will be rounded to nearest integer.
-	 * @param args - Additional arguments to pass into the new script that is being run. Note that if any arguments are being passed into the new script, then the third argument numThreads must be filled in with a value.
+	 * @param numThreads - Optional thread count for new script. Set to 1 by default. Will be rounded to nearest
+	 *     integer.
+	 * @param args - Additional arguments to pass into the new script that is being run. Note that if any arguments are
+	 *     being passed into the new script, then the third argument numThreads must be filled in with a value.
 	 * @returns Returns the PID of a successfully started script, and 0 otherwise.
 	 */
 	exec(script: string, host: string, numThreads?: number, ...args: string[]): number;
@@ -4123,8 +4176,8 @@ export interface NS extends Singularity {
 	 *
 	 * @example
 	 * ```ts
-	 * //The following example will execute the script ‘foo.script’ with 10 threads and the arguments ‘foodnstuff’ and 90:
-	 * spawn('foo.script', 10, 'foodnstuff', 90);
+	 * //The following example will execute the script ‘foo.script’ with 10 threads and the arguments ‘foodnstuff’ and
+	 *     90: spawn('foo.script', 10, 'foodnstuff', 90);
 	 * ```
 	 * @param script - Filename of script to execute.
 	 * @param numThreads - Number of threads to spawn new script with. Will be rounded to nearest integer.
@@ -4144,8 +4197,8 @@ export interface NS extends Singularity {
 	 *
 	 * @example
 	 * ```ts
-	 * //The following example will try to kill a script named foo.script on the foodnstuff server that was ran with no arguments:
-	 * kill("foo.script", "foodnstuff");
+	 * //The following example will try to kill a script named foo.script on the foodnstuff server that was ran with no
+	 *     arguments: kill("foo.script", "foodnstuff");
 	 * ```
 	 * @example
 	 * ```ts
@@ -4154,8 +4207,8 @@ export interface NS extends Singularity {
 	 * ```
 	 * @example
 	 * ```ts
-	 * //The following will try to kill a script named foo.script on the current server that was ran with the arguments 1 and “foodnstuff”:
-	 * kill("foo.script", getHostname(), 1, "foodnstuff");
+	 * //The following will try to kill a script named foo.script on the current server that was ran with the arguments
+	 *     1 and “foodnstuff”: kill("foo.script", getHostname(), 1, "foodnstuff");
 	 * ```
 	 * @param script - Filename or pid of the script to kill
 	 * @param host - Hostname of the server on which to kill the script.
@@ -4163,6 +4216,7 @@ export interface NS extends Singularity {
 	 * @returns True if the script is successfully killed, and false otherwise.
 	 */
 	kill(script: string | number, host: string, ...args: string[]): boolean;
+
 	kill(pid: number): boolean;
 
 	/**
@@ -4206,9 +4260,12 @@ export interface NS extends Singularity {
 	 * scp(files, "rothman-uni", "home");
 	 * ```
 	 * @param files - Filename or an array of filenames of script/literature files to copy.
-	 * @param source - Host of the source server, which is the server from which the file will be copied. This argument is optional and if it’s omitted the source will be the current server.
+	 * @param source - Host of the source server, which is the server from which the file will be copied. This argument
+	 *     is optional and if it’s omitted the source will be the current server.
 	 * @param destination - Host of the destination server, which is the server to which the file will be copied.
-	 * @returns True if the script/literature file is successfully copied over and false otherwise. If the files argument is an array then this function will return true if at least one of the files in the array is successfully copied.
+	 * @returns True if the script/literature file is successfully copied over and false otherwise. If the files
+	 *     argument is an array then this function will return true if at least one of the files in the array is
+	 *     successfully copied.
 	 */
 	scp(
 		files: string | string[],
@@ -4242,7 +4299,7 @@ export interface NS extends Singularity {
 	 * ```ts
 	 * //(using NetscriptJS (Netscript 2.0))
 	 * export async function main(ns) {
-	 *    const ps = ns.ps("home");
+	 *    const ps = ns.ps('home');
 	 *    for (let i = 0; i < ps.length; ++i) {
 	 *        ns.tprint(ps[i].filename + ' ' + ps[i].threads);
 	 *        ns.tprint(ps[i].args);
@@ -4264,7 +4321,7 @@ export interface NS extends Singularity {
 	 * @example
 	 * ```ts
 	 * if (hasRootAccess("foodnstuff") == false) {
-	 *    nuke("foodnstuff");
+	 *    nuke('foodnstuff');
 	 * }
 	 * ```
 	 * @param host - Host of the target server
@@ -4383,7 +4440,8 @@ export interface NS extends Singularity {
 	 * higher percentage increase from grow.
 	 *
 	 * @param host - Host of target server.
-	 * @returns Parameter that affects the percentage by which the server’s money is increased when using the grow function.
+	 * @returns Parameter that affects the percentage by which the server’s money is increased when using the grow
+	 *     function.
 	 */
 	getServerGrowth(host: string): number;
 
@@ -4459,6 +4517,7 @@ export interface NS extends Singularity {
 	 * @returns max ram
 	 */
 	getServerMaxRam(host: string): number;
+
 	/**
 	 * Get the used RAM on a server.
 	 * @remarks
@@ -4511,16 +4570,17 @@ export interface NS extends Singularity {
 	 *
 	 * @example
 	 * ```ts
-	 * //The function call will return true if the script named foo.script exists on the foodnstuff server, and false otherwise.
-	 * fileExists("foo.script", "foodnstuff");
+	 * //The function call will return true if the script named foo.script exists on the foodnstuff server, and false
+	 *     otherwise. fileExists("foo.script", "foodnstuff");
 	 * ```
 	 * @example
 	 * ```ts
-	 * //The function call will return true if the current server contains the FTPCrack.exe program, and false otherwise.
-	 * fileExists("ftpcrack.exe");
+	 * //The function call will return true if the current server contains the FTPCrack.exe program, and false
+	 *     otherwise. fileExists("ftpcrack.exe");
 	 * ```
 	 * @param filename - Filename of file to check.
-	 * @param host - Host of target server. This is optional. If it is not specified then the function will use the current server as the target server.
+	 * @param host - Host of target server. This is optional. If it is not specified then the function will use the
+	 *     current server as the target server.
 	 * @returns True if specified file exists, and false otherwise.
 	 */
 	fileExists(filename: string, host?: string): boolean;
@@ -4535,18 +4595,19 @@ export interface NS extends Singularity {
 	 *
 	 * @example
 	 * ```ts
-	 * //The function call will return true if there is a script named foo.script with no arguments running on the foodnstuff server, and false otherwise:
-	 * isRunning("foo.script", "foodnstuff");
+	 * //The function call will return true if there is a script named foo.script with no arguments running on the
+	 *     foodnstuff server, and false otherwise: isRunning("foo.script", "foodnstuff");
 	 * ```
 	 * @example
 	 * ```ts
-	 * //The function call will return true if there is a script named foo.script with no arguments running on the current server, and false otherwise:
-	 * isRunning("foo.script", getHostname());
+	 * //The function call will return true if there is a script named foo.script with no arguments running on the
+	 *     current server, and false otherwise: isRunning("foo.script", getHostname());
 	 * ```
 	 * @example
 	 * ```ts
-	 * //The function call will return true if there is a script named foo.script running with the arguments 1, 5, and “test” (in that order) on the joesguns server, and false otherwise:
-	 * isRunning("foo.script", "joesguns", 1, 5, "test");
+	 * //The function call will return true if there is a script named foo.script running with the arguments 1, 5, and
+	 *     “test” (in that order) on the joesguns server, and false otherwise: isRunning("foo.script", "joesguns", 1,
+	 *     5, "test");
 	 * ```
 	 * @param script - Filename of script to check. This is case-sensitive.
 	 * @param host - Host of target server.
@@ -4554,6 +4615,7 @@ export interface NS extends Singularity {
 	 * @returns True if specified script is running on the target server, and false otherwise.
 	 */
 	isRunning(script: string, host: string, ...args: string[]): boolean;
+
 	isRunning(pid: number): boolean;
 
 	/**
@@ -4577,7 +4639,8 @@ export interface NS extends Singularity {
 	 *     tprint(i + " -- " + getPurchasedServerCost(Math.pow(2, i)));
 	 * }
 	 * ```
-	 * @param ram - Amount of RAM of a potential purchased server. Must be a power of 2 (2, 4, 8, 16, etc.). Maximum value of 1048576 (2^20).
+	 * @param ram - Amount of RAM of a potential purchased server. Must be a power of 2 (2, 4, 8, 16, etc.). Maximum
+	 *     value of 1048576 (2^20).
 	 * @returns The cost to purchase a server with the specified amount of ram.
 	 */
 	getPurchasedServerCost(ram: number): number;
@@ -4615,7 +4678,8 @@ export interface NS extends Singularity {
 	 * }
 	 * ```
 	 * @param hostname - Host of the purchased server.
-	 * @param ram - Amount of RAM of the purchased server. Must be a power of 2 (2, 4, 8, 16, etc.). Maximum value of 1048576 (2^20).
+	 * @param ram - Amount of RAM of the purchased server. Must be a power of 2 (2, 4, 8, 16, etc.). Maximum value of
+	 *     1048576 (2^20).
 	 * @returns The hostname of the newly purchased server.
 	 */
 	purchaseServer(hostname: string, ram: number): string;
@@ -4679,7 +4743,7 @@ export interface NS extends Singularity {
 	 * @param data - Data to write.
 	 * @param mode - Defines the write mode. Only valid when writing to text files.
 	 */
-	write(handle: string, data?: string | string[] | number, mode?: "w" | "a"): Promise<void>;
+	write(handle: string, data?: string | string[] | number, mode?: 'w' | 'a'): Promise<void>;
 
 	/**
 	 * Attempt to write to a port.
@@ -4756,6 +4820,7 @@ export interface NS extends Singularity {
 	 * @returns The data popped off the queue if it was full.
 	 */
 	writePort(port: number, data: string | number): Promise<any>;
+
 	/**
 	 * Read data from a port.
 	 * @remarks
@@ -4810,13 +4875,13 @@ export interface NS extends Singularity {
 	 *
 	 * @example
 	 * ```ts
-	 * //The function call will return true if there is any script named foo.script running on the foodnstuff server, and false otherwise:
-	 * scriptRunning("foo.script", "foodnstuff");
+	 * //The function call will return true if there is any script named foo.script running on the foodnstuff server,
+	 *     and false otherwise: scriptRunning("foo.script", "foodnstuff");
 	 * ```
 	 * @example
 	 * ```ts
-	 * //The function call will return true if there is any script named “foo.script” running on the current server, and false otherwise:
-	 * scriptRunning("foo.script", getHostname());
+	 * //The function call will return true if there is any script named “foo.script” running on the current server,
+	 *     and false otherwise: scriptRunning("foo.script", getHostname());
 	 * ```
 	 * @param script - Filename of script to check. This is case-sensitive.
 	 * @param host - Host of target server.
@@ -4855,8 +4920,10 @@ export interface NS extends Singularity {
 	 * Returns 0 if the script does not exist.
 	 *
 	 * @param script - Filename of script. This is case-sensitive.
-	 * @param host - Host of target server the script is located on. This is optional, If it is not specified then the function will se the current server as the target server.
-	 * @returns Amount of RAM required to run the specified script on the target server, and 0 if the script does not exist.
+	 * @param host - Host of target server the script is located on. This is optional, If it is not specified then the
+	 *     function will se the current server as the target server.
+	 * @returns Amount of RAM required to run the specified script on the target server, and 0 if the script does not
+	 *     exist.
 	 */
 	getScriptRam(script: string, host?: string): number;
 
@@ -4866,12 +4933,15 @@ export interface NS extends Singularity {
 	 * RAM cost: 0.05 GB
 	 *
 	 * Returns the amount of time in milliseconds it takes to execute the hack Netscript function on the target server.
-	 * The function takes in an optional hackLvl parameter that can be specified to see what the hack time would be at different hacking levels.
+	 * The function takes in an optional hackLvl parameter that can be specified to see what the hack time would be at
+	 *     different hacking levels.
 	 *
 	 * @param host - Host of target server.
 	 * @param hackLvl - Optional hacking level for the calculation. Defaults to player’s current hacking level.
-	 * @param intLvl - Optional intelligence level for the calculation. Defaults to player’s current intelligence level. (Intelligence is unlocked after obtaining Source-File 5).
-	 * @returns Returns the amount of time in milliseconds it takes to execute the hack Netscript function. Returns Infinity if called on a Hacknet Server.
+	 * @param intLvl - Optional intelligence level for the calculation. Defaults to player’s current intelligence
+	 *     level. (Intelligence is unlocked after obtaining Source-File 5).
+	 * @returns Returns the amount of time in milliseconds it takes to execute the hack Netscript function. Returns
+	 *     Infinity if called on a Hacknet Server.
 	 */
 	getHackTime(host: string): number;
 
@@ -4881,12 +4951,15 @@ export interface NS extends Singularity {
 	 * RAM cost: 0.05 GB
 	 *
 	 * Returns the amount of time in milliseconds it takes to execute the grow Netscript function on the target server.
-	 * The function takes in an optional hackLvl parameter that can be specified to see what the grow time would be at different hacking levels.
+	 * The function takes in an optional hackLvl parameter that can be specified to see what the grow time would be at
+	 *     different hacking levels.
 	 *
 	 * @param host - Host of target server.
 	 * @param hackLvl - Optional hacking level for the calculation. Defaults to player’s current hacking level.
-	 * @param intLvl - Optional intelligence level for the calculation. Defaults to player’s current intelligence level. (Intelligence is unlocked after obtaining Source-File 5).
-	 * @returns Returns the amount of time in milliseconds it takes to execute the grow Netscript function. Returns Infinity if called on a Hacknet Server.
+	 * @param intLvl - Optional intelligence level for the calculation. Defaults to player’s current intelligence
+	 *     level. (Intelligence is unlocked after obtaining Source-File 5).
+	 * @returns Returns the amount of time in milliseconds it takes to execute the grow Netscript function. Returns
+	 *     Infinity if called on a Hacknet Server.
 	 */
 	getGrowTime(host: string): number;
 
@@ -4895,13 +4968,16 @@ export interface NS extends Singularity {
 	 * @remarks
 	 * RAM cost: 0.05 GB
 	 *
-	 * Returns the amount of time in milliseconds it takes to execute the weaken() Netscript function on the target server.
-	 * The function takes in an optional hackLvl parameter that can be specified to see what the weaken time would be at different hacking levels.
+	 * Returns the amount of time in milliseconds it takes to execute the weaken() Netscript function on the target
+	 *     server. The function takes in an optional hackLvl parameter that can be specified to see what the weaken
+	 *     time would be at different hacking levels.
 	 *
 	 * @param host - Host of target server.
 	 * @param hackLvl - Optional hacking level for the calculation. Defaults to player’s current hacking level.
-	 * @param intLvl - Optional intelligence level for the calculation. Defaults to player’s current intelligence level. (Intelligence is unlocked after obtaining Source-File 5).
-	 * @returns Returns the amount of time in milliseconds it takes to execute the grow Netscript function. Returns Infinity if called on a Hacknet Server.
+	 * @param intLvl - Optional intelligence level for the calculation. Defaults to player’s current intelligence
+	 *     level. (Intelligence is unlocked after obtaining Source-File 5).
+	 * @returns Returns the amount of time in milliseconds it takes to execute the grow Netscript function. Returns
+	 *     Infinity if called on a Hacknet Server.
 	 */
 	getWeakenTime(host: string): number;
 
@@ -5152,9 +5228,5 @@ export interface NS extends Singularity {
 	 * // {"_":[],"delay":0,"server":"foodnstuff","exclude":[],"help":true}
 	 * ```
 	 */
-	flags<Key extends string,
-		TConfig extends | [readonly [Key, string | number | boolean | string[]]]
-			| (readonly [Key, any])[]>(
-		config: TConfig,
-	): Flatten<UnionToIntersection<FromEntries<TConfig[number]>>>;
+	flags<Key extends FlagsKey, TConfig extends FlagsConfig<Key>>(config: TConfig): Flags<Key, TConfig>;
 }

@@ -15,7 +15,7 @@ export class Augmentation {
 	}
 
 	// Dynamic value
-	getPrice(ns: NS): number {
+	public getPrice(ns: NS): number {
 		return ns.getAugmentationPrice(this.name)
 	}
 }

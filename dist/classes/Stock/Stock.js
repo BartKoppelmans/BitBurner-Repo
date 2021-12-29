@@ -1,93 +1,176 @@
-import { StockPosition } from '/src/classes/Stock/StockInterfaces.js';
-import * as LogAPI from '/src/api/LogAPI.js';
-const STOCK_COMMISSION = 100000;
+import { MAX_PRICE_HISTORY_LENGTH, } from '/src/managers/StockManager.js';
+export const STOCK_COMMISSION = 100000;
 export default class Stock {
     symbol;
-    position;
     stockInformation;
+    stockForecastInformation; // Custom forecast in case we don't have the API
+    priceHistory = [];
     constructor(ns, symbol) {
         this.symbol = symbol;
-        this.update(ns);
-        this.position = this.stockInformation.probability >= 0 ? StockPosition.LONG : StockPosition.SHORT;
     }
-    static getStocks(ns) {
-        const symbols = ns.stock.getSymbols();
-        return symbols.map((symbol) => new Stock(ns, symbol));
+    static isManualStockForecastInformation(stockForecastInformation) {
+        return stockForecastInformation.probabilitySigma !== undefined;
     }
-    hasShares() {
-        return this.stockInformation.ownedShort + this.stockInformation.ownedLong > 0;
+    updateStockInformation(stockInformation) {
+        this.stockInformation = stockInformation;
     }
-    hasMaxShares() {
-        return this.stockInformation.ownedShort + this.stockInformation.ownedLong === this.stockInformation.maxShares;
+    updateForecastInformation(stockForecastInformation) {
+        this.stockForecastInformation = stockForecastInformation;
     }
-    getStockCorpus() {
-        return this.stockInformation.ownedShort * this.stockInformation.averageShortPrice + this.stockInformation.ownedLong * this.stockInformation.averageLongPrice;
+    getExpectedReturn() {
+        const normalizedProbability = (this.stockForecastInformation.probability - 0.5);
+        let sigma = 0;
+        if (Stock.isManualStockForecastInformation(this.stockForecastInformation)) {
+            // To add conservatism to pre-4s estimates, we reduce the probability by 1 standard deviation without
+            // crossing the midpoint
+            sigma = this.stockForecastInformation.probabilitySigma;
+        }
+        const conservativeProbability = (normalizedProbability < 0) ?
+            Math.min(0, normalizedProbability + sigma) :
+            Math.max(0, normalizedProbability - sigma);
+        return this.stockForecastInformation.volatility * conservativeProbability;
+    }
+    addToPriceHistory(price) {
+        this.priceHistory.unshift(price);
+        if (this.priceHistory.length > MAX_PRICE_HISTORY_LENGTH) {
+            this.priceHistory.splice(MAX_PRICE_HISTORY_LENGTH, 1);
+        }
+    }
+    getMoneyInvested() {
+        let totalMoneyInvested = 0;
+        for (const purchase of this.stockInformation.purchases) {
+            totalMoneyInvested += purchase.numShares * purchase.price;
+        }
+        return totalMoneyInvested;
+    }
+    getTimeToCoverSpread() {
+        return Math.log(this.stockInformation.priceInformation.askPrice / this.stockInformation.priceInformation.bidPrice) / Math.log(1 + Math.abs(this.getExpectedReturn()));
+    }
+    getBlackoutWindow() {
+        return Math.ceil(this.getTimeToCoverSpread());
+    }
+    getValue() {
+        let totalValue = 0;
+        for (const purchase of this.stockInformation.purchases) {
+            if (purchase.type === 'long') {
+                totalValue += purchase.numShares * this.stockInformation.priceInformation.bidPrice;
+            }
+            else if (purchase.type === 'short') {
+                totalValue += purchase.numShares * (2 * purchase.price - this.stockInformation.priceInformation.askPrice);
+            }
+        }
+        return totalValue;
+    }
+    willIncrease() {
+        return this.stockForecastInformation.probability >= 0.5;
+    }
+    willDecrease() {
+        return this.stockForecastInformation.probability < 0.5;
     }
     buyShorts(ns, numShares) {
-        // TODO: Check whether we can buy that many shares
-        const costs = ns.stock.short(this.symbol, numShares);
-        if (costs > this.stockInformation.price) {
-            LogAPI.printLog(ns, `WARNING: Intended to buy ${this.symbol} at ${ns.nFormat(this.stockInformation.price, '$0.000a')} but price was ${ns.nFormat(costs, '$0.000a')}`);
+        // TODO: Check whether we can buy the stock (should already be possible)
+        const expectedPrice = this.stockInformation.priceInformation.bidPrice;
+        let price = ns.stock.short(this.symbol, numShares); // TODO: Make this into a runner
+        if (price === 0)
+            throw new Error(`Failed to short the stocks`);
+        else if (price !== expectedPrice) {
+            // TODO: Log
+            // NOTE: This is a known bitburner bug, so patch it internally here
+            price = expectedPrice;
         }
-        LogAPI.printLog(ns, `Bought ${numShares} shorts of ${this.symbol} for ${ns.nFormat(costs, '$0.000a')}. Invested: ${ns.nFormat((costs * numShares), '$0.000a')}`);
-        this.update(ns);
+        this.stockInformation.sharesShort += numShares;
+        return {
+            type: 'short',
+            ticksHeld: 0,
+            numShares,
+            price,
+        };
     }
     buyLongs(ns, numShares) {
-        // TODO: Check whether we can buy that many shares
-        const costs = ns.stock.buy(this.symbol, numShares);
-        if (costs > this.stockInformation.price) {
-            LogAPI.printLog(ns, `WARNING: Intended to buy ${this.symbol} at ${ns.nFormat(this.stockInformation.price, '$0.000a')} but price was ${ns.nFormat(costs, '$0.000a')}`);
+        // TODO: Check whether we can buy the stock (should already be possible)
+        const expectedPrice = this.stockInformation.priceInformation.askPrice;
+        let price = ns.stock.buy(this.symbol, numShares); // TODO: Make this into a runner
+        if (price === 0)
+            throw new Error(`Failed to buy the stocks`);
+        else if (price !== expectedPrice) {
+            // TODO: Log
+            // NOTE: This is a known bitburner bug, so patch it internally here
+            price = expectedPrice;
         }
-        LogAPI.printLog(ns, `Bought ${numShares} longs of ${this.symbol} for ${ns.nFormat(costs, '$0.000a')}. Invested: ${ns.nFormat((costs * numShares), '$0.000a')}`);
-        this.update(ns);
+        this.stockInformation.sharesShort += numShares;
+        return {
+            type: 'long',
+            ticksHeld: 0,
+            numShares,
+            price,
+        };
     }
     sellAll(ns) {
-        if (this.stockInformation.ownedShort > 0)
-            this.sellShorts(ns);
-        if (this.stockInformation.ownedLong > 0)
-            this.sellLongs(ns);
+        if (this.stockInformation.ownedShares === 0) {
+            throw new Error(`We didn't have any shares, so something went wrong`);
+        }
+        if (this.stockInformation.sharesLong > 0) {
+            return this.sellLongs(ns);
+        }
+        else if (this.stockInformation.sharesShort > 0) {
+            return this.sellShorts(ns);
+        }
+        else {
+            // We didn't have any shares, so something went wrong
+            throw new Error(`We didn't have any shares, so something went wrong`);
+        }
     }
     sellShorts(ns) {
-        if (this.stockInformation.ownedShort <= 0)
-            throw new Error(`No owned short shares for ${this.symbol}`);
-        const value = ns.stock.sellShort(this.symbol, this.stockInformation.ownedShort);
-        if (value) {
-            const profit = this.stockInformation.ownedShort * (this.stockInformation.averageShortPrice - value) - 2 * STOCK_COMMISSION;
-            LogAPI.printLog(ns, `Sold ${this.stockInformation.ownedShort} shorts of ${this.symbol} for ${ns.nFormat(value, '$0.000a')}. Profit: ${ns.nFormat(profit, '$0.000a')}`);
-            this.update(ns);
-            return profit;
+        const expectedPrice = this.stockInformation.priceInformation.askPrice;
+        const numShares = this.stockInformation.sharesShort;
+        let price = ns.stock.sellShort(this.symbol, numShares); // TODO: Make this into a runner
+        if (price === 0)
+            throw new Error(`Failed to sell the stocks`);
+        else if (price !== expectedPrice) {
+            // TODO: Log
+            // NOTE: This is a known bitburner bug, so patch it internally here
+            price = expectedPrice;
         }
-        return 0;
+        let money = 0;
+        let profit = 0;
+        for (const purchase of this.stockInformation.purchases) {
+            profit += (purchase.numShares * (purchase.price - price)) - 2 * STOCK_COMMISSION;
+            money += (price * numShares) - STOCK_COMMISSION;
+        }
+        this.stockInformation.purchases = [];
+        return {
+            type: 'short',
+            ticksHeld: Math.max(...this.stockInformation.purchases.map((purchase) => purchase.ticksHeld)),
+            numShares,
+            money,
+            profit,
+        };
     }
     sellLongs(ns) {
-        if (this.stockInformation.ownedLong <= 0)
-            throw new Error(`No owned long shares for ${this.symbol}`);
-        const value = ns.stock.sell(this.symbol, this.stockInformation.ownedLong);
-        if (value) {
-            const profit = this.stockInformation.ownedLong * (value - this.stockInformation.averageLongPrice) - 2 * STOCK_COMMISSION;
-            LogAPI.printLog(ns, `Sold ${this.stockInformation.ownedLong} longs of ${this.symbol} for ${ns.nFormat(value, '$0.000a')}. Profit: ${ns.nFormat(profit, '$0.000a')}`);
-            this.update(ns);
-            return profit;
+        const expectedPrice = this.stockInformation.priceInformation.bidPrice;
+        const numShares = this.stockInformation.sharesLong;
+        let price = ns.stock.sell(this.symbol, numShares); // TODO: Make this into a runner
+        if (price === 0)
+            throw new Error(`Failed to sell the stocks`);
+        else if (price !== expectedPrice) {
+            // TODO: Log
+            // NOTE: This is a known bitburner bug, so patch it internally here
+            price = expectedPrice;
         }
-        return 0;
-    }
-    // TODO: Keep the last moment of update to make sure that we update in time
-    update(ns) {
-        const volatility = ns.stock.getVolatility(this.symbol);
-        const probability = 2 * (ns.stock.getForecast(this.symbol) - 0.5);
-        const [ownedLong, averageLongPrice, ownedShort, averageShortPrice] = ns.stock.getPosition(this.symbol);
-        this.stockInformation = {
-            ownedLong,
-            ownedShort,
-            averageLongPrice,
-            averageShortPrice,
-            volatility,
-            probability,
-            price: ns.stock.getPrice(this.symbol),
-            maxShares: ns.stock.getMaxShares(this.symbol),
-            askPrice: ns.stock.getAskPrice(this.symbol),
-            bidPrice: ns.stock.getBidPrice(this.symbol),
-            expectedReturn: volatility * probability / 2,
+        let money = 0;
+        let profit = 0;
+        for (const purchase of this.stockInformation.purchases) {
+            profit += (purchase.numShares * (price - purchase.price)) - 2 * STOCK_COMMISSION;
+            money += (price * numShares) - STOCK_COMMISSION;
+        }
+        this.stockInformation.purchases = [];
+        // TODO: Log
+        return {
+            type: 'long',
+            ticksHeld: Math.max(...this.stockInformation.purchases.map((purchase) => purchase.ticksHeld)),
+            numShares,
+            money,
+            profit,
         };
     }
 }

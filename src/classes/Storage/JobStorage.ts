@@ -35,7 +35,7 @@ export class JobStorage {
 	public removeBatch(batch: Batch): boolean {
 		const index: number = this.batches.findIndex((b) => b.batchId === batch.batchId)
 		if (index === -1) return false
-		this.batches.splice(index)
+		this.batches.splice(index, 1)
 		this.processUpdate()
 		return true
 	}
